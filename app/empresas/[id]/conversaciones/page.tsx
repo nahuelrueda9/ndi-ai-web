@@ -1,0 +1,519 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import {
+  collection,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+  Timestamp,
+  updateDoc,
+} from "firebase/firestore";
+
+import { db } from "@/lib/firebase";
+import Avatar from "@/components/Ui/Avatar";
+import Badge from "@/components/Ui/Badge";
+import Button from "@/components/Ui/Button";
+import Card from "@/components/Ui/Card";
+import Input from "@/components/Ui/Input";
+
+type Conversacion = {
+  id: string;
+  empresaId?: string;
+  visitanteId?: string;
+  estado?: "abierta" | "cerrada";
+  atendidoPor?: "ia" | "humano";
+  ultimoMensaje?: string;
+  ultimoRol?: "user" | "assistant";
+  cantidadMensajes?: number;
+  favorita?: boolean;
+  puntuacionLead?: number;
+nivelInteres?: "bajo" | "medio" | "alto";
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
+};
+
+type Filtro = "todas" | "hoy" | "abiertas";
+
+export default function ConversacionesPage() {
+  const params = useParams();
+  const router = useRouter();
+
+  const parametroEmpresa = params.id ?? params.empresaId;
+
+  const empresaId = Array.isArray(parametroEmpresa)
+    ? parametroEmpresa[0]
+    : (parametroEmpresa as string | undefined);
+
+  const [conversaciones, setConversaciones] = useState<Conversacion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busqueda, setBusqueda] = useState("");
+  const [filtro, setFiltro] = useState<Filtro>("todas");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+  if (!empresaId) {
+    setError("No se encontró el ID de la empresa.");
+    setLoading(false);
+    return;
+  }
+
+  setLoading(true);
+  setError("");
+
+  const conversacionesQuery = query(
+    collection(
+      db,
+      "companies",
+      empresaId,
+      "conversations"
+    ),
+    orderBy("updatedAt", "desc")
+  );
+
+  const unsubscribe = onSnapshot(
+    conversacionesQuery,
+    (snapshot) => {
+      const lista = snapshot.docs.map((documento) => {
+        const datos = documento.data();
+
+        return {
+          ...datos,
+          id: documento.id,
+        } as Conversacion;
+      });
+
+      setConversaciones(lista);
+      setLoading(false);
+    },
+    (firebaseError) => {
+      console.error(
+        "Error al cargar conversaciones:",
+        firebaseError
+      );
+
+      setError(
+        firebaseError.code === "permission-denied"
+          ? "No tenés permisos para ver estas conversaciones. Revisaremos las reglas de Firestore."
+          : "No se pudieron cargar las conversaciones."
+      );
+
+      setLoading(false);
+    }
+  );
+
+  return () => unsubscribe();
+}, [empresaId]);
+
+async function cambiarFavorita(
+  conversacion: Conversacion
+) {
+  if (!empresaId) {
+    return;
+  }
+
+  try {
+    await updateDoc(
+      doc(
+        db,
+        "companies",
+        empresaId,
+        "conversations",
+        conversacion.id
+      ),
+      {
+        favorita: !conversacion.favorita,
+      }
+    );
+  } catch (firebaseError) {
+    console.error(
+      "Error al cambiar conversación favorita:",
+      firebaseError
+    );
+
+    setError(
+      "No se pudo cambiar la conversación favorita."
+    );
+  }
+}
+
+const estadisticas = useMemo(() => {
+  return {
+    total: conversaciones.length,
+    abiertas: conversaciones.filter(
+      (c) => c.estado !== "cerrada"
+    ).length,
+
+    cerradas: conversaciones.filter(
+      (c) => c.estado === "cerrada"
+    ).length,
+
+    ia: conversaciones.filter(
+      (c) => c.atendidoPor !== "humano"
+    ).length,
+
+    humano: conversaciones.filter(
+      (c) => c.atendidoPor === "humano"
+    ).length,
+  };
+}, [conversaciones]);
+
+  const conversacionesFiltradas = useMemo(() => {
+    const texto = busqueda.trim().toLowerCase();
+
+    return conversaciones.filter((conversacion) => {
+      const coincideBusqueda =
+        !texto ||
+        conversacion.visitanteId?.toLowerCase().includes(texto) ||
+        conversacion.ultimoMensaje?.toLowerCase().includes(texto) ||
+        conversacion.id.toLowerCase().includes(texto);
+
+      if (!coincideBusqueda) return false;
+
+      if (filtro === "abiertas") {
+        return conversacion.estado !== "cerrada";
+      }
+
+      if (filtro === "hoy") {
+        const fecha =
+          conversacion.updatedAt?.toDate() ||
+          conversacion.createdAt?.toDate();
+
+        if (!fecha) return false;
+
+        const hoy = new Date();
+
+        return (
+          fecha.getDate() === hoy.getDate() &&
+          fecha.getMonth() === hoy.getMonth() &&
+          fecha.getFullYear() === hoy.getFullYear()
+        );
+      }
+
+      return true;
+    });
+  }, [busqueda, conversaciones, filtro]);
+
+  if (!empresaId) {
+    return (
+      <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
+        <Card className="border-red-500/20 bg-red-500/10 p-6">
+          <h1 className="text-lg font-semibold text-white">
+            No se pudo abrir Conversaciones
+          </h1>
+
+          <p className="mt-2 text-sm text-red-400">
+            No se encontró el ID de la empresa en la dirección.
+          </p>
+        </Card>
+      </section>
+    );
+  }
+
+  return (
+    <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
+      <header className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
+        <div>
+          <p className="text-sm font-medium text-blue-400">
+            Atención al cliente
+          </p>
+
+          <div className="mt-2 flex flex-wrap items-center gap-3">
+            <h1 className="text-3xl font-bold tracking-tight text-white">
+              Conversaciones
+            </h1>
+
+            <Badge variant="info">
+              {conversaciones.length} en total
+            </Badge>
+          </div>
+
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
+            Revisá las consultas recibidas desde el widget y abrí una
+            conversación para ver todos sus mensajes.
+          </p>
+        </div>
+
+        <Button
+          variant="secondary"
+          onClick={() => router.push(`/empresas/${empresaId}`)}
+        >
+          Volver a la empresa
+        </Button>
+      </header>
+
+<div className="mb-6 grid gap-4 md:grid-cols-5">
+  <Card className="p-5">
+    <p className="text-xs text-zinc-500">
+      Conversaciones
+    </p>
+
+    <p className="mt-2 text-3xl font-bold text-white">
+      {estadisticas.total}
+    </p>
+  </Card>
+
+  <Card className="p-5">
+    <p className="text-xs text-zinc-500">
+      Abiertas
+    </p>
+
+    <p className="mt-2 text-3xl font-bold text-emerald-400">
+      {estadisticas.abiertas}
+    </p>
+  </Card>
+
+  <Card className="p-5">
+    <p className="text-xs text-zinc-500">
+      Cerradas
+    </p>
+
+    <p className="mt-2 text-3xl font-bold text-red-400">
+      {estadisticas.cerradas}
+    </p>
+  </Card>
+
+  <Card className="p-5">
+    <p className="text-xs text-zinc-500">
+      IA
+    </p>
+
+    <p className="mt-2 text-3xl font-bold text-blue-400">
+      {estadisticas.ia}
+    </p>
+  </Card>
+
+  <Card className="p-5">
+    <p className="text-xs text-zinc-500">
+      Humanos
+    </p>
+
+    <p className="mt-2 text-3xl font-bold text-yellow-400">
+      {estadisticas.humano}
+    </p>
+  </Card>
+</div>
+
+      <Card className="mb-6 p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <div className="flex-1">
+            <Input
+              id="buscarConversacion"
+              value={busqueda}
+              onChange={(event) => setBusqueda(event.target.value)}
+              placeholder="Buscar por visitante, mensaje o ID..."
+            />
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              variant={filtro === "todas" ? "primary" : "ghost"}
+              onClick={() => setFiltro("todas")}
+            >
+              Todas
+            </Button>
+
+            <Button
+              size="sm"
+              variant={filtro === "hoy" ? "primary" : "ghost"}
+              onClick={() => setFiltro("hoy")}
+            >
+              Hoy
+            </Button>
+
+            <Button
+              size="sm"
+              variant={filtro === "abiertas" ? "primary" : "ghost"}
+              onClick={() => setFiltro("abiertas")}
+            >
+              Abiertas
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      {error && (
+        <Card className="mb-6 border-red-500/20 bg-red-500/10 p-4">
+          <p className="text-sm text-red-400">{error}</p>
+        </Card>
+      )}
+
+      {loading ? (
+        <Card className="p-10 text-center">
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-t-blue-500" />
+
+          <p className="font-medium text-white">
+            Cargando conversaciones...
+          </p>
+        </Card>
+      ) : conversacionesFiltradas.length === 0 ? (
+        <Card className="border-dashed p-10 text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-500/10 text-2xl">
+            💬
+          </div>
+
+          <h2 className="mt-5 text-xl font-semibold text-white">
+            {conversaciones.length === 0
+              ? "Todavía no hay conversaciones"
+              : "No encontramos resultados"}
+          </h2>
+
+          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-zinc-500">
+            {conversaciones.length === 0
+              ? "Cuando un visitante hable con el widget, la conversación aparecerá acá automáticamente."
+              : "Probá con otra búsqueda o cambiá el filtro seleccionado."}
+          </p>
+        </Card>
+      ) : (
+        <Card className="overflow-hidden">
+          <div className="hidden grid-cols-[minmax(0,1.3fr)_minmax(0,1.6fr)_170px_110px_120px] gap-4 border-b border-zinc-800 px-6 py-3 text-xs font-medium uppercase tracking-wide text-zinc-600 md:grid">
+            <span>Visitante</span>
+            <span>Último mensaje</span>
+            <span>Última actividad</span>
+            <span>Prioridad</span>
+            <span className="text-right">Estado</span>
+          </div>
+
+          <div className="divide-y divide-zinc-800">
+            {conversacionesFiltradas.map((conversacion) => {
+              const nombreVisitante = obtenerNombreVisitante(
+                conversacion.visitanteId
+              );
+
+              return (
+<div
+  key={conversacion.id}
+  role="button"
+  tabIndex={0}
+  onClick={() =>
+    router.push(
+      `/empresas/${empresaId}/conversaciones/${conversacion.id}`
+    )
+  }
+  onKeyDown={(evento) => {
+    if (evento.key === "Enter" || evento.key === " ") {
+      router.push(
+        `/empresas/${empresaId}/conversaciones/${conversacion.id}`
+      );
+    }
+  }}
+  className="grid w-full cursor-pointer gap-4 px-5 py-5 text-left transition hover:bg-zinc-800/40 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1.6fr)_170px_110px_120px] md:items-center md:px-6"
+>
+                  <div className="flex min-w-0 items-center gap-3">
+                    <Avatar name={nombreVisitante} size="sm" />
+
+                    <button
+  type="button"
+  onClick={(evento) => {
+    evento.stopPropagation();
+    cambiarFavorita(conversacion);
+  }}
+  className="shrink-0 text-xl text-amber-400 transition hover:scale-110"
+  aria-label={
+    conversacion.favorita
+      ? "Quitar de favoritas"
+      : "Marcar como favorita"
+  }
+>
+  {conversacion.favorita ? "★" : "☆"}
+</button>
+
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-white">
+                        {nombreVisitante}
+                      </p>
+
+                      <p className="mt-1 text-xs text-zinc-600">
+                        {conversacion.cantidadMensajes ?? 0} mensajes · ID{" "}
+                        {conversacion.id.slice(0, 8)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="min-w-0">
+                    <p className="truncate text-sm text-zinc-300">
+                      {conversacion.ultimoMensaje ||
+                        "Conversación sin mensajes"}
+                    </p>
+
+                    <p className="mt-1 text-xs text-zinc-600">
+                      Respondido por{" "}
+                      {conversacion.atendidoPor === "humano"
+                        ? "una persona"
+                        : "la IA"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-zinc-400">
+                      {formatDate(
+                        conversacion.updatedAt ||
+                          conversacion.createdAt
+                      )}
+                    </p>
+                  </div>
+
+<div>
+  <Badge
+    variant={
+      conversacion.nivelInteres === "alto"
+        ? "danger"
+        : conversacion.nivelInteres === "medio"
+        ? "warning"
+        : "success"
+    }
+  >
+    {conversacion.nivelInteres === "alto"
+      ? "🔥 Alto"
+      : conversacion.nivelInteres === "medio"
+      ? "🟡 Medio"
+      : "🟢 Bajo"}
+  </Badge>
+</div>
+
+                  <div className="md:text-right">
+                    <Badge
+                      variant={
+                        conversacion.estado === "cerrada"
+                          ? "default"
+                          : "success"
+                      }
+                    >
+                      {conversacion.estado === "cerrada"
+                        ? "Cerrada"
+                        : "Abierta"}
+                    </Badge>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
+    </section>
+  );
+}
+
+function obtenerNombreVisitante(visitanteId?: string) {
+  if (!visitanteId) return "Visitante anónimo";
+
+  const parteVisible = visitanteId
+    .replace("visitante-", "")
+    .slice(0, 8);
+
+  return `Visitante ${parteVisible}`;
+}
+
+function formatDate(timestamp?: Timestamp) {
+  if (!timestamp) return "Sin fecha";
+
+  return new Intl.DateTimeFormat("es-AR", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(timestamp.toDate());
+}
