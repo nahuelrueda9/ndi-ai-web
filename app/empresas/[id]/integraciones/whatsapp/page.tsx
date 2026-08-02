@@ -61,6 +61,8 @@ export default function WhatsAppPage() {
   }, [empresaId]);
 
   async function guardarConfiguracion() {
+  alert("El botón funciona");
+
     if (!empresaId) {
       setError("No se encontró la empresa.");
       return;
