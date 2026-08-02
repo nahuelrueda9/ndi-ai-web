@@ -1,42 +1,95 @@
 "use client";
 
 import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import {
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+
 import { auth } from "@/lib/firebase";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
+  const [error, setError] = useState("");
+  const [mensaje, setMensaje] = useState("");
+
+  const [loading, setLoading] = useState(false);
+  const [enviandoRecuperacion, setEnviandoRecuperacion] =
+    useState(false);
+
+  async function handleLogin(
+    event: React.FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault();
 
     setError("");
+    setMensaje("");
     setLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      window.location.href = "/";
+      await signInWithEmailAndPassword(
+        auth,
+        email.trim(),
+        password
+      );
+
+      window.location.href = "/empresas";
     } catch {
-      setError("Correo o contraseña incorrectos");
+      setError("Correo o contraseña incorrectos.");
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+  async function recuperarContrasena() {
+    const correo = email.trim();
+
+    setError("");
+    setMensaje("");
+
+    if (!correo) {
+      setError(
+        "Escribí tu correo electrónico para recuperar la contraseña."
+      );
+      return;
+    }
+
+    setEnviandoRecuperacion(true);
+
+    try {
+      await sendPasswordResetEmail(auth, correo);
+
+      setMensaje(
+        "Te enviamos un correo para restablecer tu contraseña. Revisá también la carpeta de spam."
+      );
+    } catch {
+      setError(
+        "No se pudo enviar el correo de recuperación. Revisá que el email sea correcto."
+      );
+    } finally {
+      setEnviandoRecuperacion(false);
+    }
+  }
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4">
       <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-8 shadow-2xl">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-white">NDI AI</h1>
+          <h1 className="text-3xl font-bold text-white">
+            NDI AI
+          </h1>
+
           <p className="mt-2 text-sm text-slate-400">
             Ingresá a tu plataforma inteligente
           </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-5">
+        <form
+          onSubmit={handleLogin}
+          className="space-y-5"
+        >
           <div>
             <label
               htmlFor="email"
@@ -49,44 +102,71 @@ export default function LoginPage() {
               id="email"
               type="email"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) =>
+                setEmail(event.target.value)
+              }
               placeholder="correo@empresa.com"
+              autoComplete="email"
               required
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-blue-500"
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition placeholder:text-slate-600 focus:border-blue-500"
             />
           </div>
 
           <div>
-            <label
-              htmlFor="password"
-              className="mb-2 block text-sm font-medium text-slate-300"
-            >
-              Contraseña
-            </label>
+            <div className="mb-2 flex items-center justify-between gap-4">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-slate-300"
+              >
+                Contraseña
+              </label>
+
+              <button
+                type="button"
+                onClick={recuperarContrasena}
+                disabled={enviandoRecuperacion}
+                className="text-sm font-medium text-blue-400 transition hover:text-blue-300 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {enviandoRecuperacion
+                  ? "Enviando..."
+                  : "¿Olvidaste tu contraseña?"}
+              </button>
+            </div>
 
             <input
               id="password"
               type="password"
               value={password}
-              onChange={(event) => setPassword(event.target.value)}
+              onChange={(event) =>
+                setPassword(event.target.value)
+              }
               placeholder="Ingresá tu contraseña"
+              autoComplete="current-password"
               required
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-blue-500"
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition placeholder:text-slate-600 focus:border-blue-500"
             />
           </div>
 
           {error && (
-            <p className="rounded-lg bg-red-500/10 p-3 text-sm text-red-400">
+            <p className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400">
               {error}
+            </p>
+          )}
+
+          {mensaje && (
+            <p className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm text-emerald-300">
+              {mensaje}
             </p>
           )}
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || enviandoRecuperacion}
             className="w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {loading ? "Ingresando..." : "Iniciar sesión"}
+            {loading
+              ? "Ingresando..."
+              : "Iniciar sesión"}
           </button>
         </form>
       </div>

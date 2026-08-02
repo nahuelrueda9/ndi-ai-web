@@ -14,16 +14,14 @@ export default function DashboardLayout({
 }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
-      <div className="flex min-h-screen">
-        <Sidebar />
+      <Sidebar />
 
-        <div className="flex min-w-0 flex-1 flex-col">
-          <Header />
+      <div className="min-h-screen md:pl-72">
+        <Header />
 
-          <main className="flex-1">
-            {children}
-          </main>
-        </div>
+        <main className="min-h-[calc(100vh-73px)]">
+          {children}
+        </main>
       </div>
     </div>
   );

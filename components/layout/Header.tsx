@@ -8,7 +8,11 @@ import {
   MessageCircle,
   X,
 } from "lucide-react";
-import { onAuthStateChanged, type User } from "firebase/auth";
+import {
+  onAuthStateChanged,
+  signOut,
+  type User,
+} from "firebase/auth";
 import {
   collection,
   onSnapshot,
@@ -324,6 +328,15 @@ export default function Header() {
     solicitarPermisoNotificaciones();
   }
 
+  async function cerrarSesion() {
+    try {
+      await signOut(auth);
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("No se pudo cerrar la sesión:", error);
+    }
+  }
+
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-zinc-800 bg-zinc-950/90 px-4 py-4 backdrop-blur sm:px-6">
@@ -460,17 +473,30 @@ export default function Header() {
                 <Bot className="h-4 w-4 text-white" />
               </div>
 
-              <div className="hidden sm:block">
-                <p className="text-sm font-medium text-white">
-                  Agente activo
+              <div className="hidden min-w-0 sm:block">
+                <p className="max-w-48 truncate text-sm font-medium text-white">
+                  {user?.email ?? "Usuario"}
                 </p>
-                <p className="text-xs text-zinc-500">
-                  {empresas.length > 0
-                    ? `${empresas.length} agente${
-                        empresas.length === 1 ? "" : "s"
-                      } disponible${empresas.length === 1 ? "" : "s"}`
-                    : "Listo para configurar"}
-                </p>
+
+                <div className="mt-0.5 flex items-center gap-2 text-xs">
+                  <span className="text-zinc-500">
+                    {empresas.length > 0
+                      ? `${empresas.length} agente${
+                          empresas.length === 1 ? "" : "s"
+                        } disponible${empresas.length === 1 ? "" : "s"}`
+                      : "Listo para configurar"}
+                  </span>
+
+                  <span className="text-zinc-700">•</span>
+
+                  <button
+                    type="button"
+                    onClick={cerrarSesion}
+                    className="font-medium text-red-400 transition hover:text-red-300"
+                  >
+                    Cerrar sesión
+                  </button>
+                </div>
               </div>
             </div>
           </div>

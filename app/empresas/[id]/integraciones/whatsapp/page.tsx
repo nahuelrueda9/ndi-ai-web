@@ -1,274 +1,207 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import {
-  doc,
-  getDoc,
-  serverTimestamp,
-  setDoc,
-} from "firebase/firestore";
+import { useParams } from "next/navigation";
 
-import { db } from "@/lib/firebase";
 import Button from "@/components/Ui/Button";
 import Card from "@/components/Ui/Card";
 import Input from "@/components/Ui/Input";
 
-type WhatsAppConfig = {
-  enabled?: boolean;
-  phoneNumberId?: string;
-  businessAccountId?: string;
-  accessToken?: string;
-  verifyToken?: string;
-};
+type EstadoConexion = "sin_configurar" | "configurado" | "probando" | "conectado";
 
 export default function WhatsAppPage() {
   const params = useParams();
-  const router = useRouter();
 
-  const empresaId = Array.isArray(params.id)
-    ? params.id[0]
-    : (params.id as string);
+  const parametroEmpresa = params.id ?? params.empresaId;
 
-  const [enabled, setEnabled] = useState(false);
+  const empresaId = Array.isArray(parametroEmpresa)
+    ? parametroEmpresa[0]
+    : (parametroEmpresa as string | undefined);
+
   const [phoneNumberId, setPhoneNumberId] = useState("");
   const [businessAccountId, setBusinessAccountId] = useState("");
   const [accessToken, setAccessToken] = useState("");
   const [verifyToken, setVerifyToken] = useState("");
 
-  const [loading, setLoading] = useState(true);
+  const [estado, setEstado] = useState<EstadoConexion>("sin_configurar");
   const [guardando, setGuardando] = useState(false);
+  const [probando, setProbando] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!empresaId) {
-      setError("No se encontró el ID de la empresa.");
-      setLoading(false);
-      return;
-    }
+    if (!empresaId) return;
 
     async function cargarConfiguracion() {
       try {
-        const referencia = doc(
-          db,
-          "companies",
-          empresaId,
-          "integrations",
-          "whatsapp"
+        const response = await fetch(
+          `/api/integraciones/whatsapp/config?empresaId=${empresaId}`
         );
 
-        const snapshot = await getDoc(referencia);
-
-        if (snapshot.exists()) {
-          const data = snapshot.data() as WhatsAppConfig;
-
-          setEnabled(data.enabled ?? false);
-          setPhoneNumberId(data.phoneNumberId ?? "");
-          setBusinessAccountId(data.businessAccountId ?? "");
-          setAccessToken(data.accessToken ?? "");
-          setVerifyToken(data.verifyToken ?? "");
+        if (!response.ok) {
+          return;
         }
-      } catch (firebaseError) {
-        console.error(
-          "Error al cargar WhatsApp:",
-          firebaseError
-        );
 
-        setError("No se pudo cargar la configuración.");
-      } finally {
-        setLoading(false);
+        const data = await response.json();
+
+        if (!data?.config) {
+          return;
+        }
+
+        setPhoneNumberId(data.config.phoneNumberId ?? "");
+        setBusinessAccountId(data.config.businessAccountId ?? "");
+        setVerifyToken(data.config.verifyToken ?? "");
+        setEstado(data.config.estado === "conectado" ? "conectado" : "configurado");
+      } catch (requestError) {
+        console.error("No se pudo cargar WhatsApp:", requestError);
       }
     }
 
-    cargarConfiguracion();
+    void cargarConfiguracion();
   }, [empresaId]);
 
   async function guardarConfiguracion() {
-    if (!empresaId || guardando) return;
+    if (!empresaId) {
+      setError("No se encontró la empresa.");
+      return;
+    }
 
     setGuardando(true);
     setError("");
     setMensaje("");
 
     try {
-      const referencia = doc(
-        db,
-        "companies",
-        empresaId,
-        "integrations",
-        "whatsapp"
-      );
-
-      await setDoc(
-        referencia,
-        {
-          enabled,
-          phoneNumberId: phoneNumberId.trim(),
-          businessAccountId: businessAccountId.trim(),
-          accessToken: accessToken.trim(),
-          verifyToken: verifyToken.trim(),
-          updatedAt: serverTimestamp(),
-        },
-        {
-          merge: true,
-        }
-      );
-
-      setMensaje("Configuración de WhatsApp guardada.");
-    } catch (firebaseError) {
-      console.error(
-        "Error al guardar WhatsApp:",
-        firebaseError
-      );
-
-      setError("No se pudo guardar la configuración.");
-    } finally {
-      setGuardando(false);
-    }
-  }
-
-async function probarConexion() {
-  setError("");
-  setMensaje("");
-
-  try {
-    const respuesta = await fetch(
-      "/api/integraciones/whatsapp/probar",
-      {
+      const response = await fetch("/api/integraciones/whatsapp/config", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          empresaId,
+          phoneNumberId,
+          businessAccountId,
+          accessToken,
+          verifyToken,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error || "No se pudo guardar la configuración.");
+      }
+
+      setEstado("configurado");
+      setMensaje("Configuración guardada correctamente.");
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "No se pudo guardar la configuración."
+      );
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+  async function probarConexion() {
+    if (!empresaId) {
+      setError("No se encontró la empresa.");
+      return;
+    }
+
+    setProbando(true);
+    setEstado("probando");
+    setError("");
+    setMensaje("");
+
+    try {
+      const response = await fetch("/api/integraciones/whatsapp/probar", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          empresaId,
           phoneNumberId,
           accessToken,
         }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error || "No se pudo conectar con Meta.");
       }
-    );
 
-    const data = await respuesta.json();
-
-    if (!respuesta.ok) {
-      throw new Error(
-        data.error || "No se pudo probar la conexión."
+      setEstado("conectado");
+      setMensaje(
+        data?.message || "Conexión con WhatsApp verificada correctamente."
       );
+    } catch (requestError) {
+      setEstado("configurado");
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "No se pudo probar la conexión."
+      );
+    } finally {
+      setProbando(false);
     }
-
-    setMensaje(
-      `Conectado correctamente: ${
-        data.nombreVerificado ||
-        data.numero ||
-        "WhatsApp Business"
-      }`
-    );
-  } catch (conexionError) {
-    console.error(
-      "Error al probar WhatsApp:",
-      conexionError
-    );
-
-    setError(
-      conexionError instanceof Error
-        ? conexionError.message
-        : "No se pudo probar la conexión."
-    );
-  }
-}
-
-  if (loading) {
-    return (
-      <section className="mx-auto max-w-4xl px-6 py-8">
-        <Card className="p-10 text-center">
-          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-t-blue-500" />
-
-          <p className="text-sm text-zinc-400">
-            Cargando configuración...
-          </p>
-        </Card>
-      </section>
-    );
   }
 
   return (
-    <section className="mx-auto max-w-4xl space-y-6 px-6 py-8">
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+    <section className="mx-auto w-full max-w-5xl space-y-6 px-5 py-8 sm:px-8">
+      <header className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
         <div>
-          <h1 className="text-3xl font-bold text-white">
+          <p className="text-sm font-medium text-green-400">
+            Integración oficial de Meta
+          </p>
+
+          <h1 className="mt-2 text-3xl font-bold text-white">
             WhatsApp Business
           </h1>
 
-          <p className="mt-2 text-zinc-400">
-            Configurá la API oficial de Meta.
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
+            Configurá tu número de WhatsApp Cloud API para recibir y responder
+            mensajes desde NDI AI.
           </p>
         </div>
 
-        <Button
-          variant="secondary"
-          onClick={() =>
-            router.push(
-              `/empresas/${empresaId}/integraciones`
-            )
-          }
-        >
-          Volver
-        </Button>
-      </div>
+        <div className="w-fit rounded-full border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm">
+          {estado === "conectado" && (
+            <span className="text-emerald-400">● Conectado</span>
+          )}
 
-      {error && (
-        <Card className="border-red-500/20 bg-red-500/10 p-4">
-          <p className="text-sm text-red-400">
-            {error}
-          </p>
-        </Card>
-      )}
+          {estado === "probando" && (
+            <span className="text-amber-400">● Probando conexión...</span>
+          )}
 
-      {mensaje && (
-        <Card className="border-emerald-500/20 bg-emerald-500/10 p-4">
-          <p className="text-sm text-emerald-300">
-            {mensaje}
-          </p>
-        </Card>
-      )}
+          {estado === "configurado" && (
+            <span className="text-blue-400">● Configurado</span>
+          )}
+
+          {estado === "sin_configurar" && (
+            <span className="text-zinc-400">● Sin configurar</span>
+          )}
+        </div>
+      </header>
 
       <Card className="space-y-5 p-6">
-        <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-zinc-800 bg-zinc-950/50 p-4">
-          <div>
-            <p className="text-sm font-medium text-white">
-              Activar WhatsApp
-            </p>
-
-            <p className="mt-1 text-xs text-zinc-500">
-              Habilita el canal cuando la conexión esté lista.
-            </p>
-          </div>
-
-          <input
-            type="checkbox"
-            checked={enabled}
-            onChange={(event) =>
-              setEnabled(event.target.checked)
-            }
-            className="h-5 w-5 accent-emerald-500"
-          />
-        </label>
-
         <Input
           id="phone"
           label="Phone Number ID"
           value={phoneNumberId}
-          onChange={(event) =>
-            setPhoneNumberId(event.target.value)
-          }
+          onChange={(event) => setPhoneNumberId(event.target.value)}
+          placeholder="Ejemplo: 123456789012345"
         />
 
         <Input
           id="business"
           label="Business Account ID"
           value={businessAccountId}
-          onChange={(event) =>
-            setBusinessAccountId(event.target.value)
-          }
+          onChange={(event) => setBusinessAccountId(event.target.value)}
+          placeholder="Ejemplo: 987654321098765"
         />
 
         <Input
@@ -276,36 +209,46 @@ async function probarConexion() {
           label="Access Token"
           type="password"
           value={accessToken}
-          onChange={(event) =>
-            setAccessToken(event.target.value)
-          }
+          onChange={(event) => setAccessToken(event.target.value)}
+          placeholder="Pegá el token generado por Meta"
         />
 
         <Input
           id="verify"
           label="Verify Token"
-          type="password"
           value={verifyToken}
-          onChange={(event) =>
-            setVerifyToken(event.target.value)
-          }
+          onChange={(event) => setVerifyToken(event.target.value)}
+          placeholder="Elegí una palabra segura"
         />
+
+        {mensaje && (
+          <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-300">
+            {mensaje}
+          </div>
+        )}
+
+        {error && (
+          <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400">
+            {error}
+          </div>
+        )}
 
         <div className="flex flex-col gap-3 sm:flex-row">
           <Button
+            type="button"
             onClick={guardarConfiguracion}
-            disabled={guardando}
+            disabled={guardando || probando}
           >
-            {guardando
-              ? "Guardando..."
-              : "Guardar configuración"}
+            {guardando ? "Guardando..." : "Guardar configuración"}
           </Button>
 
           <Button
+            type="button"
             variant="secondary"
-            disabled
+            onClick={probarConexion}
+            disabled={guardando || probando}
           >
-            Probar conexión
+            {probando ? "Probando..." : "Probar conexión"}
           </Button>
         </div>
       </Card>
