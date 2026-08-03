@@ -677,6 +677,11 @@ async function enviarMensajeWhatsApp({
 
   const responseText = await response.text();
 
+   console.log("META RESPONDIÓ:");
+   console.log("STATUS META:", response.status);
+   console.log("BODY META:", responseText);
+
+
   let data: {
     messages?: Array<{
       id?: string;
