@@ -4,7 +4,6 @@ export type MemoriaCliente = {
   email?: string;
   telefono?: string;
   ciudad?: string;
-
   intereses?: string;
   ultimoTema?: string;
   presupuesto?: string;
@@ -38,8 +37,40 @@ function limpiarTextoJson(texto: string) {
     .trim();
 }
 
+function extraerObjetoJson(texto: string): unknown | null {
+  const textoLimpio = limpiarTextoJson(texto);
+
+  /*
+   * Primero intentamos interpretar toda la respuesta como JSON.
+   */
+  try {
+    return JSON.parse(textoLimpio);
+  } catch {
+    // Continuamos buscando un objeto JSON dentro del texto.
+  }
+
+  /*
+   * Si el modelo agregó texto antes o después,
+   * buscamos desde la primera llave hasta la última.
+   */
+  const inicio = textoLimpio.indexOf("{");
+  const final = textoLimpio.lastIndexOf("}");
+
+  if (inicio === -1 || final === -1 || final <= inicio) {
+    return null;
+  }
+
+  const posibleJson = textoLimpio.slice(inicio, final + 1);
+
+  try {
+    return JSON.parse(posibleJson);
+  } catch {
+    return null;
+  }
+}
+
 function limpiarMemoria(datos: unknown): MemoriaCliente {
-  if (!datos || typeof datos !== "object") {
+  if (!datos || typeof datos !== "object" || Array.isArray(datos)) {
     return {};
   }
 
@@ -49,11 +80,15 @@ function limpiarMemoria(datos: unknown): MemoriaCliente {
   for (const campo of CAMPOS_VALIDOS) {
     const valor = objeto[campo];
 
-    if (typeof valor !== "string") continue;
+    if (typeof valor !== "string") {
+      continue;
+    }
 
     const valorLimpio = valor.trim();
 
-    if (!valorLimpio) continue;
+    if (!valorLimpio) {
+      continue;
+    }
 
     memoria[campo] = valorLimpio;
   }
@@ -78,52 +113,40 @@ export async function extraerMemoriaConIA(
       return memoriaActual;
     }
 
-    const prompt = `
+    const instrucciones = `
 Sos un extractor de memoria para un CRM.
 
-No respondas al usuario.
+Tu única tarea es extraer información explícita del último mensaje.
 
-Analizá únicamente el último mensaje.
+Reglas obligatorias:
 
-Extraé únicamente información explícita.
+- Respondé solamente un objeto JSON válido.
+- No agregues explicaciones.
+- No uses bloques de código.
+- No inventes ni deduzcas información.
+- No completes datos faltantes.
+- Si no existe información nueva, respondé {}.
+- Si el usuario corrige un dato, devolvé el dato corregido.
 
-Respondé exclusivamente un JSON válido.
+Campos permitidos:
 
 {
-  "nombre":"",
-  "empresa":"",
-  "email":"",
-  "telefono":"",
-  "ciudad":"",
-  "intereses":"",
-  "ultimoTema":"",
-  "presupuesto":""
+  "nombre": "",
+  "empresa": "",
+  "email": "",
+  "telefono": "",
+  "ciudad": "",
+  "intereses": "",
+  "ultimoTema": "",
+  "presupuesto": ""
 }
+`.trim();
 
-Qué guardar:
-
-- nombre del cliente
-- empresa
-- email
-- teléfono
-- ciudad
-- intereses (qué quiere comprar o consultar)
-- último tema de conversación
-- presupuesto mencionado
-
-Reglas:
-
-- No inventes.
-- No deduzcas.
-- No completes datos faltantes.
-- Si no hay información nueva devolvé {}.
-- Si corrige un dato devolvé el dato corregido.
-- Nunca respondas texto fuera del JSON.
-
+    const contenidoUsuario = `
 Memoria actual:
 ${JSON.stringify(memoriaActual)}
 
-Mensaje:
+Último mensaje:
 ${mensajeLimpio}
 `.trim();
 
@@ -135,7 +158,8 @@ ${mensajeLimpio}
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
           "HTTP-Referer":
-            process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+            process.env.NEXT_PUBLIC_APP_URL ||
+            "http://localhost:3000",
           "X-OpenRouter-Title": "NDI AI",
         },
         body: JSON.stringify({
@@ -143,7 +167,11 @@ ${mensajeLimpio}
           messages: [
             {
               role: "system",
-              content: prompt,
+              content: instrucciones,
+            },
+            {
+              role: "user",
+              content: contenidoUsuario,
             },
           ],
           temperature: 0,
@@ -162,24 +190,43 @@ ${mensajeLimpio}
       return memoriaActual;
     }
 
-    const data = (await response.json()) as RespuestaOpenRouter;
+    const data =
+      (await response.json()) as RespuestaOpenRouter;
 
-    const texto = data.choices?.[0]?.message?.content;
+    const texto =
+      data.choices?.[0]?.message?.content;
 
     if (typeof texto !== "string" || !texto.trim()) {
       return memoriaActual;
     }
 
-    const datosExtraidos = limpiarMemoria(
-      JSON.parse(limpiarTextoJson(texto))
-    );
+    const objetoExtraido = extraerObjetoJson(texto);
+
+    /*
+     * Si el modelo responde algo que no es JSON,
+     * no detenemos el chat ni generamos un error.
+     */
+    if (!objetoExtraido) {
+      console.warn(
+        "El extractor de memoria devolvió texto no válido. Se conserva la memoria anterior."
+      );
+
+      return memoriaActual;
+    }
+
+    const datosExtraidos =
+      limpiarMemoria(objetoExtraido);
 
     return {
       ...memoriaActual,
       ...datosExtraidos,
     };
   } catch (error) {
-    console.error("Error procesando memoria:", error);
+    console.error(
+      "No se pudo actualizar la memoria del cliente:",
+      error
+    );
+
     return memoriaActual;
   }
 }
