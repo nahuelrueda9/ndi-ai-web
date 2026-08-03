@@ -641,6 +641,7 @@ async function generarRespuestaConIA({
 }
 
 async function enviarMensajeWhatsApp({
+  
   phoneNumberId,
   numeroCliente,
   accessToken,
@@ -651,29 +652,35 @@ async function enviarMensajeWhatsApp({
   accessToken: string;
   texto: string;
 }) {
+  
   const version =
     process.env.WHATSAPP_API_VERSION || "v26.0";
 
-  const response = await fetch(
-    `https://graph.facebook.com/${version}/${phoneNumberId}/messages`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
+const numeroDestino = normalizarNumeroWhatsApp(numeroCliente);
+
+console.log("NÚMERO RECIBIDO:", numeroCliente);
+console.log("NÚMERO ENVIADO A META:", numeroDestino);
+
+const response = await fetch(
+  `https://graph.facebook.com/${version}/${phoneNumberId}/messages`,
+  {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to: numeroDestino,
+      type: "text",
+      text: {
+        preview_url: false,
+        body: texto.slice(0, 4096),
       },
-      body: JSON.stringify({
-        messaging_product: "whatsapp",
-        recipient_type: "individual",
-        to: normalizarNumeroWhatsApp(numeroCliente),
-        type: "text",
-        text: {
-          preview_url: false,
-          body: texto.slice(0, 4096),
-        },
-      }),
-    }
-  );
+    }),
+  }
+);
 
   const responseText = await response.text();
 
