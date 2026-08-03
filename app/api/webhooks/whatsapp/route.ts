@@ -726,19 +726,6 @@ const response = await fetch(
   return whatsappMessageId;
 }
 
-function normalizarNumeroWhatsApp(numero: string) {
-  const limpio = numero.replace(/\D/g, "");
-
-  // Argentina:
-  // Meta puede devolver 549XXXXXXXXXX,
-  // pero el destinatario de prueba queda registrado como 54XXXXXXXXXX.
-  if (limpio.startsWith("549")) {
-    return `54${limpio.slice(3)}`;
-  }
-
-  return limpio;
-}
-
 function obtenerContenidoMensaje(
   mensaje: WhatsAppMessage
 ): string {
@@ -759,4 +746,13 @@ function obtenerContenidoMensaje(
   }
 
   return "";
+}
+function normalizarNumeroWhatsApp(numero: string) {
+  const limpio = numero.replace(/\D/g, "");
+
+  if (limpio.startsWith("549")) {
+    return `54${limpio.slice(3)}`;
+  }
+
+  return limpio;
 }
