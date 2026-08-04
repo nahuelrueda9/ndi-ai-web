@@ -35,7 +35,7 @@ export default function LoginPage() {
         password
       );
 
-      window.location.href = "/empresas";
+      window.location.href = "/dashboard";
     } catch {
       setError("Correo o contraseña incorrectos.");
     } finally {
@@ -74,7 +74,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4">
+    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4 py-8">
       <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-8 shadow-2xl">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-white">
@@ -168,6 +168,19 @@ export default function LoginPage() {
               ? "Ingresando..."
               : "Iniciar sesión"}
           </button>
+
+          <div className="border-t border-slate-800 pt-5 text-center">
+            <p className="text-sm text-slate-400">
+              ¿Todavía no tenés una cuenta?
+            </p>
+
+            <a
+              href="/register"
+              className="mt-3 inline-flex w-full items-center justify-center rounded-xl border border-slate-700 px-4 py-3 font-semibold text-white transition hover:border-blue-500 hover:bg-blue-500/10"
+            >
+              Crear cuenta gratis
+            </a>
+          </div>
         </form>
       </div>
     </main>

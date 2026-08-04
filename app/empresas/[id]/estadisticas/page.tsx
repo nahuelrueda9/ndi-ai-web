@@ -64,12 +64,14 @@ export default function EstadisticasPage() {
         setCargando(true);
         setError("");
 
-        const chatsQuery = query(
-          collection(db, "chats"),
-          where("empresaId", "==", empresaId)
-        );
-
-        const chatsSnapshot = await getDocs(chatsQuery);
+const chatsSnapshot = await getDocs(
+  collection(
+    db,
+    "companies",
+    empresaId,
+    "conversations"
+  )
+);
 
         setTotalChats(chatsSnapshot.size);
 
@@ -113,9 +115,16 @@ export default function EstadisticasPage() {
             }
           }
 
-          const mensajesSnapshot = await getDocs(
-            collection(db, "chats", chatDocumento.id, "messages")
-          );
+const mensajesSnapshot = await getDocs(
+  collection(
+    db,
+    "companies",
+    empresaId,
+    "conversations",
+    chatDocumento.id,
+    "messages"
+  )
+);
 
           mensajesAcumulados += mensajesSnapshot.size;
         }

@@ -663,7 +663,6 @@ async function enviarMensajeWhatsApp({
 
 console.log("NÚMERO RECIBIDO:", numeroCliente);
 console.log("NÚMERO ENVIADO A META:", numeroCliente);
-console.log("TOKEN:", accessToken.substring(0, 20));
 
 const response = await fetch(
   `https://graph.facebook.com/${version}/${phoneNumberId}/messages`,

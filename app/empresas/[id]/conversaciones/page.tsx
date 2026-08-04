@@ -52,6 +52,7 @@ export default function ConversacionesPage() {
   const [busqueda, setBusqueda] = useState("");
   const [filtro, setFiltro] = useState<Filtro>("todas");
   const [error, setError] = useState("");
+const [eliminando, setEliminando] = useState(false);
 
   useEffect(() => {
   if (!empresaId) {
@@ -139,6 +140,59 @@ async function cambiarFavorita(
   }
 }
 
+async function eliminarConversacion(
+  conversacion: Conversacion
+) {
+  if (!empresaId) return;
+
+  const confirmar = window.confirm(
+    "¿Seguro que querés eliminar esta conversación y todos sus mensajes? Esta acción no se puede deshacer."
+  );
+
+  if (!confirmar) return;
+
+  try {
+    setEliminando(true);
+    setError("");
+
+    const response = await fetch(
+      "/api/conversations/delete",
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          empresaId,
+          conversacionId: conversacion.id,
+        }),
+      }
+    );
+
+    const data = (await response.json()) as { error?: string };
+
+    if (!response.ok) {
+      throw new Error(
+        data?.error ||
+          "No se pudo eliminar la conversación."
+      );
+    }
+  } catch (deleteError) {
+    console.error(
+      "Error eliminando conversación:",
+      deleteError
+    );
+
+    setError(
+      deleteError instanceof Error
+        ? deleteError.message
+        : "No se pudo eliminar la conversación."
+    );
+  } finally {
+    setEliminando(false);
+  }
+}
+
 const estadisticas = useMemo(() => {
   return {
     total: conversaciones.length,
@@ -208,6 +262,9 @@ const estadisticas = useMemo(() => {
             No se encontró el ID de la empresa en la dirección.
           </p>
         </Card>
+
+
+
       </section>
     );
   }
@@ -474,19 +531,32 @@ const estadisticas = useMemo(() => {
   </Badge>
 </div>
 
-                  <div className="md:text-right">
-                    <Badge
-                      variant={
-                        conversacion.estado === "cerrada"
-                          ? "default"
-                          : "success"
-                      }
-                    >
-                      {conversacion.estado === "cerrada"
-                        ? "Cerrada"
-                        : "Abierta"}
-                    </Badge>
-                  </div>
+<div className="flex items-center justify-end gap-3">
+  <Badge
+    variant={
+      conversacion.estado === "cerrada"
+        ? "default"
+        : "success"
+    }
+  >
+    {conversacion.estado === "cerrada"
+      ? "Cerrada"
+      : "Abierta"}
+  </Badge>
+
+  <button
+    type="button"
+    disabled={eliminando}
+    onClick={(evento) => {
+      evento.stopPropagation();
+      void eliminarConversacion(conversacion);
+    }}
+    className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-red-500/10 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50"
+    title="Eliminar conversación"
+  >
+    🗑️
+  </button>
+</div>
                 </div>
               );
             })}

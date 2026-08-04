@@ -30,6 +30,7 @@ import { db } from "@/lib/firebase";
 import { registrarActividad } from "@/lib/chat/activityService";
 import { analizarMensajeCRM } from "@/lib/chat/crmAutomation";
 import { crearTarea } from "@/lib/crm/taskService";
+import { registrarNuevaConversacion } from "@/lib/plans/limits";
 
 type TemaWidget = "oscuro" | "claro";
 type PosicionWidget = "derecha" | "izquierda";
@@ -358,6 +359,8 @@ export default function WidgetPublicoPage() {
     if (conversacionRef.current) {
       return conversacionRef.current;
     }
+
+    await registrarNuevaConversacion(empresaId);
 
     const nuevaConversacion = await addDoc(
       collection(db, "companies", empresaId, "conversations"),
