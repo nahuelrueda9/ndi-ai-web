@@ -103,6 +103,11 @@ export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as WhatsAppWebhookBody;
 
+    console.log(
+  "WEBHOOK COMPLETO:",
+  JSON.stringify(body, null, 2)
+);
+
     if (body.object !== "whatsapp_business_account") {
       return NextResponse.json({
         received: true,
@@ -656,10 +661,9 @@ async function enviarMensajeWhatsApp({
   const version =
     process.env.WHATSAPP_API_VERSION || "v26.0";
 
-const numeroDestino = normalizarNumeroWhatsApp(numeroCliente);
-
 console.log("NÚMERO RECIBIDO:", numeroCliente);
-console.log("NÚMERO ENVIADO A META:", numeroDestino);
+console.log("NÚMERO ENVIADO A META:", numeroCliente);
+console.log("TOKEN:", accessToken.substring(0, 20));
 
 const response = await fetch(
   `https://graph.facebook.com/${version}/${phoneNumberId}/messages`,
@@ -672,7 +676,7 @@ const response = await fetch(
     body: JSON.stringify({
       messaging_product: "whatsapp",
       recipient_type: "individual",
-      to: numeroDestino,
+      to: numeroCliente,
       type: "text",
       text: {
         preview_url: false,
@@ -746,13 +750,4 @@ function obtenerContenidoMensaje(
   }
 
   return "";
-}
-function normalizarNumeroWhatsApp(numero: string) {
-  const limpio = numero.replace(/\D/g, "");
-
-  if (limpio.startsWith("549")) {
-    return `54${limpio.slice(3)}`;
-  }
-
-  return limpio;
 }
