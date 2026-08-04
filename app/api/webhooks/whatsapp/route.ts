@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  console.log("🔥 WEBHOOK DE WHATSAPP RECIBIDO");
+  console.log("🔥🔥🔥 DEBUG NUEVO WEBHOOK 🔥🔥🔥");
 
   try {
     const body = (await request.json()) as WhatsAppWebhookBody;
@@ -688,7 +688,7 @@ const response = await fetch(
 
   const responseText = await response.text();
 
-   console.log("META RESPONDIÓ:");
+   console.log("========== META RESPONDIÓ ==========");
    console.log("STATUS META:", response.status);
    console.log("BODY META:", responseText);
 
