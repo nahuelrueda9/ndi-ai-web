@@ -17,6 +17,12 @@ import Button from "@/components/Ui/Button";
 import Card from "@/components/Ui/Card";
 import Input from "@/components/Ui/Input";
 
+type RolEmpresa =
+  | "propietario"
+  | "administrador"
+  | "supervisor"
+  | "operador";
+
 interface Empresa {
   nombre?: string;
   userId: string;
@@ -26,6 +32,11 @@ interface Empresa {
     personalidad?: string;
     instrucciones?: string;
   };
+}
+
+interface MiembroEmpresa {
+  rol?: Exclude<RolEmpresa, "propietario">;
+  estado?: "activo" | "inactivo";
 }
 
 type ConfiguracionInicial = {
@@ -39,9 +50,16 @@ export default function ConfiguracionPage() {
   const params = useParams();
   const router = useRouter();
 
-  const empresaId = Array.isArray(params.id)
-    ? params.id[0]
-    : (params.id as string);
+  const parametroEmpresa =
+    params.id ?? params.empresaId;
+
+  const empresaId = Array.isArray(
+    parametroEmpresa
+  )
+    ? parametroEmpresa[0]
+    : (parametroEmpresa as
+        | string
+        | undefined);
 
   const [user, setUser] = useState<User | null>(null);
   const [empresaNombre, setEmpresaNombre] = useState("");
@@ -64,66 +82,164 @@ export default function ConfiguracionPage() {
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
 
+  const [
+    accesoVerificado,
+    setAccesoVerificado,
+  ] = useState(false);
+
   useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(
-      auth,
-      async (currentUser) => {
-        if (!currentUser) {
-          router.replace("/login");
-          return;
-        }
-
-        if (!empresaId) {
-          setError("No se encontró el ID de la empresa.");
-          setLoading(false);
-          return;
-        }
-
-        setUser(currentUser);
-        setError("");
-        setLoading(true);
-
-        try {
-          const empresaReferencia = doc(db, "companies", empresaId);
-          const empresaSnapshot = await getDoc(empresaReferencia);
-
-          if (!empresaSnapshot.exists()) {
-            setError("La empresa no existe.");
+    const unsubscribeAuth =
+      onAuthStateChanged(
+        auth,
+        async (currentUser) => {
+          if (!currentUser) {
+            router.replace("/login");
             return;
           }
 
-          const empresa = empresaSnapshot.data() as Empresa;
-
-          if (empresa.userId !== currentUser.uid) {
-            setError("No tenés permiso para configurar esta empresa.");
+          if (!empresaId) {
+            setError(
+              "No se encontró el ID de la empresa."
+            );
+            setLoading(false);
             return;
           }
 
-          const configuracion = {
-            nombre: empresa.agente?.nombre || "",
-            rol: empresa.agente?.rol || "",
-            personalidad: empresa.agente?.personalidad || "",
-            instrucciones: empresa.agente?.instrucciones || "",
-          };
+          const empresaIdSeguro =
+            empresaId;
 
-          setEmpresaNombre(empresa.nombre || "");
-          setNombreAgente(configuracion.nombre);
-          setRolAgente(configuracion.rol);
-          setPersonalidadAgente(configuracion.personalidad);
-          setInstruccionesAgente(configuracion.instrucciones);
-          setConfiguracionInicial(configuracion);
-        } catch (firebaseError) {
-          console.error(
-            "Error al cargar la configuración del agente:",
-            firebaseError
-          );
+          setUser(null);
+          setAccesoVerificado(false);
+          setError("");
+          setLoading(true);
 
-          setError("No se pudo cargar la configuración del agente.");
-        } finally {
-          setLoading(false);
+          try {
+            const empresaReferencia =
+              doc(
+                db,
+                "companies",
+                empresaIdSeguro
+              );
+
+            const empresaSnapshot =
+              await getDoc(
+                empresaReferencia
+              );
+
+            if (
+              !empresaSnapshot.exists()
+            ) {
+              setError(
+                "La empresa no existe."
+              );
+              return;
+            }
+
+            const empresa =
+              empresaSnapshot.data() as Empresa;
+
+            let tieneAcceso =
+              empresa.userId ===
+              currentUser.uid;
+
+            if (!tieneAcceso) {
+              const miembroReferencia =
+                doc(
+                  db,
+                  "companies",
+                  empresaIdSeguro,
+                  "members",
+                  currentUser.uid
+                );
+
+              const miembroSnapshot =
+                await getDoc(
+                  miembroReferencia
+                );
+
+              if (
+                !miembroSnapshot.exists()
+              ) {
+                router.replace(
+                  "/empresas"
+                );
+                return;
+              }
+
+              const miembro =
+                miembroSnapshot.data() as MiembroEmpresa;
+
+              tieneAcceso =
+                miembro.estado ===
+                  "activo" &&
+                miembro.rol ===
+                  "administrador";
+
+              if (!tieneAcceso) {
+                router.replace(
+                  `/empresas/${empresaIdSeguro}/conversaciones`
+                );
+                return;
+              }
+            }
+
+            const configuracion = {
+              nombre:
+                empresa.agente?.nombre ||
+                "",
+              rol:
+                empresa.agente?.rol ||
+                "",
+              personalidad:
+                empresa.agente
+                  ?.personalidad ||
+                "",
+              instrucciones:
+                empresa.agente
+                  ?.instrucciones ||
+                "",
+            };
+
+            setUser(currentUser);
+            setAccesoVerificado(true);
+
+            setEmpresaNombre(
+              empresa.nombre || ""
+            );
+
+            setNombreAgente(
+              configuracion.nombre
+            );
+
+            setRolAgente(
+              configuracion.rol
+            );
+
+            setPersonalidadAgente(
+              configuracion.personalidad
+            );
+
+            setInstruccionesAgente(
+              configuracion.instrucciones
+            );
+
+            setConfiguracionInicial(
+              configuracion
+            );
+          } catch (firebaseError) {
+            console.error(
+              "Error al cargar la configuración del agente:",
+              firebaseError
+            );
+
+            setError(
+              "No se pudo cargar la configuración del agente."
+            );
+          } finally {
+            setLoading(false);
+          }
         }
-      }
-    );
+      );
 
     return () => unsubscribeAuth();
   }, [empresaId, router]);
@@ -148,7 +264,13 @@ export default function ConfiguracionPage() {
   ) => {
     event.preventDefault();
 
-    if (!user || !empresaId) return;
+    if (
+      !user ||
+      !empresaId ||
+      !accesoVerificado
+    ) {
+      return;
+    }
 
     const nombreLimpio = nombreAgente.trim();
     const rolLimpio = rolAgente.trim();
@@ -243,6 +365,10 @@ export default function ConfiguracionPage() {
         </Card>
       </section>
     );
+  }
+
+  if (!accesoVerificado) {
+    return null;
   }
 
   return (

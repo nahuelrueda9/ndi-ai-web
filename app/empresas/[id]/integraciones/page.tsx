@@ -1,376 +1,375 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import {
+  useEffect,
+  useState,
+} from "react";
+import {
+  onAuthStateChanged,
+} from "firebase/auth";
+import {
+  doc,
+  getDoc,
+} from "firebase/firestore";
+import {
+  useParams,
+  useRouter,
+} from "next/navigation";
 
+import { auth, db } from "@/lib/firebase";
+import Badge from "@/components/Ui/Badge";
 import Button from "@/components/Ui/Button";
 import Card from "@/components/Ui/Card";
-import Input from "@/components/Ui/Input";
 
-type EstadoConexion =
-  | "sin_configurar"
-  | "configurado"
-  | "probando"
-  | "conectado";
+type RolEmpresa =
+  | "propietario"
+  | "administrador"
+  | "supervisor"
+  | "operador";
 
-export default function WhatsAppPage() {
+type EmpresaData = {
+  userId?: string;
+};
+
+type MiembroData = {
+  rol?: Exclude<
+    RolEmpresa,
+    "propietario"
+  >;
+  estado?: "activo" | "inactivo";
+};
+
+type Integracion = {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  icono: string;
+  estado:
+    | "disponible"
+    | "proximamente";
+  ruta?: string;
+};
+
+const integraciones: Integracion[] = [
+  {
+    id: "whatsapp",
+    nombre: "WhatsApp",
+    descripcion:
+      "Recibí mensajes, respondé con IA y centralizá las conversaciones.",
+    icono: "💬",
+    estado: "disponible",
+    ruta: "whatsapp",
+  },
+  {
+    id: "instagram",
+    nombre: "Instagram",
+    descripcion:
+      "Conectá Instagram Messaging y respondé desde el inbox de NDI AI.",
+    icono: "📸",
+    estado: "disponible",
+    ruta: "instagram",
+  },
+  {
+    id: "messenger",
+    nombre: "Facebook Messenger",
+    descripcion:
+      "Unificá los mensajes de Facebook con el resto de tus canales.",
+    icono: "📨",
+    estado: "proximamente",
+  },
+];
+
+export default function IntegracionesPage() {
   const params = useParams();
+  const router = useRouter();
 
-  const parametroEmpresa = params.id ?? params.empresaId;
+  const parametroEmpresa =
+    params.id ?? params.empresaId;
 
-  const empresaId = Array.isArray(parametroEmpresa)
+  const empresaId = Array.isArray(
+    parametroEmpresa
+  )
     ? parametroEmpresa[0]
-    : (parametroEmpresa as string | undefined);
+    : (parametroEmpresa as
+        | string
+        | undefined);
 
-  const [phoneNumberId, setPhoneNumberId] = useState("");
-  const [businessAccountId, setBusinessAccountId] = useState("");
-  const [accessToken, setAccessToken] = useState("");
-  const [verifyToken, setVerifyToken] = useState("");
+  const [
+    accesoVerificado,
+    setAccesoVerificado,
+  ] = useState(false);
 
-  const [estado, setEstado] =
-    useState<EstadoConexion>("sin_configurar");
+  const [cargando, setCargando] =
+    useState(true);
 
-  const [cargando, setCargando] = useState(true);
-  const [guardando, setGuardando] = useState(false);
-  const [probando, setProbando] = useState(false);
-
-  const [mensaje, setMensaje] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] =
+    useState("");
 
   useEffect(() => {
-    if (!empresaId) {
-      setCargando(false);
-      return;
-    }
-
-    async function cargarConfiguracion() {
-      try {
-        setError("");
-
-        const response = await fetch(
-          `/api/integraciones/whatsapp/config?empresaId=${encodeURIComponent(
-            empresaId!
-          )}`,
-          {
-            method: "GET",
-            cache: "no-store",
+    const cancelarAuth =
+      onAuthStateChanged(
+        auth,
+        async (currentUser) => {
+          if (!currentUser) {
+            router.replace("/login");
+            return;
           }
-        );
 
-        const data = await response.json();
+          if (!empresaId) {
+            setError(
+              "No se encontró el ID de la empresa."
+            );
+            setCargando(false);
+            return;
+          }
 
-        if (!response.ok) {
-          throw new Error(
-            data?.error || "No se pudo cargar la configuración."
-          );
+          const empresaIdSeguro =
+            empresaId;
+
+          const usuarioSeguro =
+            currentUser;
+
+          setAccesoVerificado(false);
+          setError("");
+          setCargando(true);
+
+          try {
+            const empresaReferencia =
+              doc(
+                db,
+                "companies",
+                empresaIdSeguro
+              );
+
+            const empresaSnapshot =
+              await getDoc(
+                empresaReferencia
+              );
+
+            if (
+              !empresaSnapshot.exists()
+            ) {
+              setError(
+                "La empresa no existe."
+              );
+              setCargando(false);
+              return;
+            }
+
+            const empresa =
+              empresaSnapshot.data() as EmpresaData;
+
+            if (
+              empresa.userId ===
+              usuarioSeguro.uid
+            ) {
+              setAccesoVerificado(true);
+              setCargando(false);
+              return;
+            }
+
+            const miembroReferencia =
+              doc(
+                db,
+                "companies",
+                empresaIdSeguro,
+                "members",
+                usuarioSeguro.uid
+              );
+
+            const miembroSnapshot =
+              await getDoc(
+                miembroReferencia
+              );
+
+            if (
+              !miembroSnapshot.exists()
+            ) {
+              router.replace(
+                "/empresas"
+              );
+              return;
+            }
+
+            const miembro =
+              miembroSnapshot.data() as MiembroData;
+
+            const tieneAcceso =
+              miembro.estado ===
+                "activo" &&
+              (
+                miembro.rol ===
+                  "administrador" ||
+                miembro.rol ===
+                  "supervisor"
+              );
+
+            if (!tieneAcceso) {
+              router.replace(
+                `/empresas/${empresaIdSeguro}/conversaciones`
+              );
+              return;
+            }
+
+            setAccesoVerificado(true);
+            setCargando(false);
+          } catch (firebaseError) {
+            console.error(
+              "Error al verificar acceso a integraciones:",
+              firebaseError
+            );
+
+            setError(
+              "No se pudo verificar el acceso a la empresa."
+            );
+            setCargando(false);
+          }
         }
+      );
 
-        if (!data?.config) {
-          setEstado("sin_configurar");
-          return;
-        }
+    return () => cancelarAuth();
+  }, [empresaId, router]);
 
-        setPhoneNumberId(data.config.phoneNumberId ?? "");
-        setBusinessAccountId(
-          data.config.businessAccountId ?? ""
-        );
-        setVerifyToken(data.config.verifyToken ?? "");
-
-        setEstado(
-          data.config.estado === "conectado"
-            ? "conectado"
-            : "configurado"
-        );
-      } catch (requestError) {
-        console.error(
-          "No se pudo cargar WhatsApp:",
-          requestError
-        );
-
-        setError(
-          requestError instanceof Error
-            ? requestError.message
-            : "No se pudo cargar la configuración."
-        );
-      } finally {
-        setCargando(false);
-      }
-    }
-
-    void cargarConfiguracion();
-  }, [empresaId]);
-
-  async function guardarConfiguracion() {
-    setError("");
-    setMensaje("");
-
-    if (!empresaId) {
-      setError("No se encontró la empresa.");
-      return;
-    }
-
+  function abrirIntegracion(
+    integracion: Integracion
+  ) {
     if (
-      !phoneNumberId.trim() ||
-      !businessAccountId.trim() ||
-      !accessToken.trim() ||
-      !verifyToken.trim()
+      !empresaId ||
+      !accesoVerificado ||
+      integracion.estado !==
+        "disponible" ||
+      !integracion.ruta
     ) {
-      setError("Completá todos los campos.");
       return;
     }
 
-    setGuardando(true);
-
-    try {
-      const response = await fetch(
-        "/api/integraciones/whatsapp/config",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            empresaId,
-            phoneNumberId: phoneNumberId.trim(),
-            businessAccountId: businessAccountId.trim(),
-            accessToken: accessToken.trim(),
-            verifyToken: verifyToken.trim(),
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data?.error ||
-            "No se pudo guardar la configuración."
-        );
-      }
-
-      setEstado("configurado");
-      setMensaje(
-        data?.message ||
-          "Configuración guardada correctamente."
-      );
-
-      setAccessToken("");
-    } catch (requestError) {
-      console.error(
-        "Error guardando WhatsApp:",
-        requestError
-      );
-
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : "No se pudo guardar la configuración."
-      );
-    } finally {
-      setGuardando(false);
-    }
+    router.push(
+      `/empresas/${empresaId}/integraciones/${integracion.ruta}`
+    );
   }
 
-  async function probarConexion() {
-    setError("");
-    setMensaje("");
+  if (cargando) {
+    return (
+      <section className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8">
+        <Card className="p-10 text-center">
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-t-blue-500" />
 
-    if (!empresaId) {
-      setError("No se encontró la empresa.");
-      return;
-    }
+          <p className="mt-4 text-sm text-zinc-400">
+            Verificando acceso a
+            integraciones...
+          </p>
+        </Card>
+      </section>
+    );
+  }
 
-    if (!phoneNumberId.trim() || !accessToken.trim()) {
-      setError(
-        "Completá Phone Number ID y Access Token para probar."
-      );
-      return;
-    }
+  if (error || !accesoVerificado) {
+    return (
+      <section className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8">
+        <Card className="border-red-500/20 bg-red-500/10 p-6">
+          <p className="text-sm text-red-400">
+            {error ||
+              "No tenés permisos para acceder a esta sección."}
+          </p>
 
-    setProbando(true);
-    setEstado("probando");
-
-    try {
-      const response = await fetch(
-        "/api/integraciones/whatsapp/probar",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            empresaId,
-            phoneNumberId: phoneNumberId.trim(),
-            accessToken: accessToken.trim(),
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data?.error || "No se pudo conectar con Meta."
-        );
-      }
-
-      setEstado("conectado");
-      setMensaje(
-        data?.message ||
-          "Conexión con WhatsApp verificada correctamente."
-      );
-    } catch (requestError) {
-      console.error(
-        "Error probando WhatsApp:",
-        requestError
-      );
-
-      setEstado("configurado");
-
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : "No se pudo probar la conexión."
-      );
-    } finally {
-      setProbando(false);
-    }
+          <Button
+            type="button"
+            variant="secondary"
+            className="mt-5"
+            onClick={() =>
+              router.push("/empresas")
+            }
+          >
+            Volver a empresas
+          </Button>
+        </Card>
+      </section>
+    );
   }
 
   return (
-    <section className="mx-auto w-full max-w-5xl space-y-6 px-5 py-8 sm:px-8">
-      <header className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
-        <div>
-          <p className="text-sm font-medium text-emerald-400">
-            Integración oficial de Meta
-          </p>
+    <section className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8">
+      <header className="mb-8">
+        <p className="text-sm font-medium text-blue-400">
+          Canales
+        </p>
 
-          <h1 className="mt-2 text-3xl font-bold text-white">
-            WhatsApp Business
-          </h1>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-white">
+          Integraciones
+        </h1>
 
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
-            Configurá WhatsApp Cloud API para recibir y
-            responder mensajes desde NDI AI.
-          </p>
-        </div>
-
-        <div className="w-fit rounded-full border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm">
-          {estado === "conectado" && (
-            <span className="text-emerald-400">
-              ● Conectado
-            </span>
-          )}
-
-          {estado === "probando" && (
-            <span className="text-amber-400">
-              ● Probando conexión...
-            </span>
-          )}
-
-          {estado === "configurado" && (
-            <span className="text-blue-400">
-              ● Configurado
-            </span>
-          )}
-
-          {estado === "sin_configurar" && (
-            <span className="text-zinc-400">
-              ● Sin configurar
-            </span>
-          )}
-        </div>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
+          Conectá los canales donde hablan
+          tus clientes y administrá todas
+          las conversaciones desde NDI AI.
+        </p>
       </header>
 
-      <Card className="space-y-5 p-6">
-        {cargando ? (
-          <div className="py-8 text-center">
-            <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-zinc-700 border-t-blue-500" />
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        {integraciones.map(
+          (integracion) => (
+            <Card
+              key={integracion.id}
+              className="flex min-h-64 flex-col p-6"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-800 text-2xl">
+                  {integracion.icono}
+                </div>
 
-            <p className="mt-3 text-sm text-zinc-400">
-              Cargando configuración...
-            </p>
-          </div>
-        ) : (
-          <>
-            <Input
-              id="phone"
-              label="Phone Number ID"
-              value={phoneNumberId}
-              onChange={(event) =>
-                setPhoneNumberId(event.target.value)
-              }
-              placeholder="1236065492922032"
-            />
-
-            <Input
-              id="business"
-              label="Business Account ID"
-              value={businessAccountId}
-              onChange={(event) =>
-                setBusinessAccountId(event.target.value)
-              }
-              placeholder="1525105989364036"
-            />
-
-            <Input
-              id="token"
-              label="Access Token"
-              type="password"
-              value={accessToken}
-              onChange={(event) =>
-                setAccessToken(event.target.value)
-              }
-              placeholder="Pegá el token generado por Meta"
-            />
-
-            <Input
-              id="verify"
-              label="Verify Token"
-              value={verifyToken}
-              onChange={(event) =>
-                setVerifyToken(event.target.value)
-              }
-              placeholder="ndi-ai"
-            />
-
-            {mensaje && (
-              <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-300">
-                {mensaje}
+                <Badge
+                  variant={
+                    integracion.estado ===
+                    "disponible"
+                      ? "success"
+                      : "default"
+                  }
+                >
+                  {integracion.estado ===
+                  "disponible"
+                    ? "Disponible"
+                    : "Próximamente"}
+                </Badge>
               </div>
-            )}
 
-            {error && (
-              <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400">
-                {error}
-              </div>
-            )}
+              <h2 className="mt-5 text-xl font-semibold text-white">
+                {integracion.nombre}
+              </h2>
 
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button
-                type="button"
-                onClick={guardarConfiguracion}
-                disabled={guardando || probando}
-              >
-                {guardando
-                  ? "Guardando..."
-                  : "Guardar configuración"}
-              </Button>
+              <p className="mt-2 flex-1 text-sm leading-6 text-zinc-400">
+                {
+                  integracion.descripcion
+                }
+              </p>
 
               <Button
                 type="button"
-                variant="secondary"
-                onClick={probarConexion}
-                disabled={guardando || probando}
+                className="mt-6 w-full"
+                variant={
+                  integracion.estado ===
+                  "disponible"
+                    ? "primary"
+                    : "secondary"
+                }
+                disabled={
+                  integracion.estado !==
+                  "disponible"
+                }
+                onClick={() =>
+                  abrirIntegracion(
+                    integracion
+                  )
+                }
               >
-                {probando
-                  ? "Probando..."
-                  : "Probar conexión"}
+                {integracion.estado ===
+                "disponible"
+                  ? "Configurar"
+                  : "Próximamente"}
               </Button>
-            </div>
-          </>
+            </Card>
+          )
         )}
-      </Card>
+      </div>
     </section>
   );
 }

@@ -1,7 +1,14 @@
+import {
+  createHmac,
+  timingSafeEqual,
+} from "node:crypto";
+
 import { NextRequest, NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 
 import { adminDb } from "@/lib/firebaseAdmin";
+import { registrarNuevaConversacionAdmin } from "@/lib/plans/adminLimits";
+import { crearNotificacion } from "@/lib/notifications/notificationService";
 
 export const runtime = "nodejs";
 
@@ -72,6 +79,69 @@ type GeminiResponse = {
   error?: string;
 };
 
+function obtenerAppSecret() {
+  return (
+    process.env.WHATSAPP_APP_SECRET?.trim() ||
+    process.env.META_APP_SECRET?.trim() ||
+    ""
+  );
+}
+
+function verificarFirmaMeta({
+  cuerpoCrudo,
+  firmaRecibida,
+  appSecret,
+}: {
+  cuerpoCrudo: string;
+  firmaRecibida: string | null;
+  appSecret: string;
+}) {
+  if (
+    !firmaRecibida ||
+    !firmaRecibida.startsWith("sha256=")
+  ) {
+    return false;
+  }
+
+  const firmaHex = firmaRecibida
+    .slice("sha256=".length)
+    .trim()
+    .toLowerCase();
+
+  if (!/^[a-f0-9]{64}$/.test(firmaHex)) {
+    return false;
+  }
+
+  const firmaEsperadaHex = createHmac(
+    "sha256",
+    appSecret
+  )
+    .update(Buffer.from(cuerpoCrudo, "utf8"))
+    .digest("hex");
+
+  const firmaBuffer = Buffer.from(
+    firmaHex,
+    "hex"
+  );
+
+  const firmaEsperadaBuffer = Buffer.from(
+    firmaEsperadaHex,
+    "hex"
+  );
+
+  if (
+    firmaBuffer.length !==
+    firmaEsperadaBuffer.length
+  ) {
+    return false;
+  }
+
+  return timingSafeEqual(
+    firmaBuffer,
+    firmaEsperadaBuffer
+  );
+}
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
 
@@ -98,15 +168,67 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  console.log("🔥🔥🔥 DEBUG NUEVO WEBHOOK 🔥🔥🔥");
-
   try {
-    const body = (await request.json()) as WhatsAppWebhookBody;
+    const appSecret = obtenerAppSecret();
 
-    console.log(
-  "WEBHOOK COMPLETO:",
-  JSON.stringify(body, null, 2)
-);
+    if (!appSecret) {
+      console.error(
+        "Falta configurar WHATSAPP_APP_SECRET o META_APP_SECRET."
+      );
+
+      return NextResponse.json(
+        {
+          error:
+            "La seguridad del webhook no está configurada.",
+        },
+        {
+          status: 500,
+        }
+      );
+    }
+
+    const cuerpoCrudo = await request.text();
+
+    const firmaValida = verificarFirmaMeta({
+      cuerpoCrudo,
+      firmaRecibida: request.headers.get(
+        "x-hub-signature-256"
+      ),
+      appSecret,
+    });
+
+    if (!firmaValida) {
+      console.warn(
+        "Webhook de WhatsApp rechazado por firma inválida."
+      );
+
+      return NextResponse.json(
+        {
+          error: "Firma inválida.",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
+    let body: WhatsAppWebhookBody;
+
+    try {
+      body = JSON.parse(
+        cuerpoCrudo
+      ) as WhatsAppWebhookBody;
+    } catch {
+      return NextResponse.json(
+        {
+          error:
+            "El cuerpo del webhook no es JSON válido.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
 
     if (body.object !== "whatsapp_business_account") {
       return NextResponse.json({
@@ -252,6 +374,10 @@ export async function POST(request: NextRequest) {
                 const conversacionExistia =
                   conversacionSnapshot.exists;
 
+                  if (!conversacionExistia) {
+  await registrarNuevaConversacionAdmin(empresaId);
+}
+
                 transaction.set(
                   conversacionReferencia,
                   {
@@ -325,6 +451,20 @@ export async function POST(request: NextRequest) {
           console.log(
             `Mensaje de WhatsApp guardado para la empresa ${empresaId}.`
           );
+
+          await crearNotificacion({
+  empresaId,
+  tipo: "mensaje",
+  titulo: "Nuevo mensaje de WhatsApp",
+  descripcion: `${nombreContacto}: ${contenido}`,
+  chatId: conversacionId,
+  visitanteId: numeroCliente,
+  url: `/empresas/${empresaId}/conversaciones/${conversacionId}`,
+  metadata: {
+    canal: "whatsapp",
+    whatsappMessageId: messageId,
+  },
+});
 
           /*
            * Si una persona tomó el control del chat,
@@ -597,10 +737,24 @@ async function generarRespuestaConIA({
     request.nextUrl.origin
   );
 
+  const secretoInterno =
+    process.env
+      .INTERNAL_API_SECRET
+      ?.trim();
+
+  if (!secretoInterno) {
+    throw new Error(
+      "Falta configurar INTERNAL_API_SECRET."
+    );
+  }
+
   const respuesta = await fetch(urlGemini, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type":
+        "application/json",
+      "x-ndi-internal-secret":
+        secretoInterno,
     },
     body: JSON.stringify({
       mensaje,
@@ -661,9 +815,6 @@ async function enviarMensajeWhatsApp({
   const version =
     process.env.WHATSAPP_API_VERSION || "v26.0";
 
-console.log("NÚMERO RECIBIDO:", numeroCliente);
-console.log("NÚMERO ENVIADO A META:", numeroCliente);
-
 const response = await fetch(
   `https://graph.facebook.com/${version}/${phoneNumberId}/messages`,
   {
@@ -686,11 +837,6 @@ const response = await fetch(
 );
 
   const responseText = await response.text();
-
-   console.log("========== META RESPONDIÓ ==========");
-   console.log("STATUS META:", response.status);
-   console.log("BODY META:", responseText);
-
 
   let data: {
     messages?: Array<{

@@ -22,7 +22,6 @@ import {
   serverTimestamp,
   Timestamp,
   updateDoc,
-  where,
 } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { useParams, useRouter } from "next/navigation";
@@ -36,9 +35,20 @@ import Button from "@/components/Ui/Button";
 import Card from "@/components/Ui/Card";
 import Input from "@/components/Ui/Input";
 
+type RolEmpresa =
+  | "propietario"
+  | "administrador"
+  | "supervisor"
+  | "operador";
+
 interface Empresa {
   nombre: string;
   userId: string;
+}
+
+interface MiembroEmpresa {
+  rol?: Exclude<RolEmpresa, "propietario">;
+  estado?: "activo" | "inactivo";
 }
 
 interface Conocimiento {
@@ -93,35 +103,95 @@ export default function ConocimientoPage() {
         }
 
         if (!empresaId) {
-          setError("No se encontró el ID de la empresa.");
+          setError(
+            "No se encontró el ID de la empresa."
+          );
           setLoading(false);
           return;
         }
 
-        setUser(currentUser);
+        const empresaIdSeguro = empresaId;
+        const usuarioSeguro = currentUser;
+
         setError("");
         setLoading(true);
 
         try {
-          const empresaReferencia = doc(db, "companies", empresaId);
-          const empresaSnapshot = await getDoc(empresaReferencia);
+          const empresaReferencia = doc(
+            db,
+            "companies",
+            empresaIdSeguro
+          );
+
+          const empresaSnapshot = await getDoc(
+            empresaReferencia
+          );
 
           if (!empresaSnapshot.exists()) {
             setError("La empresa no existe.");
             return;
           }
 
-          const empresa = empresaSnapshot.data() as Empresa;
+          const empresa =
+            empresaSnapshot.data() as Empresa;
 
-          if (empresa.userId !== currentUser.uid) {
-            setError("No tenés permiso para acceder a esta empresa.");
+          let rol: RolEmpresa | null = null;
+
+          if (
+            empresa.userId === usuarioSeguro.uid
+          ) {
+            rol = "propietario";
+          } else {
+            const miembroReferencia = doc(
+              db,
+              "companies",
+              empresaIdSeguro,
+              "members",
+              usuarioSeguro.uid
+            );
+
+            const miembroSnapshot = await getDoc(
+              miembroReferencia
+            );
+
+            if (miembroSnapshot.exists()) {
+              const miembro =
+                miembroSnapshot.data() as MiembroEmpresa;
+
+              if (
+                miembro.estado === "activo" &&
+                miembro.rol
+              ) {
+                rol = miembro.rol;
+              }
+            }
+          }
+
+          if (!rol) {
+            router.replace("/empresas");
             return;
           }
 
-          setEmpresaNombre(empresa.nombre);
+          if (rol === "operador") {
+            router.replace(
+              `/empresas/${empresaIdSeguro}/conversaciones`
+            );
+            return;
+          }
+
+          setUser(usuarioSeguro);
+          setEmpresaNombre(
+            empresa.nombre || "Empresa"
+          );
         } catch (firebaseError) {
-          console.error("Error al cargar la empresa:", firebaseError);
-          setError("No se pudo cargar la empresa.");
+          console.error(
+            "Error al verificar acceso a la base de conocimiento:",
+            firebaseError
+          );
+
+          setError(
+            "No se pudo verificar el acceso a la empresa."
+          );
         } finally {
           setLoading(false);
         }
@@ -140,9 +210,12 @@ export default function ConocimientoPage() {
     setCargandoLista(true);
 
     const conocimientoQuery = query(
-      collection(db, "knowledge"),
-      where("empresaId", "==", empresaId),
-      where("userId", "==", user.uid),
+      collection(
+        db,
+        "companies",
+        empresaId,
+        "knowledge"
+      ),
       orderBy("createdAt", "desc")
     );
 
@@ -359,7 +432,15 @@ export default function ConocimientoPage() {
       }
 
       if (editandoId) {
-        await updateDoc(doc(db, "knowledge", editandoId), {
+        await updateDoc(
+          doc(
+            db,
+            "companies",
+            empresaId,
+            "knowledge",
+            editandoId
+          ),
+          {
           titulo: titulo.trim(),
           contenido: contenidoFinal,
           ...(archivoUrl && {
@@ -367,10 +448,18 @@ export default function ConocimientoPage() {
             archivoNombre,
             archivoTipo,
           }),
-          updatedAt: serverTimestamp(),
-        });
+            updatedAt: serverTimestamp(),
+          }
+        );
       } else {
-        await addDoc(collection(db, "knowledge"), {
+        await addDoc(
+          collection(
+            db,
+            "companies",
+            empresaId,
+            "knowledge"
+          ),
+          {
           titulo: titulo.trim(),
           contenido: contenidoFinal,
           empresaId,
@@ -380,9 +469,10 @@ export default function ConocimientoPage() {
             archivoNombre,
             archivoTipo,
           }),
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          }
+        );
       }
 
       const estabaEditando = Boolean(editandoId);
@@ -430,7 +520,15 @@ export default function ConocimientoPage() {
     setMensaje("");
 
     try {
-      await deleteDoc(doc(db, "knowledge", conocimientoId));
+      await deleteDoc(
+        doc(
+          db,
+          "companies",
+          empresaId,
+          "knowledge",
+          conocimientoId
+        )
+      );
 
       if (editandoId === conocimientoId) {
         limpiarFormulario();
@@ -506,7 +604,11 @@ export default function ConocimientoPage() {
 
         <Button
           variant="secondary"
-          onClick={() => router.push(`/empresas/${empresaId}`)}
+          onClick={() =>
+            router.push(
+              `/empresas/${empresaId}/dashboard`
+            )
+          }
         >
           Volver a la empresa
         </Button>

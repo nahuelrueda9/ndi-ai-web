@@ -12,7 +12,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 
-import { db } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import Avatar from "@/components/Ui/Avatar";
 import Badge from "@/components/Ui/Badge";
 import Button from "@/components/Ui/Button";
@@ -155,16 +155,34 @@ async function eliminarConversacion(
     setEliminando(true);
     setError("");
 
+    const usuario =
+      auth.currentUser;
+
+    if (!usuario) {
+      throw new Error(
+        "Tenés que iniciar sesión."
+      );
+    }
+
+    const idToken =
+      await usuario.getIdToken(
+        true
+      );
+
     const response = await fetch(
       "/api/conversations/delete",
       {
         method: "DELETE",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type":
+            "application/json",
+          Authorization:
+            `Bearer ${idToken}`,
         },
         body: JSON.stringify({
           empresaId,
-          conversacionId: conversacion.id,
+          conversacionId:
+            conversacion.id,
         }),
       }
     );

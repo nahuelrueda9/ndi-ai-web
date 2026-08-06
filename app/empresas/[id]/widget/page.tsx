@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { onAuthStateChanged, type User } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 
 import { auth, db } from "@/lib/firebase";
@@ -10,6 +10,17 @@ import { auth, db } from "@/lib/firebase";
 type TemaWidget = "oscuro" | "claro";
 type PosicionWidget = "derecha" | "izquierda";
 type FormaWidget = "redondo" | "cuadrado";
+
+type RolEmpresa =
+  | "propietario"
+  | "administrador"
+  | "supervisor"
+  | "operador";
+
+interface MiembroEmpresa {
+  rol?: Exclude<RolEmpresa, "propietario">;
+  estado?: "activo" | "inactivo";
+}
 
 interface Empresa {
   nombre?: string;
@@ -41,12 +52,24 @@ export default function WidgetPage() {
   const params = useParams();
   const router = useRouter();
 
-  const empresaId = Array.isArray(params.id)
-    ? params.id[0]
-    : (params.id as string | undefined);
+  const parametroEmpresa =
+    params.id ?? params.empresaId;
 
-  const [user, setUser] = useState<User | null>(null);
-  const [cargando, setCargando] = useState(true);
+  const empresaId = Array.isArray(
+    parametroEmpresa
+  )
+    ? parametroEmpresa[0]
+    : (parametroEmpresa as
+        | string
+        | undefined);
+
+  const [
+    accesoVerificado,
+    setAccesoVerificado,
+  ] = useState(false);
+
+  const [cargando, setCargando] =
+    useState(true);
   const [error, setError] = useState("");
   const [copiado, setCopiado] = useState(false);
 
@@ -73,70 +96,166 @@ export default function WidgetPage() {
   );
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (!currentUser) {
-        router.replace("/login");
-        return;
-      }
+    const unsubscribe =
+      onAuthStateChanged(
+        auth,
+        async (currentUser) => {
+          if (!currentUser) {
+            router.replace("/login");
+            return;
+          }
 
-      if (!empresaId) {
-        setError("No se encontró el ID de la empresa.");
-        setCargando(false);
-        return;
-      }
+          if (!empresaId) {
+            setError(
+              "No se encontró el ID de la empresa."
+            );
+            setCargando(false);
+            return;
+          }
 
-      setUser(currentUser);
-      setCargando(true);
-      setError("");
+          const empresaIdSeguro =
+            empresaId;
 
-      try {
-        const referencia = doc(db, "companies", empresaId);
-        const resultado = await getDoc(referencia);
+          setAccesoVerificado(false);
+          setCargando(true);
+          setError("");
 
-        if (!resultado.exists()) {
-          setError("La empresa no existe.");
-          return;
+          try {
+            const referencia = doc(
+              db,
+              "companies",
+              empresaIdSeguro
+            );
+
+            const resultado =
+              await getDoc(referencia);
+
+            if (!resultado.exists()) {
+              setError(
+                "La empresa no existe."
+              );
+              return;
+            }
+
+            const empresa =
+              resultado.data() as Empresa;
+
+            let tieneAcceso =
+              empresa.userId ===
+              currentUser.uid;
+
+            if (!tieneAcceso) {
+              const miembroReferencia =
+                doc(
+                  db,
+                  "companies",
+                  empresaIdSeguro,
+                  "members",
+                  currentUser.uid
+                );
+
+              const miembroSnapshot =
+                await getDoc(
+                  miembroReferencia
+                );
+
+              if (
+                !miembroSnapshot.exists()
+              ) {
+                router.replace(
+                  "/empresas"
+                );
+                return;
+              }
+
+              const miembro =
+                miembroSnapshot.data() as MiembroEmpresa;
+
+              tieneAcceso =
+                miembro.estado ===
+                  "activo" &&
+                miembro.rol ===
+                  "administrador";
+
+              if (!tieneAcceso) {
+                router.replace(
+                  `/empresas/${empresaIdSeguro}/conversaciones`
+                );
+                return;
+              }
+            }
+
+            setAccesoVerificado(true);
+
+            setNombreEmpresa(
+              empresa.nombre ||
+                "Empresa"
+            );
+
+            setNombreBot(
+              empresa.widget?.nombreBot ||
+                empresa.nombre ||
+                CONFIG_INICIAL.nombreBot
+            );
+
+            setMensajeBienvenida(
+              empresa.widget
+                ?.mensajeBienvenida ||
+                CONFIG_INICIAL
+                  .mensajeBienvenida
+            );
+
+            setColorPrincipal(
+              empresa.widget
+                ?.colorPrincipal ||
+                CONFIG_INICIAL
+                  .colorPrincipal
+            );
+
+            setTema(
+              empresa.widget?.tema ||
+                CONFIG_INICIAL.tema
+            );
+
+            setPosicion(
+              empresa.widget?.posicion ||
+                CONFIG_INICIAL.posicion
+            );
+
+            setFormaBoton(
+              empresa.widget
+                ?.formaBoton ||
+                CONFIG_INICIAL
+                  .formaBoton
+            );
+
+            setTextoPlaceholder(
+              empresa.widget
+                ?.textoPlaceholder ||
+                CONFIG_INICIAL
+                  .textoPlaceholder
+            );
+
+            setMostrarMarca(
+              empresa.widget
+                ?.mostrarMarca ??
+                CONFIG_INICIAL
+                  .mostrarMarca
+            );
+          } catch (firebaseError) {
+            console.error(
+              "Error al cargar el widget:",
+              firebaseError
+            );
+
+            setError(
+              "No se pudo cargar la configuración del widget."
+            );
+          } finally {
+            setCargando(false);
+          }
         }
-
-        const empresa = resultado.data() as Empresa;
-
-        if (empresa.userId !== currentUser.uid) {
-          setError("No tenés permiso para acceder a esta empresa.");
-          return;
-        }
-
-        setNombreEmpresa(empresa.nombre || "Empresa");
-        setNombreBot(
-          empresa.widget?.nombreBot ||
-            empresa.nombre ||
-            CONFIG_INICIAL.nombreBot
-        );
-        setMensajeBienvenida(
-          empresa.widget?.mensajeBienvenida ||
-            CONFIG_INICIAL.mensajeBienvenida
-        );
-        setColorPrincipal(
-          empresa.widget?.colorPrincipal || CONFIG_INICIAL.colorPrincipal
-        );
-        setTema(empresa.widget?.tema || CONFIG_INICIAL.tema);
-        setPosicion(empresa.widget?.posicion || CONFIG_INICIAL.posicion);
-        setFormaBoton(
-          empresa.widget?.formaBoton || CONFIG_INICIAL.formaBoton
-        );
-        setTextoPlaceholder(
-          empresa.widget?.textoPlaceholder ||
-            CONFIG_INICIAL.textoPlaceholder
-        );
-        setMostrarMarca(
-          empresa.widget?.mostrarMarca ?? CONFIG_INICIAL.mostrarMarca
-        );
-      } catch (firebaseError) {
-        console.error("Error al cargar el widget:", firebaseError);
-        setError("No se pudo cargar la configuración del widget.");
-      } finally {
-        setCargando(false);
-      }
-    });
+      );
 
     return () => unsubscribe();
   }, [empresaId, router]);
@@ -195,6 +314,10 @@ export default function WidgetPage() {
         </div>
       </section>
     );
+  }
+
+  if (!accesoVerificado) {
+    return null;
   }
 
   return (

@@ -13,29 +13,15 @@ import {
   doc,
   getDoc,
   getDocs,
-  orderBy,
-  query,
-  where,
 } from "firebase/firestore";
 import { useParams, useRouter } from "next/navigation";
 
-import {
-  actualizarConversacion,
-  actualizarTituloConversacion,
-  crearConversacion,
-  obtenerConversaciones,
-} from "@/lib/chatService";
-import {
-  guardarMensaje,
-  obtenerMensajes,
-} from "@/lib/messageService";
 import { auth, db } from "@/lib/firebase";
 
 import Avatar from "@/components/Ui/Avatar";
 import Badge from "@/components/Ui/Badge";
 import Button from "@/components/Ui/Button";
 import Card from "@/components/Ui/Card";
-import Input from "@/components/Ui/Input";
 
 type Empresa = {
   nombre?: string;
@@ -49,25 +35,22 @@ type Empresa = {
   };
 };
 
-type Conocimiento = {
-  id: string;
-  titulo?: string;
-  contenido?: string;
-};
-
 type MensajeChat = {
   role: "user" | "assistant";
   content: string;
 };
 
-type Conversacion = {
+type ConversacionLocal = {
   id: string;
-  titulo?: string;
+  titulo: string;
+  mensajes: MensajeChat[];
+  updatedAt: number;
 };
 
 export default function ProbarAgentePage() {
   const params = useParams();
   const router = useRouter();
+
   const mensajesFinalRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -75,18 +58,20 @@ export default function ProbarAgentePage() {
     ? params.id[0]
     : (params.id as string);
 
+  const [usuarioId, setUsuarioId] = useState("");
   const [empresa, setEmpresa] = useState<Empresa | null>(null);
-  const [conocimientos, setConocimientos] = useState<Conocimiento[]>([]);
-  const [mensaje, setMensaje] = useState("");
+  const [cantidadConocimientos, setCantidadConocimientos] = useState(0);
+
+  const [conversaciones, setConversaciones] = useState<ConversacionLocal[]>([]);
   const [chatId, setChatId] = useState<string | null>(null);
-  const [mensajesCargados, setMensajesCargados] = useState(false);
   const [mensajes, setMensajes] = useState<MensajeChat[]>([]);
+  const [mensaje, setMensaje] = useState("");
+
   const [cargandoPagina, setCargandoPagina] = useState(true);
   const [cargandoConversacion, setCargandoConversacion] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [copiadoIndex, setCopiadoIndex] = useState<number | null>(null);
   const [error, setError] = useState("");
-  const [conversaciones, setConversaciones] = useState<Conversacion[]>([]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -101,9 +86,13 @@ export default function ProbarAgentePage() {
         return;
       }
 
+      setUsuarioId(user.uid);
+      setError("");
+
       try {
-        const empresaRef = doc(db, "companies", empresaId);
-        const empresaSnapshot = await getDoc(empresaRef);
+        const empresaSnapshot = await getDoc(
+          doc(db, "companies", empresaId)
+        );
 
         if (!empresaSnapshot.exists()) {
           setError("La empresa no existe.");
@@ -113,7 +102,24 @@ export default function ProbarAgentePage() {
 
         const datosEmpresa = empresaSnapshot.data() as Empresa;
 
-        if (datosEmpresa.userId !== user.uid) {
+        let tieneAcceso = datosEmpresa.userId === user.uid;
+
+        if (!tieneAcceso) {
+          const miembroSnapshot = await getDoc(
+            doc(db, "companies", empresaId, "members", user.uid)
+          );
+
+          if (miembroSnapshot.exists()) {
+            const miembro = miembroSnapshot.data();
+
+            tieneAcceso =
+              miembro.activo !== false &&
+              miembro.estado !== "inactivo" &&
+              miembro.estado !== "eliminado";
+          }
+        }
+
+        if (!tieneAcceso) {
           setError("No tenés permiso para acceder a esta empresa.");
           setCargandoPagina(false);
           return;
@@ -121,50 +127,32 @@ export default function ProbarAgentePage() {
 
         setEmpresa(datosEmpresa);
 
-        const chatsQuery = query(
-          collection(db, "chats"),
-          where("empresaId", "==", empresaId),
-          where("userId", "==", user.uid),
-          orderBy("updatedAt", "desc")
-        );
+        try {
+          const conocimientosSnapshot = await getDocs(
+            collection(db, "companies", empresaId, "knowledge")
+          );
 
-        const chatsSnapshot = await getDocs(chatsQuery);
+          setCantidadConocimientos(conocimientosSnapshot.size);
+        } catch (knowledgeError) {
+          console.warn(
+            "No se pudo contar la base de conocimiento:",
+            knowledgeError
+          );
 
-        const listaConversaciones = await obtenerConversaciones(
+          setCantidadConocimientos(0);
+        }
+
+        const conversacionesGuardadas = cargarConversacionesLocales(
           empresaId,
           user.uid
         );
 
-        setConversaciones(listaConversaciones);
+        setConversaciones(conversacionesGuardadas);
 
-        if (!chatsSnapshot.empty && !mensajesCargados) {
-          const chat = chatsSnapshot.docs[0];
-
-          setChatId(chat.id);
-
-          const historial = await obtenerMensajes(chat.id);
-
-          setMensajes(historial);
-          setMensajesCargados(true);
+        if (conversacionesGuardadas.length > 0) {
+          setChatId(conversacionesGuardadas[0].id);
+          setMensajes(conversacionesGuardadas[0].mensajes);
         }
-
-        const knowledgeQuery = query(
-          collection(db, "knowledge"),
-          where("empresaId", "==", empresaId),
-          where("userId", "==", user.uid),
-          orderBy("createdAt", "desc")
-        );
-
-        const knowledgeSnapshot = await getDocs(knowledgeQuery);
-
-        const listaConocimientos = knowledgeSnapshot.docs.map(
-          (documento) => ({
-            id: documento.id,
-            ...documento.data(),
-          })
-        ) as Conocimiento[];
-
-        setConocimientos(listaConocimientos);
       } catch (err) {
         console.error(err);
         setError("No se pudieron cargar los datos del agente.");
@@ -174,7 +162,7 @@ export default function ProbarAgentePage() {
     });
 
     return () => unsubscribe();
-  }, [empresaId, mensajesCargados, router]);
+  }, [empresaId, router]);
 
   useEffect(() => {
     mensajesFinalRef.current?.scrollIntoView({
@@ -196,190 +184,238 @@ export default function ProbarAgentePage() {
     );
   }, [chatId, conversaciones]);
 
-  async function actualizarListaConversaciones() {
-    if (!auth.currentUser) return;
-
-    const listaActualizada = await obtenerConversaciones(
-      empresaId,
-      auth.currentUser.uid
+  function guardarConversaciones(lista: ConversacionLocal[]) {
+    const ordenadas = [...lista].sort(
+      (a, b) => b.updatedAt - a.updatedAt
     );
 
-    setConversaciones(listaActualizada);
+    setConversaciones(ordenadas);
+
+    if (usuarioId) {
+      localStorage.setItem(
+        obtenerClaveLocal(empresaId, usuarioId),
+        JSON.stringify(ordenadas)
+      );
+    }
+  }
+
+  function crearIdConversacion() {
+    if (
+      typeof crypto !== "undefined" &&
+      typeof crypto.randomUUID === "function"
+    ) {
+      return crypto.randomUUID();
+    }
+
+    return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   }
 
   async function enviarMensaje() {
     const mensajeLimpio = mensaje.trim();
+    const user = auth.currentUser;
 
-    if (!mensajeLimpio || !empresa || enviando) {
+    if (!mensajeLimpio || !empresa || enviando || !user) {
       return;
     }
-
-    let idConversacion = chatId;
 
     setError("");
     setEnviando(true);
 
-    try {
-      if (!idConversacion && auth.currentUser) {
-        idConversacion = await crearConversacion(
-          empresaId,
-          auth.currentUser.uid
-        );
+    let idConversacion = chatId;
+    let listaBase = [...conversaciones];
 
-        setChatId(idConversacion);
-      }
+    if (!idConversacion) {
+      idConversacion = crearIdConversacion();
 
-      const nuevosMensajes: MensajeChat[] = [
-        ...mensajes,
+      listaBase = [
         {
-          role: "user",
-          content: mensajeLimpio,
+          id: idConversacion,
+          titulo: mensajeLimpio.slice(0, 50),
+          mensajes: [],
+          updatedAt: Date.now(),
         },
+        ...listaBase,
       ];
 
-      setMensajes(nuevosMensajes);
-      setMensaje("");
+      setChatId(idConversacion);
+    }
 
-      if (idConversacion && mensajes.length === 0) {
-        await actualizarTituloConversacion(
-          idConversacion,
-          mensajeLimpio.slice(0, 50)
-        );
-      }
+    const conversacionActual = listaBase.find(
+      (item) => item.id === idConversacion
+    );
 
-      if (idConversacion) {
-        await guardarMensaje(
-          idConversacion,
-          "user",
-          mensajeLimpio
-        );
-      }
+    const mensajesPrevios =
+      conversacionActual?.mensajes ?? mensajes;
+
+    const mensajesConUsuario: MensajeChat[] = [
+      ...mensajesPrevios,
+      {
+        role: "user",
+        content: mensajeLimpio,
+      },
+    ];
+
+    const listaConUsuario = listaBase.map((item) =>
+      item.id === idConversacion
+        ? {
+            ...item,
+            titulo:
+              item.titulo === "Conversación nueva"
+                ? mensajeLimpio.slice(0, 50)
+                : item.titulo,
+            mensajes: mensajesConUsuario,
+            updatedAt: Date.now(),
+          }
+        : item
+    );
+
+    setMensaje("");
+    setMensajes(mensajesConUsuario);
+    guardarConversaciones(listaConUsuario);
+
+    try {
+      const token = await user.getIdToken();
 
       const response = await fetch("/api/gemini", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
+          empresaId,
           mensaje: mensajeLimpio,
-          historial: nuevosMensajes,
-          empresa: {
-            nombre: empresa.nombre,
-            descripcion: empresa.descripcion,
-            agente: {
-              nombre: empresa.agente?.nombre,
-              rol: empresa.agente?.rol,
-              personalidad: empresa.agente?.personalidad,
-              instrucciones: empresa.agente?.instrucciones,
-            },
-          },
-          conocimientos: conocimientos.map((item) => ({
-            titulo: item.titulo,
-            contenido: item.contenido,
-          })),
+          historial: mensajesConUsuario,
+          chatId: idConversacion,
         }),
       });
 
       const textoRespuesta = await response.text();
 
-let data: any;
+      let data: {
+        respuesta?: string;
+        error?: string;
+      };
 
-try {
-  data = JSON.parse(textoRespuesta);
-} catch {
-  console.error("Respuesta real de /api/gemini:", textoRespuesta);
+      try {
+        data = JSON.parse(textoRespuesta);
+      } catch {
+        console.error(
+          "Respuesta real de /api/gemini:",
+          textoRespuesta
+        );
 
-  throw new Error(
-    `La API devolvió HTML. Estado ${response.status}`
-  );
-}
+        throw new Error(
+          `La API devolvió una respuesta inválida. Estado ${response.status}`
+        );
+      }
 
       if (!response.ok) {
-        setError(data.error || "No se pudo generar la respuesta.");
-        return;
+        throw new Error(
+          data.error || "No se pudo generar la respuesta."
+        );
       }
 
       const respuesta =
         data.respuesta || "El agente no devolvió una respuesta.";
 
-      setMensajes((actuales) => [
-        ...actuales,
+      const mensajesFinales: MensajeChat[] = [
+        ...mensajesConUsuario,
         {
           role: "assistant",
           content: respuesta,
         },
-      ]);
+      ];
 
-      if (idConversacion) {
-        await guardarMensaje(
-          idConversacion,
-          "assistant",
-          respuesta
-        );
+      const listaFinal = listaConUsuario.map((item) =>
+        item.id === idConversacion
+          ? {
+              ...item,
+              mensajes: mensajesFinales,
+              updatedAt: Date.now(),
+            }
+          : item
+      );
 
-        await actualizarConversacion(idConversacion);
-      }
-
-      await actualizarListaConversaciones();
+      setMensajes(mensajesFinales);
+      guardarConversaciones(listaFinal);
     } catch (err) {
       console.error(err);
-      setError("No se pudo conectar con el agente.");
+
+      setError(
+        err instanceof Error
+          ? err.message
+          : "No se pudo conectar con el agente."
+      );
     } finally {
       setEnviando(false);
       textareaRef.current?.focus();
     }
   }
 
-  async function nuevaConversacion() {
-    if (!auth.currentUser || enviando) return;
+  function nuevaConversacion() {
+    if (enviando) return;
 
     setError("");
     setCargandoConversacion(true);
 
-    try {
-      const nuevoChatId = await crearConversacion(
-        empresaId,
-        auth.currentUser.uid
-      );
+    const nueva: ConversacionLocal = {
+      id: crearIdConversacion(),
+      titulo: "Conversación nueva",
+      mensajes: [],
+      updatedAt: Date.now(),
+    };
 
-      setChatId(nuevoChatId);
-      setMensajes([]);
-      setMensaje("");
+    const listaActualizada = [nueva, ...conversaciones];
 
-      await actualizarListaConversaciones();
+    setChatId(nueva.id);
+    setMensajes([]);
+    setMensaje("");
+    guardarConversaciones(listaActualizada);
 
-      requestAnimationFrame(() => textareaRef.current?.focus());
-    } catch (err) {
-      console.error(err);
-      setError("No se pudo crear una conversación nueva.");
-    } finally {
+    requestAnimationFrame(() => {
       setCargandoConversacion(false);
-    }
+      textareaRef.current?.focus();
+    });
   }
 
-  async function seleccionarConversacion(id: string) {
+  function seleccionarConversacion(id: string) {
     if (id === chatId || enviando) return;
 
     setError("");
     setCargandoConversacion(true);
-    setChatId(id);
 
-    try {
-      const historial = await obtenerMensajes(id);
-      setMensajes(historial);
-      setMensaje("");
-    } catch (err) {
-      console.error(err);
-      setError("No se pudo cargar la conversación.");
-    } finally {
+    const seleccionada = conversaciones.find(
+      (item) => item.id === id
+    );
+
+    setChatId(id);
+    setMensajes(seleccionada?.mensajes ?? []);
+    setMensaje("");
+
+    requestAnimationFrame(() => {
       setCargandoConversacion(false);
-    }
+      textareaRef.current?.focus();
+    });
   }
 
   function limpiarConversacion() {
+    if (!chatId || enviando) return;
+
+    const listaActualizada = conversaciones.map((item) =>
+      item.id === chatId
+        ? {
+            ...item,
+            mensajes: [],
+            updatedAt: Date.now(),
+          }
+        : item
+    );
+
     setMensajes([]);
     setMensaje("");
     setError("");
+    guardarConversaciones(listaActualizada);
     textareaRef.current?.focus();
   }
 
@@ -414,6 +450,7 @@ try {
       <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
         <Card className="p-10 text-center">
           <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-t-blue-500" />
+
           <p className="font-medium text-white">
             Cargando agente...
           </p>
@@ -480,8 +517,9 @@ try {
                   <p className="font-semibold text-white">
                     Conversaciones
                   </p>
+
                   <p className="mt-1 text-xs text-zinc-600">
-                    {conversaciones.length} guardadas
+                    {conversaciones.length} guardadas en este navegador
                   </p>
                 </div>
 
@@ -512,7 +550,7 @@ try {
                         key={conversacion.id}
                         type="button"
                         onClick={() =>
-                          void seleccionarConversacion(conversacion.id)
+                          seleccionarConversacion(conversacion.id)
                         }
                         className={`w-full rounded-xl border px-4 py-3 text-left transition ${
                           activa
@@ -530,7 +568,9 @@ try {
                         </p>
 
                         <p className="mt-1 text-xs text-zinc-600">
-                          {activa ? "Conversación activa" : "Abrir historial"}
+                          {activa
+                            ? "Conversación activa"
+                            : "Abrir historial"}
                         </p>
                       </button>
                     );
@@ -548,6 +588,7 @@ try {
                 <p className="truncate font-semibold text-white">
                   {nombreAgente}
                 </p>
+
                 <p className="truncate text-xs text-zinc-500">
                   {rolAgente}
                 </p>
@@ -557,8 +598,9 @@ try {
             <div className="mt-5 space-y-3 border-t border-zinc-800 pt-5">
               <DatoAgente
                 etiqueta="Base de conocimiento"
-                valor={`${conocimientos.length} registros`}
+                valor={`${cantidadConocimientos} registros`}
               />
+
               <DatoAgente
                 etiqueta="Personalidad"
                 valor={
@@ -594,6 +636,7 @@ try {
 
                 <div className="mt-1 flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-green-500" />
+
                   <p className="text-xs text-zinc-500">
                     {nombreAgente} está disponible
                   </p>
@@ -607,7 +650,7 @@ try {
               onClick={limpiarConversacion}
               disabled={mensajes.length === 0 || enviando}
             >
-              Limpiar vista
+              Limpiar conversación
             </Button>
           </div>
 
@@ -616,6 +659,7 @@ try {
               <div className="flex h-full min-h-[480px] items-center justify-center">
                 <div className="text-center">
                   <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-t-blue-500" />
+
                   <p className="text-sm text-zinc-500">
                     Cargando conversación...
                   </p>
@@ -787,6 +831,44 @@ try {
   );
 }
 
+function obtenerClaveLocal(empresaId: string, usuarioId: string) {
+  return `ndi-agent-tests:${empresaId}:${usuarioId}`;
+}
+
+function cargarConversacionesLocales(
+  empresaId: string,
+  usuarioId: string
+): ConversacionLocal[] {
+  try {
+    const guardado = localStorage.getItem(
+      obtenerClaveLocal(empresaId, usuarioId)
+    );
+
+    if (!guardado) return [];
+
+    const datos = JSON.parse(guardado);
+
+    if (!Array.isArray(datos)) return [];
+
+    return datos
+      .filter(
+        (item): item is ConversacionLocal =>
+          typeof item?.id === "string" &&
+          typeof item?.titulo === "string" &&
+          Array.isArray(item?.mensajes) &&
+          typeof item?.updatedAt === "number"
+      )
+      .sort((a, b) => b.updatedAt - a.updatedAt);
+  } catch (error) {
+    console.warn(
+      "No se pudieron cargar las conversaciones locales:",
+      error
+    );
+
+    return [];
+  }
+}
+
 function DatoAgente({
   etiqueta,
   valor,
@@ -799,6 +881,7 @@ function DatoAgente({
       <p className="text-xs uppercase tracking-wide text-zinc-600">
         {etiqueta}
       </p>
+
       <p className="mt-1 line-clamp-2 text-sm text-zinc-300">
         {valor}
       </p>

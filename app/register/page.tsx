@@ -137,7 +137,7 @@ export default function RegisterPage() {
                 autoComplete="given-name"
                 required
                 className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition placeholder:text-slate-600 focus:border-blue-500"
-                placeholder="Nahuel"
+                placeholder="Ingresá tu nombre"
               />
             </div>
 
@@ -152,7 +152,7 @@ export default function RegisterPage() {
                 autoComplete="family-name"
                 required
                 className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition placeholder:text-slate-600 focus:border-blue-500"
-                placeholder="Rueda"
+                placeholder="Ingresá tu apellido"
               />
             </div>
           </div>

@@ -1,72 +1,398 @@
 "use client";
 
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import Link from "next/link";
-import { useParams, usePathname } from "next/navigation";
+import {
+  useParams,
+  usePathname,
+  useRouter,
+} from "next/navigation";
+import {
+  onAuthStateChanged,
+  type User,
+} from "firebase/auth";
+import {
+  doc,
+  getDoc,
+} from "firebase/firestore";
 import {
   BarChart3,
   BookOpen,
   Bot,
   Building2,
+  CalendarDays,
   Code2,
+  CreditCard,
   Home,
   MessageSquare,
   Plug,
   Settings,
+  Users,
+  Zap,
+  type LucideIcon,
 } from "lucide-react";
 
+import { auth, db } from "@/lib/firebase";
 import NavItem from "./NavItem";
+
+type RolEmpresa =
+  | "propietario"
+  | "administrador"
+  | "supervisor"
+  | "operador";
+
+type ItemMenu = {
+  label: string;
+  ruta: string;
+  icon: LucideIcon;
+  roles: RolEmpresa[];
+};
+
+type EmpresaData = {
+  userId?: string;
+};
+
+type MiembroData = {
+  rol?: Exclude<
+    RolEmpresa,
+    "propietario"
+  >;
+  estado?: "activo" | "inactivo";
+};
+
+const TODOS_LOS_ROLES: RolEmpresa[] = [
+  "propietario",
+  "administrador",
+  "supervisor",
+  "operador",
+];
+
+const ROLES_SUPERVISION: RolEmpresa[] = [
+  "propietario",
+  "administrador",
+  "supervisor",
+];
+
+const ROLES_ADMINISTRACION: RolEmpresa[] = [
+  "propietario",
+  "administrador",
+];
+
+const SOLO_PROPIETARIO: RolEmpresa[] = [
+  "propietario",
+];
+
+const NOMBRE_ROL: Record<
+  RolEmpresa,
+  string
+> = {
+  propietario: "Propietario",
+  administrador: "Administrador",
+  supervisor: "Supervisor",
+  operador: "Operador",
+};
 
 export default function Sidebar() {
   const params = useParams();
   const pathname = usePathname();
+  const router = useRouter();
 
-  const parametroEmpresa = params.id ?? params.empresaId;
+  const parametroEmpresa =
+    params.id ?? params.empresaId;
 
-  const empresaId = Array.isArray(parametroEmpresa)
+  const empresaId = Array.isArray(
+    parametroEmpresa
+  )
     ? parametroEmpresa[0]
-    : (parametroEmpresa as string | undefined);
+    : (parametroEmpresa as
+        | string
+        | undefined);
 
-  if (!empresaId) {
+  const [usuario, setUsuario] =
+    useState<User | null>(null);
+
+  const [rol, setRol] =
+    useState<RolEmpresa | null>(null);
+
+  const [
+    cargandoRol,
+    setCargandoRol,
+  ] = useState(true);
+
+  useEffect(() => {
+    const cancelar =
+      onAuthStateChanged(
+        auth,
+        (currentUser) => {
+          setUsuario(currentUser);
+
+          if (!currentUser) {
+            setRol(null);
+            setCargandoRol(false);
+          }
+        }
+      );
+
+    return () => cancelar();
+  }, []);
+
+  useEffect(() => {
+    if (!empresaId || !usuario) {
+      return;
+    }
+
+    const empresaIdSeguro = empresaId;
+    const usuarioSeguro = usuario;
+
+    let activo = true;
+
+    async function cargarRol() {
+      setCargandoRol(true);
+
+      try {
+        const empresaReferencia = doc(
+          db,
+          "companies",
+          empresaIdSeguro
+        );
+
+        const empresaSnapshot =
+          await getDoc(
+            empresaReferencia
+          );
+
+        if (!empresaSnapshot.exists()) {
+          if (activo) {
+            setRol(null);
+            router.replace("/empresas");
+          }
+
+          return;
+        }
+
+        const empresa =
+          empresaSnapshot.data() as EmpresaData;
+
+        if (
+          empresa.userId ===
+          usuarioSeguro.uid
+        ) {
+          if (activo) {
+            setRol("propietario");
+          }
+
+          return;
+        }
+
+        const miembroReferencia = doc(
+          db,
+          "companies",
+          empresaIdSeguro,
+          "members",
+          usuarioSeguro.uid
+        );
+
+        const miembroSnapshot =
+          await getDoc(
+            miembroReferencia
+          );
+
+        if (!miembroSnapshot.exists()) {
+          if (activo) {
+            setRol(null);
+            router.replace("/empresas");
+          }
+
+          return;
+        }
+
+        const miembro =
+          miembroSnapshot.data() as MiembroData;
+
+        if (
+          miembro.estado !== "activo" ||
+          !miembro.rol
+        ) {
+          if (activo) {
+            setRol(null);
+            router.replace("/empresas");
+          }
+
+          return;
+        }
+
+        if (activo) {
+          setRol(miembro.rol);
+        }
+      } catch (error) {
+        console.error(
+          "Error al cargar el rol:",
+          error
+        );
+
+        if (activo) {
+          setRol(null);
+          router.replace("/empresas");
+        }
+      } finally {
+        if (activo) {
+          setCargandoRol(false);
+        }
+      }
+    }
+
+    void cargarRol();
+
+    return () => {
+      activo = false;
+    };
+  }, [
+    empresaId,
+    router,
+    usuario,
+  ]);
+
+  const items = useMemo<ItemMenu[]>(
+    () => {
+      if (!empresaId) {
+        return [];
+      }
+
+      return [
+        {
+          label: "Inicio",
+          ruta: "dashboard",
+          icon: Home,
+          roles: TODOS_LOS_ROLES,
+        },
+        {
+          label: "Conversaciones",
+          ruta: "conversaciones",
+          icon: MessageSquare,
+          roles: TODOS_LOS_ROLES,
+        },
+        {
+          label: "Automatizaciones",
+          ruta: "automatizaciones",
+          icon: Zap,
+          roles: ROLES_SUPERVISION,
+        },
+        {
+          label: "Agenda",
+          ruta: "agenda",
+          icon: CalendarDays,
+          roles: TODOS_LOS_ROLES,
+        },
+        {
+          label: "Equipo",
+          ruta: "equipo",
+          icon: Users,
+          roles: ROLES_ADMINISTRACION,
+        },
+        {
+          label: "Estadísticas",
+          ruta: "estadisticas",
+          icon: BarChart3,
+          roles: TODOS_LOS_ROLES,
+        },
+        {
+          label:
+            "Base de conocimiento",
+          ruta: "conocimiento",
+          icon: BookOpen,
+          roles: ROLES_SUPERVISION,
+        },
+        {
+          label: "Widget web",
+          ruta: "widget",
+          icon: Code2,
+          roles: ROLES_ADMINISTRACION,
+        },
+        {
+          label: "Integraciones",
+          ruta: "integraciones",
+          icon: Plug,
+          roles: ROLES_SUPERVISION,
+        },
+        {
+          label: "Facturación",
+          ruta: "facturacion",
+          icon: CreditCard,
+          roles: SOLO_PROPIETARIO,
+        },
+        {
+          label: "Configuración",
+          ruta: "configuracion",
+          icon: Settings,
+          roles: ROLES_ADMINISTRACION,
+        },
+      ];
+    },
+    [empresaId]
+  );
+
+  const itemsPermitidos =
+    useMemo(
+      () =>
+        rol
+          ? items.filter((item) =>
+              item.roles.includes(rol)
+            )
+          : [],
+      [items, rol]
+    );
+
+  useEffect(() => {
+    if (
+      cargandoRol ||
+      !rol ||
+      !empresaId
+    ) {
+      return;
+    }
+
+    const itemActual = items.find(
+      (item) => {
+        const href =
+          `/empresas/${empresaId}/${item.ruta}`;
+
+        return (
+          pathname === href ||
+          pathname.startsWith(
+            `${href}/`
+          )
+        );
+      }
+    );
+
+    if (
+      itemActual &&
+      !itemActual.roles.includes(rol)
+    ) {
+      router.replace(
+        `/empresas/${empresaId}/conversaciones`
+      );
+    }
+  }, [
+    cargandoRol,
+    empresaId,
+    items,
+    pathname,
+    rol,
+    router,
+  ]);
+
+  if (
+    !empresaId ||
+    cargandoRol ||
+    !rol
+  ) {
     return null;
   }
-
-  const items = [
-    {
-      label: "Inicio",
-      href: `/empresas/${empresaId}/dashboard`,
-      icon: Home,
-    },
-    {
-      label: "Conversaciones",
-      href: `/empresas/${empresaId}/conversaciones`,
-      icon: MessageSquare,
-    },
-    {
-      label: "Estadísticas",
-      href: `/empresas/${empresaId}/estadisticas`,
-      icon: BarChart3,
-    },
-    {
-      label: "Base de conocimiento",
-      href: `/empresas/${empresaId}/conocimiento`,
-      icon: BookOpen,
-    },
-    {
-      label: "Widget web",
-      href: `/empresas/${empresaId}/widget`,
-      icon: Code2,
-    },
-    {
-      label: "Integraciones",
-      href: `/empresas/${empresaId}/integraciones`,
-      icon: Plug,
-    },
-    {
-      label: "Configuración",
-      href: `/empresas/${empresaId}/configuracion`,
-      icon: Settings,
-    },
-  ];
 
   return (
     <aside className="fixed inset-y-0 left-0 z-50 hidden w-72 flex-col overflow-y-auto border-r border-zinc-800 bg-zinc-900 md:flex">
@@ -92,18 +418,27 @@ export default function Sidebar() {
       </Link>
 
       <nav className="flex-1 space-y-2 p-4">
-        {items.map((item) => (
-          <NavItem
-            key={item.href}
-            label={item.label}
-            href={item.href}
-            icon={item.icon}
-            activo={
-              pathname === item.href ||
-              pathname.startsWith(`${item.href}/`)
-            }
-          />
-        ))}
+        {itemsPermitidos.map(
+          (item) => {
+            const href =
+              `/empresas/${empresaId}/${item.ruta}`;
+
+            return (
+              <NavItem
+                key={href}
+                label={item.label}
+                href={href}
+                icon={item.icon}
+                activo={
+                  pathname === href ||
+                  pathname.startsWith(
+                    `${href}/`
+                  )
+                }
+              />
+            );
+          }
+        )}
       </nav>
 
       <div className="border-t border-zinc-800 p-4">
@@ -117,7 +452,7 @@ export default function Sidebar() {
           </div>
 
           <p className="mt-2 text-xs text-zinc-500">
-            Plan Free
+            {NOMBRE_ROL[rol]}
           </p>
         </div>
 

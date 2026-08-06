@@ -1,4 +1,17 @@
-import { NextResponse } from "next/server";
+import {
+  createHash,
+  timingSafeEqual,
+} from "node:crypto";
+
+import {
+  NextRequest,
+  NextResponse,
+} from "next/server";
+import {
+  adminAuth,
+  adminDb,
+} from "@/lib/firebaseAdmin";
+
 import { extraerMemoriaConIA } from "@/lib/ai/memoryExtractor";
 import {
   guardarMemoriaCliente,
@@ -24,6 +37,7 @@ type MensajeHistorial = {
 };
 
 type Empresa = {
+  userId?: string;
   nombre?: string;
   descripcion?: string;
   personalidad?: string;
@@ -105,6 +119,9 @@ type BodyRequest = {
 };
 
 const MAXIMO_HISTORIAL = 20;
+const MAXIMO_CARACTERES_MENSAJE = 4_000;
+const MAXIMO_CARACTERES_HISTORIAL = 6_000;
+const MAXIMO_ID_FIRESTORE = 200;
 const MAXIMO_CONOCIMIENTOS = 6;
 const MAXIMO_CARACTERES_CONTEXTO = 18_000;
 const MAXIMO_CARACTERES_POR_DOCUMENTO = 6_000;
@@ -209,7 +226,12 @@ function limpiarHistorial(historial: unknown): MensajeHistorial[] {
     })
     .map((item) => ({
       role: item.role,
-      content: item.content.trim(),
+      content: item.content
+        .trim()
+        .slice(
+          0,
+          MAXIMO_CARACTERES_HISTORIAL
+        ),
     }))
     .slice(-MAXIMO_HISTORIAL);
 }
@@ -526,31 +548,322 @@ function limpiarConocimientos(
   );
 }
 
-export async function POST(request: Request) {
-  try {
-    const body = (await request.json()) as BodyRequest;
 
-    const mensaje =
-      typeof body.mensaje === "string"
-        ? body.mensaje.trim()
-        : "";
-
-if (!mensaje) {
-  return NextResponse.json(
-    {
-      error: "El mensaje es obligatorio.",
-    },
-    {
-      status: 400,
+type AccesoApi =
+  | {
+      tipo: "firebase";
+      uid: string;
     }
+  | {
+      tipo: "interno";
+    };
+
+function obtenerBearerToken(
+  request: NextRequest
+) {
+  const authorization =
+    request.headers.get(
+      "authorization"
+    );
+
+  if (
+    !authorization ||
+    !authorization.startsWith(
+      "Bearer "
+    )
+  ) {
+    return "";
+  }
+
+  return authorization
+    .slice("Bearer ".length)
+    .trim();
+}
+
+function compararSecretos(
+  recibido: string,
+  esperado: string
+) {
+  const hashRecibido =
+    createHash("sha256")
+      .update(recibido)
+      .digest();
+
+  const hashEsperado =
+    createHash("sha256")
+      .update(esperado)
+      .digest();
+
+  return timingSafeEqual(
+    hashRecibido,
+    hashEsperado
   );
 }
 
-const intencion = detectarIntencion(mensaje);
+async function validarAccesoApi(
+  request: NextRequest
+): Promise<AccesoApi | null> {
+  const idToken =
+    obtenerBearerToken(request);
 
-const solicitarHumano = intencion === "humano";
+  if (idToken) {
+    try {
+      const usuario =
+        await adminAuth.verifyIdToken(
+          idToken
+        );
 
-    const apiKey = process.env.OPENROUTER_API_KEY;
+      return {
+        tipo: "firebase",
+        uid: usuario.uid,
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  const secretoConfigurado =
+    process.env
+      .INTERNAL_API_SECRET
+      ?.trim();
+
+  const secretoRecibido =
+    request.headers
+      .get(
+        "x-ndi-internal-secret"
+      )
+      ?.trim();
+
+  if (
+    secretoConfigurado &&
+    secretoRecibido &&
+    compararSecretos(
+      secretoRecibido,
+      secretoConfigurado
+    )
+  ) {
+    return {
+      tipo: "interno",
+    };
+  }
+
+  return null;
+}
+
+function esIdFirestoreValido(
+  valor: string
+) {
+  return (
+    valor.length > 0 &&
+    valor.length <=
+      MAXIMO_ID_FIRESTORE &&
+    !valor.includes("/") &&
+    !valor.includes("\0")
+  );
+}
+
+async function verificarAccesoEmpresa({
+  empresaId,
+  acceso,
+}: {
+  empresaId: string;
+  acceso: AccesoApi;
+}) {
+  const empresaReferencia =
+    adminDb
+      .collection("companies")
+      .doc(empresaId);
+
+  const empresaSnapshot =
+    await empresaReferencia.get();
+
+  if (!empresaSnapshot.exists) {
+    return {
+      empresa: null,
+      status: 404,
+      error:
+        "La empresa no existe.",
+    };
+  }
+
+  const empresa =
+    empresaSnapshot.data() as Empresa;
+
+  if (acceso.tipo === "interno") {
+    return {
+      empresa,
+      status: 200,
+      error: "",
+    };
+  }
+
+  if (
+    empresa.userId === acceso.uid
+  ) {
+    return {
+      empresa,
+      status: 200,
+      error: "",
+    };
+  }
+
+  const miembroSnapshot =
+    await empresaReferencia
+      .collection("members")
+      .doc(acceso.uid)
+      .get();
+
+  const miembro =
+    miembroSnapshot.data();
+
+  const permitido =
+    miembroSnapshot.exists &&
+    miembro?.estado === "activo";
+
+  if (!permitido) {
+    return {
+      empresa: null,
+      status: 403,
+      error:
+        "No tenés acceso a esta empresa.",
+    };
+  }
+
+  return {
+    empresa,
+    status: 200,
+    error: "",
+  };
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const acceso =
+      await validarAccesoApi(request);
+
+    if (!acceso) {
+      return NextResponse.json(
+        {
+          error:
+            "No autorizado.",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
+    let body: BodyRequest;
+
+    try {
+      body =
+        (await request.json()) as BodyRequest;
+    } catch {
+      return NextResponse.json(
+        {
+          error:
+            "El cuerpo de la solicitud no es válido.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    const mensaje =
+      typeof body.mensaje === "string"
+        ? body.mensaje
+            .trim()
+            .slice(
+              0,
+              MAXIMO_CARACTERES_MENSAJE
+            )
+        : "";
+
+    if (!mensaje) {
+      return NextResponse.json(
+        {
+          error:
+            "El mensaje es obligatorio.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    const empresaId =
+      typeof body.empresaId === "string"
+        ? body.empresaId.trim()
+        : "";
+
+    const chatId =
+      typeof body.chatId === "string"
+        ? body.chatId.trim()
+        : "";
+
+    if (
+      !empresaId ||
+      !esIdFirestoreValido(
+        empresaId
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "empresaId inválido.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (
+      chatId &&
+      !esIdFirestoreValido(chatId)
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "chatId inválido.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    const accesoEmpresa =
+      await verificarAccesoEmpresa({
+        empresaId,
+        acceso,
+      });
+
+    if (!accesoEmpresa.empresa) {
+      return NextResponse.json(
+        {
+          error:
+            accesoEmpresa.error,
+        },
+        {
+          status:
+            accesoEmpresa.status,
+        }
+      );
+    }
+
+    const empresa =
+      accesoEmpresa.empresa;
+
+    const intencion =
+      detectarIntencion(mensaje);
+
+    const solicitarHumano =
+      intencion === "humano";
+
+    const apiKey =
+      process.env.OPENROUTER_API_KEY;
 
     if (!apiKey) {
       return NextResponse.json(
@@ -564,44 +877,61 @@ const solicitarHumano = intencion === "humano";
       );
     }
 
-    const historial = limpiarHistorial(
-      body.historial
-    );
+    const historial =
+      limpiarHistorial(
+        body.historial
+      );
 
-    const empresa: Empresa = body.empresa ?? {};
+    /*
+     * El navegador no puede inyectar
+     * empresa, conocimiento, memoria o CRM.
+     * Todo se carga desde el servidor.
+     */
+    let conocimientos:
+      Conocimiento[] = [];
 
-    let conocimientos = limpiarConocimientos(
-      body.conocimientos
-    );
+    const contexto =
+      await obtenerContexto({
+        empresaId,
+        chatId,
+        mensaje,
+        limiteConocimientos:
+          MAXIMO_CONOCIMIENTOS,
+      });
 
-    const empresaId =
-  typeof body.empresaId === "string"
-    ? body.empresaId.trim()
-    : "";
+    const knowledgeSnapshot = await adminDb
+      .collection("companies")
+      .doc(empresaId)
+      .collection("knowledge")
+      .limit(100)
+      .get();
 
-const chatId =
-  typeof body.chatId === "string"
-    ? body.chatId.trim()
-    : "";
+    conocimientos = knowledgeSnapshot.docs
+      .map((documento) => {
+        const datos = documento.data();
 
-const contexto = await obtenerContexto({
-  empresaId,
-  chatId,
-  mensaje,
-  tags: body.tags,
-  notas: body.notas,
-  actividades: body.actividades,
-  limiteConocimientos: MAXIMO_CONOCIMIENTOS,
-});
+        return {
+          id: documento.id,
+          titulo: String(
+            datos.titulo ??
+              datos.title ??
+              datos.nombre ??
+              "Información"
+          ).trim(),
+          contenido: String(
+            datos.contenido ??
+              datos.content ??
+              datos.texto ??
+              ""
+          ).trim(),
+        };
+      })
+      .filter(
+        (item) => item.contenido.length > 0
+      );
 
-conocimientos = [
-  ...conocimientos,
-  ...contexto.conocimientos,
-];
-
-const memoriaRecibida = limpiarMemoria(
-  body.memoria
-);
+    const memoriaRecibida:
+      MemoriaCliente = {};
 
 const memoriaGuardada: MemoriaCliente =
   limpiarMemoria(contexto.memoria);

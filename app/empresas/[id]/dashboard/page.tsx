@@ -19,6 +19,7 @@ import QuickAccessCard from "../components/QuickAccessCard";
 import DashboardChart from "../components/DashboardChart";
 import LeadsCard from "../components/LeadsCard";
 import RecentConversationCard from "../components/RecentConversationCard";
+import PlanUsageCard from "@/components/dashboard/PlanUsageCard";
 
 type Conversacion = {
   id: string;
@@ -317,16 +318,21 @@ export default function DashboardEmpresaPage() {
             </div>
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(280px,0.7fr)]">
-            <DashboardChart datos={datosGrafico} />
+<div className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(280px,0.7fr)]">
 
-            <LeadsCard
-              total={totalConversaciones}
-              calientes={leadsCalientes}
-              medios={leadsMedios}
-              frios={leadsFrios}
-            />
-          </div>
+  <div className="space-y-6">
+    <DashboardChart datos={datosGrafico} />
+    <PlanUsageCard />
+  </div>
+
+  <LeadsCard
+    total={totalConversaciones}
+    calientes={leadsCalientes}
+    medios={leadsMedios}
+    frios={leadsFrios}
+  />
+
+</div>
 
           <Card className="overflow-hidden">
             <div className="flex flex-col justify-between gap-3 border-b border-zinc-800 px-6 py-5 sm:flex-row sm:items-center">

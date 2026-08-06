@@ -17,6 +17,10 @@ type Empresa = {
   subscriptionStatus?: string;
 };
 
+type MiembroEmpresa = {
+  estado?: "activo" | "inactivo";
+};
+
 type Plan = {
   id: PlanId;
   nombre: string;
@@ -92,57 +96,117 @@ export default function PlanesPage() {
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
 
+  const [
+    accesoVerificado,
+    setAccesoVerificado,
+  ] = useState(false);
+
   useEffect(() => {
-    const cancelarAuth = onAuthStateChanged(
-      auth,
-      async (usuarioActual) => {
-        if (!usuarioActual) {
-          router.replace("/login");
-          return;
-        }
-
-        setUsuario(usuarioActual);
-
-        if (!empresaId) {
-          setError("No se encontró la empresa.");
-          setCargando(false);
-          return;
-        }
-
-        try {
-          const empresaSnapshot = await getDoc(
-            doc(db, "companies", empresaId)
-          );
-
-          if (!empresaSnapshot.exists()) {
-            setError("La empresa no existe.");
+    const cancelarAuth =
+      onAuthStateChanged(
+        auth,
+        async (usuarioActual) => {
+          if (!usuarioActual) {
+            router.replace("/login");
             return;
           }
 
-          const datos = empresaSnapshot.data() as Empresa;
-
-          if (
-            datos.userId &&
-            datos.userId !== usuarioActual.uid
-          ) {
+          if (!empresaId) {
             setError(
-              "No tenés permiso para ver los planes de esta empresa."
+              "No se encontró la empresa."
             );
+            setCargando(false);
             return;
           }
 
-          setEmpresa(datos);
-        } catch (firebaseError) {
-          console.error(
-            "Error cargando los planes:",
-            firebaseError
-          );
-          setError("No se pudo cargar la información del plan.");
-        } finally {
-          setCargando(false);
+          const empresaIdSeguro =
+            empresaId;
+
+          setUsuario(null);
+          setEmpresa(null);
+          setAccesoVerificado(false);
+          setError("");
+          setCargando(true);
+
+          try {
+            const empresaSnapshot =
+              await getDoc(
+                doc(
+                  db,
+                  "companies",
+                  empresaIdSeguro
+                )
+              );
+
+            if (
+              !empresaSnapshot.exists()
+            ) {
+              setError(
+                "La empresa no existe."
+              );
+              return;
+            }
+
+            const datos =
+              empresaSnapshot.data() as Empresa;
+
+            if (
+              datos.userId !==
+              usuarioActual.uid
+            ) {
+              const miembroSnapshot =
+                await getDoc(
+                  doc(
+                    db,
+                    "companies",
+                    empresaIdSeguro,
+                    "members",
+                    usuarioActual.uid
+                  )
+                );
+
+              if (
+                miembroSnapshot.exists()
+              ) {
+                const miembro =
+                  miembroSnapshot.data() as MiembroEmpresa;
+
+                if (
+                  miembro.estado ===
+                  "activo"
+                ) {
+                  router.replace(
+                    `/empresas/${empresaIdSeguro}/conversaciones`
+                  );
+                  return;
+                }
+              }
+
+              router.replace(
+                "/empresas"
+              );
+              return;
+            }
+
+            setUsuario(
+              usuarioActual
+            );
+            setEmpresa(datos);
+            setAccesoVerificado(true);
+          } catch (firebaseError) {
+            console.error(
+              "Error cargando los planes:",
+              firebaseError
+            );
+
+            setError(
+              "No se pudo cargar la información del plan."
+            );
+          } finally {
+            setCargando(false);
+          }
         }
-      }
-    );
+      );
 
     return () => cancelarAuth();
   }, [empresaId, router]);
@@ -153,8 +217,14 @@ export default function PlanesPage() {
     setError("");
     setMensaje("");
 
-    if (!empresaId || !usuario) {
-      setError("No se encontró la empresa o el usuario.");
+    if (
+      !empresaId ||
+      !usuario ||
+      !accesoVerificado
+    ) {
+      setError(
+        "No se encontró la empresa o el usuario."
+      );
       return;
     }
 
@@ -173,12 +243,18 @@ export default function PlanesPage() {
     setProcesandoPlan(planId);
 
     try {
+      const idToken =
+        await usuario.getIdToken(true);
+
       const response = await fetch(
         "/api/payments/mercadopago/create-preference",
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
+            Authorization:
+              `Bearer ${idToken}`,
           },
           body: JSON.stringify({
             empresaId,
@@ -235,6 +311,23 @@ export default function PlanesPage() {
         </div>
       </section>
     );
+  }
+
+  if (
+    !accesoVerificado ||
+    !empresa
+  ) {
+    if (error) {
+      return (
+        <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
+          <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-5 py-4 text-sm text-red-300">
+            {error}
+          </div>
+        </section>
+      );
+    }
+
+    return null;
   }
 
   return (

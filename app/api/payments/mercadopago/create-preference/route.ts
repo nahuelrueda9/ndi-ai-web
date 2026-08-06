@@ -1,8 +1,18 @@
-import { NextRequest, NextResponse } from "next/server";
+import {
+  NextRequest,
+  NextResponse,
+} from "next/server";
+
+import {
+  adminAuth,
+  adminDb,
+} from "@/lib/firebaseAdmin";
 
 export const runtime = "nodejs";
 
-type PlanPago = "pro" | "business";
+type PlanPago =
+  | "pro"
+  | "business";
 
 type BodyRequest = {
   empresaId?: string;
@@ -15,58 +25,160 @@ type ConfiguracionPlan = {
   precio: number;
 };
 
-const PLANES: Record<PlanPago, ConfiguracionPlan> = {
+type RespuestaMercadoPago = {
+  id?: string;
+  init_point?: string;
+  sandbox_init_point?: string;
+  message?: string;
+  error?: string;
+  cause?: unknown;
+};
+
+const PLANES: Record<
+  PlanPago,
+  ConfiguracionPlan
+> = {
   pro: {
     titulo: "NDI AI Pro",
     descripcion:
       "Plan Pro de NDI AI para automatizar la atención de clientes.",
-    precio: Number(process.env.MP_PRICE_PRO || 15000),
+    precio: Number(
+      process.env.MP_PRICE_PRO ||
+        15000
+    ),
   },
+
   business: {
     titulo: "NDI AI Empresa",
     descripcion:
       "Plan Empresa de NDI AI para equipos y operaciones de mayor volumen.",
-    precio: Number(process.env.MP_PRICE_BUSINESS || 35000),
+    precio: Number(
+      process.env
+        .MP_PRICE_BUSINESS ||
+        35000
+    ),
   },
 };
 
-function obtenerUrlBase(request: NextRequest) {
-  const urlConfigurada =
-    process.env.NEXT_PUBLIC_APP_URL?.trim();
+function obtenerBearerToken(
+  request: NextRequest
+) {
+  const authorization =
+    request.headers.get(
+      "authorization"
+    );
 
-  if (urlConfigurada) {
-    return urlConfigurada.replace(/\/+$/, "");
+  if (
+    !authorization ||
+    !authorization.startsWith(
+      "Bearer "
+    )
+  ) {
+    return "";
   }
 
-  const vercelUrl = process.env.VERCEL_URL?.trim();
-
-  if (vercelUrl) {
-    return `https://${vercelUrl.replace(/\/+$/, "")}`;
-  }
-
-  return request.nextUrl.origin.replace(/\/+$/, "");
+  return authorization
+    .slice("Bearer ".length)
+    .trim();
 }
 
-function esUrlPublica(url: string) {
+function obtenerUrlBase(
+  request: NextRequest
+) {
+  const urlConfigurada =
+    process.env
+      .NEXT_PUBLIC_APP_URL
+      ?.trim();
+
+  if (urlConfigurada) {
+    return urlConfigurada.replace(
+      /\/+$/,
+      ""
+    );
+  }
+
+  const vercelUrl =
+    process.env.VERCEL_URL?.trim();
+
+  if (vercelUrl) {
+    return `https://${vercelUrl.replace(
+      /\/+$/,
+      ""
+    )}`;
+  }
+
+  return request.nextUrl.origin.replace(
+    /\/+$/,
+    ""
+  );
+}
+
+function esUrlPublica(
+  url: string
+) {
   try {
-    const parsedUrl = new URL(url);
+    const parsedUrl =
+      new URL(url);
 
     return (
-      parsedUrl.protocol === "https:" &&
-      parsedUrl.hostname !== "localhost" &&
-      parsedUrl.hostname !== "127.0.0.1"
+      parsedUrl.protocol ===
+        "https:" &&
+      parsedUrl.hostname !==
+        "localhost" &&
+      parsedUrl.hostname !==
+        "127.0.0.1"
     );
   } catch {
     return false;
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest
+) {
   try {
-    const accessToken =
-      process.env.MERCADOPAGO_ACCESS_TOKEN?.trim();
+    const idToken =
+      obtenerBearerToken(request);
 
-    if (!accessToken) {
+    if (!idToken) {
+      return NextResponse.json(
+        {
+          error:
+            "Tenés que iniciar sesión.",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
+    let usuario;
+
+    try {
+      usuario =
+        await adminAuth.verifyIdToken(
+          idToken
+        );
+    } catch {
+      return NextResponse.json(
+        {
+          error:
+            "La sesión no es válida o venció.",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
+    const accessTokenMercadoPago =
+      process.env
+        .MERCADOPAGO_ACCESS_TOKEN
+        ?.trim();
+
+    if (
+      !accessTokenMercadoPago
+    ) {
       return NextResponse.json(
         {
           error:
@@ -78,10 +190,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = (await request.json()) as BodyRequest;
+    const body =
+      (await request.json()) as BodyRequest;
 
     const empresaId =
-      typeof body.empresaId === "string"
+      typeof body.empresaId ===
+      "string"
         ? body.empresaId.trim()
         : "";
 
@@ -90,7 +204,8 @@ export async function POST(request: NextRequest) {
     if (!empresaId) {
       return NextResponse.json(
         {
-          error: "Falta empresaId.",
+          error:
+            "Falta empresaId.",
         },
         {
           status: 400,
@@ -104,7 +219,8 @@ export async function POST(request: NextRequest) {
     ) {
       return NextResponse.json(
         {
-          error: "El plan seleccionado no es válido.",
+          error:
+            "El plan seleccionado no es válido.",
         },
         {
           status: 400,
@@ -112,10 +228,53 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const configuracionPlan = PLANES[plan];
+    const empresaReferencia =
+      adminDb
+        .collection("companies")
+        .doc(empresaId);
+
+    const empresaSnapshot =
+      await empresaReferencia.get();
 
     if (
-      !Number.isFinite(configuracionPlan.precio) ||
+      !empresaSnapshot.exists
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "La empresa no existe.",
+        },
+        {
+          status: 404,
+        }
+      );
+    }
+
+    const empresa =
+      empresaSnapshot.data();
+
+    if (
+      empresa?.userId !==
+      usuario.uid
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Solo el Propietario puede cambiar el plan de esta empresa.",
+        },
+        {
+          status: 403,
+        }
+      );
+    }
+
+    const configuracionPlan =
+      PLANES[plan];
+
+    if (
+      !Number.isFinite(
+        configuracionPlan.precio
+      ) ||
       configuracionPlan.precio <= 0
     ) {
       return NextResponse.json(
@@ -129,61 +288,84 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const urlBase = obtenerUrlBase(request);
-    const urlPublica = esUrlPublica(urlBase);
+    const urlBase =
+      obtenerUrlBase(request);
+
+    const urlPublica =
+      esUrlPublica(urlBase);
 
     const externalReference = [
       "ndi-ai",
       empresaId,
+      usuario.uid,
       plan,
       Date.now(),
     ].join(":");
 
-    const preferenceBody: Record<string, unknown> = {
-      items: [
-        {
-          id: `ndi-ai-${plan}`,
-          title: configuracionPlan.titulo,
-          description:
-            configuracionPlan.descripcion,
-          quantity: 1,
-          currency_id: "ARS",
-          unit_price: configuracionPlan.precio,
+    const preferenceBody:
+      Record<string, unknown> = {
+        items: [
+          {
+            id: `ndi-ai-${plan}`,
+            title:
+              configuracionPlan.titulo,
+            description:
+              configuracionPlan.descripcion,
+            quantity: 1,
+            currency_id: "ARS",
+            unit_price:
+              configuracionPlan.precio,
+          },
+        ],
+
+        external_reference:
+          externalReference,
+
+        metadata: {
+          empresa_id: empresaId,
+          propietario_uid:
+            usuario.uid,
+          plan,
         },
-      ],
 
-      external_reference: externalReference,
+        statement_descriptor:
+          "NDI AI",
 
-      metadata: {
-        empresa_id: empresaId,
-        plan,
-      },
+        payment_methods: {
+          installments: 12,
+        },
+      };
 
-      statement_descriptor: "NDI AI",
-
-      payment_methods: {
-        installments: 12,
-      },
-    };
+    if (usuario.email) {
+      preferenceBody.payer = {
+        email: usuario.email,
+      };
+    }
 
     /*
-     * Mercado Pago no admite localhost en back_urls.
-     * En producción se agregan automáticamente.
+     * Mercado Pago no admite localhost
+     * en back_urls ni notification_url.
      */
     if (urlPublica) {
       preferenceBody.back_urls = {
-        success: `${urlBase}/empresas/${encodeURIComponent(
-          empresaId
-        )}/planes?payment=success`,
-        pending: `${urlBase}/empresas/${encodeURIComponent(
-          empresaId
-        )}/planes?payment=pending`,
-        failure: `${urlBase}/empresas/${encodeURIComponent(
-          empresaId
-        )}/planes?payment=failure`,
+        success:
+          `${urlBase}/empresas/${encodeURIComponent(
+            empresaId
+          )}/planes?payment=success`,
+
+        pending:
+          `${urlBase}/empresas/${encodeURIComponent(
+            empresaId
+          )}/planes?payment=pending`,
+
+        failure:
+          `${urlBase}/empresas/${encodeURIComponent(
+            empresaId
+          )}/planes?payment=failure`,
       };
 
-      preferenceBody.auto_return = "approved";
+      preferenceBody.auto_return =
+        "approved";
 
       preferenceBody.notification_url =
         `${urlBase}/api/payments/mercadopago/webhook`;
@@ -193,34 +375,45 @@ export async function POST(request: NextRequest) {
       "https://api.mercadopago.com/checkout/preferences",
       {
         method: "POST",
+
         headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
+          Authorization:
+            `Bearer ${accessTokenMercadoPago}`,
+
+          "Content-Type":
+            "application/json",
         },
-        body: JSON.stringify(preferenceBody),
+
+        body: JSON.stringify(
+          preferenceBody
+        ),
+
         cache: "no-store",
       }
     );
 
-    const responseText = await response.text();
+    const responseText =
+      await response.text();
 
-    let data: {
-      id?: string;
-      init_point?: string;
-      sandbox_init_point?: string;
-      message?: string;
-      error?: string;
-      cause?: unknown;
-    };
+    let data:
+      RespuestaMercadoPago;
 
     try {
-      data = JSON.parse(responseText);
+      data =
+        JSON.parse(
+          responseText
+        ) as RespuestaMercadoPago;
     } catch {
       return NextResponse.json(
         {
           error:
             "Mercado Pago devolvió una respuesta inválida.",
-          detalles: responseText.slice(0, 500),
+
+          detalles:
+            responseText.slice(
+              0,
+              500
+            ),
         },
         {
           status: 502,
@@ -240,10 +433,13 @@ export async function POST(request: NextRequest) {
             data.message ||
             data.error ||
             "No se pudo crear la preferencia de pago.",
-          detalles: data.cause,
+
+          detalles:
+            data.cause,
         },
         {
-          status: response.status,
+          status:
+            response.status,
         }
       );
     }
@@ -252,7 +448,10 @@ export async function POST(request: NextRequest) {
       data.init_point ||
       data.sandbox_init_point;
 
-    if (!data.id || !checkoutUrl) {
+    if (
+      !data.id ||
+      !checkoutUrl
+    ) {
       return NextResponse.json(
         {
           error:
@@ -264,12 +463,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    await empresaReferencia.set(
+      {
+        pendingPlan: plan,
+        mercadoPagoPreferenceId:
+          data.id,
+        mercadoPagoExternalReference:
+          externalReference,
+        mercadoPagoPreferenceCreatedAt:
+          new Date(),
+        mercadoPagoPreferenceCreatedBy:
+          usuario.uid,
+      },
+      {
+        merge: true,
+      }
+    );
+
     return NextResponse.json({
       success: true,
       preferenceId: data.id,
       checkoutUrl,
-      initPoint: data.init_point,
-      sandboxInitPoint: data.sandbox_init_point,
+      initPoint:
+        data.init_point,
+      sandboxInitPoint:
+        data.sandbox_init_point,
       externalReference,
     });
   } catch (error) {
