@@ -48,6 +48,7 @@ type Integracion = {
     | "disponible"
     | "proximamente";
   ruta?: string;
+  detallePlan?: string;
 };
 
 const integraciones: Integracion[] = [
@@ -55,27 +56,29 @@ const integraciones: Integracion[] = [
     id: "whatsapp",
     nombre: "WhatsApp",
     descripcion:
-      "Recibí mensajes, respondé con IA y centralizá las conversaciones.",
+      "Conectá WhatsApp Business para que NDI AI reciba consultas y responda automáticamente por tu negocio.",
     icono: "💬",
     estado: "disponible",
     ruta: "whatsapp",
+    detallePlan: "Incluido en Free",
   },
   {
     id: "instagram",
     nombre: "Instagram",
     descripcion:
-      "Conectá Instagram Messaging y respondé desde el inbox de NDI AI.",
+      "La integración con mensajes de Instagram está en preparación y se habilitará más adelante.",
     icono: "📸",
-    estado: "disponible",
-    ruta: "instagram",
+    estado: "proximamente",
+    detallePlan: "Próximamente",
   },
   {
     id: "messenger",
     nombre: "Facebook Messenger",
     descripcion:
-      "Unificá los mensajes de Facebook con el resto de tus canales.",
+      "La integración con Facebook Messenger todavía no está disponible.",
     icono: "📨",
     estado: "proximamente",
+    detallePlan: "Próximamente",
   },
 ];
 
@@ -299,9 +302,8 @@ export default function IntegracionesPage() {
         </h1>
 
         <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
-          Conectá los canales donde hablan
-          tus clientes y administrá todas
-          las conversaciones desde NDI AI.
+          Empezá conectando WhatsApp, el canal principal de NDI AI.
+          Las demás integraciones se habilitarán cuando estén listas.
         </p>
       </header>
 
@@ -332,9 +334,23 @@ export default function IntegracionesPage() {
                 </Badge>
               </div>
 
-              <h2 className="mt-5 text-xl font-semibold text-white">
-                {integracion.nombre}
-              </h2>
+              <div className="mt-5 flex flex-wrap items-center gap-2">
+                <h2 className="text-xl font-semibold text-white">
+                  {integracion.nombre}
+                </h2>
+
+                {integracion.detallePlan && (
+                  <span
+                    className={
+                      integracion.estado === "disponible"
+                        ? "rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-300"
+                        : "rounded-full border border-zinc-700 bg-zinc-800 px-2.5 py-1 text-[11px] font-medium text-zinc-400"
+                    }
+                  >
+                    {integracion.detallePlan}
+                  </span>
+                )}
+              </div>
 
               <p className="mt-2 flex-1 text-sm leading-6 text-zinc-400">
                 {

@@ -16,6 +16,15 @@ import {
   useParams,
   useRouter,
 } from "next/navigation";
+import {
+  CheckCircle2,
+  Copy,
+  ExternalLink,
+  KeyRound,
+  MessageCircle,
+  PlugZap,
+  ShieldCheck,
+} from "lucide-react";
 
 import {
   auth,
@@ -52,19 +61,26 @@ type MiembroData = {
 type ConfiguracionWhatsApp = {
   phoneNumberId?: string;
   businessAccountId?: string;
-  verifyToken?: string;
   estado?: EstadoConexion;
+  displayPhoneNumber?: string;
+  verifiedName?: string;
 };
 
 type RespuestaConfiguracion = {
-  config?: ConfiguracionWhatsApp;
+  config?: ConfiguracionWhatsApp | null;
+  verifyToken?: string;
   error?: string;
 };
 
 type RespuestaApi = {
   message?: string;
   error?: string;
+  numero?: string;
+  nombreVerificado?: string;
 };
+
+const WEBHOOK_URL =
+  "https://ndi-ai-web.vercel.app/api/webhooks/whatsapp";
 
 export default function WhatsAppPage() {
   const params = useParams();
@@ -119,6 +135,16 @@ export default function WhatsAppPage() {
     setVerifyToken,
   ] = useState("");
 
+  const [
+    numeroConectado,
+    setNumeroConectado,
+  ] = useState("");
+
+  const [
+    nombreVerificado,
+    setNombreVerificado,
+  ] = useState("");
+
   const [estado, setEstado] =
     useState<EstadoConexion>(
       "sin_configurar"
@@ -135,6 +161,13 @@ export default function WhatsAppPage() {
 
   const [error, setError] =
     useState("");
+
+  const [
+    copiado,
+    setCopiado,
+  ] = useState<
+    "webhook" | "verify" | null
+  >(null);
 
   useEffect(() => {
     const cancelarAuth =
@@ -305,10 +338,18 @@ export default function WhatsAppPage() {
           );
         }
 
-        if (
-          !activo ||
-          !data.config
-        ) {
+        if (!activo) {
+          return;
+        }
+
+        setVerifyToken(
+          data.verifyToken ?? ""
+        );
+
+        if (!data.config) {
+          setEstado(
+            "sin_configurar"
+          );
           return;
         }
 
@@ -321,13 +362,18 @@ export default function WhatsAppPage() {
             ""
         );
 
-        setVerifyToken(
-          data.config.verifyToken ?? ""
+        setNumeroConectado(
+          data.config.displayPhoneNumber ??
+            ""
+        );
+
+        setNombreVerificado(
+          data.config.verifiedName ?? ""
         );
 
         setEstado(
           data.config.estado ===
-            "conectado"
+          "conectado"
             ? "conectado"
             : "configurado"
         );
@@ -380,7 +426,7 @@ export default function WhatsAppPage() {
     }
 
     if (!businessAccountId.trim()) {
-      return "Ingresá el Business Account ID.";
+      return "Ingresá el WhatsApp Business Account ID.";
     }
 
     if (
@@ -390,27 +436,119 @@ export default function WhatsAppPage() {
       return "Ingresá el Access Token.";
     }
 
-    if (!verifyToken.trim()) {
-      return "Ingresá el Verify Token.";
-    }
-
     return "";
   }
 
   async function guardarConfiguracion() {
-    if (
-      !empresaId ||
-      !accesoVerificado ||
-      guardando
-    ) {
-      return;
-    }
-
     const validacion =
       validarConfiguracion();
 
     if (validacion) {
-      setError(validacion);
+      throw new Error(validacion);
+    }
+
+    if (
+      !empresaId ||
+      !accesoVerificado
+    ) {
+      throw new Error(
+        "No se encontró la empresa."
+      );
+    }
+
+    const idToken =
+      await obtenerTokenUsuario();
+
+    const response = await fetch(
+      "/api/integraciones/whatsapp/config",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+          Authorization:
+            `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          empresaId,
+          phoneNumberId:
+            phoneNumberId.trim(),
+          businessAccountId:
+            businessAccountId.trim(),
+          accessToken:
+            accessToken.trim(),
+        }),
+      }
+    );
+
+    const data =
+      (await response.json()) as RespuestaApi;
+
+    if (!response.ok) {
+      throw new Error(
+        data.error ||
+          "No se pudo guardar la configuración."
+      );
+    }
+
+    setEstado("configurado");
+  }
+
+  async function ejecutarPrueba() {
+    if (!empresaId) {
+      throw new Error(
+        "No se encontró la empresa."
+      );
+    }
+
+    const idToken =
+      await obtenerTokenUsuario();
+
+    const response = await fetch(
+      "/api/integraciones/whatsapp/probar",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+          Authorization:
+            `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          empresaId,
+          phoneNumberId:
+            phoneNumberId.trim(),
+          accessToken:
+            accessToken.trim(),
+        }),
+      }
+    );
+
+    const data =
+      (await response.json()) as RespuestaApi;
+
+    if (!response.ok) {
+      throw new Error(
+        data.error ||
+          "No se pudo conectar con Meta."
+      );
+    }
+
+    setEstado("conectado");
+
+    setNumeroConectado(
+      data.numero ?? ""
+    );
+
+    setNombreVerificado(
+      data.nombreVerificado ?? ""
+    );
+
+    return data;
+  }
+
+  async function guardarYConectar() {
+    if (guardando || probando) {
       return;
     }
 
@@ -419,74 +557,40 @@ export default function WhatsAppPage() {
     setMensaje("");
 
     try {
-      const idToken =
-        await obtenerTokenUsuario();
+      await guardarConfiguracion();
 
-      const response = await fetch(
-        "/api/integraciones/whatsapp/config",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-            Authorization:
-              `Bearer ${idToken}`,
-          },
-          body: JSON.stringify({
-            empresaId,
-            phoneNumberId:
-              phoneNumberId.trim(),
-            businessAccountId:
-              businessAccountId.trim(),
-            accessToken:
-              accessToken.trim(),
-            verifyToken:
-              verifyToken.trim(),
-          }),
-        }
-      );
+      setProbando(true);
+      setEstado("probando");
 
       const data =
-        (await response.json()) as RespuestaApi;
+        await ejecutarPrueba();
 
-      if (!response.ok) {
-        throw new Error(
-          data.error ||
-            "No se pudo guardar la configuración."
-        );
-      }
-
-      setEstado("configurado");
       setAccessToken("");
 
       setMensaje(
         data.message ||
-          "Configuración guardada correctamente."
+          "WhatsApp quedó conectado correctamente."
       );
     } catch (requestError) {
+      setEstado(
+        estado === "sin_configurar"
+          ? "sin_configurar"
+          : "configurado"
+      );
+
       setError(
         requestError instanceof Error
           ? requestError.message
-          : "No se pudo guardar la configuración."
+          : "No se pudo conectar WhatsApp."
       );
     } finally {
       setGuardando(false);
+      setProbando(false);
     }
   }
 
-  async function probarConexion() {
-    if (
-      !empresaId ||
-      !accesoVerificado ||
-      probando
-    ) {
-      return;
-    }
-
-    if (!phoneNumberId.trim()) {
-      setError(
-        "Ingresá el Phone Number ID."
-      );
+  async function probarNuevamente() {
+    if (guardando || probando) {
       return;
     }
 
@@ -496,40 +600,10 @@ export default function WhatsAppPage() {
     setMensaje("");
 
     try {
-      const idToken =
-        await obtenerTokenUsuario();
-
-      const response = await fetch(
-        "/api/integraciones/whatsapp/probar",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-            Authorization:
-              `Bearer ${idToken}`,
-          },
-          body: JSON.stringify({
-            empresaId,
-            phoneNumberId:
-              phoneNumberId.trim(),
-            accessToken:
-              accessToken.trim(),
-          }),
-        }
-      );
-
       const data =
-        (await response.json()) as RespuestaApi;
+        await ejecutarPrueba();
 
-      if (!response.ok) {
-        throw new Error(
-          data.error ||
-            "No se pudo conectar con Meta."
-        );
-      }
-
-      setEstado("conectado");
+      setAccessToken("");
 
       setMensaje(
         data.message ||
@@ -545,6 +619,27 @@ export default function WhatsAppPage() {
       );
     } finally {
       setProbando(false);
+    }
+  }
+
+  async function copiar(
+    valor: string,
+    tipo: "webhook" | "verify"
+  ) {
+    try {
+      await navigator.clipboard.writeText(
+        valor
+      );
+
+      setCopiado(tipo);
+
+      window.setTimeout(() => {
+        setCopiado(null);
+      }, 1500);
+    } catch {
+      setError(
+        "No se pudo copiar automáticamente."
+      );
     }
   }
 
@@ -600,145 +695,352 @@ export default function WhatsAppPage() {
     <section className="mx-auto w-full max-w-5xl space-y-6 px-5 py-8 sm:px-8">
       <header className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
         <div>
-          <p className="text-sm font-medium text-green-400">
-            Integración oficial de Meta
+          <p className="text-sm font-medium text-emerald-400">
+            Canal principal de NDI AI
           </p>
 
           <h1 className="mt-2 text-3xl font-bold text-white">
-            WhatsApp Business
+            Conectar WhatsApp
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
-            Configurá tu número de
-            WhatsApp Cloud API para
-            recibir y responder mensajes
-            desde NDI AI.
+            Conectá WhatsApp Business
+            Platform para que NDI AI
+            reciba consultas y responda
+            automáticamente por tu negocio.
           </p>
         </div>
 
-        <div className="w-fit rounded-full border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm">
-          {estado === "conectado" && (
-            <span className="text-emerald-400">
-              ● Conectado
-            </span>
-          )}
-
-          {estado === "probando" && (
-            <span className="text-amber-400">
-              ● Probando conexión...
-            </span>
-          )}
-
-          {estado === "configurado" && (
-            <span className="text-blue-400">
-              ● Configurado
-            </span>
-          )}
-
-          {estado ===
-            "sin_configurar" && (
-            <span className="text-zinc-400">
-              ● Sin configurar
-            </span>
-          )}
-        </div>
+        <EstadoBadge
+          estado={estado}
+        />
       </header>
 
-      <Card className="space-y-5 p-6">
-        <Input
-          id="phone"
-          label="Phone Number ID"
-          value={phoneNumberId}
-          onChange={(event) =>
-            setPhoneNumberId(
-              event.target.value
-            )
-          }
-          placeholder="Ejemplo: 123456789012345"
-        />
+      {estado === "conectado" && (
+        <Card className="border-emerald-500/20 bg-emerald-500/5 p-5">
+          <div className="flex gap-3">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" />
 
-        <Input
-          id="business"
-          label="Business Account ID"
-          value={businessAccountId}
-          onChange={(event) =>
-            setBusinessAccountId(
-              event.target.value
-            )
-          }
-          placeholder="Ejemplo: 987654321098765"
-        />
+            <div>
+              <p className="font-medium text-white">
+                WhatsApp conectado
+              </p>
 
-        <Input
-          id="token"
-          label="Access Token"
-          type="password"
-          value={accessToken}
-          onChange={(event) =>
-            setAccessToken(
-              event.target.value
-            )
-          }
-          placeholder={
-            estado === "sin_configurar"
-              ? "Pegá el token generado por Meta"
-              : "Dejalo vacío para conservar el token actual"
-          }
-        />
-
-        <Input
-          id="verify"
-          label="Verify Token"
-          value={verifyToken}
-          onChange={(event) =>
-            setVerifyToken(
-              event.target.value
-            )
-          }
-          placeholder="Elegí una palabra segura"
-        />
-
-        {mensaje && (
-          <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-300">
-            {mensaje}
+              <p className="mt-1 text-sm text-zinc-400">
+                {nombreVerificado
+                  ? `${nombreVerificado}${numeroConectado ? ` · ${numeroConectado}` : ""}`
+                  : numeroConectado ||
+                    "Meta verificó correctamente la conexión."}
+              </p>
+            </div>
           </div>
-        )}
+        </Card>
+      )}
 
-        {error && (
-          <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400">
-            {error}
+      <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="space-y-5">
+          <Card className="p-6">
+            <div className="flex items-center gap-3">
+              <MessageCircle className="h-5 w-5 text-emerald-400" />
+
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
+                  Paso 1
+                </p>
+
+                <h2 className="mt-1 font-semibold text-white">
+                  Conseguí los datos en Meta
+                </h2>
+              </div>
+            </div>
+
+            <p className="mt-4 text-sm leading-6 text-zinc-400">
+              En Meta Developers, dentro
+              de la configuración de
+              WhatsApp de tu app, copiá
+              estos tres datos:
+            </p>
+
+            <div className="mt-4 space-y-2 text-sm text-zinc-300">
+              <p>• Phone Number ID</p>
+              <p>• WhatsApp Business Account ID</p>
+              <p>• Access Token</p>
+            </div>
+
+            <a
+              href="https://developers.facebook.com/apps/"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-blue-400 transition hover:text-blue-300"
+            >
+              Abrir Meta Developers
+              <ExternalLink className="h-4 w-4" />
+            </a>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center gap-3">
+              <PlugZap className="h-5 w-5 text-blue-400" />
+
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
+                  Paso 2
+                </p>
+
+                <h2 className="mt-1 font-semibold text-white">
+                  Configurá el webhook
+                </h2>
+              </div>
+            </div>
+
+            <p className="mt-4 text-sm leading-6 text-zinc-400">
+              En Webhooks de Meta usá
+              exactamente estos datos y
+              suscribí el campo
+              <strong className="text-zinc-200">
+                {" "}messages
+              </strong>.
+            </p>
+
+            <CopyField
+              label="URL de devolución"
+              value={WEBHOOK_URL}
+              copiado={
+                copiado === "webhook"
+              }
+              onCopy={() =>
+                copiar(
+                  WEBHOOK_URL,
+                  "webhook"
+                )
+              }
+            />
+
+            <CopyField
+              label="Token de verificación"
+              value={
+                verifyToken ||
+                "No configurado"
+              }
+              copiado={
+                copiado === "verify"
+              }
+              onCopy={() =>
+                verifyToken &&
+                copiar(
+                  verifyToken,
+                  "verify"
+                )
+              }
+              disabled={!verifyToken}
+            />
+          </Card>
+
+          <Card className="border-amber-500/20 bg-amber-500/5 p-5">
+            <div className="flex gap-3">
+              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
+
+              <p className="text-sm leading-6 text-zinc-400">
+                El Access Token es
+                sensible. Pegalo únicamente
+                acá dentro de NDI AI. Nunca
+                lo publiques ni lo envíes
+                por redes sociales.
+              </p>
+            </div>
+          </Card>
+        </div>
+
+        <Card className="h-fit space-y-5 p-6">
+          <div className="flex items-center gap-3">
+            <KeyRound className="h-5 w-5 text-blue-400" />
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
+                Paso 3
+              </p>
+
+              <h2 className="mt-1 text-lg font-semibold text-white">
+                Conectá tu número
+              </h2>
+            </div>
           </div>
-        )}
 
-        <div className="flex flex-col gap-3 sm:flex-row">
+          <Input
+            id="phone"
+            label="Phone Number ID"
+            value={phoneNumberId}
+            onChange={(event) =>
+              setPhoneNumberId(
+                event.target.value
+              )
+            }
+            placeholder="Ejemplo: 123456789012345"
+          />
+
+          <Input
+            id="business"
+            label="WhatsApp Business Account ID"
+            value={businessAccountId}
+            onChange={(event) =>
+              setBusinessAccountId(
+                event.target.value
+              )
+            }
+            placeholder="Ejemplo: 987654321098765"
+          />
+
+          <Input
+            id="token"
+            label="Access Token"
+            type="password"
+            value={accessToken}
+            onChange={(event) =>
+              setAccessToken(
+                event.target.value
+              )
+            }
+            placeholder={
+              estado === "sin_configurar"
+                ? "Pegá el token generado por Meta"
+                : "Dejalo vacío para conservar el token actual"
+            }
+          />
+
+          {mensaje && (
+            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-300">
+              {mensaje}
+            </div>
+          )}
+
+          {error && (
+            <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400">
+              {error}
+            </div>
+          )}
+
           <Button
             type="button"
             onClick={
-              guardarConfiguracion
+              guardarYConectar
             }
             disabled={
               guardando || probando
             }
+            className="w-full"
           >
-            {guardando
-              ? "Guardando..."
-              : "Guardar configuración"}
+            {guardando ||
+            probando
+              ? "Comprobando conexión..."
+              : estado === "conectado"
+                ? "Guardar cambios y comprobar"
+                : "Guardar y conectar WhatsApp"}
           </Button>
 
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={probarConexion}
-            disabled={
-              guardando || probando
-            }
-          >
-            {probando
-              ? "Probando..."
-              : "Probar conexión"}
-          </Button>
-        </div>
-      </Card>
+          {estado !==
+            "sin_configurar" && (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={
+                probarNuevamente
+              }
+              disabled={
+                guardando ||
+                probando
+              }
+              className="w-full"
+            >
+              {probando
+                ? "Probando..."
+                : "Probar conexión nuevamente"}
+            </Button>
+          )}
+
+          <p className="text-xs leading-5 text-zinc-500">
+            NDI AI no muestra nuevamente
+            el Access Token guardado. Si
+            necesitás cambiarlo, pegá uno
+            nuevo y guardá.
+          </p>
+        </Card>
+      </div>
     </section>
+  );
+}
+
+function EstadoBadge({
+  estado,
+}: {
+  estado: EstadoConexion;
+}) {
+  const estilos = {
+    conectado:
+      "border-emerald-500/20 bg-emerald-500/10 text-emerald-400",
+    probando:
+      "border-amber-500/20 bg-amber-500/10 text-amber-400",
+    configurado:
+      "border-blue-500/20 bg-blue-500/10 text-blue-400",
+    sin_configurar:
+      "border-zinc-700 bg-zinc-900 text-zinc-400",
+  };
+
+  const textos = {
+    conectado: "● Conectado",
+    probando:
+      "● Probando conexión...",
+    configurado: "● Configurado",
+    sin_configurar:
+      "● Sin configurar",
+  };
+
+  return (
+    <div
+      className={`w-fit rounded-full border px-4 py-2 text-sm ${estilos[estado]}`}
+    >
+      {textos[estado]}
+    </div>
+  );
+}
+
+function CopyField({
+  label,
+  value,
+  copiado,
+  onCopy,
+  disabled = false,
+}: {
+  label: string;
+  value: string;
+  copiado: boolean;
+  onCopy: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="mt-4">
+      <p className="mb-2 text-xs font-medium text-zinc-500">
+        {label}
+      </p>
+
+      <div className="flex gap-2">
+        <div className="min-w-0 flex-1 rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-xs text-zinc-300">
+          <p className="truncate">
+            {value}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={onCopy}
+          disabled={disabled}
+          className="flex h-11 shrink-0 items-center gap-2 rounded-xl border border-zinc-700 px-3 text-xs font-medium text-zinc-300 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <Copy className="h-4 w-4" />
+          {copiado
+            ? "Copiado"
+            : "Copiar"}
+        </button>
+      </div>
+    </div>
   );
 }

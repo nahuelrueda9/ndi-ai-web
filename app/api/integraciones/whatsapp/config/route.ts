@@ -15,7 +15,6 @@ type WhatsAppConfig = {
   phoneNumberId?: string;
   businessAccountId?: string;
   accessToken?: string;
-  verifyToken?: string;
 };
 
 type RolEmpresa =
@@ -164,6 +163,14 @@ function puedeEditarIntegracion(
   );
 }
 
+function obtenerVerifyToken() {
+  return (
+    process.env
+      .WHATSAPP_VERIFY_TOKEN
+      ?.trim() || ""
+  );
+}
+
 export async function GET(
   request: NextRequest
 ) {
@@ -242,9 +249,13 @@ export async function GET(
         .doc("whatsapp")
         .get();
 
+    const verifyToken =
+      obtenerVerifyToken();
+
     if (!documento.exists) {
       return NextResponse.json({
         config: null,
+        verifyToken,
       });
     }
 
@@ -258,8 +269,6 @@ export async function GET(
         businessAccountId:
           data?.businessAccountId ??
           "",
-        verifyToken:
-          data?.verifyToken ?? "",
         estado:
           data?.estado ??
           "configurado",
@@ -269,6 +278,7 @@ export async function GET(
         verifiedName:
           data?.verifiedName ?? "",
       },
+      verifyToken,
     });
   } catch (error) {
     console.error(
@@ -319,26 +329,36 @@ export async function POST(
     const businessAccountId =
       body.businessAccountId?.trim();
 
-    const accessToken =
-      body.accessToken?.trim();
-
-    const verifyToken =
-      body.verifyToken?.trim();
+    const accessTokenNuevo =
+      body.accessToken?.trim() || "";
 
     if (
       !empresaId ||
       !phoneNumberId ||
-      !businessAccountId ||
-      !accessToken ||
-      !verifyToken
+      !businessAccountId
     ) {
       return NextResponse.json(
         {
           error:
-            "Completá todos los campos.",
+            "Completá Phone Number ID y Business Account ID.",
         },
         {
           status: 400,
+        }
+      );
+    }
+
+    const verifyToken =
+      obtenerVerifyToken();
+
+    if (!verifyToken) {
+      return NextResponse.json(
+        {
+          error:
+            "Falta configurar WHATSAPP_VERIFY_TOKEN en el servidor.",
+        },
+        {
+          status: 500,
         }
       );
     }
@@ -377,25 +397,73 @@ export async function POST(
       );
     }
 
-    await adminDb
-      .collection("companies")
-      .doc(empresaId)
-      .collection("integrations")
-      .doc("whatsapp")
-      .set(
+    const integracionReferencia =
+      adminDb
+        .collection("companies")
+        .doc(empresaId)
+        .collection("integrations")
+        .doc("whatsapp");
+
+    const integracionActual =
+      await integracionReferencia.get();
+
+    const tokenGuardado =
+      typeof integracionActual.data()
+        ?.accessToken === "string"
+        ? integracionActual
+            .data()
+            ?.accessToken.trim()
+        : "";
+
+    const accessToken =
+      accessTokenNuevo ||
+      tokenGuardado;
+
+    if (!accessToken) {
+      return NextResponse.json(
         {
-          phoneNumberId,
-          businessAccountId,
-          accessToken,
-          verifyToken,
-          estado: "configurado",
-          updatedAt: new Date(),
-          updatedBy: usuario.uid,
+          error:
+            "Ingresá el Access Token para conectar WhatsApp por primera vez.",
         },
         {
-          merge: true,
+          status: 400,
         }
       );
+    }
+
+    const actualizacion: Record<
+      string,
+      unknown
+    > = {
+      phoneNumberId,
+      businessAccountId,
+      verifyToken,
+      estado:
+        integracionActual.exists
+          ? integracionActual.data()
+              ?.estado ||
+            "configurado"
+          : "configurado",
+      updatedAt: new Date(),
+      updatedBy: usuario.uid,
+    };
+
+    if (accessTokenNuevo) {
+      actualizacion.accessToken =
+        accessTokenNuevo;
+    } else if (
+      !integracionActual.exists
+    ) {
+      actualizacion.accessToken =
+        accessToken;
+    }
+
+    await integracionReferencia.set(
+      actualizacion,
+      {
+        merge: true,
+      }
+    );
 
     return NextResponse.json({
       success: true,
