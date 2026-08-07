@@ -41,10 +41,10 @@ const PLANES: Record<
   pro: {
     titulo: "NDI AI Pro",
     descripcion:
-      "Plan Pro de NDI AI para automatizar la atención de clientes.",
+      "Plan Pro de NDI AI con hasta 1.000 conversaciones por mes.",
     precio: Number(
       process.env.MP_PRICE_PRO ||
-        15000
+        35000
     ),
   },
 

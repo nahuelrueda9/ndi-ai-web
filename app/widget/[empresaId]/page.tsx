@@ -36,6 +36,7 @@ type Empresa = {
   horario?: string;
   sitioWeb?: string;
   formasPago?: string;
+  plan?: "free" | "pro" | "business";
   agente?: {
     nombre?: string;
     rol?: string;
@@ -787,8 +788,7 @@ export default function WidgetPublicoPage() {
     CONFIG_INICIAL.textoPlaceholder;
 
   const mostrarMarca =
-    empresa.widget?.mostrarMarca ??
-    CONFIG_INICIAL.mostrarMarca;
+    (empresa.plan || "free") === "free";
 
   const posicion =
     empresa.widget?.posicion ||
@@ -1120,16 +1120,19 @@ export default function WidgetPublicoPage() {
           </form>
 
           {mostrarMarca && (
-            <p
+            <a
+              href="/"
+              target="_blank"
+              rel="noreferrer"
               className={[
-                "mt-2 text-center text-[10px]",
+                "mt-2 block text-center text-[10px] transition hover:underline",
                 temaOscuro
-                  ? "text-zinc-600"
-                  : "text-zinc-400",
+                  ? "text-zinc-500 hover:text-zinc-300"
+                  : "text-zinc-500 hover:text-zinc-700",
               ].join(" ")}
             >
-              Creado con NDI AI
-            </p>
+              Creado con NDI AI · Conocé más
+            </a>
           )}
         </footer>
       </section>

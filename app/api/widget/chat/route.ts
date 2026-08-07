@@ -56,6 +56,7 @@ type ResultadoAutomatizacion = {
 
 type EmpresaPublica = {
   nombre?: string;
+  plan?: "free" | "pro" | "business";
   descripcion?: string;
   personalidad?: string;
   objetivo?: string;
@@ -92,6 +93,36 @@ const MAXIMO_VISITANTE_ID = 160;
 const MAXIMO_HISTORIAL = 20;
 const MAXIMO_MENSAJES_DEVUELTOS = 200;
 
+const LIMITES_CONVERSACIONES = {
+  free: 50,
+  pro: 1000,
+  business: 10000,
+} as const;
+
+class LimitePlanAlcanzadoError extends Error {
+  constructor() {
+    super(
+      "Alcanzaste el límite mensual de conversaciones de tu plan."
+    );
+    this.name = "LimitePlanAlcanzadoError";
+  }
+}
+
+function obtenerMesActualArgentina() {
+  const partes = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Argentina/Buenos_Aires",
+    year: "numeric",
+    month: "2-digit",
+  }).formatToParts(new Date());
+
+  const anio =
+    partes.find((parte) => parte.type === "year")?.value ?? "";
+  const mes =
+    partes.find((parte) => parte.type === "month")?.value ?? "";
+
+  return `${anio}-${mes}`;
+}
+
 function limpiarTexto(valor: unknown, maximo: number) {
   if (typeof valor !== "string") {
     return "";
@@ -103,6 +134,10 @@ function limpiarTexto(valor: unknown, maximo: number) {
 function obtenerEmpresaPublica(datos: DocumentData): EmpresaPublica {
   return {
     nombre: typeof datos.nombre === "string" ? datos.nombre : undefined,
+    plan:
+      datos.plan === "pro" || datos.plan === "business"
+        ? datos.plan
+        : "free",
     descripcion:
       typeof datos.descripcion === "string" ? datos.descripcion : undefined,
     personalidad:
@@ -257,27 +292,109 @@ async function crearConversacion({
 }) {
   const accessToken = randomUUID();
 
-  const referencia = adminDb
+  const empresaReferencia = adminDb
     .collection("companies")
-    .doc(empresaId)
+    .doc(empresaId);
+
+  const referencia = empresaReferencia
     .collection("conversations")
     .doc();
 
-  await referencia.set({
-    empresaId,
-    visitanteId,
-    canal: "web",
-    estado: "abierta",
-    estadoComercial: "nuevo",
-    atendidoPor: "ia",
-    humanoActivo: false,
-    ultimoMensaje: mensajeInicial,
-    ultimoRol: "user",
-    cantidadMensajes: 0,
-    widgetAccessToken: accessToken,
-    createdAt: FieldValue.serverTimestamp(),
-    updatedAt: FieldValue.serverTimestamp(),
-  });
+  const mesActual =
+    obtenerMesActualArgentina();
+
+  await adminDb.runTransaction(
+    async (transaccion) => {
+      const empresaSnapshot =
+        await transaccion.get(
+          empresaReferencia
+        );
+
+      if (!empresaSnapshot.exists) {
+        throw new Error(
+          "La empresa no existe."
+        );
+      }
+
+      const datos =
+        empresaSnapshot.data() ?? {};
+
+      const plan: keyof typeof LIMITES_CONVERSACIONES =
+        datos.plan === "pro"
+          ? "pro"
+          : datos.plan === "business"
+            ? "business"
+            : "free";
+
+      const limite =
+        LIMITES_CONVERSACIONES[plan];
+
+      const mesGuardado =
+        typeof datos.conversationsUsageMonth ===
+        "string"
+          ? datos.conversationsUsageMonth
+          : "";
+
+      const usadasGuardadas =
+        typeof datos.conversationsThisMonth ===
+          "number" &&
+        Number.isFinite(
+          datos.conversationsThisMonth
+        )
+          ? Math.max(
+              0,
+              Math.floor(
+                datos.conversationsThisMonth
+              )
+            )
+          : 0;
+
+      const usadas =
+        mesGuardado === mesActual
+          ? usadasGuardadas
+          : 0;
+
+      if (usadas >= limite) {
+        throw new LimitePlanAlcanzadoError();
+      }
+
+      transaccion.set(
+        referencia,
+        {
+          empresaId,
+          visitanteId,
+          canal: "web",
+          estado: "abierta",
+          estadoComercial: "nuevo",
+          atendidoPor: "ia",
+          humanoActivo: false,
+          ultimoMensaje:
+            mensajeInicial,
+          ultimoRol: "user",
+          cantidadMensajes: 0,
+          widgetAccessToken:
+            accessToken,
+          createdAt:
+            FieldValue.serverTimestamp(),
+          updatedAt:
+            FieldValue.serverTimestamp(),
+        }
+      );
+
+      transaccion.set(
+        empresaReferencia,
+        {
+          conversationsThisMonth:
+            usadas + 1,
+          conversationsUsageMonth:
+            mesActual,
+        },
+        {
+          merge: true,
+        }
+      );
+    }
+  );
 
   return {
     referencia,
@@ -842,6 +959,21 @@ export async function POST(request: Request) {
       humanoActivo: humanoTomoControl,
     });
   } catch (error) {
+    if (
+      error instanceof
+      LimitePlanAlcanzadoError
+    ) {
+      return NextResponse.json(
+        {
+          error: error.message,
+          limiteAlcanzado: true,
+        },
+        {
+          status: 403,
+        }
+      );
+    }
+
     console.error(
       "Error en POST /api/widget/chat:",
       error

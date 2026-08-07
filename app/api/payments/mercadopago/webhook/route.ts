@@ -57,9 +57,9 @@ const PLANES: Record<
   pro: {
     precio: Number(
       process.env.MP_PRICE_PRO ||
-        15000
+        35000
     ),
-    limiteConversaciones: 2000,
+    limiteConversaciones: 1000,
   },
 
   business: {

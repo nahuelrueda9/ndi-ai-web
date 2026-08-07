@@ -36,8 +36,7 @@ type EmpresaFacturacion = {
   plan?: PlanId;
   subscriptionStatus?: string;
   conversationsThisMonth?: number;
-  maxConversations?: number;
-  usageMonth?: string;
+  conversationsUsageMonth?: string;
   mercadopagoPaymentId?: string;
 };
 
@@ -45,8 +44,8 @@ const LIMITES: Record<
   PlanId,
   number
 > = {
-  free: 100,
-  pro: 2000,
+  free: 50,
+  pro: 1000,
   business: 10000,
 };
 
@@ -232,12 +231,7 @@ export default function FacturacionPage() {
       : "free";
 
   const limite =
-    typeof empresa
-      ?.maxConversations ===
-      "number" &&
-    empresa.maxConversations > 0
-      ? empresa.maxConversations
-      : LIMITES[plan];
+    LIMITES[plan];
 
   const usadas = Math.max(
     0,
@@ -324,7 +318,9 @@ export default function FacturacionPage() {
           descripcion={
             plan === "free"
               ? "Sin próximo cobro"
-              : "Cobro pendiente de configurar"
+              : plan === "pro"
+                ? "$35.000 por 30 días"
+                : "Plan personalizado"
           }
         />
 

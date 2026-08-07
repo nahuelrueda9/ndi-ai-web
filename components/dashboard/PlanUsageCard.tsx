@@ -12,13 +12,12 @@ type PlanId = "free" | "pro" | "business";
 type EmpresaPlan = {
   plan?: PlanId;
   conversationsThisMonth?: number;
-  maxConversations?: number;
   subscriptionStatus?: string;
 };
 
 const LIMITES: Record<PlanId, number> = {
-  free: 100,
-  pro: 2000,
+  free: 50,
+  pro: 1000,
   business: 10000,
 };
 
@@ -69,12 +68,7 @@ export default function PlanUsageCard() {
       ? datos.plan
       : "free";
 
-  const limite =
-    typeof datos?.maxConversations === "number" &&
-    datos.maxConversations > 0
-      ? datos.maxConversations
-      : LIMITES[plan];
-
+  const limite = LIMITES[plan];
   const usadas = Math.max(0, datos?.conversationsThisMonth || 0);
   const restantes = Math.max(0, limite - usadas);
 
@@ -85,26 +79,29 @@ export default function PlanUsageCard() {
 
   if (cargando) {
     return (
-      <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
+      <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
         <div className="h-5 w-32 animate-pulse rounded bg-zinc-800" />
-        <div className="mt-5 h-3 animate-pulse rounded bg-zinc-800" />
-      </div>
+        <div className="mt-4 h-8 w-20 animate-pulse rounded bg-zinc-800" />
+        <div className="mt-6 h-3 w-full animate-pulse rounded-full bg-zinc-800" />
+      </section>
     );
   }
 
   if (error || !empresaId) {
     return (
-      <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-6 text-sm text-red-300">
-        {error || "No se pudo cargar el plan."}
-      </div>
+      <section className="rounded-2xl border border-red-500/20 bg-red-500/10 p-5">
+        <p className="text-sm text-red-300">
+          {error || "No se pudo cargar el plan."}
+        </p>
+      </section>
     );
   }
 
   return (
-    <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
+    <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
         <div>
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-blue-400">
+          <p className="text-sm font-medium text-blue-400">
             Plan actual
           </p>
 
