@@ -21,7 +21,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 
-import { db } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import Avatar from "@/components/Ui/Avatar";
 import Badge from "@/components/Ui/Badge";
 import Button from "@/components/Ui/Button";
@@ -32,21 +32,6 @@ type Canal =
   | "whatsapp"
   | "instagram"
   | "messenger";
-
-type EstadoComercial =
-  | "nuevo"
-  | "calificado"
-  | "propuesta"
-  | "ganado"
-  | "perdido";
-
-type MiembroEquipo = {
-  id: string;
-  nombre?: string;
-  email: string;
-  rol: "administrador" | "supervisor" | "operador";
-  estado: "activo" | "inactivo";
-};
 
 type Mensaje = {
   id: string;
@@ -78,12 +63,6 @@ type Conversacion = {
   etiquetas?: string[];
   puntuacionLead?: number;
   nivelInteres?: "bajo" | "medio" | "alto";
-  estadoComercial?: EstadoComercial;
-  valorEstimado?: number;
-  asignadoA?: string | null;
-  asignadoNombre?: string | null;
-  asignadoEmail?: string | null;
-  asignadoRol?: "administrador" | "supervisor" | "operador" | null;
   notaInterna?: string;
   ultimoMensaje?: string;
   cantidadMensajes?: number;
@@ -113,46 +92,6 @@ const CANALES: Record<
   messenger: {
     nombre: "Messenger",
     icono: "📨",
-  },
-};
-
-const ESTADOS_COMERCIALES: Record<
-  EstadoComercial,
-  {
-    nombre: string;
-    descripcion: string;
-    variant:
-      | "default"
-      | "info"
-      | "success"
-      | "danger"
-      | "warning";
-  }
-> = {
-  nuevo: {
-    nombre: "Nuevo lead",
-    descripcion: "Contacto todavía sin calificar.",
-    variant: "default",
-  },
-  calificado: {
-    nombre: "Calificado",
-    descripcion: "Tiene interés y encaja con la propuesta.",
-    variant: "info",
-  },
-  propuesta: {
-    nombre: "Propuesta enviada",
-    descripcion: "Ya recibió precio o propuesta comercial.",
-    variant: "warning",
-  },
-  ganado: {
-    nombre: "Ganado",
-    descripcion: "La oportunidad terminó en venta.",
-    variant: "success",
-  },
-  perdido: {
-    nombre: "Perdido",
-    descripcion: "La oportunidad no se concretó.",
-    variant: "danger",
   },
 };
 
@@ -302,15 +241,6 @@ export default function ConversacionDetallePage() {
   const [mensajes, setMensajes] =
     useState<Mensaje[]>([]);
 
-  const [miembros, setMiembros] =
-    useState<MiembroEquipo[]>([]);
-
-  const [cargandoMiembros, setCargandoMiembros] =
-    useState(true);
-
-  const [asignandoMiembro, setAsignandoMiembro] =
-    useState(false);
-
   const [
     cargandoConversacion,
     setCargandoConversacion,
@@ -340,21 +270,6 @@ export default function ConversacionDetallePage() {
   const [
     guardandoNota,
     setGuardandoNota,
-  ] = useState(false);
-
-  const [
-    estadoComercial,
-    setEstadoComercial,
-  ] = useState<EstadoComercial>("nuevo");
-
-  const [
-    valorEstimado,
-    setValorEstimado,
-  ] = useState("");
-
-  const [
-    guardandoEstadoComercial,
-    setGuardandoEstadoComercial,
   ] = useState(false);
 
   const [error, setError] = useState("");
@@ -415,19 +330,6 @@ export default function ConversacionDetallePage() {
           puntuacionLead:
             data.puntuacionLead ?? 0,
           nivelInteres: data.nivelInteres,
-          estadoComercial:
-            data.estadoComercial ?? "nuevo",
-          valorEstimado:
-            typeof data.valorEstimado === "number"
-              ? data.valorEstimado
-              : 0,
-          asignadoA: data.asignadoA ?? null,
-          asignadoNombre:
-            data.asignadoNombre ?? null,
-          asignadoEmail:
-            data.asignadoEmail ?? null,
-          asignadoRol:
-            data.asignadoRol ?? null,
           notaInterna: data.notaInterna,
           ultimoMensaje: data.ultimoMensaje,
           cantidadMensajes:
@@ -438,17 +340,6 @@ export default function ConversacionDetallePage() {
 
         setNotaInterna(
           data.notaInterna ?? ""
-        );
-
-        setEstadoComercial(
-          data.estadoComercial ?? "nuevo"
-        );
-
-        setValorEstimado(
-          typeof data.valorEstimado === "number" &&
-            data.valorEstimado > 0
-            ? String(data.valorEstimado)
-            : ""
         );
 
         setCargandoConversacion(false);
@@ -526,61 +417,6 @@ export default function ConversacionDetallePage() {
       cancelarMensajes();
     };
   }, [empresaId, chatId]);
-
-  useEffect(() => {
-    if (!empresaId) {
-      setMiembros([]);
-      setCargandoMiembros(false);
-      return;
-    }
-
-    setCargandoMiembros(true);
-
-    const miembrosReferencia = collection(
-      db,
-      "companies",
-      empresaId,
-      "members"
-    );
-
-    const cancelarMiembros = onSnapshot(
-      miembrosReferencia,
-      (snapshot) => {
-        const lista = snapshot.docs
-          .map((documento) => ({
-            id: documento.id,
-            ...(documento.data() as Omit<
-              MiembroEquipo,
-              "id"
-            >),
-          }))
-          .filter(
-            (miembro) =>
-              miembro.estado === "activo"
-          )
-          .sort((a, b) =>
-            (a.nombre || a.email).localeCompare(
-              b.nombre || b.email,
-              "es"
-            )
-          );
-
-        setMiembros(lista);
-        setCargandoMiembros(false);
-      },
-      (firebaseError) => {
-        console.error(
-          "Error al cargar miembros del equipo:",
-          firebaseError
-        );
-
-        setMiembros([]);
-        setCargandoMiembros(false);
-      }
-    );
-
-    return () => cancelarMiembros();
-  }, [empresaId]);
 
   useEffect(() => {
     if (
@@ -756,162 +592,6 @@ export default function ConversacionDetallePage() {
     }
   }
 
-  async function asignarConversacion(
-    miembroId: string
-  ) {
-    if (
-      !empresaId ||
-      !chatId ||
-      !conversacion ||
-      asignandoMiembro
-    ) {
-      return;
-    }
-
-    const miembro = miembros.find(
-      (item) => item.id === miembroId
-    );
-
-    setAsignandoMiembro(true);
-    setError("");
-    setMensajeAccion("");
-
-    try {
-      const conversacionReferencia = doc(
-        db,
-        "companies",
-        empresaId,
-        "conversations",
-        chatId
-      );
-
-      await updateDoc(
-        conversacionReferencia,
-        miembro
-          ? {
-              asignadoA: miembro.id,
-              asignadoNombre:
-                miembro.nombre || miembro.email,
-              asignadoEmail: miembro.email,
-              asignadoRol: miembro.rol,
-              asignadoAt: serverTimestamp(),
-              updatedAt: serverTimestamp(),
-            }
-          : {
-              asignadoA: null,
-              asignadoNombre: null,
-              asignadoEmail: null,
-              asignadoRol: null,
-              asignadoAt: null,
-              updatedAt: serverTimestamp(),
-            }
-      );
-
-      setMensajeAccion(
-        miembro
-          ? `Conversación asignada a ${
-              miembro.nombre || miembro.email
-            }.`
-          : "La conversación quedó sin asignar."
-      );
-    } catch (firebaseError) {
-      console.error(
-        "Error al asignar la conversación:",
-        firebaseError
-      );
-
-      setError(
-        "No se pudo asignar la conversación."
-      );
-    } finally {
-      setAsignandoMiembro(false);
-    }
-  }
-
-  async function guardarEstadoComercial() {
-    if (
-      !empresaId ||
-      !chatId ||
-      !conversacion ||
-      guardandoEstadoComercial
-    ) {
-      return;
-    }
-
-    const valor = valorEstimado.trim()
-      ? Number(valorEstimado)
-      : 0;
-
-    if (
-      !Number.isFinite(valor) ||
-      valor < 0
-    ) {
-      setMensajeAccion("");
-      setError(
-        "Ingresá un valor estimado válido."
-      );
-      return;
-    }
-
-    setGuardandoEstadoComercial(true);
-    setError("");
-    setMensajeAccion("");
-
-    try {
-      const conversacionReferencia = doc(
-        db,
-        "companies",
-        empresaId,
-        "conversations",
-        chatId
-      );
-
-      const datosFechaConversion =
-        estadoComercial === "ganado"
-          ? {
-              fechaConversion:
-                serverTimestamp(),
-            }
-          : conversacion.estadoComercial ===
-            "ganado"
-          ? {
-              fechaConversion: null,
-            }
-          : {};
-
-      await updateDoc(
-        conversacionReferencia,
-        {
-          estadoComercial,
-          valorEstimado: valor,
-          commercialUpdatedAt:
-            serverTimestamp(),
-          updatedAt: serverTimestamp(),
-          ...datosFechaConversion,
-        }
-      );
-
-      setMensajeAccion(
-        `Estado comercial actualizado a ${
-          ESTADOS_COMERCIALES[
-            estadoComercial
-          ].nombre
-        }.`
-      );
-    } catch (firebaseError) {
-      console.error(
-        "Error al guardar el estado comercial:",
-        firebaseError
-      );
-
-      setError(
-        "No se pudo guardar el estado comercial."
-      );
-    } finally {
-      setGuardandoEstadoComercial(false);
-    }
-  }
-
   async function enviarRespuestaHumana(
     evento: FormEvent<HTMLFormElement>
   ) {
@@ -944,10 +624,13 @@ export default function ConversacionDetallePage() {
     const canal = obtenerCanal(conversacion);
     const datosCanal = CANALES[canal];
 
-    if (canal !== "web") {
+    if (
+      canal !== "web" &&
+      canal !== "whatsapp"
+    ) {
       setMensajeAccion("");
       setError(
-        `La respuesta por ${datosCanal.nombre} se habilitará cuando conectemos su API.`
+        `La respuesta por ${datosCanal.nombre} todavía no está disponible.`
       );
       return;
     }
@@ -957,6 +640,62 @@ export default function ConversacionDetallePage() {
     setMensajeAccion("");
 
     try {
+      if (canal === "whatsapp") {
+        const usuario =
+          auth.currentUser;
+
+        if (!usuario) {
+          throw new Error(
+            "Tenés que iniciar sesión nuevamente."
+          );
+        }
+
+        const idToken =
+          await usuario.getIdToken(
+            true
+          );
+
+        const response =
+          await fetch(
+            "/api/conversations/whatsapp/send",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json",
+                Authorization:
+                  `Bearer ${idToken}`,
+              },
+              body: JSON.stringify({
+                empresaId,
+                chatId,
+                texto: contenido,
+              }),
+            }
+          );
+
+        const data =
+          (await response.json()) as {
+            message?: string;
+            error?: string;
+          };
+
+        if (!response.ok) {
+          throw new Error(
+            data.error ||
+              "No se pudo enviar el mensaje por WhatsApp."
+          );
+        }
+
+        setRespuesta("");
+        setMensajeAccion(
+          data.message ||
+            "Mensaje enviado por WhatsApp."
+        );
+
+        return;
+      }
+
       const mensajesReferencia = collection(
         db,
         "companies",
@@ -1004,14 +743,16 @@ export default function ConversacionDetallePage() {
       setMensajeAccion(
         "Mensaje enviado al visitante."
       );
-    } catch (firebaseError) {
+    } catch (requestError) {
       console.error(
         "Error al enviar la respuesta humana:",
-        firebaseError
+        requestError
       );
 
       setError(
-        "No se pudo enviar el mensaje. Intentá nuevamente."
+        requestError instanceof Error
+          ? requestError.message
+          : "No se pudo enviar el mensaje. Intentá nuevamente."
       );
     } finally {
       setEnviandoRespuesta(false);
@@ -1054,16 +795,8 @@ export default function ConversacionDetallePage() {
     conversacion?.atendidoPor === "humano";
 
   const canalConRespuestaDisponible =
-    canalActual === "web";
-
-  const estadoComercialActual =
-    conversacion?.estadoComercial ??
-    "nuevo";
-
-  const datosEstadoComercial =
-    ESTADOS_COMERCIALES[
-      estadoComercialActual
-    ];
+    canalActual === "web" ||
+    canalActual === "whatsapp";
 
   const puedeResponder =
     Boolean(conversacion) &&
@@ -1103,16 +836,6 @@ export default function ConversacionDetallePage() {
                     {conversacion.estado === "cerrada"
                       ? "Cerrada"
                       : "Abierta"}
-                  </Badge>
-
-                  <Badge
-                    variant={
-                      datosEstadoComercial.variant
-                    }
-                  >
-                    {
-                      datosEstadoComercial.nombre
-                    }
                   </Badge>
                 </>
               )}
@@ -1371,242 +1094,6 @@ export default function ConversacionDetallePage() {
                     valor={conversacion.id}
                     permitirCorte
                   />
-                </div>
-              </Card>
-
-              <Card className="p-6">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-white">
-                      Responsable
-                    </p>
-
-                    <p className="mt-1 text-xs leading-5 text-zinc-500">
-                      Asigná esta conversación a un miembro activo del equipo.
-                    </p>
-                  </div>
-
-                  <Badge
-                    variant={
-                      conversacion.asignadoA
-                        ? "success"
-                        : "default"
-                    }
-                  >
-                    {conversacion.asignadoA
-                      ? "Asignada"
-                      : "Sin asignar"}
-                  </Badge>
-                </div>
-
-                <div className="mt-5 space-y-4">
-                  <div>
-                    <label
-                      htmlFor="miembroAsignado"
-                      className="mb-2 block text-xs font-medium uppercase tracking-wide text-zinc-500"
-                    >
-                      Miembro del equipo
-                    </label>
-
-                    <select
-                      id="miembroAsignado"
-                      value={
-                        conversacion.asignadoA ?? ""
-                      }
-                      onChange={(evento) =>
-                        void asignarConversacion(
-                          evento.target.value
-                        )
-                      }
-                      disabled={
-                        asignandoMiembro ||
-                        cargandoMiembros
-                      }
-                      className="h-11 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 text-sm text-white outline-none transition focus:border-blue-500 disabled:opacity-50"
-                    >
-                      <option value="">
-                        Sin asignar
-                      </option>
-
-                      {miembros.map((miembro) => (
-                        <option
-                          key={miembro.id}
-                          value={miembro.id}
-                        >
-                          {miembro.nombre ||
-                            miembro.email}{" "}
-                          · {miembro.rol}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {conversacion.asignadoA && (
-                    <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3">
-                      <p className="text-sm font-medium text-emerald-200">
-                        {conversacion.asignadoNombre ||
-                          conversacion.asignadoEmail ||
-                          "Miembro asignado"}
-                      </p>
-
-                      <p className="mt-1 text-xs capitalize text-emerald-300/70">
-                        {conversacion.asignadoRol ||
-                          "Miembro del equipo"}
-                      </p>
-                    </div>
-                  )}
-
-                  {!cargandoMiembros &&
-                    miembros.length === 0 && (
-                      <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3">
-                        <p className="text-xs leading-5 text-amber-300">
-                          No hay miembros activos. Creá o activá uno desde Equipo.
-                        </p>
-
-                        <Button
-                          className="mt-3 w-full"
-                          variant="secondary"
-                          onClick={() =>
-                            router.push(
-                              `/empresas/${empresaId}/equipo`
-                            )
-                          }
-                        >
-                          Ir a Equipo
-                        </Button>
-                      </div>
-                    )}
-                </div>
-              </Card>
-
-              <Card className="p-6">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-white">
-                      Oportunidad comercial
-                    </p>
-
-                    <p className="mt-1 text-xs leading-5 text-zinc-500">
-                      Registrá el avance del lead para medir ventas reales.
-                    </p>
-                  </div>
-
-                  <Badge
-                    variant={
-                      ESTADOS_COMERCIALES[
-                        estadoComercial
-                      ].variant
-                    }
-                  >
-                    {
-                      ESTADOS_COMERCIALES[
-                        estadoComercial
-                      ].nombre
-                    }
-                  </Badge>
-                </div>
-
-                <div className="mt-5 space-y-4">
-                  <div>
-                    <label
-                      htmlFor="estadoComercial"
-                      className="mb-2 block text-xs font-medium uppercase tracking-wide text-zinc-500"
-                    >
-                      Estado comercial
-                    </label>
-
-                    <select
-                      id="estadoComercial"
-                      value={estadoComercial}
-                      onChange={(evento) =>
-                        setEstadoComercial(
-                          evento.target
-                            .value as EstadoComercial
-                        )
-                      }
-                      disabled={
-                        guardandoEstadoComercial
-                      }
-                      className="h-11 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 text-sm text-white outline-none transition focus:border-blue-500 disabled:opacity-50"
-                    >
-                      {(
-                        Object.keys(
-                          ESTADOS_COMERCIALES
-                        ) as EstadoComercial[]
-                      ).map((estado) => (
-                        <option
-                          key={estado}
-                          value={estado}
-                        >
-                          {
-                            ESTADOS_COMERCIALES[
-                              estado
-                            ].nombre
-                          }
-                        </option>
-                      ))}
-                    </select>
-
-                    <p className="mt-2 text-xs leading-5 text-zinc-600">
-                      {
-                        ESTADOS_COMERCIALES[
-                          estadoComercial
-                        ].descripcion
-                      }
-                    </p>
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="valorEstimado"
-                      className="mb-2 block text-xs font-medium uppercase tracking-wide text-zinc-500"
-                    >
-                      Valor estimado
-                    </label>
-
-                    <div className="relative">
-                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-zinc-500">
-                        $
-                      </span>
-
-                      <input
-                        id="valorEstimado"
-                        type="number"
-                        min="0"
-                        step="1"
-                        inputMode="decimal"
-                        value={valorEstimado}
-                        onChange={(evento) =>
-                          setValorEstimado(
-                            evento.target.value
-                          )
-                        }
-                        disabled={
-                          guardandoEstadoComercial
-                        }
-                        placeholder="0"
-                        className="h-11 w-full rounded-xl border border-zinc-800 bg-zinc-900 pl-8 pr-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-blue-500 disabled:opacity-50"
-                      />
-                    </div>
-
-                    <p className="mt-2 text-xs text-zinc-600">
-                      Monto aproximado de la oportunidad en ARS.
-                    </p>
-                  </div>
-
-                  <Button
-                    className="w-full"
-                    onClick={
-                      guardarEstadoComercial
-                    }
-                    disabled={
-                      guardandoEstadoComercial
-                    }
-                  >
-                    {guardandoEstadoComercial
-                      ? "Guardando..."
-                      : "Guardar oportunidad"}
-                  </Button>
                 </div>
               </Card>
 
