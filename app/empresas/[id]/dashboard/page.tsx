@@ -197,12 +197,13 @@ export default function DashboardEmpresaPage() {
     );
 
   const planEfectivo: PlanId =
-    planGuardado === "free"
-      ? "free"
-      : fechaVencimiento &&
+    planGuardado === "business"
+      ? "business"
+      : planGuardado === "pro" &&
+          fechaVencimiento &&
           fechaVencimiento.getTime() >
             Date.now()
-        ? planGuardado
+        ? "pro"
         : "free";
 
   const mostrarPublicidad =
@@ -361,6 +362,89 @@ export default function DashboardEmpresaPage() {
             />
           </div>
 
+          <Card className="border-blue-500/20 bg-blue-500/5 p-6">
+            <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
+              <div>
+                <p className="text-sm font-medium text-blue-400">
+                  Primeros pasos
+                </p>
+
+                <h2 className="mt-1 text-xl font-semibold text-white">
+                  Poné NDI AI a trabajar en 4 pasos
+                </h2>
+
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
+                  Configurá el negocio, enseñale a la IA qué responder,
+                  conectá WhatsApp y hacé una prueba antes de atender clientes.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  router.push(
+                    `/empresas/${empresaId}/ayuda`
+                  )
+                }
+                className="shrink-0 rounded-xl border border-blue-500/30 bg-blue-500/10 px-5 py-3 text-sm font-semibold text-blue-300 transition hover:bg-blue-500/20"
+              >
+                Ver tutorial completo
+              </button>
+            </div>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {[
+                {
+                  numero: "1",
+                  titulo: "Configurá tu negocio",
+                  texto: "Nombre, horarios, objetivo e instrucciones.",
+                  ruta: "configuracion",
+                },
+                {
+                  numero: "2",
+                  titulo: "Cargá conocimiento",
+                  texto: "Servicios, precios, preguntas y políticas.",
+                  ruta: "conocimiento",
+                },
+                {
+                  numero: "3",
+                  titulo: "Conectá WhatsApp",
+                  texto: "Vinculá el canal desde Integraciones.",
+                  ruta: "integraciones",
+                },
+                {
+                  numero: "4",
+                  titulo: "Probá la IA",
+                  texto: "Verificá las respuestas antes de usarla.",
+                  ruta: "probar",
+                },
+              ].map((paso) => (
+                <button
+                  key={paso.numero}
+                  type="button"
+                  onClick={() =>
+                    router.push(
+                      `/empresas/${empresaId}/${paso.ruta}`
+                    )
+                  }
+                  className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4 text-left transition hover:border-blue-500/30 hover:bg-zinc-900"
+                >
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 text-sm font-bold text-blue-400">
+                    {paso.numero}
+                  </div>
+
+                  <p className="mt-3 font-medium text-white">
+                    {paso.titulo}
+                  </p>
+
+                  <p className="mt-1 text-xs leading-5 text-zinc-500">
+                    {paso.texto}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </Card>
+
           <div>
             <h2 className="mb-4 text-lg font-semibold text-white">
               Accesos rápidos
@@ -437,8 +521,8 @@ export default function DashboardEmpresaPage() {
                   </h2>
 
                   <p className="mt-1 max-w-2xl text-sm leading-6 text-zinc-400">
-                    Este espacio está reservado para anuncios en el plan gratuito.
-                    Más adelante puede conectarse con Google AdSense o patrocinadores directos.
+                    El plan gratuito puede mostrar promociones de NDI AI o
+                    patrocinadores directos. Pasate a Pro para usar el panel sin publicidad.
                   </p>
                 </div>
 

@@ -72,31 +72,36 @@ const PLANES: Plan[] = [
     id: "free",
     nombre: "Free",
     precio: "$0",
-    descripcion: "Para probar NDI AI y configurar tu primera empresa.",
+    descripcion: "Para emprendedores que quieren automatizar la atención por WhatsApp.",
     funciones: [
       "1 empresa",
       "50 conversaciones por mes",
-      "Widget web",
+      "250 respuestas de IA por mes",
+      "WhatsApp con respuestas de IA",
       "Base de conocimiento",
       "Panel de conversaciones",
       "Estadísticas básicas",
-      "Publicidad y marca de NDI AI en el widget",
+      "Firma NDI AI en la primera respuesta automática",
     ],
   },
   {
     id: "pro",
     nombre: "Pro",
-    precio: "$35.000 / mes",
+    precio: "$14.999 / mes",
     descripcion: "Para negocios que necesitan automatizar su atención.",
     destacado: true,
     funciones: [
       "Todo lo incluido en Free",
       "1.000 conversaciones por mes",
-      "WhatsApp Business",
-      "Instagram y Facebook",
+      "5.000 respuestas de IA por mes",
+      "Widget web",
+      "Automatizaciones",
+      "Agenda y turnos",
+      "Equipo y operadores",
+      "Instagram y Facebook cuando estén disponibles",
       "Estadísticas avanzadas",
       "Atención humana",
-      "Sin publicidad ni marca de NDI AI",
+      "Sin publicidad ni firma de NDI AI",
     ],
   },
   {
@@ -261,12 +266,13 @@ export default function PlanesPage() {
     );
 
   const planActual: PlanId =
-    planGuardado === "free"
-      ? "free"
-      : fechaVencimiento &&
+    planGuardado === "business"
+      ? "business"
+      : planGuardado === "pro" &&
+          fechaVencimiento &&
           fechaVencimiento.getTime() >
             Date.now()
-        ? planGuardado
+        ? "pro"
         : "free";
 
   async function seleccionarPlan(planId: PlanId) {

@@ -38,6 +38,8 @@ type EmpresaFacturacion = {
   subscriptionEndsAt?: unknown;
   conversationsThisMonth?: number;
   conversationsUsageMonth?: string;
+  aiResponsesThisMonth?: number;
+  aiResponsesUsageMonth?: string;
   mercadopagoPaymentId?: string;
 };
 
@@ -100,6 +102,15 @@ const LIMITES: Record<
   free: 50,
   pro: 1000,
   business: 10000,
+};
+
+const LIMITES_RESPUESTAS_IA: Record<
+  PlanId,
+  number
+> = {
+  free: 250,
+  pro: 5000,
+  business: 20000,
 };
 
 const NOMBRES: Record<
@@ -288,18 +299,15 @@ export default function FacturacionPage() {
       empresa?.subscriptionEndsAt
     );
 
-  const suscripcionVigente =
-    planGuardado === "free" ||
-    (
-      fechaVencimiento !== null &&
-      fechaVencimiento.getTime() >
-        Date.now()
-    );
-
   const plan: PlanId =
-    suscripcionVigente
-      ? planGuardado
-      : "free";
+    planGuardado === "business"
+      ? "business"
+      : planGuardado === "pro" &&
+          fechaVencimiento !== null &&
+          fechaVencimiento.getTime() >
+            Date.now()
+        ? "pro"
+        : "free";
 
   const limite =
     LIMITES[plan];
@@ -321,6 +329,44 @@ export default function FacturacionPage() {
     limite - usadas
   );
 
+  const limiteRespuestasIA =
+    LIMITES_RESPUESTAS_IA[plan];
+
+  const respuestasIAUsadas =
+    empresa?.aiResponsesUsageMonth ===
+    mesActual
+      ? Math.max(
+          0,
+          empresa?.aiResponsesThisMonth || 0
+        )
+      : 0;
+
+  const respuestasIARestantes =
+    Math.max(
+      0,
+      limiteRespuestasIA -
+        respuestasIAUsadas
+    );
+
+  const porcentajeIA = useMemo(() => {
+    if (limiteRespuestasIA <= 0) {
+      return 0;
+    }
+
+    return Math.min(
+      100,
+      Math.round(
+        (
+          respuestasIAUsadas /
+          limiteRespuestasIA
+        ) * 100
+      )
+    );
+  }, [
+    limiteRespuestasIA,
+    respuestasIAUsadas,
+  ]);
+
   const porcentaje = useMemo(() => {
     if (limite <= 0) {
       return 0;
@@ -335,10 +381,13 @@ export default function FacturacionPage() {
   }, [limite, usadas]);
 
   const estado =
-    suscripcionVigente
-      ? empresa?.subscriptionStatus ||
-        "active"
-      : "expired";
+    planGuardado === "pro" &&
+    plan === "free"
+      ? "expired"
+      : plan === "free"
+        ? "free"
+        : empresa?.subscriptionStatus ||
+          "active";
 
   if (cargando) {
     return (
@@ -398,7 +447,7 @@ export default function FacturacionPage() {
             plan === "free"
               ? "Sin próximo cobro"
               : plan === "pro"
-                ? "$35.000 por 30 días"
+                ? "$14.999 por 30 días"
                 : "Plan personalizado"
           }
         />
@@ -459,6 +508,48 @@ export default function FacturacionPage() {
             }
             style={{
               width: `${porcentaje}%`,
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-semibold">
+              Respuestas de IA
+            </h2>
+
+            <p className="mt-1 text-sm text-zinc-500">
+              {respuestasIARestantes > 0
+                ? `Te quedan ${respuestasIARestantes.toLocaleString(
+                    "es-AR"
+                  )} respuestas IA este mes.`
+                : "Alcanzaste el límite mensual de respuestas IA."}
+            </p>
+          </div>
+
+          <span className="text-sm font-medium text-zinc-300">
+            {respuestasIAUsadas.toLocaleString(
+              "es-AR"
+            )} /{" "}
+            {limiteRespuestasIA.toLocaleString(
+              "es-AR"
+            )}
+          </span>
+        </div>
+
+        <div className="mt-5 h-3 overflow-hidden rounded-full bg-zinc-800">
+          <div
+            className={
+              porcentajeIA >= 100
+                ? "h-full rounded-full bg-red-500"
+                : porcentajeIA >= 80
+                  ? "h-full rounded-full bg-amber-500"
+                  : "h-full rounded-full bg-violet-500"
+            }
+            style={{
+              width: `${porcentajeIA}%`,
             }}
           />
         </div>

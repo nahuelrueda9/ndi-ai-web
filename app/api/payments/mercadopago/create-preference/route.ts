@@ -39,11 +39,8 @@ const PLANES: Record<
   pro: {
     titulo: "NDI AI Pro",
     descripcion:
-      "Plan Pro de NDI AI con hasta 1.000 conversaciones por mes.",
-    precio: Number(
-      process.env.MP_PRICE_PRO ||
-        35000
-    ),
+      "Plan Pro de NDI AI por 30 días con hasta 1.000 conversaciones por mes.",
+    precio: 14999,
   },
 };
 

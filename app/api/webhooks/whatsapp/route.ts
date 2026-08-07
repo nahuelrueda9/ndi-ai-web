@@ -147,6 +147,12 @@ const LIMITES_CONVERSACIONES = {
   business: 10000,
 } as const;
 
+const LIMITES_RESPUESTAS_IA = {
+  free: 250,
+  pro: 5000,
+  business: 20000,
+} as const;
+
 type PlanEmpresa =
   keyof typeof LIMITES_CONVERSACIONES;
 
@@ -226,6 +232,10 @@ function obtenerPlanEfectivo(
     return "free";
   }
 
+  if (planGuardado === "business") {
+    return "business";
+  }
+
   const fechaVencimiento =
     convertirFecha(
       empresa.subscriptionEndsAt
@@ -239,7 +249,7 @@ function obtenerPlanEfectivo(
     return "free";
   }
 
-  return planGuardado;
+  return "pro";
 }
 
 class LimiteConversacionesError extends Error {
@@ -251,6 +261,83 @@ class LimiteConversacionesError extends Error {
     this.name =
       "LimiteConversacionesError";
   }
+}
+
+class LimiteRespuestasIAError extends Error {
+  constructor() {
+    super(
+      "Se alcanzó el límite mensual de respuestas de IA."
+    );
+
+    this.name =
+      "LimiteRespuestasIAError";
+  }
+}
+
+async function reservarRespuestaIA(
+  empresaReferencia: FirebaseFirestore.DocumentReference
+) {
+  await adminDb.runTransaction(
+    async (transaction) => {
+      const empresaSnapshot =
+        await transaction.get(
+          empresaReferencia
+        );
+
+      if (!empresaSnapshot.exists) {
+        throw new Error(
+          "La empresa ya no existe."
+        );
+      }
+
+      const datos =
+        empresaSnapshot.data() ?? {};
+
+      const plan =
+        obtenerPlanEfectivo(datos);
+
+      const limite =
+        LIMITES_RESPUESTAS_IA[
+          plan
+        ];
+
+      const mesActual =
+        obtenerMesActualArgentina();
+
+      const mesGuardado =
+        typeof datos.aiResponsesUsageMonth ===
+        "string"
+          ? datos.aiResponsesUsageMonth
+          : "";
+
+      const usadas =
+        mesGuardado === mesActual
+          ? Math.max(
+              0,
+              Number(
+                datos.aiResponsesThisMonth ??
+                  0
+              ) || 0
+            )
+          : 0;
+
+      if (usadas >= limite) {
+        throw new LimiteRespuestasIAError();
+      }
+
+      transaction.update(
+        empresaReferencia,
+        {
+          aiResponsesThisMonth:
+            usadas + 1,
+          aiResponsesUsageMonth:
+            mesActual,
+          updatedAt:
+            FieldValue.serverTimestamp(),
+        }
+      );
+    }
+  );
 }
 
 export async function GET(request: NextRequest) {
@@ -423,33 +510,22 @@ export async function POST(request: NextRequest) {
         const planEfectivo =
           obtenerPlanEfectivo(empresa);
 
-        if (planEfectivo === "free") {
-          const planGuardado =
-            empresa.plan === "pro" ||
-            empresa.plan === "business"
-              ? empresa.plan
-              : "free";
-
-          if (planGuardado !== "free") {
-            await empresaReferencia.set(
-              {
-                plan: "free",
-                subscriptionStatus: "expired",
-                maxConversations: 50,
-                updatedAt:
-                  FieldValue.serverTimestamp(),
-              },
-              {
-                merge: true,
-              }
-            );
-          }
-
-          console.warn(
-            `WhatsApp ignorado para ${empresaId}: esta integración requiere plan Pro o Empresa.`
+        if (
+          planEfectivo === "free" &&
+          empresa.plan === "pro"
+        ) {
+          await empresaReferencia.set(
+            {
+              plan: "free",
+              subscriptionStatus: "expired",
+              maxConversations: 50,
+              updatedAt:
+                FieldValue.serverTimestamp(),
+            },
+            {
+              merge: true,
+            }
           );
-
-          continue;
         }
 
         for (const mensaje of value?.messages ?? []) {
@@ -501,9 +577,10 @@ export async function POST(request: NextRequest) {
             false;
 
           let mensajeFueCreado = false;
+          let conversacionNueva = false;
 
           try {
-            mensajeFueCreado =
+            const resultadoGuardado =
               await adminDb.runTransaction(
                 async (transaction) => {
                   const [
@@ -525,7 +602,10 @@ export async function POST(request: NextRequest) {
                   if (
                     mensajeExistente.exists
                   ) {
-                    return false;
+                    return {
+                      creado: false,
+                      conversacionNueva: false,
+                    };
                   }
 
                   if (
@@ -688,9 +768,18 @@ export async function POST(request: NextRequest) {
                     }
                   );
 
-                  return true;
+                  return {
+                    creado: true,
+                    conversacionNueva:
+                      !conversacionExistia,
+                  };
                 }
               );
+
+            mensajeFueCreado =
+              resultadoGuardado.creado;
+            conversacionNueva =
+              resultadoGuardado.conversacionNueva;
           } catch (errorTransaccion) {
             if (
               errorTransaccion instanceof
@@ -764,6 +853,24 @@ export async function POST(request: NextRequest) {
             continue;
           }
 
+          try {
+            await reservarRespuestaIA(
+              empresaReferencia
+            );
+          } catch (errorLimiteIA) {
+            if (
+              errorLimiteIA instanceof
+              LimiteRespuestasIAError
+            ) {
+              console.warn(
+                `Límite mensual de IA alcanzado para ${empresaId}.`
+              );
+              continue;
+            }
+
+            throw errorLimiteIA;
+          }
+
           /*
            * Cargamos el historial anterior.
            * Excluimos el mensaje actual porque /api/gemini
@@ -794,6 +901,12 @@ export async function POST(request: NextRequest) {
             );
             continue;
           }
+
+          const respuestaFinal =
+            planEfectivo === "free" &&
+            conversacionNueva
+              ? `${respuestaIA}\n\nRespondido con NDI AI`
+              : respuestaIA;
 
           /*
            * Volvemos a revisar el estado antes de enviar.
@@ -842,7 +955,7 @@ export async function POST(request: NextRequest) {
                   respuestaReferencia,
                   {
                     role: "assistant",
-                    content: respuestaIA,
+                    content: respuestaFinal,
                     enviadoPor: "ia",
                     canal: "whatsapp",
                     respuestaA: messageId,
@@ -855,7 +968,7 @@ export async function POST(request: NextRequest) {
                 transaction.set(
                   conversacionReferencia,
                   {
-                    ultimoMensaje: respuestaIA,
+                    ultimoMensaje: respuestaFinal,
                     ultimoRol: "assistant",
                     cantidadMensajes:
                       FieldValue.increment(1),
@@ -886,7 +999,7 @@ export async function POST(request: NextRequest) {
                 phoneNumberId,
                 numeroCliente,
                 accessToken,
-                texto: respuestaIA,
+                texto: respuestaFinal,
               });
 
             await respuestaReferencia.set(

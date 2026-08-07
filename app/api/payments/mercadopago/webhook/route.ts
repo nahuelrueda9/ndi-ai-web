@@ -53,10 +53,7 @@ const PLANES: Record<
   ConfiguracionPlan
 > = {
   pro: {
-    precio: Number(
-      process.env.MP_PRICE_PRO ||
-        35000
-    ),
+    precio: 14999,
     limiteConversaciones: 1000,
   },
 

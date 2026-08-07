@@ -17,6 +17,8 @@ type EmpresaPlan = {
   plan?: PlanId;
   conversationsThisMonth?: number;
   conversationsUsageMonth?: string;
+  aiResponsesThisMonth?: number;
+  aiResponsesUsageMonth?: string;
   subscriptionStatus?: string;
   subscriptionEndsAt?: Timestamp | Date | string | number;
 };
@@ -25,6 +27,12 @@ const LIMITES: Record<PlanId, number> = {
   free: 50,
   pro: 1000,
   business: 10000,
+};
+
+const LIMITES_RESPUESTAS_IA: Record<PlanId, number> = {
+  free: 250,
+  pro: 5000,
+  business: 20000,
 };
 
 function obtenerMesActualArgentina() {
@@ -132,16 +140,21 @@ export default function PlanUsageCard() {
 
   const suscripcionVigente =
     planGuardado === "free" ||
+    planGuardado === "business" ||
     (
+      planGuardado === "pro" &&
       fechaVencimiento !== null &&
       fechaVencimiento.getTime() >
         Date.now()
     );
 
   const plan: PlanId =
-    suscripcionVigente
-      ? planGuardado
-      : "free";
+    planGuardado === "business"
+      ? "business"
+      : planGuardado === "pro" &&
+          suscripcionVigente
+        ? "pro"
+        : "free";
 
   const limite = LIMITES[plan];
 
@@ -161,6 +174,44 @@ export default function PlanUsageCard() {
     0,
     limite - usadas
   );
+
+  const limiteRespuestasIA =
+    LIMITES_RESPUESTAS_IA[plan];
+
+  const respuestasIAUsadas =
+    datos?.aiResponsesUsageMonth ===
+    mesActual
+      ? Math.max(
+          0,
+          datos?.aiResponsesThisMonth || 0
+        )
+      : 0;
+
+  const respuestasIARestantes =
+    Math.max(
+      0,
+      limiteRespuestasIA -
+        respuestasIAUsadas
+    );
+
+  const porcentajeIA = useMemo(() => {
+    if (limiteRespuestasIA <= 0) {
+      return 0;
+    }
+
+    return Math.min(
+      100,
+      Math.round(
+        (
+          respuestasIAUsadas /
+          limiteRespuestasIA
+        ) * 100
+      )
+    );
+  }, [
+    limiteRespuestasIA,
+    respuestasIAUsadas,
+  ]);
 
   const porcentaje = useMemo(() => {
     if (limite <= 0) return 0;
@@ -294,7 +345,56 @@ export default function PlanUsageCard() {
         </div>
       </div>
 
-      {restantes === 0 && (
+      <div className="mt-6 border-t border-zinc-800 pt-6">
+        <div className="flex items-center justify-between gap-4 text-sm">
+          <span className="text-zinc-400">
+            Respuestas IA del mes
+          </span>
+
+          <span className="font-medium text-white">
+            {respuestasIAUsadas.toLocaleString(
+              "es-AR"
+            )}{" "}
+            /{" "}
+            {limiteRespuestasIA.toLocaleString(
+              "es-AR"
+            )}
+          </span>
+        </div>
+
+        <div className="mt-3 h-3 overflow-hidden rounded-full bg-zinc-800">
+          <div
+            className={[
+              "h-full rounded-full transition-all",
+              porcentajeIA >= 100
+                ? "bg-red-500"
+                : porcentajeIA >= 80
+                  ? "bg-amber-500"
+                  : "bg-violet-500",
+            ].join(" ")}
+            style={{
+              width: `${porcentajeIA}%`,
+            }}
+          />
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <span className="text-zinc-500">
+            {respuestasIARestantes > 0
+              ? `Te quedan ${respuestasIARestantes.toLocaleString(
+                  "es-AR"
+                )} respuestas IA.`
+              : "Alcanzaste el límite mensual de IA."}
+          </span>
+
+          <span className="font-medium text-zinc-400">
+            {porcentajeIA}% utilizado
+          </span>
+        </div>
+      </div>
+
+      {(restantes === 0 ||
+        respuestasIARestantes === 0) && (
         <div className="mt-5 rounded-xl border border-red-500/20 bg-red-500/10 p-4">
           <p className="text-sm font-medium text-red-300">
             Alcanzaste el límite de tu

@@ -99,6 +99,12 @@ const LIMITES_CONVERSACIONES = {
   business: 10000,
 } as const;
 
+const LIMITES_RESPUESTAS_IA = {
+  free: 250,
+  pro: 5000,
+  business: 20000,
+} as const;
+
 class LimitePlanAlcanzadoError extends Error {
   constructor() {
     super(
@@ -106,6 +112,81 @@ class LimitePlanAlcanzadoError extends Error {
     );
     this.name = "LimitePlanAlcanzadoError";
   }
+}
+
+class LimiteRespuestasIAError extends Error {
+  constructor() {
+    super(
+      "Alcanzaste el límite mensual de respuestas de IA de tu plan."
+    );
+    this.name = "LimiteRespuestasIAError";
+  }
+}
+
+async function reservarRespuestaIA(
+  empresaReferencia: DocumentReference<DocumentData>
+) {
+  await adminDb.runTransaction(
+    async (transaction) => {
+      const empresaSnapshot =
+        await transaction.get(
+          empresaReferencia
+        );
+
+      if (!empresaSnapshot.exists) {
+        throw new Error(
+          "La empresa ya no existe."
+        );
+      }
+
+      const datos =
+        empresaSnapshot.data() ?? {};
+
+      const plan =
+        obtenerPlanEfectivo(datos);
+
+      const limite =
+        LIMITES_RESPUESTAS_IA[
+          plan
+        ];
+
+      const mesActual =
+        obtenerMesActualArgentina();
+
+      const mesGuardado =
+        typeof datos.aiResponsesUsageMonth ===
+        "string"
+          ? datos.aiResponsesUsageMonth
+          : "";
+
+      const usadas =
+        mesGuardado === mesActual
+          ? Math.max(
+              0,
+              Number(
+                datos.aiResponsesThisMonth ??
+                  0
+              ) || 0
+            )
+          : 0;
+
+      if (usadas >= limite) {
+        throw new LimiteRespuestasIAError();
+      }
+
+      transaction.update(
+        empresaReferencia,
+        {
+          aiResponsesThisMonth:
+            usadas + 1,
+          aiResponsesUsageMonth:
+            mesActual,
+          updatedAt:
+            FieldValue.serverTimestamp(),
+        }
+      );
+    }
+  );
 }
 
 function convertirFecha(valor: unknown) {
@@ -158,6 +239,10 @@ function obtenerPlanEfectivo(
     return "free";
   }
 
+  if (planGuardado === "business") {
+    return "business";
+  }
+
   const fechaVencimiento =
     convertirFecha(
       datos.subscriptionEndsAt
@@ -171,7 +256,7 @@ function obtenerPlanEfectivo(
     return "free";
   }
 
-  return planGuardado;
+  return "pro";
 }
 
 function obtenerMesActualArgentina() {
@@ -757,6 +842,17 @@ export async function GET(request: Request) {
       empresaSnapshot.data() ?? {}
     );
 
+    if (empresa.plan === "free") {
+      return NextResponse.json(
+        {
+          error:
+            "El widget web está disponible en los planes Pro y Empresa.",
+          upgradeRequired: true,
+        },
+        { status: 403 }
+      );
+    }
+
     const conversacionId = limpiarTexto(
       url.searchParams.get("conversacionId"),
       160
@@ -849,6 +945,17 @@ export async function POST(request: Request) {
     const empresa = obtenerEmpresaPublica(
       empresaSnapshot.data() ?? {}
     );
+
+    if (empresa.plan === "free") {
+      return NextResponse.json(
+        {
+          error:
+            "El widget web está disponible en los planes Pro y Empresa.",
+          upgradeRequired: true,
+        },
+        { status: 403 }
+      );
+    }
 
     let referenciaConversacion: DocumentReference<DocumentData>;
     let accessToken = limpiarTexto(body.accessToken, 200);
@@ -950,6 +1057,10 @@ export async function POST(request: Request) {
         });
       }
     }
+
+    await reservarRespuestaIA(
+      empresaReferencia
+    );
 
     const secretoInterno =
       process.env
@@ -1064,6 +1175,22 @@ export async function POST(request: Request) {
         }
       );
     }
+
+    if (
+      error instanceof
+      LimiteRespuestasIAError
+    ) {
+      return NextResponse.json(
+        {
+          error: error.message,
+          limiteRespuestasIA: true,
+        },
+        {
+          status: 403,
+        }
+      );
+    }
+
 
     console.error(
       "Error en POST /api/widget/chat:",

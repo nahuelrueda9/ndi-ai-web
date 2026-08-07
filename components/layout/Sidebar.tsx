@@ -28,6 +28,7 @@ import {
   Code2,
   CreditCard,
   Home,
+  HelpCircle,
   MessageSquare,
   Plug,
   Settings,
@@ -329,6 +330,12 @@ export default function Sidebar() {
           ruta: "configuracion",
           icon: Settings,
           roles: ROLES_ADMINISTRACION,
+        },
+        {
+          label: "Ayuda",
+          ruta: "ayuda",
+          icon: HelpCircle,
+          roles: TODOS_LOS_ROLES,
         },
       ];
     },
