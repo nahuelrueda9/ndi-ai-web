@@ -44,8 +44,15 @@ type RolEmpresa =
   | "supervisor"
   | "operador";
 
+type PlanEmpresa =
+  | "free"
+  | "pro"
+  | "business";
+
 type EmpresaData = {
   userId?: string;
+  plan?: PlanEmpresa;
+  subscriptionEndsAt?: unknown;
 };
 
 type MiembroData = {
@@ -93,6 +100,74 @@ type FormularioAutomatizacion = {
   accionTipo: TipoAccion;
   accionValor: string;
 };
+
+function convertirFecha(
+  valor: unknown
+) {
+  if (!valor) {
+    return null;
+  }
+
+  if (
+    typeof valor === "object" &&
+    valor !== null &&
+    "toDate" in valor &&
+    typeof (
+      valor as {
+        toDate?: unknown;
+      }
+    ).toDate === "function"
+  ) {
+    return (
+      valor as {
+        toDate: () => Date;
+      }
+    ).toDate();
+  }
+
+  if (valor instanceof Date) {
+    return valor;
+  }
+
+  if (
+    typeof valor === "string" ||
+    typeof valor === "number"
+  ) {
+    const fecha = new Date(valor);
+
+    if (!Number.isNaN(fecha.getTime())) {
+      return fecha;
+    }
+  }
+
+  return null;
+}
+
+function planPermiteAutomatizaciones(
+  empresa: EmpresaData
+) {
+  const plan: PlanEmpresa =
+    empresa.plan === "pro"
+      ? "pro"
+      : empresa.plan === "business"
+        ? "business"
+        : "free";
+
+  if (plan === "free") {
+    return false;
+  }
+
+  const vencimiento =
+    convertirFecha(
+      empresa.subscriptionEndsAt
+    );
+
+  return Boolean(
+    vencimiento &&
+      vencimiento.getTime() >
+        Date.now()
+  );
+}
 
 const FORMULARIO_INICIAL: FormularioAutomatizacion = {
   nombre: "",
@@ -196,6 +271,11 @@ export default function AutomatizacionesPage() {
     setAccesoVerificado,
   ] = useState(false);
 
+  const [
+    automatizacionesHabilitadas,
+    setAutomatizacionesHabilitadas,
+  ] = useState(false);
+
   useEffect(() => {
     const cancelarAuth = onAuthStateChanged(
       auth,
@@ -243,11 +323,25 @@ export default function AutomatizacionesPage() {
           const empresa =
             empresaSnapshot.data() as EmpresaData;
 
+          const planHabilitado =
+            planPermiteAutomatizaciones(
+              empresa
+            );
+
+          setAutomatizacionesHabilitadas(
+            planHabilitado
+          );
+
           if (
             empresa.userId ===
             usuarioSeguro.uid
           ) {
             setAccesoVerificado(true);
+
+            if (!planHabilitado) {
+              setCargando(false);
+            }
+
             return;
           }
 
@@ -289,6 +383,10 @@ export default function AutomatizacionesPage() {
           }
 
           setAccesoVerificado(true);
+
+          if (!planHabilitado) {
+            setCargando(false);
+          }
         } catch (firebaseError) {
           console.error(
             "Error al verificar acceso a automatizaciones:",
@@ -309,7 +407,8 @@ export default function AutomatizacionesPage() {
   useEffect(() => {
     if (
       !empresaId ||
-      !accesoVerificado
+      !accesoVerificado ||
+      !automatizacionesHabilitadas
     ) {
       return;
     }
@@ -363,6 +462,7 @@ export default function AutomatizacionesPage() {
     return () => cancelar();
   }, [
     accesoVerificado,
+    automatizacionesHabilitadas,
     empresaId,
   ]);
 
@@ -443,7 +543,17 @@ export default function AutomatizacionesPage() {
   ) {
     evento.preventDefault();
 
-    if (!empresaId || guardando) {
+    if (
+      !empresaId ||
+      guardando ||
+      !automatizacionesHabilitadas
+    ) {
+      if (!automatizacionesHabilitadas) {
+        setError(
+          "Las automatizaciones están disponibles en Pro y Empresa."
+        );
+      }
+
       return;
     }
 
@@ -524,7 +634,17 @@ export default function AutomatizacionesPage() {
   async function cambiarEstado(
     automatizacion: Automatizacion
   ) {
-    if (!empresaId || procesandoId) {
+    if (
+      !empresaId ||
+      procesandoId ||
+      !automatizacionesHabilitadas
+    ) {
+      if (!automatizacionesHabilitadas) {
+        setError(
+          "Las automatizaciones están disponibles en Pro y Empresa."
+        );
+      }
+
       return;
     }
 
@@ -569,7 +689,17 @@ export default function AutomatizacionesPage() {
   async function eliminarAutomatizacion(
     automatizacion: Automatizacion
   ) {
-    if (!empresaId || procesandoId) {
+    if (
+      !empresaId ||
+      procesandoId ||
+      !automatizacionesHabilitadas
+    ) {
+      if (!automatizacionesHabilitadas) {
+        setError(
+          "Las automatizaciones están disponibles en Pro y Empresa."
+        );
+      }
+
       return;
     }
 
@@ -609,6 +739,46 @@ export default function AutomatizacionesPage() {
     } finally {
       setProcesandoId(null);
     }
+  }
+
+  if (
+    accesoVerificado &&
+    !automatizacionesHabilitadas
+  ) {
+    return (
+      <section className="mx-auto w-full max-w-4xl px-5 py-12 sm:px-8">
+        <Card className="border-violet-500/20 bg-violet-500/5 p-8 text-center sm:p-12">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-400">
+            <Zap className="h-8 w-8" />
+          </div>
+
+          <p className="mt-6 text-sm font-semibold uppercase tracking-[0.18em] text-violet-400">
+            Función Pro
+          </p>
+
+          <h1 className="mt-3 text-3xl font-bold text-white">
+            Automatizaciones
+          </h1>
+
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-400">
+            Las automatizaciones están disponibles en los planes Pro y Empresa.
+            Con Pro podés crear reglas para responder, derivar, etiquetar y cerrar conversaciones automáticamente.
+          </p>
+
+          <Button
+            type="button"
+            className="mt-7"
+            onClick={() =>
+              router.push(
+                `/empresas/${empresaId}/planes`
+              )
+            }
+          >
+            Ver plan Pro
+          </Button>
+        </Card>
+      </section>
+    );
   }
 
   return (

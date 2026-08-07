@@ -25,6 +25,11 @@ type RolEmpresa =
   | "operador"
   | null;
 
+type PlanEmpresa =
+  | "free"
+  | "pro"
+  | "business";
+
 function obtenerBearerToken(
   request: NextRequest
 ) {
@@ -164,6 +169,105 @@ function puedeEditarIntegracion(
   );
 }
 
+function convertirFecha(
+  valor: unknown
+) {
+  if (!valor) {
+    return null;
+  }
+
+  if (
+    typeof valor === "object" &&
+    valor !== null &&
+    "toDate" in valor &&
+    typeof (
+      valor as {
+        toDate?: unknown;
+      }
+    ).toDate === "function"
+  ) {
+    return (
+      valor as {
+        toDate: () => Date;
+      }
+    ).toDate();
+  }
+
+  if (valor instanceof Date) {
+    return valor;
+  }
+
+  if (
+    typeof valor === "string" ||
+    typeof valor === "number"
+  ) {
+    const fecha = new Date(valor);
+
+    if (!Number.isNaN(fecha.getTime())) {
+      return fecha;
+    }
+  }
+
+  return null;
+}
+
+async function obtenerPlanEfectivo(
+  empresaId: string
+): Promise<PlanEmpresa | null> {
+  const referencia =
+    adminDb
+      .collection("companies")
+      .doc(empresaId);
+
+  const snapshot =
+    await referencia.get();
+
+  if (!snapshot.exists) {
+    return null;
+  }
+
+  const datos =
+    snapshot.data() ?? {};
+
+  const planGuardado: PlanEmpresa =
+    datos.plan === "pro"
+      ? "pro"
+      : datos.plan === "business"
+        ? "business"
+        : "free";
+
+  if (planGuardado === "free") {
+    return "free";
+  }
+
+  const fechaVencimiento =
+    convertirFecha(
+      datos.subscriptionEndsAt
+    );
+
+  if (
+    fechaVencimiento &&
+    fechaVencimiento.getTime() >
+      Date.now()
+  ) {
+    return planGuardado;
+  }
+
+  await referencia.set(
+    {
+      plan: "free",
+      subscriptionStatus: "expired",
+      maxConversations: 50,
+      updatedAt: new Date(),
+    },
+    {
+      merge: true,
+    }
+  );
+
+  return "free";
+}
+
 export async function GET(
   request: NextRequest
 ) {
@@ -234,6 +338,11 @@ export async function GET(
       );
     }
 
+    const plan =
+      await obtenerPlanEfectivo(
+        empresaId
+      );
+
     const documento =
       await adminDb
         .collection("companies")
@@ -245,6 +354,10 @@ export async function GET(
     if (!documento.exists) {
       return NextResponse.json({
         config: null,
+        plan,
+        puedeConectar:
+          plan === "pro" ||
+          plan === "business",
       });
     }
 
@@ -269,6 +382,10 @@ export async function GET(
           data?.instagramUsername ??
           "",
       },
+      plan,
+      puedeConectar:
+        plan === "pro" ||
+        plan === "business",
     });
   } catch (error) {
     console.error(
@@ -370,6 +487,27 @@ export async function POST(
         {
           error:
             "Solo el Propietario o un Administrador pueden modificar esta integración.",
+        },
+        {
+          status: 403,
+        }
+      );
+    }
+
+    const plan =
+      await obtenerPlanEfectivo(
+        empresaId
+      );
+
+    if (
+      plan !== "pro" &&
+      plan !== "business"
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Instagram está disponible únicamente en los planes Pro y Empresa.",
+          upgradeRequired: true,
         },
         {
           status: 403,

@@ -108,6 +108,72 @@ class LimitePlanAlcanzadoError extends Error {
   }
 }
 
+function convertirFecha(valor: unknown) {
+  if (!valor) {
+    return null;
+  }
+
+  if (
+    typeof valor === "object" &&
+    valor !== null &&
+    "toDate" in valor &&
+    typeof (valor as { toDate?: unknown }).toDate === "function"
+  ) {
+    return (
+      valor as {
+        toDate: () => Date;
+      }
+    ).toDate();
+  }
+
+  if (valor instanceof Date) {
+    return valor;
+  }
+
+  if (
+    typeof valor === "string" ||
+    typeof valor === "number"
+  ) {
+    const fecha = new Date(valor);
+
+    if (!Number.isNaN(fecha.getTime())) {
+      return fecha;
+    }
+  }
+
+  return null;
+}
+
+function obtenerPlanEfectivo(
+  datos: DocumentData
+): keyof typeof LIMITES_CONVERSACIONES {
+  const planGuardado =
+    datos.plan === "pro"
+      ? "pro"
+      : datos.plan === "business"
+        ? "business"
+        : "free";
+
+  if (planGuardado === "free") {
+    return "free";
+  }
+
+  const fechaVencimiento =
+    convertirFecha(
+      datos.subscriptionEndsAt
+    );
+
+  if (
+    !fechaVencimiento ||
+    fechaVencimiento.getTime() <=
+      Date.now()
+  ) {
+    return "free";
+  }
+
+  return planGuardado;
+}
+
 function obtenerMesActualArgentina() {
   const partes = new Intl.DateTimeFormat("en-US", {
     timeZone: "America/Argentina/Buenos_Aires",
@@ -135,9 +201,7 @@ function obtenerEmpresaPublica(datos: DocumentData): EmpresaPublica {
   return {
     nombre: typeof datos.nombre === "string" ? datos.nombre : undefined,
     plan:
-      datos.plan === "pro" || datos.plan === "business"
-        ? datos.plan
-        : "free",
+      obtenerPlanEfectivo(datos),
     descripcion:
       typeof datos.descripcion === "string" ? datos.descripcion : undefined,
     personalidad:
@@ -319,15 +383,37 @@ async function crearConversacion({
       const datos =
         empresaSnapshot.data() ?? {};
 
-      const plan: keyof typeof LIMITES_CONVERSACIONES =
-        datos.plan === "pro"
-          ? "pro"
-          : datos.plan === "business"
-            ? "business"
-            : "free";
+      const plan =
+        obtenerPlanEfectivo(datos);
 
       const limite =
         LIMITES_CONVERSACIONES[plan];
+
+      const planGuardado =
+        datos.plan === "pro" ||
+        datos.plan === "business"
+          ? datos.plan
+          : "free";
+
+      if (
+        plan === "free" &&
+        planGuardado !== "free"
+      ) {
+        transaccion.set(
+          empresaReferencia,
+          {
+            plan: "free",
+            subscriptionStatus:
+              "expired",
+            maxConversations: 50,
+            updatedAt:
+              FieldValue.serverTimestamp(),
+          },
+          {
+            merge: true,
+          }
+        );
+      }
 
       const mesGuardado =
         typeof datos.conversationsUsageMonth ===
@@ -838,26 +924,31 @@ export async function POST(request: Request) {
       });
     }
 
-    const resultadoAutomatizacion =
-      await ejecutarAutomatizaciones({
-        empresaId,
-        mensaje,
-        referenciaConversacion,
-      });
+    if (
+      empresa.plan === "pro" ||
+      empresa.plan === "business"
+    ) {
+      const resultadoAutomatizacion =
+        await ejecutarAutomatizaciones({
+          empresaId,
+          mensaje,
+          referenciaConversacion,
+        });
 
-    if (resultadoAutomatizacion.ejecutada) {
-      return NextResponse.json({
-        conversacionId: referenciaConversacion.id,
-        accessToken,
-        respuesta: resultadoAutomatizacion.respuesta,
-        humanoActivo:
-          resultadoAutomatizacion.humanoActivo,
-        estado: resultadoAutomatizacion
-          .conversacionCerrada
-          ? "cerrada"
-          : "abierta",
-        automatizacionEjecutada: true,
-      });
+      if (resultadoAutomatizacion.ejecutada) {
+        return NextResponse.json({
+          conversacionId: referenciaConversacion.id,
+          accessToken,
+          respuesta: resultadoAutomatizacion.respuesta,
+          humanoActivo:
+            resultadoAutomatizacion.humanoActivo,
+          estado: resultadoAutomatizacion
+            .conversacionCerrada
+            ? "cerrada"
+            : "abierta",
+          automatizacionEjecutada: true,
+        });
+      }
     }
 
     const secretoInterno =

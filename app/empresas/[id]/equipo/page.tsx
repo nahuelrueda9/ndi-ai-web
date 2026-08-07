@@ -52,9 +52,67 @@ type RolEquipo =
   | "supervisor"
   | "operador";
 
+type PlanEmpresa =
+  | "free"
+  | "pro"
+  | "business";
+
 type EmpresaData = {
   userId?: string;
+  plan?: PlanEmpresa;
+  subscriptionEndsAt?: unknown;
 };
+
+function convertirFechaPlan(valor: unknown) {
+  if (!valor) return null;
+
+  if (
+    typeof valor === "object" &&
+    valor !== null &&
+    "toDate" in valor &&
+    typeof (valor as { toDate?: unknown }).toDate === "function"
+  ) {
+    return (valor as { toDate: () => Date }).toDate();
+  }
+
+  if (valor instanceof Date) {
+    return valor;
+  }
+
+  if (
+    typeof valor === "string" ||
+    typeof valor === "number"
+  ) {
+    const fecha = new Date(valor);
+    return Number.isNaN(fecha.getTime())
+      ? null
+      : fecha;
+  }
+
+  return null;
+}
+
+function planPermiteEquipo(
+  empresa: EmpresaData
+) {
+  if (empresa.plan === "business") {
+    return true;
+  }
+
+  if (empresa.plan !== "pro") {
+    return false;
+  }
+
+  const vencimiento =
+    convertirFechaPlan(
+      empresa.subscriptionEndsAt
+    );
+
+  return Boolean(
+    vencimiento &&
+      vencimiento.getTime() > Date.now()
+  );
+}
 
 type MiembroAccesoData = {
   rol?: Exclude<RolEmpresa, "propietario">;
@@ -199,6 +257,11 @@ export default function EquipoPage() {
     setAccesoVerificado,
   ] = useState(false);
 
+  const [
+    equipoHabilitado,
+    setEquipoHabilitado,
+  ] = useState(false);
+
   useEffect(() => {
     const cancelarAuth = onAuthStateChanged(
       auth,
@@ -246,11 +309,25 @@ export default function EquipoPage() {
           const empresa =
             empresaSnapshot.data() as EmpresaData;
 
+          const planHabilitado =
+            planPermiteEquipo(
+              empresa
+            );
+
+          setEquipoHabilitado(
+            planHabilitado
+          );
+
           if (
             empresa.userId ===
             usuarioSeguro.uid
           ) {
             setAccesoVerificado(true);
+
+            if (!planHabilitado) {
+              setCargando(false);
+            }
+
             return;
           }
 
@@ -288,6 +365,10 @@ export default function EquipoPage() {
           }
 
           setAccesoVerificado(true);
+
+          if (!planHabilitado) {
+            setCargando(false);
+          }
         } catch (firebaseError) {
           console.error(
             "Error al verificar acceso al equipo:",
@@ -308,7 +389,8 @@ export default function EquipoPage() {
   useEffect(() => {
     if (
       !empresaId ||
-      !accesoVerificado
+      !accesoVerificado ||
+      !equipoHabilitado
     ) {
       return;
     }
@@ -427,6 +509,7 @@ export default function EquipoPage() {
     };
   }, [
     accesoVerificado,
+    equipoHabilitado,
     empresaId,
   ]);
 
@@ -863,6 +946,45 @@ export default function EquipoPage() {
     } finally {
       setProcesandoId(null);
     }
+  }
+
+  if (
+    accesoVerificado &&
+    !equipoHabilitado
+  ) {
+    return (
+      <section className="mx-auto w-full max-w-4xl px-5 py-12 sm:px-8">
+        <Card className="border-emerald-500/20 bg-emerald-500/5 p-8 text-center sm:p-12">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
+            <Users className="h-8 w-8" />
+          </div>
+
+          <p className="mt-6 text-sm font-semibold uppercase tracking-[0.18em] text-emerald-400">
+            Función Pro
+          </p>
+
+          <h1 className="mt-3 text-3xl font-bold text-white">
+            Equipo
+          </h1>
+
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-400">
+            La gestión de operadores, supervisores e invitaciones está disponible en los planes Pro y Empresa.
+          </p>
+
+          <Button
+            type="button"
+            className="mt-7"
+            onClick={() =>
+              router.push(
+                `/empresas/${empresaId}/planes`
+              )
+            }
+          >
+            Ver plan Pro
+          </Button>
+        </Card>
+      </section>
+    );
   }
 
   return (

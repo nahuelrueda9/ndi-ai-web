@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   collection,
+  doc,
   limit,
   onSnapshot,
   orderBy,
@@ -40,6 +41,49 @@ type DiaGrafico = {
   cantidad: number;
 };
 
+type PlanId = "free" | "pro" | "business";
+
+type EmpresaPlan = {
+  plan?: PlanId;
+  subscriptionEndsAt?: unknown;
+};
+
+function convertirFecha(valor: unknown) {
+  if (!valor) {
+    return null;
+  }
+
+  if (
+    typeof valor === "object" &&
+    valor !== null &&
+    "toDate" in valor &&
+    typeof (valor as { toDate?: unknown }).toDate === "function"
+  ) {
+    return (
+      valor as {
+        toDate: () => Date;
+      }
+    ).toDate();
+  }
+
+  if (valor instanceof Date) {
+    return valor;
+  }
+
+  if (
+    typeof valor === "string" ||
+    typeof valor === "number"
+  ) {
+    const fecha = new Date(valor);
+
+    if (!Number.isNaN(fecha.getTime())) {
+      return fecha;
+    }
+  }
+
+  return null;
+}
+
 export default function DashboardEmpresaPage() {
   const params = useParams();
   const router = useRouter();
@@ -53,6 +97,9 @@ export default function DashboardEmpresaPage() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [empresaPlan, setEmpresaPlan] =
+    useState<EmpresaPlan | null>(null);
 
   useEffect(() => {
     if (!empresaId) {
@@ -105,6 +152,61 @@ export default function DashboardEmpresaPage() {
 
     return () => unsubscribe();
   }, [empresaId]);
+
+  useEffect(() => {
+    if (!empresaId) {
+      return;
+    }
+
+    const unsubscribe = onSnapshot(
+      doc(
+        db,
+        "companies",
+        empresaId
+      ),
+      (snapshot) => {
+        if (!snapshot.exists()) {
+          setEmpresaPlan(null);
+          return;
+        }
+
+        setEmpresaPlan(
+          snapshot.data() as EmpresaPlan
+        );
+      },
+      (firebaseError) => {
+        console.error(
+          "Error al cargar el plan para publicidad:",
+          firebaseError
+        );
+      }
+    );
+
+    return () => unsubscribe();
+  }, [empresaId]);
+
+  const planGuardado: PlanId =
+    empresaPlan?.plan === "pro" ||
+    empresaPlan?.plan === "business"
+      ? empresaPlan.plan
+      : "free";
+
+  const fechaVencimiento =
+    convertirFecha(
+      empresaPlan?.subscriptionEndsAt
+    );
+
+  const planEfectivo: PlanId =
+    planGuardado === "free"
+      ? "free"
+      : fechaVencimiento &&
+          fechaVencimiento.getTime() >
+            Date.now()
+        ? planGuardado
+        : "free";
+
+  const mostrarPublicidad =
+    planEfectivo === "free";
 
   const totalConversaciones = conversaciones.length;
 
@@ -318,7 +420,44 @@ export default function DashboardEmpresaPage() {
             </div>
           </div>
 
-<div className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(280px,0.7fr)]">
+          {mostrarPublicidad && (
+            <Card className="overflow-hidden border-blue-500/20 bg-gradient-to-r from-blue-500/10 via-zinc-900 to-violet-500/10">
+              <div
+                id="ndi-ai-free-ad-slot-dashboard"
+                data-ad-slot="dashboard-free"
+                className="flex flex-col justify-between gap-5 p-6 md:flex-row md:items-center"
+              >
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                    Publicidad
+                  </p>
+
+                  <h2 className="mt-2 text-lg font-semibold text-white">
+                    Usás NDI AI Free
+                  </h2>
+
+                  <p className="mt-1 max-w-2xl text-sm leading-6 text-zinc-400">
+                    Este espacio está reservado para anuncios en el plan gratuito.
+                    Más adelante puede conectarse con Google AdSense o patrocinadores directos.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    router.push(
+                      `/empresas/${empresaId}/planes`
+                    )
+                  }
+                  className="shrink-0 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500"
+                >
+                  Pasar a Pro sin publicidad
+                </button>
+              </div>
+            </Card>
+          )}
+
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(280px,0.7fr)]">
 
   <div className="space-y-6">
     <DashboardChart datos={datosGrafico} />

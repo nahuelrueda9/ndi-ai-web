@@ -35,10 +35,63 @@ type EmpresaFacturacion = {
   name?: string;
   plan?: PlanId;
   subscriptionStatus?: string;
+  subscriptionEndsAt?: unknown;
   conversationsThisMonth?: number;
   conversationsUsageMonth?: string;
   mercadopagoPaymentId?: string;
 };
+
+function obtenerMesActualArgentina() {
+  const partes = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Argentina/Buenos_Aires",
+    year: "numeric",
+    month: "2-digit",
+  }).formatToParts(new Date());
+
+  const anio =
+    partes.find((parte) => parte.type === "year")?.value ?? "";
+
+  const mes =
+    partes.find((parte) => parte.type === "month")?.value ?? "";
+
+  return `${anio}-${mes}`;
+}
+
+function convertirFecha(valor: unknown) {
+  if (!valor) {
+    return null;
+  }
+
+  if (
+    typeof valor === "object" &&
+    valor !== null &&
+    "toDate" in valor &&
+    typeof (valor as { toDate?: unknown }).toDate === "function"
+  ) {
+    return (
+      valor as {
+        toDate: () => Date;
+      }
+    ).toDate();
+  }
+
+  if (valor instanceof Date) {
+    return valor;
+  }
+
+  if (
+    typeof valor === "string" ||
+    typeof valor === "number"
+  ) {
+    const fecha = new Date(valor);
+
+    if (!Number.isNaN(fecha.getTime())) {
+      return fecha;
+    }
+  }
+
+  return null;
+}
 
 const LIMITES: Record<
   PlanId,
@@ -224,20 +277,44 @@ export default function FacturacionPage() {
     empresaId,
   ]);
 
-  const plan: PlanId =
+  const planGuardado: PlanId =
     empresa?.plan === "pro" ||
     empresa?.plan === "business"
       ? empresa.plan
       : "free";
 
+  const fechaVencimiento =
+    convertirFecha(
+      empresa?.subscriptionEndsAt
+    );
+
+  const suscripcionVigente =
+    planGuardado === "free" ||
+    (
+      fechaVencimiento !== null &&
+      fechaVencimiento.getTime() >
+        Date.now()
+    );
+
+  const plan: PlanId =
+    suscripcionVigente
+      ? planGuardado
+      : "free";
+
   const limite =
     LIMITES[plan];
 
-  const usadas = Math.max(
-    0,
-    empresa
-      ?.conversationsThisMonth || 0
-  );
+  const mesActual =
+    obtenerMesActualArgentina();
+
+  const usadas =
+    empresa?.conversationsUsageMonth ===
+    mesActual
+      ? Math.max(
+          0,
+          empresa?.conversationsThisMonth || 0
+        )
+      : 0;
 
   const restantes = Math.max(
     0,
@@ -258,8 +335,10 @@ export default function FacturacionPage() {
   }, [limite, usadas]);
 
   const estado =
-    empresa?.subscriptionStatus ||
-    "active";
+    suscripcionVigente
+      ? empresa?.subscriptionStatus ||
+        "active"
+      : "expired";
 
   if (cargando) {
     return (

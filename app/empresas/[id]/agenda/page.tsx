@@ -6,12 +6,13 @@ import {
   useState,
   type FormEvent,
 } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   addDoc,
   collection,
   deleteDoc,
   doc,
+  getDoc,
   onSnapshot,
   orderBy,
   query,
@@ -73,6 +74,67 @@ type FormularioTurno = {
 
 type FiltroEstado = "todos" | EstadoTurno;
 
+type PlanEmpresa =
+  | "free"
+  | "pro"
+  | "business";
+
+type EmpresaPlan = {
+  plan?: PlanEmpresa;
+  subscriptionEndsAt?: unknown;
+};
+
+function convertirFechaPlan(valor: unknown) {
+  if (!valor) return null;
+
+  if (
+    typeof valor === "object" &&
+    valor !== null &&
+    "toDate" in valor &&
+    typeof (valor as { toDate?: unknown }).toDate === "function"
+  ) {
+    return (valor as { toDate: () => Date }).toDate();
+  }
+
+  if (valor instanceof Date) {
+    return valor;
+  }
+
+  if (
+    typeof valor === "string" ||
+    typeof valor === "number"
+  ) {
+    const fecha = new Date(valor);
+    return Number.isNaN(fecha.getTime())
+      ? null
+      : fecha;
+  }
+
+  return null;
+}
+
+function planPermiteAgenda(
+  empresa: EmpresaPlan
+) {
+  if (empresa.plan === "business") {
+    return true;
+  }
+
+  if (empresa.plan !== "pro") {
+    return false;
+  }
+
+  const vencimiento =
+    convertirFechaPlan(
+      empresa.subscriptionEndsAt
+    );
+
+  return Boolean(
+    vencimiento &&
+      vencimiento.getTime() > Date.now()
+  );
+}
+
 const DIAS_SEMANA = [
   "Lun",
   "Mar",
@@ -121,6 +183,7 @@ const ESTADOS: Record<
 
 export default function AgendaPage() {
   const params = useParams();
+  const router = useRouter();
   const parametroEmpresa = params.id ?? params.empresaId;
 
   const empresaId = Array.isArray(parametroEmpresa)
@@ -155,6 +218,11 @@ export default function AgendaPage() {
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
 
+  const [
+    agendaHabilitada,
+    setAgendaHabilitada,
+  ] = useState<boolean | null>(null);
+
   useEffect(() => {
     if (!empresaId) {
       setError("No se encontró la empresa.");
@@ -162,45 +230,109 @@ export default function AgendaPage() {
       return;
     }
 
-    const turnosQuery = query(
-      collection(
-        db,
-        "companies",
-        empresaId,
-        "appointments"
-      ),
-      orderBy("fecha", "asc")
-    );
+    const empresaIdSeguro =
+      empresaId;
 
-    const cancelar = onSnapshot(
-      turnosQuery,
-      (snapshot) => {
-        const lista = snapshot.docs.map((documento) => ({
-          id: documento.id,
-          ...(documento.data() as Omit<Turno, "id">),
-        }));
+    let cancelarTurnos:
+      | (() => void)
+      | undefined;
 
-        setTurnos(lista);
-        setError("");
-        setCargando(false);
-      },
-      (firebaseError) => {
+    async function cargarAgenda() {
+      try {
+        const empresaSnapshot =
+          await getDoc(
+            doc(
+              db,
+              "companies",
+              empresaIdSeguro
+            )
+          );
+
+        if (!empresaSnapshot.exists()) {
+          setError(
+            "La empresa no existe."
+          );
+          setCargando(false);
+          return;
+        }
+
+        const habilitada =
+          planPermiteAgenda(
+            empresaSnapshot.data() as EmpresaPlan
+          );
+
+        setAgendaHabilitada(
+          habilitada
+        );
+
+        if (!habilitada) {
+          setTurnos([]);
+          setCargando(false);
+          return;
+        }
+
+        const turnosQuery = query(
+          collection(
+            db,
+            "companies",
+            empresaIdSeguro,
+            "appointments"
+          ),
+          orderBy("fecha", "asc")
+        );
+
+        cancelarTurnos = onSnapshot(
+          turnosQuery,
+          (snapshot) => {
+            const lista =
+              snapshot.docs.map(
+                (documento) => ({
+                  id: documento.id,
+                  ...(documento.data() as Omit<
+                    Turno,
+                    "id"
+                  >),
+                })
+              );
+
+            setTurnos(lista);
+            setError("");
+            setCargando(false);
+          },
+          (firebaseError) => {
+            console.error(
+              "Error al cargar turnos:",
+              firebaseError
+            );
+
+            setError(
+              firebaseError.code ===
+                "permission-denied"
+                ? "No tenés permisos para ver la agenda."
+                : "No se pudieron cargar los turnos."
+            );
+
+            setCargando(false);
+          }
+        );
+      } catch (firebaseError) {
         console.error(
-          "Error al cargar turnos:",
+          "Error al verificar el plan de Agenda:",
           firebaseError
         );
 
         setError(
-          firebaseError.code === "permission-denied"
-            ? "No tenés permisos para ver la agenda."
-            : "No se pudieron cargar los turnos."
+          "No se pudo verificar el plan."
         );
-
         setCargando(false);
       }
-    );
+    }
 
-    return () => cancelar();
+    void cargarAgenda();
+
+    return () => {
+      cancelarTurnos?.();
+    };
   }, [empresaId]);
 
   const diasCalendario = useMemo(
@@ -489,6 +621,42 @@ export default function AgendaPage() {
     setMesActual(inicioMes);
     setFechaSeleccionada(
       obtenerFechaISO(hoy)
+    );
+  }
+
+  if (agendaHabilitada === false) {
+    return (
+      <section className="mx-auto w-full max-w-4xl px-5 py-12 sm:px-8">
+        <Card className="border-cyan-500/20 bg-cyan-500/5 p-8 text-center sm:p-12">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-cyan-500/10 text-cyan-400">
+            <CalendarDays className="h-8 w-8" />
+          </div>
+
+          <p className="mt-6 text-sm font-semibold uppercase tracking-[0.18em] text-cyan-400">
+            Función Pro
+          </p>
+
+          <h1 className="mt-3 text-3xl font-bold text-white">
+            Agenda y turnos
+          </h1>
+
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-400">
+            La gestión de citas y turnos está disponible en los planes Pro y Empresa.
+          </p>
+
+          <Button
+            type="button"
+            className="mt-7"
+            onClick={() =>
+              router.push(
+                `/empresas/${empresaId}/planes`
+              )
+            }
+          >
+            Ver plan Pro
+          </Button>
+        </Card>
+      </section>
     );
   }
 

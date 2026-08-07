@@ -7,7 +7,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 
 import { adminDb } from "@/lib/firebaseAdmin";
-import { registrarNuevaConversacionAdmin } from "@/lib/plans/adminLimits";
 import { crearNotificacion } from "@/lib/notifications/notificationService";
 
 export const runtime = "nodejs";
@@ -140,6 +139,118 @@ function verificarFirmaMeta({
     firmaBuffer,
     firmaEsperadaBuffer
   );
+}
+
+const LIMITES_CONVERSACIONES = {
+  free: 50,
+  pro: 1000,
+  business: 10000,
+} as const;
+
+type PlanEmpresa =
+  keyof typeof LIMITES_CONVERSACIONES;
+
+function obtenerMesActualArgentina() {
+  const partes =
+    new Intl.DateTimeFormat("en-US", {
+      timeZone:
+        "America/Argentina/Buenos_Aires",
+      year: "numeric",
+      month: "2-digit",
+    }).formatToParts(new Date());
+
+  const anio =
+    partes.find(
+      (parte) => parte.type === "year"
+    )?.value ?? "";
+
+  const mes =
+    partes.find(
+      (parte) => parte.type === "month"
+    )?.value ?? "";
+
+  return `${anio}-${mes}`;
+}
+
+function convertirFecha(valor: unknown) {
+  if (!valor) {
+    return null;
+  }
+
+  if (
+    typeof valor === "object" &&
+    valor !== null &&
+    "toDate" in valor &&
+    typeof (
+      valor as {
+        toDate?: unknown;
+      }
+    ).toDate === "function"
+  ) {
+    return (
+      valor as {
+        toDate: () => Date;
+      }
+    ).toDate();
+  }
+
+  if (valor instanceof Date) {
+    return valor;
+  }
+
+  if (
+    typeof valor === "string" ||
+    typeof valor === "number"
+  ) {
+    const fecha = new Date(valor);
+
+    if (!Number.isNaN(fecha.getTime())) {
+      return fecha;
+    }
+  }
+
+  return null;
+}
+
+function obtenerPlanEfectivo(
+  empresa: FirebaseFirestore.DocumentData
+): PlanEmpresa {
+  const planGuardado: PlanEmpresa =
+    empresa.plan === "pro"
+      ? "pro"
+      : empresa.plan === "business"
+        ? "business"
+        : "free";
+
+  if (planGuardado === "free") {
+    return "free";
+  }
+
+  const fechaVencimiento =
+    convertirFecha(
+      empresa.subscriptionEndsAt
+    );
+
+  if (
+    !fechaVencimiento ||
+    fechaVencimiento.getTime() <=
+      Date.now()
+  ) {
+    return "free";
+  }
+
+  return planGuardado;
+}
+
+class LimiteConversacionesError extends Error {
+  constructor() {
+    super(
+      "Se alcanzó el límite mensual de conversaciones."
+    );
+
+    this.name =
+      "LimiteConversacionesError";
+  }
 }
 
 export async function GET(request: NextRequest) {
@@ -309,6 +420,38 @@ export async function POST(request: NextRequest) {
 
         const empresa = empresaSnapshot.data() ?? {};
 
+        const planEfectivo =
+          obtenerPlanEfectivo(empresa);
+
+        if (planEfectivo === "free") {
+          const planGuardado =
+            empresa.plan === "pro" ||
+            empresa.plan === "business"
+              ? empresa.plan
+              : "free";
+
+          if (planGuardado !== "free") {
+            await empresaReferencia.set(
+              {
+                plan: "free",
+                subscriptionStatus: "expired",
+                maxConversations: 50,
+                updatedAt:
+                  FieldValue.serverTimestamp(),
+              },
+              {
+                merge: true,
+              }
+            );
+          }
+
+          console.warn(
+            `WhatsApp ignorado para ${empresaId}: esta integración requiere plan Pro o Empresa.`
+          );
+
+          continue;
+        }
+
         for (const mensaje of value?.messages ?? []) {
           const messageId = mensaje.id?.trim();
           const numeroCliente = mensaje.from?.trim();
@@ -354,92 +497,219 @@ export async function POST(request: NextRequest) {
            * Si Meta vuelve a enviar el mismo webhook,
            * no generamos otra respuesta de IA.
            */
-          const mensajeFueCreado =
-            await adminDb.runTransaction(
-              async (transaction) => {
-                const mensajeExistente =
-                  await transaction.get(
-                    mensajeReferencia
-                  );
+          let limiteMensualAlcanzado =
+            false;
 
-                if (mensajeExistente.exists) {
-                  return false;
-                }
+          let mensajeFueCreado = false;
 
-                const conversacionSnapshot =
-                  await transaction.get(
-                    conversacionReferencia
-                  );
+          try {
+            mensajeFueCreado =
+              await adminDb.runTransaction(
+                async (transaction) => {
+                  const [
+                    mensajeExistente,
+                    conversacionSnapshot,
+                    empresaTransaccionSnapshot,
+                  ] = await Promise.all([
+                    transaction.get(
+                      mensajeReferencia
+                    ),
+                    transaction.get(
+                      conversacionReferencia
+                    ),
+                    transaction.get(
+                      empresaReferencia
+                    ),
+                  ]);
 
-                const conversacionExistia =
-                  conversacionSnapshot.exists;
+                  if (
+                    mensajeExistente.exists
+                  ) {
+                    return false;
+                  }
+
+                  if (
+                    !empresaTransaccionSnapshot.exists
+                  ) {
+                    throw new Error(
+                      `La empresa ${empresaId} ya no existe.`
+                    );
+                  }
+
+                  const conversacionExistia =
+                    conversacionSnapshot.exists;
+
+                  const empresaTransaccion =
+                    empresaTransaccionSnapshot.data() ??
+                    {};
 
                   if (!conversacionExistia) {
-  await registrarNuevaConversacionAdmin(empresaId);
-}
+                    const plan =
+                      obtenerPlanEfectivo(
+                        empresaTransaccion
+                      );
 
-                transaction.set(
-                  conversacionReferencia,
-                  {
-                    empresaId,
-                    canal: "whatsapp",
-                    visitanteId: numeroCliente,
-                    nombreContacto,
-                    telefono: numeroCliente,
+                    const limiteMensual =
+                      LIMITES_CONVERSACIONES[
+                        plan
+                      ];
 
-                    whatsappPhoneNumberId:
-                      phoneNumberId,
+                    const mesActual =
+                      obtenerMesActualArgentina();
 
-                    whatsappDisplayNumber:
-                      value?.metadata
-                        ?.display_phone_number ?? "",
+                    const mesGuardado =
+                      typeof empresaTransaccion
+                        .conversationsUsageMonth ===
+                      "string"
+                        ? empresaTransaccion
+                            .conversationsUsageMonth
+                        : "";
 
-                    estado: "abierta",
-                    atendidoPor:
-                      conversacionSnapshot.data()
-                        ?.atendidoPor ?? "ia",
+                    const usadas =
+                      mesGuardado === mesActual
+                        ? Math.max(
+                            0,
+                            Number(
+                              empresaTransaccion
+                                .conversationsThisMonth ??
+                                0
+                            ) || 0
+                          )
+                        : 0;
 
-                    humanoActivo:
-                      conversacionSnapshot.data()
-                        ?.humanoActivo === true,
+                    if (
+                      usadas >=
+                      limiteMensual
+                    ) {
+                      throw new LimiteConversacionesError();
+                    }
 
-                    ultimoMensaje: contenido,
-                    ultimoRol: "user",
+                    const planGuardado =
+                      empresaTransaccion.plan ===
+                        "pro" ||
+                      empresaTransaccion.plan ===
+                        "business"
+                        ? empresaTransaccion.plan
+                        : "free";
 
-                    cantidadMensajes:
-                      FieldValue.increment(1),
+                    const actualizacionEmpresa: FirebaseFirestore.UpdateData<FirebaseFirestore.DocumentData> =
+                      {
+                        conversationsThisMonth:
+                          usadas + 1,
+                        conversationsUsageMonth:
+                          mesActual,
+                        updatedAt:
+                          FieldValue.serverTimestamp(),
+                      };
 
-                    updatedAt:
-                      FieldValue.serverTimestamp(),
+                    if (
+                      plan === "free" &&
+                      planGuardado !== "free"
+                    ) {
+                      actualizacionEmpresa.plan =
+                        "free";
+                      actualizacionEmpresa.subscriptionStatus =
+                        "expired";
+                      actualizacionEmpresa.maxConversations =
+                        50;
+                    }
 
-                    ...(!conversacionExistia
-                      ? {
-                          createdAt:
-                            FieldValue.serverTimestamp(),
-                        }
-                      : {}),
-                  },
-                  {
-                    merge: true,
+                    transaction.update(
+                      empresaReferencia,
+                      actualizacionEmpresa
+                    );
                   }
-                );
 
-                transaction.set(
-                  mensajeReferencia,
-                  {
-                    role: "user",
-                    content: contenido,
-                    enviadoPor: "cliente",
-                    canal: "whatsapp",
-                    whatsappMessageId: messageId,
-                    createdAt:
-                      FieldValue.serverTimestamp(),
-                  }
-                );
+                  transaction.set(
+                    conversacionReferencia,
+                    {
+                      empresaId,
+                      canal: "whatsapp",
+                      visitanteId:
+                        numeroCliente,
+                      nombreContacto,
+                      telefono:
+                        numeroCliente,
 
-                return true;
-              }
+                      whatsappPhoneNumberId:
+                        phoneNumberId,
+
+                      whatsappDisplayNumber:
+                        value?.metadata
+                          ?.display_phone_number ??
+                        "",
+
+                      estado: "abierta",
+                      atendidoPor:
+                        conversacionSnapshot.data()
+                          ?.atendidoPor ??
+                        "ia",
+
+                      humanoActivo:
+                        conversacionSnapshot.data()
+                          ?.humanoActivo ===
+                        true,
+
+                      ultimoMensaje:
+                        contenido,
+                      ultimoRol: "user",
+
+                      cantidadMensajes:
+                        FieldValue.increment(
+                          1
+                        ),
+
+                      updatedAt:
+                        FieldValue.serverTimestamp(),
+
+                      ...(!conversacionExistia
+                        ? {
+                            createdAt:
+                              FieldValue.serverTimestamp(),
+                          }
+                        : {}),
+                    },
+                    {
+                      merge: true,
+                    }
+                  );
+
+                  transaction.set(
+                    mensajeReferencia,
+                    {
+                      role: "user",
+                      content: contenido,
+                      enviadoPor: "cliente",
+                      canal: "whatsapp",
+                      whatsappMessageId:
+                        messageId,
+                      createdAt:
+                        FieldValue.serverTimestamp(),
+                    }
+                  );
+
+                  return true;
+                }
+              );
+          } catch (errorTransaccion) {
+            if (
+              errorTransaccion instanceof
+              LimiteConversacionesError
+            ) {
+              limiteMensualAlcanzado =
+                true;
+            } else {
+              throw errorTransaccion;
+            }
+          }
+
+          if (limiteMensualAlcanzado) {
+            console.warn(
+              `La empresa ${empresaId} alcanzó el límite mensual y no se creó la conversación de WhatsApp ${conversacionId}.`
             );
+
+            continue;
+          }
 
           if (!mensajeFueCreado) {
             console.log(

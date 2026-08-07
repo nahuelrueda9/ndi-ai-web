@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { doc, onSnapshot } from "firebase/firestore";
+import {
+  doc,
+  onSnapshot,
+  Timestamp,
+} from "firebase/firestore";
 import { useParams } from "next/navigation";
 
 import { db } from "@/lib/firebase";
@@ -12,7 +16,9 @@ type PlanId = "free" | "pro" | "business";
 type EmpresaPlan = {
   plan?: PlanId;
   conversationsThisMonth?: number;
+  conversationsUsageMonth?: string;
   subscriptionStatus?: string;
+  subscriptionEndsAt?: Timestamp | Date | string | number;
 };
 
 const LIMITES: Record<PlanId, number> = {
@@ -21,17 +27,59 @@ const LIMITES: Record<PlanId, number> = {
   business: 10000,
 };
 
+function obtenerMesActualArgentina() {
+  const partes = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Argentina/Buenos_Aires",
+    year: "numeric",
+    month: "2-digit",
+  }).formatToParts(new Date());
+
+  const anio =
+    partes.find((parte) => parte.type === "year")?.value ?? "";
+
+  const mes =
+    partes.find((parte) => parte.type === "month")?.value ?? "";
+
+  return `${anio}-${mes}`;
+}
+
+function convertirFecha(
+  valor: EmpresaPlan["subscriptionEndsAt"]
+) {
+  if (!valor) return null;
+
+  if (valor instanceof Timestamp) {
+    return valor.toDate();
+  }
+
+  if (valor instanceof Date) {
+    return valor;
+  }
+
+  const fecha = new Date(valor);
+
+  return Number.isNaN(fecha.getTime())
+    ? null
+    : fecha;
+}
+
 export default function PlanUsageCard() {
   const params = useParams();
-  const parametroEmpresa = params.id ?? params.empresaId;
+  const parametroEmpresa =
+    params.id ?? params.empresaId;
 
   const empresaId = Array.isArray(parametroEmpresa)
     ? parametroEmpresa[0]
     : (parametroEmpresa as string | undefined);
 
-  const [datos, setDatos] = useState<EmpresaPlan | null>(null);
-  const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState("");
+  const [datos, setDatos] =
+    useState<EmpresaPlan | null>(null);
+
+  const [cargando, setCargando] =
+    useState(true);
+
+  const [error, setError] =
+    useState("");
 
   useEffect(() => {
     if (!empresaId) {
@@ -49,13 +97,21 @@ export default function PlanUsageCard() {
           return;
         }
 
-        setDatos(snapshot.data() as EmpresaPlan);
+        setDatos(
+          snapshot.data() as EmpresaPlan
+        );
         setError("");
         setCargando(false);
       },
       (firebaseError) => {
-        console.error("Error cargando el plan:", firebaseError);
-        setError("No se pudo cargar el consumo del plan.");
+        console.error(
+          "Error cargando el plan:",
+          firebaseError
+        );
+
+        setError(
+          "No se pudo cargar el consumo del plan."
+        );
         setCargando(false);
       }
     );
@@ -63,18 +119,58 @@ export default function PlanUsageCard() {
     return () => cancelar();
   }, [empresaId]);
 
-  const plan: PlanId =
-    datos?.plan === "pro" || datos?.plan === "business"
+  const planGuardado: PlanId =
+    datos?.plan === "pro" ||
+    datos?.plan === "business"
       ? datos.plan
       : "free";
 
+  const fechaVencimiento =
+    convertirFecha(
+      datos?.subscriptionEndsAt
+    );
+
+  const suscripcionVigente =
+    planGuardado === "free" ||
+    (
+      fechaVencimiento !== null &&
+      fechaVencimiento.getTime() >
+        Date.now()
+    );
+
+  const plan: PlanId =
+    suscripcionVigente
+      ? planGuardado
+      : "free";
+
   const limite = LIMITES[plan];
-  const usadas = Math.max(0, datos?.conversationsThisMonth || 0);
-  const restantes = Math.max(0, limite - usadas);
+
+  const mesActual =
+    obtenerMesActualArgentina();
+
+  const usadas =
+    datos?.conversationsUsageMonth ===
+    mesActual
+      ? Math.max(
+          0,
+          datos?.conversationsThisMonth || 0
+        )
+      : 0;
+
+  const restantes = Math.max(
+    0,
+    limite - usadas
+  );
 
   const porcentaje = useMemo(() => {
     if (limite <= 0) return 0;
-    return Math.min(100, Math.round((usadas / limite) * 100));
+
+    return Math.min(
+      100,
+      Math.round(
+        (usadas / limite) * 100
+      )
+    );
   }, [usadas, limite]);
 
   if (cargando) {
@@ -91,7 +187,8 @@ export default function PlanUsageCard() {
     return (
       <section className="rounded-2xl border border-red-500/20 bg-red-500/10 p-5">
         <p className="text-sm text-red-300">
-          {error || "No se pudo cargar el plan."}
+          {error ||
+            "No se pudo cargar el plan."}
         </p>
       </section>
     );
@@ -111,17 +208,41 @@ export default function PlanUsageCard() {
 
           <p className="mt-1 text-sm text-zinc-500">
             Estado:{" "}
-            <span className="text-emerald-400">
-              {datos?.subscriptionStatus || "active"}
+            <span
+              className={
+                suscripcionVigente
+                  ? "text-emerald-400"
+                  : "text-amber-400"
+              }
+            >
+              {suscripcionVigente
+                ? datos?.subscriptionStatus ||
+                  "active"
+                : "expired"}
             </span>
           </p>
+
+          {planGuardado !== "free" &&
+            fechaVencimiento && (
+              <p className="mt-1 text-xs text-zinc-500">
+                {suscripcionVigente
+                  ? "Vence"
+                  : "Venció"}{" "}
+                el{" "}
+                {fechaVencimiento.toLocaleDateString(
+                  "es-AR"
+                )}
+              </p>
+            )}
         </div>
 
         <Link
           href={`/empresas/${empresaId}/planes`}
           className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500"
         >
-          Mejorar plan
+          {plan === "free"
+            ? "Mejorar plan"
+            : "Ver plan"}
         </Link>
       </div>
 
@@ -132,8 +253,13 @@ export default function PlanUsageCard() {
           </span>
 
           <span className="font-medium text-white">
-            {usadas.toLocaleString("es-AR")} /{" "}
-            {limite.toLocaleString("es-AR")}
+            {usadas.toLocaleString(
+              "es-AR"
+            )}{" "}
+            /{" "}
+            {limite.toLocaleString(
+              "es-AR"
+            )}
           </span>
         </div>
 
@@ -147,14 +273,18 @@ export default function PlanUsageCard() {
                   ? "bg-amber-500"
                   : "bg-blue-500",
             ].join(" ")}
-            style={{ width: `${porcentaje}%` }}
+            style={{
+              width: `${porcentaje}%`,
+            }}
           />
         </div>
 
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs">
           <span className="text-zinc-500">
             {restantes > 0
-              ? `Te quedan ${restantes.toLocaleString("es-AR")} conversaciones.`
+              ? `Te quedan ${restantes.toLocaleString(
+                  "es-AR"
+                )} conversaciones.`
               : "Alcanzaste el límite mensual."}
           </span>
 
@@ -167,7 +297,8 @@ export default function PlanUsageCard() {
       {restantes === 0 && (
         <div className="mt-5 rounded-xl border border-red-500/20 bg-red-500/10 p-4">
           <p className="text-sm font-medium text-red-300">
-            Alcanzaste el límite de tu plan.
+            Alcanzaste el límite de tu
+            plan.
           </p>
 
           <Link

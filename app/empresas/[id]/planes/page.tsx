@@ -15,6 +15,7 @@ type Empresa = {
   userId?: string;
   plan?: PlanId;
   subscriptionStatus?: string;
+  subscriptionEndsAt?: unknown;
 };
 
 type MiembroEmpresa = {
@@ -29,6 +30,42 @@ type Plan = {
   destacado?: boolean;
   funciones: string[];
 };
+
+function convertirFecha(valor: unknown) {
+  if (!valor) {
+    return null;
+  }
+
+  if (
+    typeof valor === "object" &&
+    valor !== null &&
+    "toDate" in valor &&
+    typeof (valor as { toDate?: unknown }).toDate === "function"
+  ) {
+    return (
+      valor as {
+        toDate: () => Date;
+      }
+    ).toDate();
+  }
+
+  if (valor instanceof Date) {
+    return valor;
+  }
+
+  if (
+    typeof valor === "string" ||
+    typeof valor === "number"
+  ) {
+    const fecha = new Date(valor);
+
+    if (!Number.isNaN(fecha.getTime())) {
+      return fecha;
+    }
+  }
+
+  return null;
+}
 
 const PLANES: Plan[] = [
   {
@@ -212,7 +249,25 @@ export default function PlanesPage() {
     return () => cancelarAuth();
   }, [empresaId, router]);
 
-  const planActual = empresa?.plan || "free";
+  const planGuardado: PlanId =
+    empresa?.plan === "pro" ||
+    empresa?.plan === "business"
+      ? empresa.plan
+      : "free";
+
+  const fechaVencimiento =
+    convertirFecha(
+      empresa?.subscriptionEndsAt
+    );
+
+  const planActual: PlanId =
+    planGuardado === "free"
+      ? "free"
+      : fechaVencimiento &&
+          fechaVencimiento.getTime() >
+            Date.now()
+        ? planGuardado
+        : "free";
 
   async function seleccionarPlan(planId: PlanId) {
     setError("");
@@ -237,6 +292,13 @@ export default function PlanesPage() {
     if (planId === "free") {
       setMensaje(
         "El cambio al plan Free se habilitará desde la gestión de suscripción."
+      );
+      return;
+    }
+
+    if (planId === "business") {
+      setMensaje(
+        "El plan Empresa se cotiza de forma personalizada. Por ahora no se cobra automáticamente."
       );
       return;
     }

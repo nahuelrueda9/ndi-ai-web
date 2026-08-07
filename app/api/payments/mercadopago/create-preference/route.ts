@@ -10,9 +10,7 @@ import {
 
 export const runtime = "nodejs";
 
-type PlanPago =
-  | "pro"
-  | "business";
+type PlanPago = "pro";
 
 type BodyRequest = {
   empresaId?: string;
@@ -44,17 +42,6 @@ const PLANES: Record<
       "Plan Pro de NDI AI con hasta 1.000 conversaciones por mes.",
     precio: Number(
       process.env.MP_PRICE_PRO ||
-        35000
-    ),
-  },
-
-  business: {
-    titulo: "NDI AI Empresa",
-    descripcion:
-      "Plan Empresa de NDI AI para equipos y operaciones de mayor volumen.",
-    precio: Number(
-      process.env
-        .MP_PRICE_BUSINESS ||
         35000
     ),
   },
@@ -213,14 +200,11 @@ export async function POST(
       );
     }
 
-    if (
-      plan !== "pro" &&
-      plan !== "business"
-    ) {
+    if (plan !== "pro") {
       return NextResponse.json(
         {
           error:
-            "El plan seleccionado no es válido.",
+            "Solo el plan Pro puede pagarse automáticamente.",
         },
         {
           status: 400,

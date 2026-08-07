@@ -18,9 +18,7 @@ import {
 
 export const runtime = "nodejs";
 
-type PlanPago =
-  | "pro"
-  | "business";
+type PlanPago = "pro";
 
 type NotificacionMercadoPago = {
   type?: string;
@@ -62,14 +60,6 @@ const PLANES: Record<
     limiteConversaciones: 1000,
   },
 
-  business: {
-    precio: Number(
-      process.env
-        .MP_PRICE_BUSINESS ||
-        35000
-    ),
-    limiteConversaciones: 10000,
-  },
 };
 
 function extraerFirma(
@@ -209,10 +199,7 @@ function validarFirmaWebhook({
 function esPlanPago(
   valor: string
 ): valor is PlanPago {
-  return (
-    valor === "pro" ||
-    valor === "business"
-  );
+  return valor === "pro";
 }
 
 function parsearReferencia(
@@ -495,6 +482,18 @@ export async function POST(
     const configuracionPlan =
       PLANES[plan];
 
+    const fechaInicio =
+      payment.date_approved
+        ? new Date(payment.date_approved)
+        : new Date();
+
+    const fechaVencimiento =
+      new Date(fechaInicio);
+
+    fechaVencimiento.setDate(
+      fechaVencimiento.getDate() + 30
+    );
+
     if (
       !Number.isFinite(
         configuracionPlan.precio
@@ -691,6 +690,10 @@ export async function POST(
                   .limiteConversaciones,
               subscriptionStatus:
                 "active",
+              subscriptionStartedAt:
+                fechaInicio,
+              subscriptionEndsAt:
+                fechaVencimiento,
               pendingPlan:
                 FieldValue.delete(),
               mercadopagoPaymentId:
