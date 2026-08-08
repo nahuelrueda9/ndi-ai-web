@@ -1,10 +1,7 @@
 "use client";
 
-import {
-  useEffect,
-  useState,
-  type FormEvent,
-} from "react";
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import {
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
@@ -12,73 +9,22 @@ import {
 
 import { auth } from "@/lib/firebase";
 
-function obtenerParametro(nombre: string) {
-  if (typeof window === "undefined") {
-    return "";
-  }
-
-  return new URLSearchParams(
-    window.location.search
-  ).get(nombre) ?? "";
-}
-
-function obtenerDestinoSeguro() {
-  const destino = obtenerParametro("next");
-
-  if (
-    destino.startsWith("/") &&
-    !destino.startsWith("//")
-  ) {
-    return destino;
-  }
-
-  return "/dashboard";
-}
-
 export default function LoginPage() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] =
-    useState("");
+  const [password, setPassword] = useState("");
+  const [mostrarPassword, setMostrarPassword] = useState(false);
 
   const [error, setError] = useState("");
-  const [mensaje, setMensaje] =
-    useState("");
+  const [mensaje, setMensaje] = useState("");
 
-  const [loading, setLoading] =
+  const [loading, setLoading] = useState(false);
+  const [enviandoRecuperacion, setEnviandoRecuperacion] =
     useState(false);
-
-  const [
-    enviandoRecuperacion,
-    setEnviandoRecuperacion,
-  ] = useState(false);
-
-  const [desdeInvitacion, setDesdeInvitacion] =
-    useState(false);
-
-  useEffect(() => {
-    const emailInvitado =
-      obtenerParametro("email");
-
-    const invitacion =
-      obtenerParametro("invitation");
-
-    if (emailInvitado) {
-      setEmail(emailInvitado);
-    }
-
-    setDesdeInvitacion(
-      Boolean(invitacion)
-    );
-  }, []);
 
   async function handleLogin(
-    event: FormEvent<HTMLFormElement>
+    event: React.FormEvent<HTMLFormElement>
   ) {
     event.preventDefault();
-
-    const correo = email
-      .trim()
-      .toLowerCase();
 
     setError("");
     setMensaje("");
@@ -87,25 +33,20 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(
         auth,
-        correo,
+        email.trim(),
         password
       );
 
-      window.location.href =
-        obtenerDestinoSeguro();
+      window.location.href = "/dashboard";
     } catch {
-      setError(
-        "Correo o contraseña incorrectos."
-      );
+      setError("Correo o contraseña incorrectos.");
     } finally {
       setLoading(false);
     }
   }
 
   async function recuperarContrasena() {
-    const correo = email
-      .trim()
-      .toLowerCase();
+    const correo = email.trim();
 
     setError("");
     setMensaje("");
@@ -120,10 +61,7 @@ export default function LoginPage() {
     setEnviandoRecuperacion(true);
 
     try {
-      await sendPasswordResetEmail(
-        auth,
-        correo
-      );
+      await sendPasswordResetEmail(auth, correo);
 
       setMensaje(
         "Te enviamos un correo para restablecer tu contraseña. Revisá también la carpeta de spam."
@@ -137,54 +75,6 @@ export default function LoginPage() {
     }
   }
 
-  function obtenerEnlaceRegistro() {
-    if (typeof window === "undefined") {
-      return "/register";
-    }
-
-    const parametros =
-      new URLSearchParams(
-        window.location.search
-      );
-
-    const registro =
-      new URLSearchParams();
-
-    const emailInvitado =
-      parametros.get("email");
-
-    const invitacion =
-      parametros.get("invitation");
-
-    const destino =
-      parametros.get("next");
-
-    if (emailInvitado) {
-      registro.set(
-        "email",
-        emailInvitado
-      );
-    }
-
-    if (invitacion) {
-      registro.set(
-        "invitation",
-        invitacion
-      );
-    }
-
-    if (destino) {
-      registro.set("next", destino);
-    }
-
-    const consulta =
-      registro.toString();
-
-    return consulta
-      ? `/register?${consulta}`
-      : "/register";
-  }
-
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4 py-8">
       <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-8 shadow-2xl">
@@ -194,22 +84,9 @@ export default function LoginPage() {
           </h1>
 
           <p className="mt-2 text-sm text-slate-400">
-            {desdeInvitacion
-              ? "Ingresá para aceptar la invitación al equipo"
-              : "Ingresá a tu plataforma inteligente"}
+            Ingresá a tu plataforma inteligente
           </p>
         </div>
-
-        {desdeInvitacion && (
-          <div className="mb-5 rounded-xl border border-blue-500/20 bg-blue-500/10 p-4">
-            <p className="text-sm leading-6 text-blue-300">
-              Fuiste invitado a trabajar
-              en una empresa. Iniciá sesión
-              con el mismo correo que recibió
-              la invitación.
-            </p>
-          </div>
-        )}
 
         <form
           onSubmit={handleLogin}
@@ -228,9 +105,7 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(event) =>
-                setEmail(
-                  event.target.value
-                )
+                setEmail(event.target.value)
               }
               placeholder="correo@empresa.com"
               autoComplete="email"
@@ -250,12 +125,8 @@ export default function LoginPage() {
 
               <button
                 type="button"
-                onClick={
-                  recuperarContrasena
-                }
-                disabled={
-                  enviandoRecuperacion
-                }
+                onClick={recuperarContrasena}
+                disabled={enviandoRecuperacion}
                 className="text-sm font-medium text-blue-400 transition hover:text-blue-300 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {enviandoRecuperacion
@@ -264,20 +135,46 @@ export default function LoginPage() {
               </button>
             </div>
 
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(event) =>
-                setPassword(
-                  event.target.value
-                )
-              }
-              placeholder="Ingresá tu contraseña"
-              autoComplete="current-password"
-              required
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition placeholder:text-slate-600 focus:border-blue-500"
-            />
+            <div className="relative">
+              <input
+                id="password"
+                type={mostrarPassword ? "text" : "password"}
+                value={password}
+                onChange={(event) =>
+                  setPassword(event.target.value)
+                }
+                placeholder="Ingresá tu contraseña"
+                autoComplete="current-password"
+                required
+                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 pr-12 text-white outline-none transition placeholder:text-slate-600 focus:border-blue-500"
+              />
+
+              <button
+                type="button"
+                onClick={() =>
+                  setMostrarPassword(
+                    (actual) => !actual
+                  )
+                }
+                aria-label={
+                  mostrarPassword
+                    ? "Ocultar contraseña"
+                    : "Mostrar contraseña"
+                }
+                title={
+                  mostrarPassword
+                    ? "Ocultar contraseña"
+                    : "Mostrar contraseña"
+                }
+                className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center justify-center text-slate-400 transition hover:text-white"
+              >
+                {mostrarPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
+              </button>
+            </div>
           </div>
 
           {error && (
@@ -294,10 +191,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={
-              loading ||
-              enviandoRecuperacion
-            }
+            disabled={loading || enviandoRecuperacion}
             className="w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading
@@ -311,7 +205,7 @@ export default function LoginPage() {
             </p>
 
             <a
-              href={obtenerEnlaceRegistro()}
+              href="/register"
               className="mt-3 inline-flex w-full items-center justify-center rounded-xl border border-slate-700 px-4 py-3 font-semibold text-white transition hover:border-blue-500 hover:bg-blue-500/10"
             >
               Crear cuenta gratis

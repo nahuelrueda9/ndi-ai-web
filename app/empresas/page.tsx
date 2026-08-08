@@ -2,6 +2,15 @@
 
 import type { FormEvent } from "react";
 import {
+  ArrowRight,
+  Building2,
+  MessageSquareText,
+  Plus,
+  Settings2,
+  Sparkles,
+  UsersRound,
+} from "lucide-react";
+import {
   useEffect,
   useMemo,
   useState,
@@ -482,15 +491,15 @@ setEmpresasCompartidas(
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-zinc-950 px-6 text-white">
+      <main className="flex min-h-screen items-center justify-center bg-background px-6 text-foreground">
         <Card className="w-full max-w-sm p-6 text-center">
-          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-t-blue-500" />
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
 
           <p className="font-medium">
             Cargando empresas...
           </p>
 
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
             Estamos preparando tu espacio
             de trabajo.
           </p>
@@ -502,89 +511,156 @@ setEmpresasCompartidas(
   return (
     <DashboardLayout>
       <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
-        <header className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
-          <div>
-            <p className="text-sm font-medium text-blue-400">
-              Gestión comercial
-            </p>
+        <div className="mb-8 overflow-hidden rounded-3xl border border-blue-200 bg-gradient-to-br from-blue-600 via-blue-600 to-indigo-700 shadow-xl shadow-blue-600/10 dark:border-blue-500/20 dark:from-blue-700 dark:via-blue-800 dark:to-indigo-950">
+          <div className="relative px-6 py-7 sm:px-8 sm:py-9">
+            <div className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+            <div className="pointer-events-none absolute bottom-0 right-32 h-40 w-40 rounded-full bg-cyan-300/10 blur-3xl" />
 
-            <div className="mt-2 flex flex-wrap items-center gap-3">
-              <h1 className="text-3xl font-bold tracking-tight text-white">
-                Empresas
-              </h1>
+            <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
+              <div className="max-w-2xl">
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-blue-50">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Workspace de NDI AI
+                </div>
 
-              <Badge variant="info">
-                {empresas.length}{" "}
-                {empresas.length === 1
-                  ? "empresa"
-                  : "empresas"}
-              </Badge>
-            </div>
+                <h1 className="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                  Bienvenido{user?.displayName ? `, ${user.displayName.split(" ")[0]}` : ""}
+                </h1>
 
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
-              Administrá tus empresas y los
-              espacios donde formás parte
-              del equipo.
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Card className="flex items-center gap-3 px-4 py-3">
-              <Avatar
-                name={
-                  user?.displayName ||
-                  user?.email ||
-                  "Usuario"
-                }
-                src={
-                  user?.photoURL ||
-                  undefined
-                }
-                size="sm"
-              />
-
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-white">
-                  {user?.displayName ||
-                    "Usuario"}
-                </p>
-
-                <p className="max-w-52 truncate text-xs text-zinc-500">
-                  {user?.email}
+                <p className="mt-3 max-w-xl text-sm leading-6 text-blue-100 sm:text-base">
+                  Elegí la empresa con la que querés trabajar o creá un nuevo espacio para empezar a atender clientes con NDI AI.
                 </p>
               </div>
-            </Card>
 
-            <Button
-              onClick={() => {
-                setMostrarFormulario(
-                  (estadoAnterior) =>
-                    !estadoAnterior
-                );
+              <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-stretch">
+                <div className="flex min-w-0 items-center gap-3 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur-sm">
+                  <Avatar
+                    name={
+                      user?.displayName ||
+                      user?.email ||
+                      "Usuario"
+                    }
+                    src={
+                      user?.photoURL ||
+                      undefined
+                    }
+                    size="sm"
+                  />
 
-                setErrorFormulario("");
-              }}
-              variant={
-                mostrarFormulario
-                  ? "secondary"
-                  : "primary"
-              }
-            >
-              {mostrarFormulario
-                ? "Cancelar"
-                : "+ Nueva empresa"}
-            </Button>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-white">
+                      {user?.displayName || "Usuario"}
+                    </p>
+
+                    <p className="max-w-56 truncate text-xs text-blue-100">
+                      {user?.email}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMostrarFormulario(
+                      (estadoAnterior) =>
+                        !estadoAnterior
+                    );
+
+                    setErrorFormulario("");
+                  }}
+                  className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold transition ${
+                    mostrarFormulario
+                      ? "border border-white/20 bg-white/10 text-white hover:bg-white/15"
+                      : "bg-white text-blue-700 shadow-lg shadow-blue-950/10 hover:bg-blue-50"
+                  }`}
+                >
+                  {mostrarFormulario ? (
+                    "Cancelar"
+                  ) : (
+                    <>
+                      <Plus className="h-4 w-4" />
+                      Nueva empresa
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
-        </header>
+        </div>
+
+        <div className="mb-8 grid gap-4 sm:grid-cols-3">
+          <Card className="p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-500 dark:text-zinc-400">
+                  Empresas
+                </p>
+                <p className="mt-2 text-3xl font-bold text-slate-950 dark:text-white">
+                  {empresas.length}
+                </p>
+              </div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
+                <Building2 className="h-5 w-5" />
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-500 dark:text-zinc-400">
+                  Propias
+                </p>
+                <p className="mt-2 text-3xl font-bold text-slate-950 dark:text-white">
+                  {empresasPropias.length}
+                </p>
+              </div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+                <Building2 className="h-5 w-5" />
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-500 dark:text-zinc-400">
+                  Compartidas
+                </p>
+                <p className="mt-2 text-3xl font-bold text-slate-950 dark:text-white">
+                  {empresasCompartidas.length}
+                </p>
+              </div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400">
+                <UsersRound className="h-5 w-5" />
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        <div className="mb-5 flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+          <div>
+            <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
+              Tus espacios
+            </p>
+            <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-950 dark:text-white">
+              Empresas
+            </h2>
+          </div>
+
+          <p className="text-sm text-slate-500 dark:text-zinc-500">
+            Entrá al panel de la empresa que quieras administrar.
+          </p>
+        </div>
 
         {mostrarFormulario && (
           <Card className="mb-6 overflow-hidden">
-            <div className="border-b border-zinc-800 px-6 py-5">
-              <h2 className="text-lg font-semibold text-white">
+            <div className="border-b border-slate-200 px-6 py-5 dark:border-zinc-800">
+              <h2 className="text-lg font-semibold text-slate-950 dark:text-white">
                 Crear una nueva empresa
               </h2>
 
-              <p className="mt-1 text-sm text-zinc-500">
+              <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
                 Cargá los datos principales.
                 Después podrás configurar su
                 agente y la base de
@@ -681,8 +757,8 @@ setEmpresasCompartidas(
         )}
 
         {error && (
-          <Card className="mb-6 border-red-500/20 bg-red-500/10 p-4">
-            <p className="text-sm text-red-400">
+          <Card className="mb-6 border-red-200 bg-red-50 p-4 dark:border-red-500/20 dark:bg-red-500/10">
+            <p className="text-sm text-red-700 dark:text-red-400">
               {error}
             </p>
           </Card>
@@ -694,11 +770,11 @@ setEmpresasCompartidas(
               🏢
             </div>
 
-            <h2 className="mt-5 text-xl font-semibold text-white">
+            <h2 className="mt-5 text-xl font-semibold text-slate-950 dark:text-white">
               Todavía no tenés empresas
             </h2>
 
-            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-zinc-500">
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600 dark:text-zinc-500">
               Creá una empresa o aceptá una
               invitación para comenzar a
               trabajar en NDI AI.
@@ -714,7 +790,7 @@ setEmpresasCompartidas(
             </Button>
           </Card>
         ) : (
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-5 lg:grid-cols-2">
             {empresas.map((empresa) => {
               const esPropietario =
                 empresa.acceso ===
@@ -730,7 +806,7 @@ setEmpresasCompartidas(
               return (
                 <Card
                   key={empresa.id}
-                  className="group flex h-full flex-col overflow-hidden"
+                  className="group flex h-full flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-xl dark:hover:border-zinc-700"
                 >
                   <div className="flex flex-1 flex-col p-6">
                     <div className="flex items-start justify-between gap-4">
@@ -743,11 +819,11 @@ setEmpresasCompartidas(
                         />
 
                         <div className="min-w-0">
-                          <h2 className="truncate text-lg font-semibold text-white">
+                          <h2 className="truncate text-lg font-semibold text-slate-950 dark:text-white">
                             {empresa.nombre}
                           </h2>
 
-                          <p className="mt-1 truncate text-sm text-zinc-500">
+                          <p className="mt-1 truncate text-sm text-slate-600 dark:text-zinc-500">
                             {empresa.rubro ||
                               "Sin rubro"}
                           </p>
@@ -767,7 +843,7 @@ setEmpresasCompartidas(
                       </Badge>
                     </div>
 
-                    <div className="mt-6 space-y-3 rounded-xl border border-zinc-800 bg-zinc-950/50 p-4">
+                    <div className="mt-6 space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-zinc-800 dark:bg-zinc-950/50">
                       <InfoRow
                         label="Correo"
                         value={
@@ -802,31 +878,35 @@ setEmpresasCompartidas(
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-3 border-t border-zinc-800 p-4 sm:flex-row">
-                    <Button
-                      fullWidth
-                      variant="secondary"
+                  <div className="grid gap-3 border-t border-slate-200 p-4 dark:border-zinc-800 sm:grid-cols-[1fr_auto]">
+                    <button
+                      type="button"
                       onClick={() => {
                         window.location.href =
                           `/empresas/${empresa.id}/conversaciones`;
                       }}
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500"
                     >
-                      Conversaciones
-                    </Button>
+                      <MessageSquareText className="h-4 w-4" />
+                      Entrar al panel
+                      <ArrowRight className="h-4 w-4" />
+                    </button>
 
-                    <Button
-                      fullWidth
+                    <button
+                      type="button"
                       onClick={() => {
                         window.location.href =
                           esPropietario
                             ? `/empresas/${empresa.id}`
                             : `/empresas/${empresa.id}/agenda`;
                       }}
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
                     >
+                      <Settings2 className="h-4 w-4" />
                       {esPropietario
                         ? "Configurar"
                         : "Agenda"}
-                    </Button>
+                    </button>
                   </div>
                 </Card>
               );
@@ -847,11 +927,11 @@ function InfoRow({
 }) {
   return (
     <div className="flex items-start justify-between gap-4 text-sm">
-      <span className="text-zinc-500">
+      <span className="text-slate-500 dark:text-zinc-500">
         {label}
       </span>
 
-      <span className="max-w-[65%] break-words text-right text-zinc-300">
+      <span className="max-w-[65%] break-words text-right text-slate-800 dark:text-zinc-300">
         {value}
       </span>
     </div>
@@ -866,12 +946,12 @@ function MiniMetric({
   value: string;
 }) {
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-950/50 p-3">
-      <p className="text-xs text-zinc-500">
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/50">
+      <p className="text-xs text-slate-500 dark:text-zinc-500">
         {label}
       </p>
 
-      <p className="mt-1 text-sm font-medium text-white">
+      <p className="mt-1 text-sm font-medium text-slate-950 dark:text-white">
         {value}
       </p>
     </div>

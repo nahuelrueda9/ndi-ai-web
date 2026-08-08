@@ -271,12 +271,12 @@ const estadisticas = useMemo(() => {
   if (!empresaId) {
     return (
       <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
-        <Card className="border-red-500/20 bg-red-500/10 p-6">
-          <h1 className="text-lg font-semibold text-white">
+        <Card className="border-red-200 bg-red-50 p-6 dark:border-red-500/20 dark:bg-red-500/10">
+          <h1 className="text-lg font-semibold text-slate-950 dark:text-white">
             No se pudo abrir Conversaciones
           </h1>
 
-          <p className="mt-2 text-sm text-red-400">
+          <p className="mt-2 text-sm text-red-600 dark:text-red-400">
             No se encontró el ID de la empresa en la dirección.
           </p>
         </Card>
@@ -291,12 +291,15 @@ const estadisticas = useMemo(() => {
     <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
       <header className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
         <div>
-          <p className="text-sm font-medium text-blue-400">
+          <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
             Atención al cliente
           </p>
 
           <div className="mt-2 flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight text-white">
+            <h1
+              className="text-3xl font-bold tracking-tight"
+              style={{ color: "var(--foreground)" }}
+            >
               Conversaciones
             </h1>
 
@@ -305,7 +308,7 @@ const estadisticas = useMemo(() => {
             </Badge>
           </div>
 
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
             Revisá las consultas recibidas desde el widget y abrí una
             conversación para ver todos sus mensajes.
           </p>
@@ -321,51 +324,51 @@ const estadisticas = useMemo(() => {
 
 <div className="mb-6 grid gap-4 md:grid-cols-5">
   <Card className="p-5">
-    <p className="text-xs text-zinc-500">
+    <p className="text-xs text-slate-500 dark:text-zinc-500">
       Conversaciones
     </p>
 
-    <p className="mt-2 text-3xl font-bold text-white">
+    <p className="mt-2 text-3xl font-bold text-slate-950 dark:text-white">
       {estadisticas.total}
     </p>
   </Card>
 
   <Card className="p-5">
-    <p className="text-xs text-zinc-500">
+    <p className="text-xs text-slate-500 dark:text-zinc-500">
       Abiertas
     </p>
 
-    <p className="mt-2 text-3xl font-bold text-emerald-400">
+    <p className="mt-2 text-3xl font-bold text-emerald-600 dark:text-emerald-400">
       {estadisticas.abiertas}
     </p>
   </Card>
 
   <Card className="p-5">
-    <p className="text-xs text-zinc-500">
+    <p className="text-xs text-slate-500 dark:text-zinc-500">
       Cerradas
     </p>
 
-    <p className="mt-2 text-3xl font-bold text-red-400">
+    <p className="mt-2 text-3xl font-bold text-red-600 dark:text-red-400">
       {estadisticas.cerradas}
     </p>
   </Card>
 
   <Card className="p-5">
-    <p className="text-xs text-zinc-500">
+    <p className="text-xs text-slate-500 dark:text-zinc-500">
       IA
     </p>
 
-    <p className="mt-2 text-3xl font-bold text-blue-400">
+    <p className="mt-2 text-3xl font-bold text-blue-600 dark:text-blue-400">
       {estadisticas.ia}
     </p>
   </Card>
 
   <Card className="p-5">
-    <p className="text-xs text-zinc-500">
+    <p className="text-xs text-slate-500 dark:text-zinc-500">
       Humanos
     </p>
 
-    <p className="mt-2 text-3xl font-bold text-yellow-400">
+    <p className="mt-2 text-3xl font-bold text-amber-500 dark:text-yellow-400">
       {estadisticas.humano}
     </p>
   </Card>
@@ -411,16 +414,16 @@ const estadisticas = useMemo(() => {
       </Card>
 
       {error && (
-        <Card className="mb-6 border-red-500/20 bg-red-500/10 p-4">
-          <p className="text-sm text-red-400">{error}</p>
+        <Card className="mb-6 border-red-200 bg-red-50 p-4 dark:border-red-500/20 dark:bg-red-500/10">
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
         </Card>
       )}
 
       {loading ? (
         <Card className="p-10 text-center">
-          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-t-blue-500" />
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
 
-          <p className="font-medium text-white">
+          <p className="font-medium text-slate-950 dark:text-white">
             Cargando conversaciones...
           </p>
         </Card>
@@ -430,13 +433,13 @@ const estadisticas = useMemo(() => {
             💬
           </div>
 
-          <h2 className="mt-5 text-xl font-semibold text-white">
+          <h2 className="mt-5 text-xl font-semibold text-slate-950 dark:text-white">
             {conversaciones.length === 0
               ? "Todavía no hay conversaciones"
               : "No encontramos resultados"}
           </h2>
 
-          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-zinc-500">
+          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500 dark:text-zinc-500">
             {conversaciones.length === 0
               ? "Cuando un visitante hable con el widget, la conversación aparecerá acá automáticamente."
               : "Probá con otra búsqueda o cambiá el filtro seleccionado."}
@@ -444,7 +447,7 @@ const estadisticas = useMemo(() => {
         </Card>
       ) : (
         <Card className="overflow-hidden">
-          <div className="hidden grid-cols-[minmax(0,1.3fr)_minmax(0,1.6fr)_170px_110px_120px] gap-4 border-b border-zinc-800 px-6 py-3 text-xs font-medium uppercase tracking-wide text-zinc-600 md:grid">
+          <div className="hidden grid-cols-[minmax(0,1.3fr)_minmax(0,1.6fr)_170px_110px_120px] gap-4 border-b border-slate-200 px-6 py-3 text-xs font-medium uppercase tracking-wide text-slate-500 dark:border-zinc-800 dark:text-zinc-600 md:grid">
             <span>Visitante</span>
             <span>Último mensaje</span>
             <span>Última actividad</span>
@@ -452,7 +455,7 @@ const estadisticas = useMemo(() => {
             <span className="text-right">Estado</span>
           </div>
 
-          <div className="divide-y divide-zinc-800">
+          <div className="divide-y divide-slate-200 dark:divide-zinc-800">
             {conversacionesFiltradas.map((conversacion) => {
               const nombreVisitante = obtenerNombreVisitante(
                 conversacion.visitanteId
@@ -475,7 +478,7 @@ const estadisticas = useMemo(() => {
       );
     }
   }}
-  className="grid w-full cursor-pointer gap-4 px-5 py-5 text-left transition hover:bg-zinc-800/40 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1.6fr)_170px_110px_120px] md:items-center md:px-6"
+  className="grid w-full cursor-pointer gap-4 px-5 py-5 text-left transition hover:bg-slate-50 dark:hover:bg-zinc-800/40 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1.6fr)_170px_110px_120px] md:items-center md:px-6"
 >
                   <div className="flex min-w-0 items-center gap-3">
                     <Avatar name={nombreVisitante} size="sm" />
@@ -497,11 +500,11 @@ const estadisticas = useMemo(() => {
 </button>
 
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-white">
+                      <p className="truncate text-sm font-medium text-slate-950 dark:text-white">
                         {nombreVisitante}
                       </p>
 
-                      <p className="mt-1 text-xs text-zinc-600">
+                      <p className="mt-1 text-xs text-slate-600 dark:text-zinc-500">
                         {conversacion.cantidadMensajes ?? 0} mensajes · ID{" "}
                         {conversacion.id.slice(0, 8)}
                       </p>
@@ -509,12 +512,12 @@ const estadisticas = useMemo(() => {
                   </div>
 
                   <div className="min-w-0">
-                    <p className="truncate text-sm text-zinc-300">
+                    <p className="truncate text-sm text-slate-800 dark:text-zinc-300">
                       {conversacion.ultimoMensaje ||
                         "Conversación sin mensajes"}
                     </p>
 
-                    <p className="mt-1 text-xs text-zinc-600">
+                    <p className="mt-1 text-xs text-slate-600 dark:text-zinc-500">
                       Respondido por{" "}
                       {conversacion.atendidoPor === "humano"
                         ? "una persona"
@@ -523,7 +526,7 @@ const estadisticas = useMemo(() => {
                   </div>
 
                   <div>
-                    <p className="text-sm text-zinc-400">
+                    <p className="text-sm text-slate-700 dark:text-zinc-400">
                       {formatDate(
                         conversacion.updatedAt ||
                           conversacion.createdAt
@@ -569,7 +572,7 @@ const estadisticas = useMemo(() => {
       evento.stopPropagation();
       void eliminarConversacion(conversacion);
     }}
-    className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-red-500/10 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50"
+    className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-red-500/10 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50 dark:text-zinc-500 dark:hover:text-red-400"
     title="Eliminar conversación"
   >
     🗑️

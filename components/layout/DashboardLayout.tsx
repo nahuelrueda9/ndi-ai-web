@@ -13,7 +13,7 @@ export default function DashboardLayout({
   children,
 }: DashboardLayoutProps) {
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
+    <div className="min-h-screen bg-background text-foreground transition-colors">
       <Sidebar />
 
       <div className="min-h-screen md:pl-72">

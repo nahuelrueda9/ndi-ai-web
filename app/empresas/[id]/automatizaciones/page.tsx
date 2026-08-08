@@ -747,20 +747,20 @@ export default function AutomatizacionesPage() {
   ) {
     return (
       <section className="mx-auto w-full max-w-4xl px-5 py-12 sm:px-8">
-        <Card className="border-violet-500/20 bg-violet-500/5 p-8 text-center sm:p-12">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-400">
+        <Card className="border-violet-200 bg-violet-50 p-8 text-center sm:p-12 dark:border-violet-500/20 dark:bg-violet-500/5">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-100 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400">
             <Zap className="h-8 w-8" />
           </div>
 
-          <p className="mt-6 text-sm font-semibold uppercase tracking-[0.18em] text-violet-400">
+          <p className="mt-6 text-sm font-semibold uppercase tracking-[0.18em] text-violet-700 dark:text-violet-400">
             Función Pro
           </p>
 
-          <h1 className="mt-3 text-3xl font-bold text-white">
+          <h1 className="mt-3 text-3xl font-bold text-slate-950 dark:text-white">
             Automatizaciones
           </h1>
 
-          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-400">
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
             Las automatizaciones están disponibles en los planes Pro y Empresa.
             Con Pro podés crear reglas para responder, derivar, etiquetar y cerrar conversaciones automáticamente.
           </p>
@@ -785,15 +785,15 @@ export default function AutomatizacionesPage() {
     <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
       <header className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
         <div>
-          <p className="text-sm font-medium text-violet-400">
+          <p className="text-sm font-medium text-violet-700 dark:text-violet-400">
             Flujos automáticos
           </p>
 
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white">
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">
             Automatizaciones
           </h1>
 
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
             Creá reglas para responder consultas,
             derivar clientes y organizar conversaciones.
           </p>
@@ -844,16 +844,16 @@ export default function AutomatizacionesPage() {
       </div>
 
       {mensaje && (
-        <Card className="mb-6 border-emerald-500/20 bg-emerald-500/10 p-4">
-          <p className="text-sm text-emerald-300">
+        <Card className="mb-6 border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/10">
+          <p className="text-sm text-emerald-700 dark:text-emerald-300">
             {mensaje}
           </p>
         </Card>
       )}
 
       {error && (
-        <Card className="mb-6 border-red-500/20 bg-red-500/10 p-4">
-          <p className="text-sm text-red-400">
+        <Card className="mb-6 border-red-200 bg-red-50 p-4 dark:border-red-500/20 dark:bg-red-500/10">
+          <p className="text-sm text-red-700 dark:text-red-400">
             {error}
           </p>
         </Card>
@@ -862,11 +862,11 @@ export default function AutomatizacionesPage() {
       {mostrandoFormulario && (
         <Card className="mb-6 p-6">
           <div className="mb-6">
-            <h2 className="text-xl font-semibold text-white">
+            <h2 className="text-xl font-semibold text-slate-950 dark:text-white">
               Nueva automatización
             </h2>
 
-            <p className="mt-1 text-sm text-zinc-500">
+            <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
               Elegí qué debe ocurrir y qué acción
               realizará NDI AI.
             </p>
@@ -906,7 +906,7 @@ export default function AutomatizacionesPage() {
 
             <div className="grid gap-6 lg:grid-cols-2">
               <div>
-                <p className="mb-3 text-sm font-semibold text-white">
+                <p className="mb-3 text-sm font-semibold text-slate-950 dark:text-white">
                   Si ocurre esto
                 </p>
 
@@ -981,7 +981,7 @@ export default function AutomatizacionesPage() {
               </div>
 
               <div>
-                <p className="mb-3 text-sm font-semibold text-white">
+                <p className="mb-3 text-sm font-semibold text-slate-950 dark:text-white">
                   Hacer esto
                 </p>
 
@@ -1017,7 +1017,7 @@ export default function AutomatizacionesPage() {
                   <div className="mt-4">
                     <label
                       htmlFor="valorAccion"
-                      className="mb-2 block text-sm font-medium text-zinc-300"
+                      className="mb-2 block text-sm font-medium text-slate-700 dark:text-zinc-300"
                     >
                       {formulario.accionTipo ===
                       "responder_mensaje"
@@ -1039,7 +1039,7 @@ export default function AutomatizacionesPage() {
                           )
                         }
                         placeholder="Hola, nuestros precios comienzan desde..."
-                        className="w-full resize-none rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-blue-500"
+                        className="w-full resize-none rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white dark:placeholder:text-zinc-600"
                       />
                     ) : (
                       <Input
@@ -1059,7 +1059,7 @@ export default function AutomatizacionesPage() {
               </div>
             </div>
 
-            <div className="flex flex-col justify-end gap-3 border-t border-zinc-800 pt-5 sm:flex-row">
+            <div className="flex flex-col justify-end gap-3 border-t border-slate-200 pt-5 dark:border-zinc-800 sm:flex-row">
               <Button
                 type="button"
                 variant="secondary"
@@ -1087,23 +1087,23 @@ export default function AutomatizacionesPage() {
 
       {cargando ? (
         <Card className="p-10 text-center">
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-t-violet-500" />
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-violet-600 dark:border-zinc-700 dark:border-t-violet-500" />
 
-          <p className="mt-4 text-sm text-zinc-400">
+          <p className="mt-4 text-sm text-slate-600 dark:text-zinc-400">
             Cargando automatizaciones...
           </p>
         </Card>
       ) : automatizaciones.length === 0 ? (
         <Card className="border-dashed p-12 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-400">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-100 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400">
             <Zap className="h-7 w-7" />
           </div>
 
-          <h2 className="mt-5 text-xl font-semibold text-white">
+          <h2 className="mt-5 text-xl font-semibold text-slate-950 dark:text-white">
             Todavía no hay automatizaciones
           </h2>
 
-          <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-zinc-500">
+          <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500 dark:text-zinc-500">
             Creá tu primera regla para ahorrar tiempo
             y responder de forma consistente.
           </p>
@@ -1130,7 +1130,7 @@ export default function AutomatizacionesPage() {
                 <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10 text-violet-400">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400">
                         {obtenerIconoDisparador(
                           automatizacion.disparador
                             .tipo
@@ -1138,12 +1138,12 @@ export default function AutomatizacionesPage() {
                       </div>
 
                       <div>
-                        <h2 className="font-semibold text-white">
+                        <h2 className="font-semibold text-slate-950 dark:text-white">
                           {automatizacion.nombre}
                         </h2>
 
                         {automatizacion.descripcion && (
-                          <p className="mt-1 text-sm text-zinc-500">
+                          <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
                             {
                               automatizacion.descripcion
                             }
@@ -1164,19 +1164,19 @@ export default function AutomatizacionesPage() {
                       </Badge>
                     </div>
 
-                    <div className="mt-5 flex flex-col gap-2 text-sm text-zinc-400 md:flex-row md:items-center">
-                      <span className="rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2">
+                    <div className="mt-5 flex flex-col gap-2 text-sm text-slate-600 dark:text-zinc-400 md:flex-row md:items-center">
+                      <span className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950">
                         Si:{" "}
                         {describirDisparador(
                           automatizacion
                         )}
                       </span>
 
-                      <span className="hidden text-zinc-700 md:block">
+                      <span className="hidden text-slate-400 dark:text-zinc-700 md:block">
                         →
                       </span>
 
-                      <span className="rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2">
+                      <span className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950">
                         Acción:{" "}
                         {describirAccion(
                           automatizacion
@@ -1225,7 +1225,7 @@ export default function AutomatizacionesPage() {
                           automatizacion
                         )
                       }
-                      className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-800 text-zinc-500 transition hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300 text-slate-500 transition hover:border-red-300 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:text-zinc-500 dark:hover:border-red-500/30 dark:hover:bg-red-500/10 dark:hover:text-red-400"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -1252,16 +1252,16 @@ function ResumenCard({
   return (
     <Card className="p-5">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-slate-500 dark:text-zinc-500">
           {titulo}
         </p>
 
-        <div className="text-violet-400">
+        <div className="text-violet-700 dark:text-violet-400">
           {icono}
         </div>
       </div>
 
-      <p className="mt-3 text-3xl font-bold text-white">
+      <p className="mt-3 text-3xl font-bold text-slate-950 dark:text-white">
         {valor}
       </p>
     </Card>
@@ -1286,15 +1286,15 @@ function Opcion({
       className={[
         "w-full rounded-xl border p-4 text-left transition",
         seleccionada
-          ? "border-violet-500/50 bg-violet-500/10"
-          : "border-zinc-800 bg-zinc-950/40 hover:border-zinc-700",
+          ? "border-violet-400 bg-violet-50 dark:border-violet-500/50 dark:bg-violet-500/10"
+          : "border-slate-200 bg-slate-50 hover:border-slate-300 dark:border-zinc-800 dark:bg-zinc-950/40 dark:hover:border-zinc-700",
       ].join(" ")}
     >
-      <p className="font-medium text-white">
+      <p className="font-medium text-slate-950 dark:text-white">
         {titulo}
       </p>
 
-      <p className="mt-1 text-sm leading-5 text-zinc-500">
+      <p className="mt-1 text-sm leading-5 text-slate-500 dark:text-zinc-500">
         {descripcion}
       </p>
     </button>

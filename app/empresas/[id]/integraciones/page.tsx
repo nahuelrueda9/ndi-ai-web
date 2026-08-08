@@ -255,9 +255,9 @@ export default function IntegracionesPage() {
     return (
       <section className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8">
         <Card className="p-10 text-center">
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-t-blue-500" />
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
 
-          <p className="mt-4 text-sm text-zinc-400">
+          <p className="mt-4 text-sm text-slate-600 dark:text-zinc-400">
             Verificando acceso a
             integraciones...
           </p>
@@ -269,8 +269,8 @@ export default function IntegracionesPage() {
   if (error || !accesoVerificado) {
     return (
       <section className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8">
-        <Card className="border-red-500/20 bg-red-500/10 p-6">
-          <p className="text-sm text-red-400">
+        <Card className="border-red-200 bg-red-50 p-6 dark:border-red-500/20 dark:bg-red-500/10">
+          <p className="text-sm text-red-700 dark:text-red-400">
             {error ||
               "No tenés permisos para acceder a esta sección."}
           </p>
@@ -293,15 +293,15 @@ export default function IntegracionesPage() {
   return (
     <section className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8">
       <header className="mb-8">
-        <p className="text-sm font-medium text-blue-400">
+        <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
           Canales
         </p>
 
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-white">
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">
           Integraciones
         </h1>
 
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
           Empezá conectando WhatsApp, el canal principal de NDI AI.
           Las demás integraciones se habilitarán cuando estén listas.
         </p>
@@ -315,7 +315,7 @@ export default function IntegracionesPage() {
               className="flex min-h-64 flex-col p-6"
             >
               <div className="flex items-start justify-between gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-800 text-2xl">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-2xl dark:bg-zinc-800">
                   {integracion.icono}
                 </div>
 
@@ -335,7 +335,7 @@ export default function IntegracionesPage() {
               </div>
 
               <div className="mt-5 flex flex-wrap items-center gap-2">
-                <h2 className="text-xl font-semibold text-white">
+                <h2 className="text-xl font-semibold text-slate-950 dark:text-white">
                   {integracion.nombre}
                 </h2>
 
@@ -343,8 +343,8 @@ export default function IntegracionesPage() {
                   <span
                     className={
                       integracion.estado === "disponible"
-                        ? "rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-300"
-                        : "rounded-full border border-zinc-700 bg-zinc-800 px-2.5 py-1 text-[11px] font-medium text-zinc-400"
+                        ? "rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300"
+                        : "rounded-full border border-slate-300 bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400"
                     }
                   >
                     {integracion.detallePlan}
@@ -352,7 +352,7 @@ export default function IntegracionesPage() {
                 )}
               </div>
 
-              <p className="mt-2 flex-1 text-sm leading-6 text-zinc-400">
+              <p className="mt-2 flex-1 text-sm leading-6 text-slate-600 dark:text-zinc-400">
                 {
                   integracion.descripcion
                 }

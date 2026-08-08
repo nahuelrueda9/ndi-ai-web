@@ -16,13 +16,13 @@ export default function DashboardChart({
   );
 
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900">
       <div>
-        <h2 className="text-lg font-semibold text-white">
+        <h2 className="text-lg font-semibold text-slate-950 dark:text-white">
           Conversaciones de los últimos 7 días
         </h2>
 
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
           Actividad diaria registrada en el widget.
         </p>
       </div>
@@ -42,11 +42,11 @@ export default function DashboardChart({
               key={item.dia}
               className="flex flex-1 flex-col items-center gap-3"
             >
-              <span className="text-xs font-medium text-zinc-400">
+              <span className="text-xs font-medium text-slate-600 dark:text-zinc-400">
                 {item.cantidad}
               </span>
 
-              <div className="flex h-44 w-full items-end rounded-xl bg-zinc-950 p-1">
+              <div className="flex h-44 w-full items-end rounded-xl bg-slate-100 p-1 dark:bg-zinc-950">
                 <div
                   className="w-full rounded-lg bg-blue-500 transition-all"
                   style={{
@@ -55,7 +55,7 @@ export default function DashboardChart({
                 />
               </div>
 
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs text-slate-500 dark:text-zinc-500">
                 {item.dia}
               </span>
             </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 type CardProps = {
   children: ReactNode;
@@ -16,13 +16,19 @@ export default function Card({
       className={`
         rounded-2xl
         border
-        border-zinc-800
-        bg-zinc-900
+        border-slate-200
+        bg-white
         shadow-lg
-        shadow-black/20
+        shadow-slate-200/50
         transition-all
         duration-200
-        hover:border-zinc-700
+        hover:border-slate-300
+
+        dark:border-zinc-800
+        dark:bg-zinc-900
+        dark:shadow-black/20
+        dark:hover:border-zinc-700
+
         ${className}
       `}
     >

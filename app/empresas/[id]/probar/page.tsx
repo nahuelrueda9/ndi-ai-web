@@ -15,6 +15,7 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { useParams, useRouter } from "next/navigation";
+import { Plus, Trash2 } from "lucide-react";
 
 import { auth, db } from "@/lib/firebase";
 
@@ -71,6 +72,9 @@ export default function ProbarAgentePage() {
   const [cargandoConversacion, setCargandoConversacion] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [copiadoIndex, setCopiadoIndex] = useState<number | null>(null);
+  const [conversacionAEliminar, setConversacionAEliminar] =
+    useState<ConversacionLocal | null>(null);
+  const [eliminandoConversacion, setEliminandoConversacion] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -399,6 +403,47 @@ export default function ProbarAgentePage() {
     });
   }
 
+  function solicitarEliminarConversacion(
+    conversacion: ConversacionLocal
+  ) {
+    if (enviando) return;
+
+    setConversacionAEliminar(conversacion);
+  }
+
+  function cancelarEliminarConversacion() {
+    if (eliminandoConversacion) return;
+
+    setConversacionAEliminar(null);
+  }
+
+  function eliminarConversacion() {
+    if (!conversacionAEliminar || enviando) return;
+
+    setEliminandoConversacion(true);
+
+    const listaActualizada = conversaciones.filter(
+      (item) => item.id !== conversacionAEliminar.id
+    );
+
+    if (chatId === conversacionAEliminar.id) {
+      const siguienteConversacion = listaActualizada[0] ?? null;
+
+      setChatId(siguienteConversacion?.id ?? null);
+      setMensajes(siguienteConversacion?.mensajes ?? []);
+      setMensaje("");
+      setError("");
+    }
+
+    guardarConversaciones(listaActualizada);
+    setConversacionAEliminar(null);
+    setEliminandoConversacion(false);
+
+    requestAnimationFrame(() => {
+      textareaRef.current?.focus();
+    });
+  }
+
   function limpiarConversacion() {
     if (!chatId || enviando) return;
 
@@ -523,13 +568,15 @@ export default function ProbarAgentePage() {
                   </p>
                 </div>
 
-                <Button
-                  size="sm"
+                <button
+                  type="button"
                   onClick={nuevaConversacion}
                   disabled={cargandoConversacion || enviando}
+                  className="inline-flex h-9 shrink-0 items-center gap-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-3 text-xs font-semibold text-blue-300 transition hover:border-blue-400/50 hover:bg-blue-500/15 hover:text-blue-200 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  + Nueva
-                </Button>
+                  <Plus className="h-4 w-4" />
+                  <span>Nueva</span>
+                </button>
               </div>
             </div>
 
@@ -546,33 +593,54 @@ export default function ProbarAgentePage() {
                     const activa = chatId === conversacion.id;
 
                     return (
-                      <button
+                      <div
                         key={conversacion.id}
-                        type="button"
-                        onClick={() =>
-                          seleccionarConversacion(conversacion.id)
-                        }
-                        className={`w-full rounded-xl border px-4 py-3 text-left transition ${
+                        className={`group flex items-center gap-2 rounded-xl border p-1.5 transition ${
                           activa
                             ? "border-blue-500/40 bg-blue-500/10"
                             : "border-transparent hover:border-zinc-800 hover:bg-zinc-900"
                         }`}
                       >
-                        <p
-                          className={`truncate text-sm font-medium ${
-                            activa ? "text-blue-300" : "text-zinc-300"
-                          }`}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            seleccionarConversacion(conversacion.id)
+                          }
+                          disabled={enviando}
+                          className="min-w-0 flex-1 rounded-lg px-2.5 py-2 text-left disabled:cursor-not-allowed"
                         >
-                          {conversacion.titulo ||
-                            `Conversación ${index + 1}`}
-                        </p>
+                          <p
+                            className={`truncate text-sm font-medium ${
+                              activa ? "text-blue-300" : "text-zinc-300"
+                            }`}
+                          >
+                            {conversacion.titulo ||
+                              `Conversación ${index + 1}`}
+                          </p>
 
-                        <p className="mt-1 text-xs text-zinc-600">
-                          {activa
-                            ? "Conversación activa"
-                            : "Abrir historial"}
-                        </p>
-                      </button>
+                          <p className="mt-1 text-xs text-zinc-600">
+                            {activa
+                              ? "Conversación activa"
+                              : "Abrir historial"}
+                          </p>
+                        </button>
+
+                        <button
+                          type="button"
+                          aria-label={`Eliminar ${
+                            conversacion.titulo ||
+                            `Conversación ${index + 1}`
+                          }`}
+                          title="Eliminar conversación"
+                          onClick={() =>
+                            solicitarEliminarConversacion(conversacion)
+                          }
+                          disabled={enviando}
+                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-zinc-600 opacity-70 transition hover:bg-red-500/10 hover:text-red-400 group-hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-30"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     );
                   })}
                 </div>
@@ -827,6 +895,53 @@ export default function ProbarAgentePage() {
           </div>
         </Card>
       </div>
+
+      {conversacionAEliminar && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+          <button
+            type="button"
+            aria-label="Cerrar confirmación"
+            onClick={cancelarEliminarConversacion}
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+          />
+
+          <div className="relative z-10 w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl shadow-black/50">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-500/10 text-red-400">
+              <Trash2 className="h-5 w-5" />
+            </div>
+
+            <h2 className="mt-5 text-lg font-semibold text-white">
+              ¿Eliminar esta conversación de prueba?
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-zinc-500">
+              Se eliminará el historial “{conversacionAEliminar.titulo}” de
+              este navegador. Esta acción no se puede deshacer.
+            </p>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={cancelarEliminarConversacion}
+                disabled={eliminandoConversacion}
+                className="rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-zinc-300 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="button"
+                onClick={eliminarConversacion}
+                disabled={eliminandoConversacion}
+                className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Trash2 className="h-4 w-4" />
+                {eliminandoConversacion ? "Eliminando..." : "Eliminar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

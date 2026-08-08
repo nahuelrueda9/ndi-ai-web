@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+
+import { ThemeProvider } from "@/components/theme/ThemeProvider";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,8 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NanoCRM",
-  description: "CRM con IA para atención automática de clientes",
+  title: "NDI AI",
+  description:
+    "Atención inteligente con IA para WhatsApp y gestión de clientes.",
 };
 
 export default function RootLayout({
@@ -25,10 +29,13 @@ export default function RootLayout({
   return (
     <html
       lang="es"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
-        {children}
+      <body className="min-h-full">
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

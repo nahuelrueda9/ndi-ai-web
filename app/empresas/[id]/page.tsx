@@ -226,9 +226,9 @@ export default function ConfigurarAgentePage() {
     return (
       <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
         <Card className="p-10 text-center">
-          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-t-blue-500" />
-          <p className="font-medium text-white">Cargando configuración...</p>
-          <p className="mt-1 text-sm text-zinc-500">Estamos preparando tu agente.</p>
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
+          <p className="font-medium text-slate-950 dark:text-white">Cargando configuración...</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">Estamos preparando tu agente.</p>
         </Card>
       </section>
     );
@@ -237,12 +237,12 @@ export default function ConfigurarAgentePage() {
   if (error && !nombre) {
     return (
       <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
-        <Card className="border-red-500/20 bg-red-500/10 p-8 text-center">
+        <Card className="border-red-200 bg-red-50 p-8 text-center dark:border-red-500/20 dark:bg-red-500/10">
           <Badge variant="danger">Error de acceso</Badge>
-          <h1 className="mt-4 text-xl font-semibold text-white">
+          <h1 className="mt-4 text-xl font-semibold text-slate-950 dark:text-white">
             No pudimos abrir esta empresa
           </h1>
-          <p className="mt-2 text-sm text-red-400">{error}</p>
+          <p className="mt-2 text-sm text-red-700 dark:text-red-400">{error}</p>
           <Button className="mt-6" variant="secondary" onClick={() => router.push("/empresas")}>
             Volver a empresas
           </Button>
@@ -258,19 +258,19 @@ export default function ConfigurarAgentePage() {
           <button
             type="button"
             onClick={() => router.push("/empresas")}
-            className="mb-4 text-sm text-zinc-500 transition hover:text-white"
+            className="mb-4 text-sm text-slate-500 transition hover:text-slate-950 dark:text-zinc-500 dark:hover:text-white"
           >
             ← Volver a empresas
           </button>
 
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight text-white">
+            <h1 className="text-3xl font-bold tracking-tight text-slate-950 dark:text-white">
               Configuración del agente
             </h1>
             <Badge variant="success">Agente activo</Badge>
           </div>
 
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
             Configurá la información, el comportamiento y la apariencia del chat de {nombre}.
           </p>
         </div>
@@ -282,10 +282,10 @@ export default function ConfigurarAgentePage() {
             size="sm"
           />
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-white">
+            <p className="truncate text-sm font-medium text-slate-950 dark:text-white">
               {user?.displayName || "Administrador"}
             </p>
-            <p className="max-w-56 truncate text-xs text-zinc-500">{user?.email}</p>
+            <p className="max-w-56 truncate text-xs text-slate-500 dark:text-zinc-500">{user?.email}</p>
           </div>
         </Card>
       </header>
@@ -339,6 +339,8 @@ export default function ConfigurarAgentePage() {
           </div>
         </Card>
 
+        <div id="apariencia-widget" className="scroll-mt-24" />
+
         <Card className="overflow-hidden">
           <SectionHeader
             title="Apariencia del widget"
@@ -356,10 +358,10 @@ export default function ConfigurarAgentePage() {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="colorPrincipal" className="block text-sm font-medium text-zinc-200">Color principal</label>
+                <label htmlFor="colorPrincipal" className="block text-sm font-medium text-slate-700 dark:text-zinc-200">Color principal</label>
                 <div className="flex gap-3">
-                  <input id="colorPrincipal" type="color" value={colorPrincipal} onChange={(e) => setColorPrincipal(e.target.value)} className="h-11 w-14 cursor-pointer rounded-xl border border-zinc-700 bg-zinc-900 p-1" />
-                  <input value={colorPrincipal} onChange={(e) => setColorPrincipal(e.target.value)} className="h-11 min-w-0 flex-1 rounded-xl border border-zinc-700 bg-zinc-900 px-4 text-sm text-white outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" />
+                  <input id="colorPrincipal" type="color" value={colorPrincipal} onChange={(e) => setColorPrincipal(e.target.value)} className="h-11 w-14 cursor-pointer rounded-xl border border-slate-300 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-900" />
+                  <input value={colorPrincipal} onChange={(e) => setColorPrincipal(e.target.value)} className="h-11 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white" />
                 </div>
               </div>
 
@@ -367,10 +369,10 @@ export default function ConfigurarAgentePage() {
               <SelectField id="posicion" label="Posición" value={posicion} onChange={(value) => setPosicion(value as PosicionWidget)} options={["derecha", "izquierda"]} />
               <SelectField id="formaBoton" label="Forma del botón" value={formaBoton} onChange={(value) => setFormaBoton(value as FormaWidget)} options={["redondo", "cuadrado"]} />
 
-              <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-zinc-800 bg-zinc-950/50 p-4 md:col-span-2">
+              <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 md:col-span-2 dark:border-zinc-800 dark:bg-zinc-950/50">
                 <div>
-                  <p className="text-sm font-medium text-white">Mostrar “Creado con NDI AI”</p>
-                  <p className="mt-1 text-xs text-zinc-500">Podrás ocultarlo en los planes superiores.</p>
+                  <p className="text-sm font-medium text-slate-950 dark:text-white">Mostrar “Creado con NDI AI”</p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">Podrás ocultarlo en los planes superiores.</p>
                 </div>
                 <input type="checkbox" checked={mostrarMarca} onChange={(e) => setMostrarMarca(e.target.checked)} className="h-5 w-5 accent-blue-500" />
               </label>
@@ -435,21 +437,21 @@ export default function ConfigurarAgentePage() {
         </Card>
 
         {error && (
-          <Card className="border-red-500/20 bg-red-500/10 p-4">
-            <p className="text-sm text-red-400">{error}</p>
+          <Card className="border-red-200 bg-red-50 p-4 dark:border-red-500/20 dark:bg-red-500/10">
+            <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
           </Card>
         )}
 
         {mensaje && (
-          <Card className="border-emerald-500/20 bg-emerald-500/10 p-4">
-            <p className="text-sm text-emerald-400">{mensaje}</p>
+          <Card className="border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/10">
+            <p className="text-sm text-emerald-700 dark:text-emerald-400">{mensaje}</p>
           </Card>
         )}
 
-        <Card className="sticky bottom-4 z-20 flex flex-col gap-4 border-zinc-700/80 bg-zinc-900/95 p-5 shadow-2xl backdrop-blur sm:flex-row sm:items-center sm:justify-between">
+        <Card className="sticky bottom-4 z-20 flex flex-col gap-4 border-slate-200 bg-white/95 p-5 shadow-2xl backdrop-blur sm:flex-row sm:items-center sm:justify-between dark:border-zinc-700/80 dark:bg-zinc-900/95">
           <div>
-            <p className="text-sm font-medium text-white">Configuración general</p>
-            <p className="mt-1 text-xs text-zinc-500">Guardá los cambios antes de salir.</p>
+            <p className="text-sm font-medium text-slate-950 dark:text-white">Configuración general</p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">Guardá los cambios antes de salir.</p>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row">
@@ -471,11 +473,11 @@ export default function ConfigurarAgentePage() {
 
 function SectionHeader({ title, description, right }: { title: string; description: string; right?: React.ReactNode }) {
   return (
-    <div className="border-b border-zinc-800 px-6 py-5">
+    <div className="border-b border-slate-200 px-6 py-5 dark:border-zinc-800">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-white">{title}</h2>
-          <p className="mt-1 text-sm text-zinc-500">{description}</p>
+          <h2 className="text-lg font-semibold text-slate-950 dark:text-white">{title}</h2>
+          <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">{description}</p>
         </div>
         {right}
       </div>
@@ -486,11 +488,11 @@ function SectionHeader({ title, description, right }: { title: string; descripti
 function SelectField({ id, label, value, onChange, options, helperText }: { id: string; label: string; value: string; onChange: (value: string) => void; options: string[]; helperText?: string }) {
   return (
     <div className="space-y-2">
-      <label htmlFor={id} className="block text-sm font-medium text-zinc-200">{label}</label>
-      <select id={id} value={value} onChange={(e) => onChange(e.target.value)} className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm capitalize text-white transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+      <label htmlFor={id} className="block text-sm font-medium text-slate-700 dark:text-zinc-200">{label}</label>
+      <select id={id} value={value} onChange={(e) => onChange(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm capitalize text-slate-900 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white">
         {options.map((option) => <option key={option} value={option}>{option}</option>)}
       </select>
-      {helperText && <p className="text-sm text-zinc-500">{helperText}</p>}
+      {helperText && <p className="text-sm text-slate-500 dark:text-zinc-500">{helperText}</p>}
     </div>
   );
 }
@@ -503,20 +505,20 @@ type TextAreaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
 function TextArea({ label, helperText, className = "", id, ...props }: TextAreaProps) {
   return (
     <div className="space-y-2">
-      <label htmlFor={id} className="block text-sm font-medium text-zinc-200">{label}</label>
+      <label htmlFor={id} className="block text-sm font-medium text-slate-700 dark:text-zinc-200">{label}</label>
       <textarea
         id={id}
         rows={4}
         className={[
-          "w-full resize-y rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3",
-          "text-sm text-white placeholder:text-zinc-500",
+          "w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900",
+          "text-sm text-slate-900 placeholder:text-slate-400 dark:text-white dark:placeholder:text-zinc-500",
           "transition-colors duration-200",
           "focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20",
           className,
         ].filter(Boolean).join(" ")}
         {...props}
       />
-      {helperText && <p className="text-sm text-zinc-500">{helperText}</p>}
+      {helperText && <p className="text-sm text-slate-500 dark:text-zinc-500">{helperText}</p>}
     </div>
   );
 }

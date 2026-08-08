@@ -226,18 +226,18 @@ export default function PlanUsageCard() {
 
   if (cargando) {
     return (
-      <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-        <div className="h-5 w-32 animate-pulse rounded bg-zinc-800" />
-        <div className="mt-4 h-8 w-20 animate-pulse rounded bg-zinc-800" />
-        <div className="mt-6 h-3 w-full animate-pulse rounded-full bg-zinc-800" />
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="h-5 w-32 animate-pulse rounded bg-slate-200 dark:bg-zinc-800" />
+        <div className="mt-4 h-8 w-20 animate-pulse rounded bg-slate-200 dark:bg-zinc-800" />
+        <div className="mt-6 h-3 w-full animate-pulse rounded-full bg-slate-200 dark:bg-zinc-800" />
       </section>
     );
   }
 
   if (error || !empresaId) {
     return (
-      <section className="rounded-2xl border border-red-500/20 bg-red-500/10 p-5">
-        <p className="text-sm text-red-300">
+      <section className="rounded-2xl border border-red-200 bg-red-50 p-5 dark:border-red-500/20 dark:bg-red-500/10">
+        <p className="text-sm text-red-700 dark:text-red-300">
           {error ||
             "No se pudo cargar el plan."}
         </p>
@@ -246,18 +246,18 @@ export default function PlanUsageCard() {
   }
 
   return (
-    <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
+    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
         <div>
-          <p className="text-sm font-medium text-blue-400">
+          <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
             Plan actual
           </p>
 
-          <h2 className="mt-2 text-2xl font-bold capitalize text-white">
+          <h2 className="mt-2 text-2xl font-bold capitalize text-slate-950 dark:text-white">
             {plan}
           </h2>
 
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
             Estado:{" "}
             <span
               className={
@@ -275,7 +275,7 @@ export default function PlanUsageCard() {
 
           {planGuardado !== "free" &&
             fechaVencimiento && (
-              <p className="mt-1 text-xs text-zinc-500">
+              <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
                 {suscripcionVigente
                   ? "Vence"
                   : "Venció"}{" "}
@@ -299,11 +299,11 @@ export default function PlanUsageCard() {
 
       <div className="mt-6">
         <div className="flex items-center justify-between gap-4 text-sm">
-          <span className="text-zinc-400">
+          <span className="text-slate-600 dark:text-zinc-400">
             Conversaciones del mes
           </span>
 
-          <span className="font-medium text-white">
+          <span className="font-medium text-slate-950 dark:text-white">
             {usadas.toLocaleString(
               "es-AR"
             )}{" "}
@@ -314,7 +314,7 @@ export default function PlanUsageCard() {
           </span>
         </div>
 
-        <div className="mt-3 h-3 overflow-hidden rounded-full bg-zinc-800">
+        <div className="mt-3 h-3 overflow-hidden rounded-full bg-slate-200 dark:bg-zinc-800">
           <div
             className={[
               "h-full rounded-full transition-all",
@@ -331,7 +331,7 @@ export default function PlanUsageCard() {
         </div>
 
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs">
-          <span className="text-zinc-500">
+          <span className="text-slate-500 dark:text-zinc-500">
             {restantes > 0
               ? `Te quedan ${restantes.toLocaleString(
                   "es-AR"
@@ -339,19 +339,19 @@ export default function PlanUsageCard() {
               : "Alcanzaste el límite mensual."}
           </span>
 
-          <span className="font-medium text-zinc-400">
+          <span className="font-medium text-slate-600 dark:text-zinc-400">
             {porcentaje}% utilizado
           </span>
         </div>
       </div>
 
-      <div className="mt-6 border-t border-zinc-800 pt-6">
+      <div className="mt-6 border-t border-slate-200 pt-6 dark:border-zinc-800">
         <div className="flex items-center justify-between gap-4 text-sm">
-          <span className="text-zinc-400">
+          <span className="text-slate-600 dark:text-zinc-400">
             Respuestas IA del mes
           </span>
 
-          <span className="font-medium text-white">
+          <span className="font-medium text-slate-950 dark:text-white">
             {respuestasIAUsadas.toLocaleString(
               "es-AR"
             )}{" "}
@@ -362,7 +362,7 @@ export default function PlanUsageCard() {
           </span>
         </div>
 
-        <div className="mt-3 h-3 overflow-hidden rounded-full bg-zinc-800">
+        <div className="mt-3 h-3 overflow-hidden rounded-full bg-slate-200 dark:bg-zinc-800">
           <div
             className={[
               "h-full rounded-full transition-all",
@@ -379,7 +379,7 @@ export default function PlanUsageCard() {
         </div>
 
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs">
-          <span className="text-zinc-500">
+          <span className="text-slate-500 dark:text-zinc-500">
             {respuestasIARestantes > 0
               ? `Te quedan ${respuestasIARestantes.toLocaleString(
                   "es-AR"
@@ -387,7 +387,7 @@ export default function PlanUsageCard() {
               : "Alcanzaste el límite mensual de IA."}
           </span>
 
-          <span className="font-medium text-zinc-400">
+          <span className="font-medium text-slate-600 dark:text-zinc-400">
             {porcentajeIA}% utilizado
           </span>
         </div>
@@ -395,15 +395,15 @@ export default function PlanUsageCard() {
 
       {(restantes === 0 ||
         respuestasIARestantes === 0) && (
-        <div className="mt-5 rounded-xl border border-red-500/20 bg-red-500/10 p-4">
-          <p className="text-sm font-medium text-red-300">
+        <div className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-500/20 dark:bg-red-500/10">
+          <p className="text-sm font-medium text-red-700 dark:text-red-300">
             Alcanzaste el límite de tu
             plan.
           </p>
 
           <Link
             href={`/empresas/${empresaId}/planes`}
-            className="mt-2 inline-flex text-sm font-semibold text-blue-400 hover:text-blue-300"
+            className="mt-2 inline-flex text-sm font-semibold text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
           >
             Actualizar a un plan superior →
           </Link>

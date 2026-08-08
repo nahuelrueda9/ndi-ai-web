@@ -309,18 +309,18 @@ export default function DashboardEmpresaPage() {
   return (
     <section className="mx-auto max-w-7xl space-y-8 px-6 py-8">
       <div>
-        <h1 className="text-3xl font-bold text-white">
+        <h1 className="text-3xl font-bold text-slate-950 dark:text-white">
           Dashboard
         </h1>
 
-        <p className="mt-2 text-zinc-400">
+        <p className="mt-2 text-slate-600 dark:text-zinc-400">
           Resumen general de la empresa.
         </p>
       </div>
 
       {error && (
-        <Card className="border-red-500/20 bg-red-500/10 p-4">
-          <p className="text-sm text-red-400">
+        <Card className="border-red-200 bg-red-50 p-4 dark:border-red-500/20 dark:bg-red-500/10">
+          <p className="text-sm text-red-600 dark:text-red-400">
             {error}
           </p>
         </Card>
@@ -328,9 +328,9 @@ export default function DashboardEmpresaPage() {
 
       {loading ? (
         <Card className="p-10 text-center">
-          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-t-blue-500" />
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
 
-          <p className="text-sm text-zinc-400">
+          <p className="text-sm text-slate-600 dark:text-zinc-400">
             Cargando métricas...
           </p>
         </Card>
@@ -362,18 +362,18 @@ export default function DashboardEmpresaPage() {
             />
           </div>
 
-          <Card className="border-blue-500/20 bg-blue-500/5 p-6">
+          <Card className="border-blue-200 bg-blue-50/60 p-6 dark:border-blue-500/20 dark:bg-blue-500/5">
             <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
               <div>
-                <p className="text-sm font-medium text-blue-400">
+                <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
                   Primeros pasos
                 </p>
 
-                <h2 className="mt-1 text-xl font-semibold text-white">
+                <h2 className="mt-1 text-xl font-semibold text-slate-950 dark:text-white">
                   Poné NDI AI a trabajar en 4 pasos
                 </h2>
 
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
                   Configurá el negocio, enseñale a la IA qué responder,
                   conectá WhatsApp y hacé una prueba antes de atender clientes.
                 </p>
@@ -386,7 +386,7 @@ export default function DashboardEmpresaPage() {
                     `/empresas/${empresaId}/ayuda`
                   )
                 }
-                className="shrink-0 rounded-xl border border-blue-500/30 bg-blue-500/10 px-5 py-3 text-sm font-semibold text-blue-300 transition hover:bg-blue-500/20"
+                className="shrink-0 rounded-xl border border-blue-300 bg-blue-50 px-5 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-100 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300 dark:hover:bg-blue-500/20"
               >
                 Ver tutorial completo
               </button>
@@ -427,17 +427,17 @@ export default function DashboardEmpresaPage() {
                       `/empresas/${empresaId}/${paso.ruta}`
                     )
                   }
-                  className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4 text-left transition hover:border-blue-500/30 hover:bg-zinc-900"
+                  className="rounded-2xl border border-slate-200 bg-white p-4 text-left transition hover:border-blue-300 hover:bg-slate-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-blue-500/30 dark:hover:bg-zinc-900"
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 text-sm font-bold text-blue-400">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-sm font-bold text-blue-700 dark:bg-blue-500/10 dark:text-blue-400">
                     {paso.numero}
                   </div>
 
-                  <p className="mt-3 font-medium text-white">
+                  <p className="mt-3 font-medium text-slate-950 dark:text-white">
                     {paso.titulo}
                   </p>
 
-                  <p className="mt-1 text-xs leading-5 text-zinc-500">
+                  <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-zinc-500">
                     {paso.texto}
                   </p>
                 </button>
@@ -446,11 +446,11 @@ export default function DashboardEmpresaPage() {
           </Card>
 
           <div>
-            <h2 className="mb-4 text-lg font-semibold text-white">
+            <h2 className="mb-4 text-lg font-semibold text-slate-950 dark:text-white">
               Accesos rápidos
             </h2>
 
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-5">
               <QuickAccessCard
                 titulo="💬 Conversaciones"
                 descripcion="Administrar chats y responder clientes."
@@ -493,7 +493,7 @@ export default function DashboardEmpresaPage() {
 
               <QuickAccessCard
   titulo="🔗 Integraciones"
-  descripcion="Conectar WhatsApp, Instagram y Facebook."
+  descripcion="Conectar WhatsApp y revisar próximos canales."
   onClick={() =>
     router.push(
       `/empresas/${empresaId}/integraciones`
@@ -505,22 +505,22 @@ export default function DashboardEmpresaPage() {
           </div>
 
           {mostrarPublicidad && (
-            <Card className="overflow-hidden border-blue-500/20 bg-gradient-to-r from-blue-500/10 via-zinc-900 to-violet-500/10">
+            <Card className="overflow-hidden border-blue-200 bg-gradient-to-r from-blue-50 via-white to-violet-50 dark:border-blue-500/20 dark:from-blue-500/10 dark:via-zinc-900 dark:to-violet-500/10">
               <div
                 id="ndi-ai-free-ad-slot-dashboard"
                 data-ad-slot="dashboard-free"
                 className="flex flex-col justify-between gap-5 p-6 md:flex-row md:items-center"
               >
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-500">
                     Publicidad
                   </p>
 
-                  <h2 className="mt-2 text-lg font-semibold text-white">
+                  <h2 className="mt-2 text-lg font-semibold text-slate-950 dark:text-white">
                     Usás NDI AI Free
                   </h2>
 
-                  <p className="mt-1 max-w-2xl text-sm leading-6 text-zinc-400">
+                  <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
                     El plan gratuito puede mostrar promociones de NDI AI o
                     patrocinadores directos. Pasate a Pro para usar el panel sin publicidad.
                   </p>
@@ -558,13 +558,13 @@ export default function DashboardEmpresaPage() {
 </div>
 
           <Card className="overflow-hidden">
-            <div className="flex flex-col justify-between gap-3 border-b border-zinc-800 px-6 py-5 sm:flex-row sm:items-center">
+            <div className="flex flex-col justify-between gap-3 border-b border-slate-200 px-6 py-5 dark:border-zinc-800 sm:flex-row sm:items-center">
               <div>
-                <h2 className="text-lg font-semibold text-white">
+                <h2 className="text-lg font-semibold text-slate-950 dark:text-white">
                   Últimas conversaciones
                 </h2>
 
-                <p className="mt-1 text-sm text-zinc-500">
+                <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
                   Los chats con actividad más reciente.
                 </p>
               </div>
@@ -576,7 +576,7 @@ export default function DashboardEmpresaPage() {
                     `/empresas/${empresaId}/conversaciones`
                   )
                 }
-                className="text-left text-sm font-medium text-blue-400 transition hover:text-blue-300"
+                className="text-left text-sm font-medium text-blue-600 transition hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
               >
                 Ver todas →
               </button>
@@ -588,17 +588,17 @@ export default function DashboardEmpresaPage() {
                   💬
                 </div>
 
-                <p className="mt-4 font-medium text-white">
+                <p className="mt-4 font-medium text-slate-950 dark:text-white">
                   Todavía no hay conversaciones
                 </p>
 
-                <p className="mt-1 text-sm text-zinc-500">
+                <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
                   Cuando alguien use el widget,
                   aparecerá acá.
                 </p>
               </div>
             ) : (
-              <div className="divide-y divide-zinc-800">
+              <div className="divide-y divide-slate-200 dark:divide-zinc-800">
                 {ultimasConversaciones.map(
                   (conversacion) => {
                     const nombreVisitante =
@@ -615,14 +615,14 @@ export default function DashboardEmpresaPage() {
                             `/empresas/${empresaId}/conversaciones/${conversacion.id}`
                           )
                         }
-                        className="grid w-full gap-4 px-5 py-5 text-left transition hover:bg-zinc-800/40 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1.7fr)_130px_110px] md:items-center md:px-6"
+                        className="grid w-full gap-4 px-5 py-5 text-left transition hover:bg-slate-50 dark:hover:bg-zinc-800/40 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1.7fr)_130px_110px] md:items-center md:px-6"
                       >
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-white">
+                          <p className="truncate text-sm font-medium text-slate-950 dark:text-white">
                             {nombreVisitante}
                           </p>
 
-                          <p className="mt-1 truncate text-xs text-zinc-500">
+                          <p className="mt-1 truncate text-xs text-slate-500 dark:text-zinc-500">
                             {conversacion.email ||
                               conversacion.telefono ||
                               `ID ${(
@@ -633,12 +633,12 @@ export default function DashboardEmpresaPage() {
                         </div>
 
                         <div className="min-w-0">
-                          <p className="truncate text-sm text-zinc-300">
+                          <p className="truncate text-sm text-slate-700 dark:text-zinc-300">
                             {conversacion.ultimoMensaje ||
                               "Sin mensajes"}
                           </p>
 
-                          <p className="mt-1 text-xs text-zinc-600">
+                          <p className="mt-1 text-xs text-slate-500 dark:text-zinc-600">
                             Atendido por{" "}
                             {conversacion.atendidoPor ===
                             "humano"
@@ -648,13 +648,13 @@ export default function DashboardEmpresaPage() {
                         </div>
 
                         <div>
-                          <p className="text-sm font-semibold text-white">
+                          <p className="text-sm font-semibold text-slate-950 dark:text-white">
                             {conversacion.puntuacionLead ??
                               0}
                             /100
                           </p>
 
-                          <p className="mt-1 text-xs capitalize text-zinc-500">
+                          <p className="mt-1 text-xs capitalize text-slate-500 dark:text-zinc-500">
                             Interés{" "}
                             {conversacion.nivelInteres ||
                               "bajo"}
@@ -667,8 +667,8 @@ export default function DashboardEmpresaPage() {
                               "inline-flex rounded-full px-2.5 py-1 text-xs font-medium",
                               conversacion.estado ===
                               "cerrada"
-                                ? "bg-zinc-800 text-zinc-400"
-                                : "bg-emerald-500/10 text-emerald-300",
+                                ? "bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400"
+                                : "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
                             ].join(" ")}
                           >
                             {conversacion.estado ===
@@ -677,7 +677,7 @@ export default function DashboardEmpresaPage() {
                               : "Abierta"}
                           </span>
 
-                          <p className="mt-2 text-xs text-zinc-600">
+                          <p className="mt-2 text-xs text-slate-500 dark:text-zinc-600">
                             {formatearFecha(
                               conversacion.updatedAt ||
                                 conversacion.createdAt

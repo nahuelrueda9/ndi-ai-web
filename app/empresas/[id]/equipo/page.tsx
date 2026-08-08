@@ -954,20 +954,20 @@ export default function EquipoPage() {
   ) {
     return (
       <section className="mx-auto w-full max-w-4xl px-5 py-12 sm:px-8">
-        <Card className="border-emerald-500/20 bg-emerald-500/5 p-8 text-center sm:p-12">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
+        <Card className="border-emerald-200 bg-emerald-50 p-8 text-center sm:p-12 dark:border-emerald-500/20 dark:bg-emerald-500/5">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
             <Users className="h-8 w-8" />
           </div>
 
-          <p className="mt-6 text-sm font-semibold uppercase tracking-[0.18em] text-emerald-400">
+          <p className="mt-6 text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-400">
             Función Pro
           </p>
 
-          <h1 className="mt-3 text-3xl font-bold text-white">
+          <h1 className="mt-3 text-3xl font-bold text-slate-950 dark:text-white">
             Equipo
           </h1>
 
-          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-400">
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
             La gestión de operadores, supervisores e invitaciones está disponible en los planes Pro y Empresa.
           </p>
 
@@ -991,15 +991,15 @@ export default function EquipoPage() {
     <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
       <header className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
         <div>
-          <p className="text-sm font-medium text-emerald-400">
+          <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
             Gestión de usuarios
           </p>
 
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white">
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">
             Equipo
           </h1>
 
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
             Administrá operadores,
             supervisores y permisos de tu
             empresa.
@@ -1059,8 +1059,8 @@ export default function EquipoPage() {
       </div>
 
       {mensaje && (
-        <Card className="mb-6 border-emerald-500/20 bg-emerald-500/10 p-4">
-          <p className="text-sm text-emerald-300">
+        <Card className="mb-6 border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/10">
+          <p className="text-sm text-emerald-700 dark:text-emerald-300">
             {mensaje}
           </p>
 
@@ -1070,7 +1070,7 @@ export default function EquipoPage() {
                 value={enlaceNuevo}
                 readOnly
                 aria-label="Enlace de invitación"
-                className="min-w-0 flex-1 rounded-xl border border-emerald-500/20 bg-zinc-950 px-4 py-3 text-sm text-zinc-300 outline-none"
+                className="min-w-0 flex-1 rounded-xl border border-emerald-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none dark:border-emerald-500/20 dark:bg-zinc-950 dark:text-zinc-300"
                 onFocus={(evento) =>
                   evento.currentTarget.select()
                 }
@@ -1102,8 +1102,8 @@ export default function EquipoPage() {
       )}
 
       {error && (
-        <Card className="mb-6 border-red-500/20 bg-red-500/10 p-4">
-          <p className="text-sm text-red-400">
+        <Card className="mb-6 border-red-200 bg-red-50 p-4 dark:border-red-500/20 dark:bg-red-500/10">
+          <p className="text-sm text-red-700 dark:text-red-400">
             {error}
           </p>
         </Card>
@@ -1112,11 +1112,11 @@ export default function EquipoPage() {
       {mostrandoFormulario && (
         <Card className="mb-6 p-6">
           <div className="mb-6">
-            <h2 className="text-xl font-semibold text-white">
+            <h2 className="text-xl font-semibold text-slate-950 dark:text-white">
               Invitar miembro
             </h2>
 
-            <p className="mt-1 text-sm text-zinc-500">
+            <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
               Se generará un enlace seguro,
               válido durante 7 días. Después
               podés copiarlo y enviarlo por
@@ -1146,7 +1146,7 @@ export default function EquipoPage() {
               <div>
                 <label
                   htmlFor="rolMiembro"
-                  className="mb-2 block text-sm font-medium text-zinc-300"
+                  className="mb-2 block text-sm font-medium text-slate-700 dark:text-zinc-300"
                 >
                   Rol
                 </label>
@@ -1161,7 +1161,7 @@ export default function EquipoPage() {
                         .value as RolEquipo
                     )
                   }
-                  className="h-12 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 text-sm text-white outline-none transition focus:border-blue-500"
+                  className="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white"
                 >
                   <option value="operador">
                     Operador
@@ -1189,22 +1189,22 @@ export default function EquipoPage() {
                   className={[
                     "rounded-xl border p-4",
                     formulario.rol === rol
-                      ? "border-emerald-500/40 bg-emerald-500/10"
-                      : "border-zinc-800 bg-zinc-950/40",
+                      ? "border-emerald-300 bg-emerald-50 shadow-sm dark:border-emerald-500/40 dark:bg-emerald-500/10"
+                      : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-zinc-800 dark:bg-zinc-950/40 dark:hover:border-zinc-700 dark:hover:bg-zinc-900/60",
                   ].join(" ")}
                 >
-                  <p className="font-medium text-white">
+                  <p className="font-medium text-slate-950 dark:text-white">
                     {ROLES[rol].nombre}
                   </p>
 
-                  <p className="mt-2 text-sm leading-5 text-zinc-500">
+                  <p className="mt-2 text-sm leading-5 text-slate-500 dark:text-zinc-500">
                     {ROLES[rol].descripcion}
                   </p>
                 </div>
               ))}
             </div>
 
-            <div className="flex flex-col justify-end gap-3 border-t border-zinc-800 pt-5 sm:flex-row">
+            <div className="flex flex-col justify-end gap-3 border-t border-slate-200 pt-5 dark:border-zinc-800 sm:flex-row">
               <Button
                 type="button"
                 variant="secondary"
@@ -1237,16 +1237,16 @@ export default function EquipoPage() {
       {invitacionesPendientes.length >
         0 && (
         <Card className="mb-6 overflow-hidden">
-          <div className="border-b border-zinc-800 px-5 py-4 sm:px-6">
+          <div className="border-b border-slate-200 px-5 py-4 dark:border-zinc-800 sm:px-6">
             <div className="flex items-center gap-3">
-              <Mail className="h-5 w-5 text-amber-400" />
+              <Mail className="h-5 w-5 text-amber-600 dark:text-amber-400" />
 
               <div>
-                <h2 className="font-semibold text-white">
+                <h2 className="font-semibold text-slate-950 dark:text-white">
                   Invitaciones pendientes
                 </h2>
 
-                <p className="mt-1 text-xs text-zinc-500">
+                <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
                   {
                     invitacionesPendientes.length
                   }{" "}
@@ -1256,7 +1256,7 @@ export default function EquipoPage() {
             </div>
           </div>
 
-          <div className="divide-y divide-zinc-800">
+          <div className="divide-y divide-slate-200 dark:divide-zinc-800">
             {invitacionesPendientes.map(
               (invitacion) => (
                 <div
@@ -1264,7 +1264,7 @@ export default function EquipoPage() {
                   className="flex flex-col justify-between gap-4 px-5 py-4 sm:flex-row sm:items-center sm:px-6"
                 >
                   <div className="min-w-0">
-                    <p className="truncate font-medium text-white">
+                    <p className="truncate font-medium text-slate-950 dark:text-white">
                       {invitacion.email}
                     </p>
 
@@ -1315,7 +1315,7 @@ export default function EquipoPage() {
                           : "Copiar enlace"}
                       </Button>
                     ) : (
-                      <span className="text-xs text-zinc-500">
+                      <span className="text-xs text-slate-500 dark:text-zinc-500">
                         Invitación antigua sin
                         enlace. Cancelala y creá
                         una nueva.
@@ -1348,23 +1348,23 @@ export default function EquipoPage() {
 
       {cargando ? (
         <Card className="p-10 text-center">
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-t-emerald-500" />
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-emerald-600 dark:border-zinc-700 dark:border-t-emerald-500" />
 
-          <p className="mt-4 text-sm text-zinc-400">
+          <p className="mt-4 text-sm text-slate-600 dark:text-zinc-400">
             Cargando equipo...
           </p>
         </Card>
       ) : miembros.length === 0 ? (
         <Card className="border-dashed p-12 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
             <Users className="h-7 w-7" />
           </div>
 
-          <h2 className="mt-5 text-xl font-semibold text-white">
+          <h2 className="mt-5 text-xl font-semibold text-slate-950 dark:text-white">
             Todavía no hay miembros
           </h2>
 
-          <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-zinc-500">
+          <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500 dark:text-zinc-500">
             Invitá operadores y
             supervisores para trabajar en
             conjunto.
@@ -1390,7 +1390,7 @@ export default function EquipoPage() {
             >
               <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
                 <div className="flex min-w-0 items-center gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
                     {miembro.rol ===
                     "administrador" ? (
                       <Crown className="h-6 w-6" />
@@ -1404,7 +1404,7 @@ export default function EquipoPage() {
 
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="truncate font-semibold text-white">
+                      <h2 className="truncate font-semibold text-slate-950 dark:text-white">
                         {miembro.nombre ||
                           miembro.email}
                       </h2>
@@ -1424,7 +1424,7 @@ export default function EquipoPage() {
                       </Badge>
                     </div>
 
-                    <p className="mt-1 truncate text-sm text-zinc-500">
+                    <p className="mt-1 truncate text-sm text-slate-500 dark:text-zinc-500">
                       {miembro.email}
                     </p>
 
@@ -1459,7 +1459,7 @@ export default function EquipoPage() {
                           .value as RolEquipo
                       )
                     }
-                    className="h-10 rounded-xl border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-300 outline-none transition focus:border-blue-500 disabled:opacity-50"
+                    className="h-10 rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-blue-500 disabled:opacity-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300"
                   >
                     <option value="operador">
                       Operador
@@ -1509,7 +1509,7 @@ export default function EquipoPage() {
                     onClick={() =>
                       eliminarMiembro(miembro)
                     }
-                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-800 text-zinc-500 transition hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300 text-slate-500 transition hover:border-red-300 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:text-zinc-500 dark:hover:border-red-500/30 dark:hover:bg-red-500/10 dark:hover:text-red-400"
                     title="Eliminar miembro"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -1521,16 +1521,16 @@ export default function EquipoPage() {
         </div>
       )}
 
-      <Card className="mt-6 border-blue-500/20 bg-blue-500/5 p-5">
+      <Card className="mt-6 border-blue-200 bg-blue-50 p-5 dark:border-blue-500/20 dark:bg-blue-500/5">
         <div className="flex gap-3">
-          <Link2 className="mt-0.5 h-5 w-5 shrink-0 text-blue-400" />
+          <Link2 className="mt-0.5 h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400" />
 
           <div>
-            <p className="font-medium text-white">
+            <p className="font-medium text-slate-950 dark:text-white">
               Invitaciones reales activadas
             </p>
 
-            <p className="mt-1 text-sm leading-6 text-zinc-400">
+            <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-zinc-400">
               Cada enlace es personal, vence
               a los 7 días y solo puede ser
               aceptado por el correo invitado.
@@ -1556,16 +1556,16 @@ function ResumenCard({
   return (
     <Card className="p-5">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-slate-500 dark:text-zinc-500">
           {titulo}
         </p>
 
-        <div className="text-emerald-400">
+        <div className="text-emerald-700 dark:text-emerald-400">
           {icono}
         </div>
       </div>
 
-      <p className="mt-3 text-3xl font-bold text-white">
+      <p className="mt-3 text-3xl font-bold text-slate-950 dark:text-white">
         {valor}
       </p>
     </Card>

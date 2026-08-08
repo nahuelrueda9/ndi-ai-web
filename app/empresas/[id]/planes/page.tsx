@@ -372,9 +372,9 @@ export default function PlanesPage() {
   if (cargando) {
     return (
       <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-10 text-center">
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-t-blue-500" />
-          <p className="mt-4 text-sm text-zinc-400">
+        <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
+          <p className="mt-4 text-sm text-slate-600 dark:text-zinc-400">
             Cargando planes...
           </p>
         </div>
@@ -389,7 +389,7 @@ export default function PlanesPage() {
     if (error) {
       return (
         <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
-          <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-5 py-4 text-sm text-red-300">
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
             {error}
           </div>
         </section>
@@ -402,28 +402,28 @@ export default function PlanesPage() {
   return (
     <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
       <header className="mb-8">
-        <p className="text-sm font-medium text-blue-400">
+        <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
           Suscripción
         </p>
 
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-white">
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">
           Planes de NDI AI
         </h1>
 
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
           Elegí el plan que mejor se adapte al volumen de atención de{" "}
           {empresa?.nombre || empresa?.name || "tu empresa"}.
         </p>
       </header>
 
       {error && (
-        <div className="mb-6 rounded-2xl border border-red-500/20 bg-red-500/10 px-5 py-4 text-sm text-red-300">
+        <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
           {error}
         </div>
       )}
 
       {mensaje && (
-        <div className="mb-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-5 py-4 text-sm text-emerald-300">
+        <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
           {mensaje}
         </div>
       )}
@@ -437,10 +437,10 @@ export default function PlanesPage() {
             <article
               key={plan.id}
               className={[
-                "relative flex flex-col rounded-3xl border bg-zinc-900 p-6",
+                "relative flex flex-col rounded-3xl border bg-white p-6 text-slate-950 shadow-sm transition-colors dark:bg-zinc-900 dark:text-white",
                 plan.destacado
-                  ? "border-blue-500 shadow-xl shadow-blue-950/20"
-                  : "border-zinc-800",
+                  ? "border-blue-500 shadow-xl shadow-blue-500/10 dark:shadow-blue-950/20"
+                  : "border-slate-200 dark:border-zinc-800",
               ].join(" ")}
             >
               {plan.destacado && (
@@ -451,22 +451,22 @@ export default function PlanesPage() {
 
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-white">
+                  <h2 className="text-2xl font-bold text-slate-950 dark:text-white">
                     {plan.nombre}
                   </h2>
-                  <p className="mt-2 text-sm leading-6 text-zinc-400">
+                  <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-zinc-400">
                     {plan.descripcion}
                   </p>
                 </div>
 
                 {esActual && (
-                  <span className="shrink-0 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400">
+                  <span className="shrink-0 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
                     Plan actual
                   </span>
                 )}
               </div>
 
-              <p className="mt-7 text-3xl font-bold text-white">
+              <p className="mt-7 text-3xl font-bold text-slate-950 dark:text-white">
                 {plan.precio}
               </p>
 
@@ -474,7 +474,7 @@ export default function PlanesPage() {
                 {plan.funciones.map((funcion) => (
                   <div
                     key={funcion}
-                    className="flex items-start gap-3 text-sm text-zinc-300"
+                    className="flex items-start gap-3 text-sm text-slate-700 dark:text-zinc-300"
                   >
                     <span className="mt-0.5 text-emerald-400">
                       ✓
@@ -492,7 +492,7 @@ export default function PlanesPage() {
                   "mt-8 w-full rounded-xl px-4 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
                   plan.destacado
                     ? "bg-blue-600 text-white hover:bg-blue-500"
-                    : "border border-zinc-700 text-zinc-200 hover:bg-zinc-800",
+                    : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 dark:border-zinc-700 dark:bg-transparent dark:text-zinc-200 dark:hover:bg-zinc-800",
                 ].join(" ")}
               >
                 {procesando
@@ -508,13 +508,13 @@ export default function PlanesPage() {
         })}
       </div>
 
-      <div className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-        <p className="font-medium text-white">
+      <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <p className="font-medium text-slate-950 dark:text-white">
           Estado de la suscripción
         </p>
-        <p className="mt-2 text-sm text-zinc-400">
+        <p className="mt-2 text-sm text-slate-600 dark:text-zinc-400">
           Plan:{" "}
-          <span className="font-medium capitalize text-white">
+          <span className="font-medium capitalize text-slate-950 dark:text-white">
             {planActual}
           </span>
           {" · "}

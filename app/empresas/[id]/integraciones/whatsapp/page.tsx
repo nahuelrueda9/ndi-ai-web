@@ -650,9 +650,9 @@ export default function WhatsAppPage() {
     return (
       <section className="mx-auto w-full max-w-5xl px-5 py-8 sm:px-8">
         <Card className="p-10 text-center">
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-t-green-500" />
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-emerald-600 dark:border-zinc-700 dark:border-t-emerald-500" />
 
-          <p className="mt-4 text-sm text-zinc-400">
+          <p className="mt-4 text-sm text-slate-600 dark:text-zinc-400">
             Verificando acceso y cargando
             WhatsApp...
           </p>
@@ -667,8 +667,8 @@ export default function WhatsAppPage() {
   ) {
     return (
       <section className="mx-auto w-full max-w-5xl px-5 py-8 sm:px-8">
-        <Card className="border-red-500/20 bg-red-500/10 p-6">
-          <p className="text-sm text-red-400">
+        <Card className="border-red-200 bg-red-50 p-6 dark:border-red-500/20 dark:bg-red-500/10">
+          <p className="text-sm text-red-700 dark:text-red-400">
             {error}
           </p>
 
@@ -695,15 +695,15 @@ export default function WhatsAppPage() {
     <section className="mx-auto w-full max-w-5xl space-y-6 px-5 py-8 sm:px-8">
       <header className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
         <div>
-          <p className="text-sm font-medium text-emerald-400">
+          <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
             Canal principal de NDI AI
           </p>
 
-          <h1 className="mt-2 text-3xl font-bold text-white">
+          <h1 className="mt-2 text-3xl font-bold text-slate-950 dark:text-white">
             Conectar WhatsApp
           </h1>
 
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700 dark:text-zinc-400">
             Conectá WhatsApp Business
             Platform para que NDI AI
             reciba consultas y responda
@@ -717,16 +717,16 @@ export default function WhatsAppPage() {
       </header>
 
       {estado === "conectado" && (
-        <Card className="border-emerald-500/20 bg-emerald-500/5 p-5">
+        <Card className="border-emerald-200 bg-emerald-50 p-5 dark:border-emerald-500/20 dark:bg-emerald-500/5">
           <div className="flex gap-3">
-            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" />
+            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
 
             <div>
-              <p className="font-medium text-white">
+              <p className="font-medium text-slate-950 dark:text-white">
                 WhatsApp conectado
               </p>
 
-              <p className="mt-1 text-sm text-zinc-400">
+              <p className="mt-1 text-sm text-slate-700 dark:text-zinc-400">
                 {nombreVerificado
                   ? `${nombreVerificado}${numeroConectado ? ` · ${numeroConectado}` : ""}`
                   : numeroConectado ||
@@ -741,27 +741,27 @@ export default function WhatsAppPage() {
         <div className="space-y-5">
           <Card className="p-6">
             <div className="flex items-center gap-3">
-              <MessageCircle className="h-5 w-5 text-emerald-400" />
+              <MessageCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
 
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-zinc-500">
                   Paso 1
                 </p>
 
-                <h2 className="mt-1 font-semibold text-white">
+                <h2 className="mt-1 font-semibold text-slate-950 dark:text-white">
                   Conseguí los datos en Meta
                 </h2>
               </div>
             </div>
 
-            <p className="mt-4 text-sm leading-6 text-zinc-400">
+            <p className="mt-4 text-sm leading-6 text-slate-700 dark:text-zinc-400">
               En Meta Developers, dentro
               de la configuración de
               WhatsApp de tu app, copiá
               estos tres datos:
             </p>
 
-            <div className="mt-4 space-y-2 text-sm text-zinc-300">
+            <div className="mt-4 space-y-2 text-sm text-slate-700 dark:text-zinc-300">
               <p>• Phone Number ID</p>
               <p>• WhatsApp Business Account ID</p>
               <p>• Access Token</p>
@@ -771,7 +771,7 @@ export default function WhatsAppPage() {
               href="https://developers.facebook.com/apps/"
               target="_blank"
               rel="noreferrer"
-              className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-blue-400 transition hover:text-blue-300"
+              className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
             >
               Abrir Meta Developers
               <ExternalLink className="h-4 w-4" />
@@ -780,24 +780,24 @@ export default function WhatsAppPage() {
 
           <Card className="p-6">
             <div className="flex items-center gap-3">
-              <PlugZap className="h-5 w-5 text-blue-400" />
+              <PlugZap className="h-5 w-5 text-blue-600 dark:text-blue-400" />
 
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-zinc-500">
                   Paso 2
                 </p>
 
-                <h2 className="mt-1 font-semibold text-white">
+                <h2 className="mt-1 font-semibold text-slate-950 dark:text-white">
                   Configurá el webhook
                 </h2>
               </div>
             </div>
 
-            <p className="mt-4 text-sm leading-6 text-zinc-400">
+            <p className="mt-4 text-sm leading-6 text-slate-700 dark:text-zinc-400">
               En Webhooks de Meta usá
               exactamente estos datos y
               suscribí el campo
-              <strong className="text-zinc-200">
+              <strong className="text-slate-950 dark:text-zinc-200">
                 {" "}messages
               </strong>.
             </p>
@@ -836,11 +836,11 @@ export default function WhatsAppPage() {
             />
           </Card>
 
-          <Card className="border-amber-500/20 bg-amber-500/5 p-5">
+          <Card className="border-amber-200 bg-amber-50 p-5 dark:border-amber-500/20 dark:bg-amber-500/5">
             <div className="flex gap-3">
-              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
+              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
 
-              <p className="text-sm leading-6 text-zinc-400">
+              <p className="text-sm leading-6 text-slate-700 dark:text-zinc-400">
                 El Access Token es
                 sensible. Pegalo únicamente
                 acá dentro de NDI AI. Nunca
@@ -853,14 +853,14 @@ export default function WhatsAppPage() {
 
         <Card className="h-fit space-y-5 p-6">
           <div className="flex items-center gap-3">
-            <KeyRound className="h-5 w-5 text-blue-400" />
+            <KeyRound className="h-5 w-5 text-blue-600 dark:text-blue-400" />
 
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-zinc-500">
                 Paso 3
               </p>
 
-              <h2 className="mt-1 text-lg font-semibold text-white">
+              <h2 className="mt-1 text-lg font-semibold text-slate-950 dark:text-white">
                 Conectá tu número
               </h2>
             </div>
@@ -908,13 +908,13 @@ export default function WhatsAppPage() {
           />
 
           {mensaje && (
-            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-300">
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
               {mensaje}
             </div>
           )}
 
           {error && (
-            <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400">
+            <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400">
               {error}
             </div>
           )}
@@ -957,7 +957,7 @@ export default function WhatsAppPage() {
             </Button>
           )}
 
-          <p className="text-xs leading-5 text-zinc-500">
+          <p className="text-xs leading-5 text-slate-600 dark:text-zinc-500">
             NDI AI no muestra nuevamente
             el Access Token guardado. Si
             necesitás cambiarlo, pegá uno
@@ -976,13 +976,13 @@ function EstadoBadge({
 }) {
   const estilos = {
     conectado:
-      "border-emerald-500/20 bg-emerald-500/10 text-emerald-400",
+      "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400",
     probando:
-      "border-amber-500/20 bg-amber-500/10 text-amber-400",
+      "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400",
     configurado:
-      "border-blue-500/20 bg-blue-500/10 text-blue-400",
+      "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-400",
     sin_configurar:
-      "border-zinc-700 bg-zinc-900 text-zinc-400",
+      "border-slate-300 bg-slate-100 text-slate-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400",
   };
 
   const textos = {
@@ -1018,12 +1018,12 @@ function CopyField({
 }) {
   return (
     <div className="mt-4">
-      <p className="mb-2 text-xs font-medium text-zinc-500">
+      <p className="mb-2 text-xs font-medium text-slate-600 dark:text-zinc-500">
         {label}
       </p>
 
       <div className="flex gap-2">
-        <div className="min-w-0 flex-1 rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-xs text-zinc-300">
+        <div className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-xs text-slate-800 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300">
           <p className="truncate">
             {value}
           </p>
@@ -1033,7 +1033,7 @@ function CopyField({
           type="button"
           onClick={onCopy}
           disabled={disabled}
-          className="flex h-11 shrink-0 items-center gap-2 rounded-xl border border-zinc-700 px-3 text-xs font-medium text-zinc-300 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex h-11 shrink-0 items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 text-xs font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:bg-transparent dark:text-zinc-300 dark:hover:bg-zinc-800"
         >
           <Copy className="h-4 w-4" />
           {copiado

@@ -21,17 +21,17 @@ export default function RecentConversationCard({
       onClick={onClick}
       className="w-full text-left"
     >
-      <Card className="p-5 transition hover:border-blue-500">
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-white truncate">
+      <Card className="p-5 transition hover:border-blue-400 dark:hover:border-blue-500/30">
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="truncate font-semibold text-slate-950 dark:text-white">
             {nombre}
           </h3>
 
           <span
-            className={`rounded-full px-2 py-1 text-xs ${
+            className={`rounded-full px-2 py-1 text-xs font-medium ${
               estado === "cerrada"
-                ? "bg-zinc-700 text-zinc-300"
-                : "bg-green-600/20 text-green-400"
+                ? "bg-slate-200 text-slate-700 dark:bg-zinc-700 dark:text-zinc-300"
+                : "bg-emerald-100 text-emerald-700 dark:bg-green-600/20 dark:text-green-400"
             }`}
           >
             {estado === "cerrada"
@@ -40,16 +40,16 @@ export default function RecentConversationCard({
           </span>
         </div>
 
-        <p className="mt-3 truncate text-sm text-zinc-400">
+        <p className="mt-3 truncate text-sm text-slate-600 dark:text-zinc-400">
           {mensaje}
         </p>
 
         <div className="mt-4 flex items-center justify-between">
-          <span className="text-xs text-zinc-500">
+          <span className="text-xs text-slate-500 dark:text-zinc-500">
             Lead Score
           </span>
 
-          <span className="font-bold text-white">
+          <span className="font-bold text-slate-950 dark:text-white">
             {puntuacion}/100
           </span>
         </div>

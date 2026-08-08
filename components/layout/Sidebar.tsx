@@ -58,10 +58,7 @@ type EmpresaData = {
 };
 
 type MiembroData = {
-  rol?: Exclude<
-    RolEmpresa,
-    "propietario"
-  >;
+  rol?: Exclude<RolEmpresa, "propietario">;
   estado?: "activo" | "inactivo";
 };
 
@@ -87,10 +84,7 @@ const SOLO_PROPIETARIO: RolEmpresa[] = [
   "propietario",
 ];
 
-const NOMBRE_ROL: Record<
-  RolEmpresa,
-  string
-> = {
+const NOMBRE_ROL: Record<RolEmpresa, string> = {
   propietario: "Propietario",
   administrador: "Administrador",
   supervisor: "Supervisor",
@@ -125,18 +119,17 @@ export default function Sidebar() {
   ] = useState(true);
 
   useEffect(() => {
-    const cancelar =
-      onAuthStateChanged(
-        auth,
-        (currentUser) => {
-          setUsuario(currentUser);
+    const cancelar = onAuthStateChanged(
+      auth,
+      (currentUser) => {
+        setUsuario(currentUser);
 
-          if (!currentUser) {
-            setRol(null);
-            setCargandoRol(false);
-          }
+        if (!currentUser) {
+          setRol(null);
+          setCargandoRol(false);
         }
-      );
+      }
+    );
 
     return () => cancelar();
   }, []);
@@ -301,8 +294,7 @@ export default function Sidebar() {
           roles: TODOS_LOS_ROLES,
         },
         {
-          label:
-            "Base de conocimiento",
+          label: "Base de conocimiento",
           ruta: "conocimiento",
           icon: BookOpen,
           roles: ROLES_SUPERVISION,
@@ -342,16 +334,15 @@ export default function Sidebar() {
     [empresaId]
   );
 
-  const itemsPermitidos =
-    useMemo(
-      () =>
-        rol
-          ? items.filter((item) =>
-              item.roles.includes(rol)
-            )
-          : [],
-      [items, rol]
-    );
+  const itemsPermitidos = useMemo(
+    () =>
+      rol
+        ? items.filter((item) =>
+            item.roles.includes(rol)
+          )
+        : [],
+    [items, rol]
+  );
 
   useEffect(() => {
     if (
@@ -402,10 +393,10 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-50 hidden w-72 flex-col overflow-y-auto border-r border-zinc-800 bg-zinc-900 md:flex">
+    <aside className="fixed inset-y-0 left-0 z-50 hidden w-72 flex-col overflow-y-auto border-r border-slate-200 bg-white text-slate-900 transition-colors dark:border-zinc-800 dark:bg-zinc-900 dark:text-white md:flex">
       <Link
         href={`/empresas/${empresaId}/dashboard`}
-        className="border-b border-zinc-800 p-6 transition hover:bg-zinc-800/40"
+        className="border-b border-slate-200 p-6 transition hover:bg-slate-100 dark:border-zinc-800 dark:hover:bg-zinc-800/40"
       >
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600">
@@ -413,11 +404,11 @@ export default function Sidebar() {
           </div>
 
           <div>
-            <p className="text-xs uppercase tracking-widest text-blue-400">
+            <p className="text-xs uppercase tracking-widest text-blue-600 dark:text-blue-400">
               NDI AI
             </p>
 
-            <h2 className="text-xl font-bold text-white">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">
               Workspace
             </h2>
           </div>
@@ -448,24 +439,24 @@ export default function Sidebar() {
         )}
       </nav>
 
-      <div className="border-t border-zinc-800 p-4">
-        <div className="mb-4 rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+      <div className="border-t border-slate-200 p-4 dark:border-zinc-800">
+        <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
           <div className="flex items-center gap-3">
             <div className="h-3 w-3 rounded-full bg-emerald-500" />
 
-            <span className="text-sm text-white">
+            <span className="text-sm text-slate-900 dark:text-white">
               Agente activo
             </span>
           </div>
 
-          <p className="mt-2 text-xs text-zinc-500">
+          <p className="mt-2 text-xs text-slate-500 dark:text-zinc-500">
             {NOMBRE_ROL[rol]}
           </p>
         </div>
 
         <Link
           href="/empresas"
-          className="flex items-center justify-center gap-2 rounded-xl border border-zinc-700 px-4 py-3 text-sm text-zinc-300 transition hover:bg-zinc-800"
+          className="flex items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
         >
           <Building2 className="h-4 w-4" />
           Volver a empresas

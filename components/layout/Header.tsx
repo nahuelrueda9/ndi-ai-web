@@ -11,10 +11,16 @@ import { useParams } from "next/navigation";
 import {
   Bell,
   Bot,
+  Building2,
   CheckCheck,
+  ChevronDown,
   CircleAlert,
+  LogOut,
   MessageCircle,
+  Monitor,
+  Moon,
   Sparkles,
+  Sun,
   UserRound,
   X,
 } from "lucide-react";
@@ -38,6 +44,7 @@ import {
   writeBatch,
 } from "firebase/firestore";
 
+import { useTheme } from "@/components/theme/ThemeProvider";
 import { auth, db } from "@/lib/firebase";
 
 type RolEmpresa =
@@ -103,8 +110,35 @@ const NOMBRE_ROL: Record<
   operador: "Operador",
 };
 
+const OPCIONES_TEMA = [
+  {
+    valor: "system",
+    nombre: "Sistema",
+    descripcion: "Seguir el dispositivo",
+    icono: Monitor,
+  },
+  {
+    valor: "light",
+    nombre: "Claro",
+    descripcion: "Modo claro",
+    icono: Sun,
+  },
+  {
+    valor: "dark",
+    nombre: "Oscuro",
+    descripcion: "Modo noche",
+    icono: Moon,
+  },
+] as const;
+
+type Tema = (typeof OPCIONES_TEMA)[number]["valor"];
+
 export default function Header() {
   const params = useParams();
+  const { theme, setTheme } = useTheme();
+
+  const [temaAbierto, setTemaAbierto] =
+    useState(false);
 
   const parametroEmpresa =
     params.id ?? params.empresaId;
@@ -131,6 +165,9 @@ export default function Header() {
     menuAbierto,
     setMenuAbierto,
   ] = useState(false);
+
+  const [perfilAbierto, setPerfilAbierto] =
+    useState(false);
 
   const [procesando, setProcesando] =
     useState(false);
@@ -608,12 +645,45 @@ export default function Header() {
   const rolActual =
     empresaActual?.rol;
 
+  const opcionTemaActual =
+    OPCIONES_TEMA.find(
+      (opcion) => opcion.valor === theme
+    ) ?? OPCIONES_TEMA[0];
+
+  const IconoTemaActual =
+    opcionTemaActual.icono;
+
   const tituloPanel =
     rolActual === "operador"
       ? "Panel de operador"
       : rolActual === "supervisor"
       ? "Panel de supervisión"
       : "Panel de administración";
+
+  const nombreUsuario =
+    user?.displayName ||
+    user?.email?.split("@")[0] ||
+    "Usuario";
+
+  const emailUsuario = user?.email || "";
+
+  const nombreWorkspace =
+    empresaActual?.nombre ||
+    (empresas.length === 1
+      ? empresas[0]?.nombre
+      : "Workspace");
+
+  const etiquetaRol = rolActual
+    ? NOMBRE_ROL[rolActual]
+    : empresas.length > 0
+    ? `${empresas.length} empresa${
+        empresas.length === 1 ? "" : "s"
+      }`
+    : "Usuario";
+
+  const inicialUsuario =
+    nombreUsuario.trim().charAt(0).toUpperCase() ||
+    "U";
 
   function mostrarNuevaNotificacion(
     notificacion: Notificacion
@@ -828,7 +898,32 @@ export default function Header() {
 
   function abrirMenu() {
     setMenuAbierto((estadoActual) => !estadoActual);
+    setTemaAbierto(false);
+    setPerfilAbierto(false);
     void solicitarPermisoNotificaciones();
+  }
+
+  function abrirMenuTema() {
+    setTemaAbierto(
+      (estadoActual) => !estadoActual
+    );
+    setMenuAbierto(false);
+    setPerfilAbierto(false);
+  }
+
+  function abrirMenuPerfil() {
+    setPerfilAbierto(
+      (estadoActual) => !estadoActual
+    );
+    setTemaAbierto(false);
+    setMenuAbierto(false);
+  }
+
+  function seleccionarTema(
+    nuevoTema: Tema
+  ) {
+    setTheme(nuevoTema);
+    setTemaAbierto(false);
   }
 
   function abrirRutaNotificacion({
@@ -869,30 +964,137 @@ export default function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-zinc-800 bg-zinc-950/90 px-4 py-4 backdrop-blur sm:px-6">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div>
-            <p className="text-sm text-zinc-500">
-              NDI AI
-            </p>
+      <header className="sticky top-0 z-40 border-b border-zinc-200/80 bg-white/80 px-4 backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/80 sm:px-6">
+        <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-blue-500 shadow-sm shadow-blue-500/20">
+              <Bot className="h-5 w-5 text-white" />
+            </div>
 
-            <h1 className="font-semibold text-white">
-              {tituloPanel}
-            </h1>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-semibold tracking-tight text-zinc-950 dark:text-white">
+                  NDI AI
+                </p>
+
+                <span className="hidden rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 sm:inline-flex">
+                  Workspace
+                </span>
+              </div>
+
+              <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-xs text-zinc-500">
+                <Building2 className="h-3.5 w-3.5 shrink-0" />
+                <span className="max-w-[150px] truncate font-medium text-zinc-700 dark:text-zinc-300 sm:max-w-[240px]">
+                  {nombreWorkspace}
+                </span>
+                <span className="text-zinc-300 dark:text-zinc-700">
+                  /
+                </span>
+                <span className="hidden truncate sm:inline">
+                  {tituloPanel}
+                </span>
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-2">
+            <div className="relative">
+              <button
+                type="button"
+                aria-label={`Tema: ${opcionTemaActual.nombre}`}
+                title={`Tema: ${opcionTemaActual.nombre}`}
+                onClick={abrirMenuTema}
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-500 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-950 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:shadow-none dark:hover:border-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-white"
+              >
+                <IconoTemaActual className="h-[18px] w-[18px]" />
+              </button>
+
+              {temaAbierto && (
+                <>
+                  <button
+                    type="button"
+                    aria-label="Cerrar selector de tema"
+                    onClick={() => setTemaAbierto(false)}
+                    className="fixed inset-0 z-40 cursor-default"
+                  />
+
+                  <div className="absolute right-0 z-50 mt-3 w-64 overflow-hidden rounded-2xl border border-zinc-200 bg-white p-2 shadow-2xl shadow-black/10 dark:border-zinc-800 dark:bg-zinc-950 dark:shadow-black/50">
+                    <div className="px-3 pb-2 pt-2">
+                      <p className="text-sm font-semibold text-zinc-950 dark:text-white">
+                        Apariencia
+                      </p>
+                      <p className="mt-1 text-xs text-zinc-500">
+                        Elegí cómo querés ver NDI AI.
+                      </p>
+                    </div>
+
+                    <div className="space-y-1">
+                      {OPCIONES_TEMA.map(
+                        ({
+                          valor,
+                          nombre,
+                          descripcion,
+                          icono: Icono,
+                        }) => {
+                          const seleccionado =
+                            theme === valor;
+
+                          return (
+                            <button
+                              key={valor}
+                              type="button"
+                              onClick={() =>
+                                seleccionarTema(valor)
+                              }
+                              className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition ${
+                                seleccionado
+                                  ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                                  : "text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                              }`}
+                            >
+                              <div
+                                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
+                                  seleccionado
+                                    ? "bg-blue-500/10"
+                                    : "bg-zinc-100 dark:bg-zinc-900"
+                                }`}
+                              >
+                                <Icono className="h-4 w-4" />
+                              </div>
+
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium">
+                                  {nombre}
+                                </p>
+                                <p className="mt-0.5 text-xs text-zinc-500">
+                                  {descripcion}
+                                </p>
+                              </div>
+
+                              {seleccionado && (
+                                <span className="h-2 w-2 rounded-full bg-blue-500" />
+                              )}
+                            </button>
+                          );
+                        }
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
             <div className="relative">
               <button
                 type="button"
                 aria-label="Notificaciones"
                 onClick={abrirMenu}
-                className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-400 transition hover:border-zinc-700 hover:text-white"
+                className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-500 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-950 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:shadow-none dark:hover:border-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-white"
               >
-                <Bell className="h-5 w-5" />
+                <Bell className="h-[18px] w-[18px]" />
 
                 {notificacionesNoLeidas.length > 0 && (
-                  <span className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-2 ring-zinc-950">
+                  <span className="absolute -right-1.5 -top-1.5 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-2 ring-white dark:ring-zinc-950">
                     {notificacionesNoLeidas.length > 99
                       ? "99+"
                       : notificacionesNoLeidas.length}
@@ -909,10 +1111,10 @@ export default function Header() {
                     className="fixed inset-0 z-40 cursor-default"
                   />
 
-                  <div className="absolute right-0 z-50 mt-3 w-[min(92vw,390px)] overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl shadow-black/50">
-                    <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-4">
+                  <div className="absolute right-0 z-50 mt-3 w-[min(92vw,390px)] overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl shadow-black/10 dark:border-zinc-800 dark:bg-zinc-950 dark:shadow-black/50">
+                    <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-4 dark:border-zinc-800">
                       <div>
-                        <p className="font-semibold text-white">
+                        <p className="font-semibold text-zinc-950 dark:text-white">
                           Notificaciones
                         </p>
 
@@ -930,7 +1132,7 @@ export default function Header() {
                             void marcarTodoComoLeido()
                           }
                           disabled={procesando}
-                          className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium text-blue-400 transition hover:bg-blue-500/10 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium text-blue-500 transition hover:bg-blue-500/10 disabled:cursor-not-allowed disabled:opacity-50 dark:text-blue-400"
                         >
                           <CheckCheck className="h-4 w-4" />
 
@@ -943,9 +1145,9 @@ export default function Header() {
 
                     {notificacionesRecientes.length === 0 ? (
                       <div className="px-5 py-10 text-center">
-                        <Bell className="mx-auto h-8 w-8 text-zinc-700" />
+                        <Bell className="mx-auto h-8 w-8 text-zinc-300 dark:text-zinc-700" />
 
-                        <p className="mt-3 text-sm font-medium text-white">
+                        <p className="mt-3 text-sm font-medium text-zinc-950 dark:text-white">
                           Todavía no hay notificaciones
                         </p>
 
@@ -971,15 +1173,15 @@ export default function Header() {
                                     notificacion
                                   )
                                 }
-                                className="flex w-full gap-3 border-b border-zinc-900 px-4 py-4 text-left transition last:border-b-0 hover:bg-zinc-900/70"
+                                className="flex w-full gap-3 border-b border-zinc-100 px-4 py-4 text-left transition last:border-b-0 hover:bg-zinc-50 dark:border-zinc-900 dark:hover:bg-zinc-900/70"
                               >
-                                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400">
+                                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500 dark:text-blue-400">
                                   <Icono className="h-4 w-4" />
                                 </div>
 
                                 <div className="min-w-0 flex-1">
                                   <div className="flex items-center justify-between gap-3">
-                                    <p className="truncate text-sm font-medium text-white">
+                                    <p className="truncate text-sm font-medium text-zinc-950 dark:text-white">
                                       {notificacion.titulo ||
                                         "Notificación"}
                                     </p>
@@ -989,18 +1191,16 @@ export default function Header() {
                                     )}
                                   </div>
 
-                                  <p className="mt-1 text-[11px] font-medium text-blue-400">
-                                    {
-                                      notificacion.empresaNombre
-                                    }
+                                  <p className="mt-1 text-[11px] font-medium text-blue-500 dark:text-blue-400">
+                                    {notificacion.empresaNombre}
                                   </p>
 
-                                  <p className="mt-1 line-clamp-2 text-xs leading-5 text-zinc-400">
+                                  <p className="mt-1 line-clamp-2 text-xs leading-5 text-zinc-600 dark:text-zinc-400">
                                     {notificacion.descripcion ||
                                       "Nueva actividad registrada."}
                                   </p>
 
-                                  <p className="mt-2 text-[11px] text-zinc-600">
+                                  <p className="mt-2 text-[11px] text-zinc-400 dark:text-zinc-600">
                                     {formatearFecha(
                                       notificacion.createdAt ||
                                         notificacion.updatedAt
@@ -1023,7 +1223,7 @@ export default function Header() {
                           window.location.href =
                             `/empresas/${empresaActualId}/notificaciones`;
                         }}
-                        className="w-full border-t border-zinc-800 px-4 py-3 text-center text-sm font-medium text-blue-400 transition hover:bg-zinc-900"
+                        className="w-full border-t border-zinc-200 px-4 py-3 text-center text-sm font-medium text-blue-500 transition hover:bg-zinc-50 dark:border-zinc-800 dark:text-blue-400 dark:hover:bg-zinc-900"
                       >
                         Ver todas las notificaciones
                       </button>
@@ -1033,66 +1233,105 @@ export default function Header() {
               )}
             </div>
 
-            <div className="flex items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
-                <Bot className="h-4 w-4 text-white" />
-              </div>
+            <div className="relative ml-1">
+              <button
+                type="button"
+                aria-label="Abrir menú de perfil"
+                aria-expanded={perfilAbierto}
+                onClick={abrirMenuPerfil}
+                className="group flex h-11 items-center gap-2 rounded-2xl border border-zinc-200 bg-white py-1.5 pl-1.5 pr-2 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-none dark:hover:border-zinc-700 dark:hover:bg-zinc-800"
+              >
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-zinc-950 text-xs font-bold text-white dark:bg-white dark:text-zinc-950">
+                  {inicialUsuario}
+                </div>
 
-              <div className="hidden min-w-0 sm:block">
-                <p className="max-w-48 truncate text-sm font-medium text-white">
-                  {user?.displayName ||
-                    user?.email ||
-                    "Usuario"}
-                </p>
+                <div className="hidden min-w-0 text-left md:block">
+                  <p className="max-w-36 truncate text-xs font-semibold text-zinc-950 dark:text-white lg:max-w-44">
+                    {nombreUsuario}
+                  </p>
+                  <p className="mt-0.5 max-w-36 truncate text-[10px] font-medium text-zinc-500 lg:max-w-44">
+                    {etiquetaRol}
+                  </p>
+                </div>
 
-                <div className="mt-0.5 flex items-center gap-2 text-xs">
-                  <span className="font-medium text-blue-400">
-                    {rolActual
-                      ? NOMBRE_ROL[rolActual]
-                      : empresas.length > 0
-                      ? `${empresas.length} empresa${
-                          empresas.length === 1
-                            ? ""
-                            : "s"
-                        }`
-                      : "Usuario"}
-                  </span>
+                <ChevronDown
+                  className={`hidden h-4 w-4 text-zinc-400 transition-transform md:block ${
+                    perfilAbierto ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
 
-                  <span className="text-zinc-700">
-                    •
-                  </span>
-
+              {perfilAbierto && (
+                <>
                   <button
                     type="button"
-                    onClick={cerrarSesion}
-                    className="font-medium text-red-400 transition hover:text-red-300"
-                  >
-                    Cerrar sesión
-                  </button>
-                </div>
-              </div>
+                    aria-label="Cerrar menú de perfil"
+                    onClick={() => setPerfilAbierto(false)}
+                    className="fixed inset-0 z-40 cursor-default"
+                  />
+
+                  <div className="absolute right-0 z-50 mt-3 w-[min(88vw,280px)] overflow-hidden rounded-2xl border border-zinc-200 bg-white p-2 shadow-2xl shadow-black/10 dark:border-zinc-800 dark:bg-zinc-950 dark:shadow-black/50">
+                    <div className="rounded-xl bg-zinc-50 px-3 py-3 dark:bg-zinc-900">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-950 text-sm font-bold text-white dark:bg-white dark:text-zinc-950">
+                          {inicialUsuario}
+                        </div>
+
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-zinc-950 dark:text-white">
+                            {nombreUsuario}
+                          </p>
+                          {emailUsuario && (
+                            <p className="mt-0.5 truncate text-xs text-zinc-500">
+                              {emailUsuario}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="mt-3 flex items-center justify-between gap-3 border-t border-zinc-200 pt-3 text-xs dark:border-zinc-800">
+                        <span className="text-zinc-500">
+                          Rol actual
+                        </span>
+                        <span className="rounded-lg bg-blue-500/10 px-2 py-1 font-semibold text-blue-600 dark:text-blue-400">
+                          {etiquetaRol}
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => void cerrarSesion()}
+                      className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-red-500 transition hover:bg-red-500/10 dark:text-red-400"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Cerrar sesión
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
       </header>
 
       {toast && (
-        <div className="fixed right-4 top-24 z-[70] w-[calc(100%-2rem)] max-w-sm overflow-hidden rounded-2xl border border-blue-500/30 bg-zinc-950 shadow-2xl shadow-black/60">
+        <div className="fixed right-4 top-24 z-[70] w-[calc(100%-2rem)] max-w-sm overflow-hidden rounded-2xl border border-blue-500/30 bg-white shadow-2xl shadow-black/10 dark:bg-zinc-950 dark:shadow-black/60">
           <div className="flex gap-3 p-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white">
               <Bell className="h-5 w-5" />
             </div>
 
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-white">
+              <p className="text-sm font-semibold text-zinc-950 dark:text-white">
                 {toast.titulo}
               </p>
 
-              <p className="mt-1 text-xs font-medium text-blue-400">
+              <p className="mt-1 text-xs font-medium text-blue-500 dark:text-blue-400">
                 {toast.empresaNombre}
               </p>
 
-              <p className="mt-1 line-clamp-2 text-sm leading-5 text-zinc-400">
+              <p className="mt-1 line-clamp-2 text-sm leading-5 text-zinc-600 dark:text-zinc-400">
                 {toast.mensaje}
               </p>
             </div>
@@ -1101,7 +1340,7 @@ export default function Header() {
               type="button"
               aria-label="Cerrar aviso"
               onClick={() => setToast(null)}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-zinc-900 hover:text-white"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-950 dark:hover:bg-zinc-900 dark:hover:text-white"
             >
               <X className="h-4 w-4" />
             </button>

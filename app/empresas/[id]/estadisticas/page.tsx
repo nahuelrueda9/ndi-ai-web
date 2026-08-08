@@ -675,12 +675,12 @@ export default function EstadisticasPage() {
 
   if (cargando) {
     return (
-      <main className="min-h-screen bg-zinc-950 p-6 text-white">
+      <main className="min-h-screen bg-background p-6 text-foreground transition-colors">
         <div className="mx-auto max-w-7xl">
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-10 text-center">
-            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-t-blue-500" />
+          <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
 
-            <p className="mt-4 text-sm text-zinc-400">
+            <p className="mt-4 text-sm text-slate-600 dark:text-zinc-400">
               Calculando estadísticas...
             </p>
           </div>
@@ -691,9 +691,9 @@ export default function EstadisticasPage() {
 
   if (error) {
     return (
-      <main className="min-h-screen bg-zinc-950 p-6 text-white">
+      <main className="min-h-screen bg-background p-6 text-foreground transition-colors">
         <div className="mx-auto max-w-7xl">
-          <div className="rounded-2xl border border-red-900 bg-red-950/40 p-6 text-red-300">
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
             {error}
           </div>
         </div>
@@ -702,18 +702,18 @@ export default function EstadisticasPage() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-950 px-4 py-6 text-white sm:px-6">
+    <main className="min-h-screen bg-background px-4 py-6 text-foreground transition-colors sm:px-6">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8">
-          <p className="text-sm font-medium text-blue-400">
+          <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
             Rendimiento comercial
           </p>
 
-          <h1 className="mt-2 text-3xl font-bold sm:text-4xl">
+          <h1 className="mt-2 text-3xl font-bold text-slate-950 dark:text-white sm:text-4xl">
             Analytics
           </h1>
 
-          <p className="mt-2 max-w-2xl text-sm text-zinc-400 sm:text-base">
+          <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-zinc-400 sm:text-base">
             Medí conversaciones, canales, leads y
             rendimiento del agente.
           </p>
@@ -784,13 +784,13 @@ export default function EstadisticasPage() {
         </section>
 
         <section className="mt-6 grid gap-6 xl:grid-cols-[2fr_1fr]">
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
             <div className="mb-6">
-              <p className="text-sm text-zinc-400">
+              <p className="text-sm text-slate-600 dark:text-zinc-400">
                 Proceso comercial
               </p>
 
-              <h2 className="mt-1 text-xl font-semibold">
+              <h2 className="mt-1 text-xl font-semibold text-slate-950 dark:text-white">
                 Embudo de oportunidades
               </h2>
             </div>
@@ -807,32 +807,32 @@ export default function EstadisticasPage() {
                 >
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke="#27272a"
+                    stroke="var(--border)"
                   />
 
                   <XAxis
                     dataKey="etapa"
-                    stroke="#a1a1aa"
+                    stroke="var(--muted)"
                     tickLine={false}
                     axisLine={false}
                   />
 
                   <YAxis
                     allowDecimals={false}
-                    stroke="#a1a1aa"
+                    stroke="var(--muted)"
                     tickLine={false}
                     axisLine={false}
                   />
 
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "#18181b",
+                      backgroundColor: "var(--surface)",
                       border:
-                        "1px solid #3f3f46",
+                        "1px solid var(--border)",
                       borderRadius: "12px",
                     }}
                     labelStyle={{
-                      color: "#ffffff",
+                      color: "var(--foreground)",
                     }}
                   />
 
@@ -846,12 +846,12 @@ export default function EstadisticasPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6">
-            <p className="text-sm text-zinc-400">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
+            <p className="text-sm text-slate-600 dark:text-zinc-400">
               Ventas
             </p>
 
-            <h2 className="mt-1 text-xl font-semibold">
+            <h2 className="mt-1 text-xl font-semibold text-slate-950 dark:text-white">
               Rendimiento comercial
             </h2>
 
@@ -888,13 +888,13 @@ export default function EstadisticasPage() {
         </section>
 
         <section className="mt-6 grid gap-6 xl:grid-cols-[2fr_1fr]">
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
             <div className="mb-6">
-              <p className="text-sm text-zinc-400">
+              <p className="text-sm text-slate-600 dark:text-zinc-400">
                 Actividad reciente
               </p>
 
-              <h2 className="mt-1 text-xl font-semibold">
+              <h2 className="mt-1 text-xl font-semibold text-slate-950 dark:text-white">
                 Conversaciones de los últimos 7 días
               </h2>
             </div>
@@ -911,32 +911,32 @@ export default function EstadisticasPage() {
                 >
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke="#27272a"
+                    stroke="var(--border)"
                   />
 
                   <XAxis
                     dataKey="dia"
-                    stroke="#a1a1aa"
+                    stroke="var(--muted)"
                     tickLine={false}
                     axisLine={false}
                   />
 
                   <YAxis
                     allowDecimals={false}
-                    stroke="#a1a1aa"
+                    stroke="var(--muted)"
                     tickLine={false}
                     axisLine={false}
                   />
 
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "#18181b",
+                      backgroundColor: "var(--surface)",
                       border:
-                        "1px solid #3f3f46",
+                        "1px solid var(--border)",
                       borderRadius: "12px",
                     }}
                     labelStyle={{
-                      color: "#ffffff",
+                      color: "var(--foreground)",
                     }}
                     itemStyle={{
                       color: "#60a5fa",
@@ -956,12 +956,12 @@ export default function EstadisticasPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6">
-            <p className="text-sm text-zinc-400">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
+            <p className="text-sm text-slate-600 dark:text-zinc-400">
               Resumen
             </p>
 
-            <h2 className="mt-1 text-xl font-semibold">
+            <h2 className="mt-1 text-xl font-semibold text-slate-950 dark:text-white">
               Rendimiento general
             </h2>
 
@@ -1002,13 +1002,13 @@ export default function EstadisticasPage() {
         </section>
 
         <section className="mt-6 grid gap-6 xl:grid-cols-2">
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
             <div className="mb-6">
-              <p className="text-sm text-zinc-400">
+              <p className="text-sm text-slate-600 dark:text-zinc-400">
                 Distribución
               </p>
 
-              <h2 className="mt-1 text-xl font-semibold">
+              <h2 className="mt-1 text-xl font-semibold text-slate-950 dark:text-white">
                 Conversaciones por canal
               </h2>
             </div>
@@ -1025,32 +1025,32 @@ export default function EstadisticasPage() {
                 >
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke="#27272a"
+                    stroke="var(--border)"
                   />
 
                   <XAxis
                     dataKey="canal"
-                    stroke="#a1a1aa"
+                    stroke="var(--muted)"
                     tickLine={false}
                     axisLine={false}
                   />
 
                   <YAxis
                     allowDecimals={false}
-                    stroke="#a1a1aa"
+                    stroke="var(--muted)"
                     tickLine={false}
                     axisLine={false}
                   />
 
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "#18181b",
+                      backgroundColor: "var(--surface)",
                       border:
-                        "1px solid #3f3f46",
+                        "1px solid var(--border)",
                       borderRadius: "12px",
                     }}
                     labelStyle={{
-                      color: "#ffffff",
+                      color: "var(--foreground)",
                     }}
                   />
 
@@ -1064,12 +1064,12 @@ export default function EstadisticasPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6">
-            <p className="text-sm text-zinc-400">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
+            <p className="text-sm text-slate-600 dark:text-zinc-400">
               Atención
             </p>
 
-            <h2 className="mt-1 text-xl font-semibold">
+            <h2 className="mt-1 text-xl font-semibold text-slate-950 dark:text-white">
               IA frente a operadores
             </h2>
 
@@ -1105,7 +1105,7 @@ export default function EstadisticasPage() {
           </div>
         </section>
 
-        <p className="mt-6 text-xs leading-5 text-zinc-600">
+        <p className="mt-6 text-xs leading-5 text-slate-500 dark:text-zinc-600">
           Los ingresos, el pipeline y el ticket promedio
           se calculan usando el valor estimado guardado
           en cada conversación.
@@ -1125,16 +1125,16 @@ function Resumen({
   descripcion: string;
 }) {
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
-      <p className="text-sm text-zinc-500">
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
+      <p className="text-sm text-slate-500 dark:text-zinc-500">
         {titulo}
       </p>
 
-      <p className="mt-2 text-3xl font-bold text-white">
+      <p className="mt-2 text-3xl font-bold text-slate-950 dark:text-white">
         {valor}
       </p>
 
-      <p className="mt-1 text-xs text-zinc-500">
+      <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
         {descripcion}
       </p>
     </div>
@@ -1153,16 +1153,16 @@ function BarraProgreso({
   return (
     <div>
       <div className="mb-2 flex items-center justify-between gap-4">
-        <p className="text-sm font-medium text-zinc-300">
+        <p className="text-sm font-medium text-slate-700 dark:text-zinc-300">
           {titulo}
         </p>
 
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-slate-500 dark:text-zinc-500">
           {valor} · {porcentaje.toFixed(1)}%
         </p>
       </div>
 
-      <div className="h-3 overflow-hidden rounded-full bg-zinc-800">
+      <div className="h-3 overflow-hidden rounded-full bg-slate-200 dark:bg-zinc-800">
         <div
           className="h-full rounded-full bg-blue-500 transition-all"
           style={{

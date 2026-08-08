@@ -391,11 +391,11 @@ export default function FacturacionPage() {
 
   if (cargando) {
     return (
-      <main className="mx-auto max-w-7xl p-6 text-white">
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-10 text-center">
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-t-blue-500" />
+      <main className="mx-auto max-w-7xl p-6 text-slate-950 dark:text-white">
+        <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
 
-          <p className="mt-4 text-sm text-zinc-400">
+          <p className="mt-4 text-sm text-slate-600 dark:text-zinc-400">
             Verificando acceso y
             cargando facturación...
           </p>
@@ -406,8 +406,8 @@ export default function FacturacionPage() {
 
   if (error || !empresaId) {
     return (
-      <main className="mx-auto max-w-7xl p-6 text-white">
-        <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-6 text-red-300">
+      <main className="mx-auto max-w-7xl p-6 text-slate-950 dark:text-white">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
           {error ||
             "No se pudo cargar la empresa."}
         </div>
@@ -423,18 +423,18 @@ export default function FacturacionPage() {
   }
 
   return (
-    <main className="mx-auto max-w-7xl p-6 text-white">
-      <p className="text-sm font-medium text-blue-400">
+    <main className="mx-auto max-w-7xl p-6 text-slate-950 dark:text-white">
+      <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
         {empresa.nombre ||
           empresa.name ||
           "Empresa"}
       </p>
 
-      <h1 className="mt-2 text-3xl font-bold">
+      <h1 className="mt-2 text-3xl font-bold text-slate-950 dark:text-white">
         Facturación
       </h1>
 
-      <p className="mt-2 text-zinc-400">
+      <p className="mt-2 text-slate-600 dark:text-zinc-400">
         Administrá tu suscripción y
         revisá el consumo mensual.
       </p>
@@ -476,14 +476,14 @@ export default function FacturacionPage() {
         />
       </div>
 
-      <div className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
+      <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold">
+            <h2 className="text-xl font-semibold text-slate-950 dark:text-white">
               Uso del plan
             </h2>
 
-            <p className="mt-1 text-sm text-zinc-500">
+            <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
               {restantes > 0
                 ? `Te quedan ${restantes.toLocaleString(
                     "es-AR"
@@ -492,12 +492,12 @@ export default function FacturacionPage() {
             </p>
           </div>
 
-          <span className="text-sm font-medium text-zinc-300">
+          <span className="text-sm font-medium text-slate-700 dark:text-zinc-300">
             {porcentaje}% utilizado
           </span>
         </div>
 
-        <div className="mt-5 h-3 overflow-hidden rounded-full bg-zinc-800">
+        <div className="mt-5 h-3 overflow-hidden rounded-full bg-slate-200 dark:bg-zinc-800">
           <div
             className={
               porcentaje >= 100
@@ -513,14 +513,14 @@ export default function FacturacionPage() {
         </div>
       </div>
 
-      <div className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
+      <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold">
+            <h2 className="text-xl font-semibold text-slate-950 dark:text-white">
               Respuestas de IA
             </h2>
 
-            <p className="mt-1 text-sm text-zinc-500">
+            <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
               {respuestasIARestantes > 0
                 ? `Te quedan ${respuestasIARestantes.toLocaleString(
                     "es-AR"
@@ -529,7 +529,7 @@ export default function FacturacionPage() {
             </p>
           </div>
 
-          <span className="text-sm font-medium text-zinc-300">
+          <span className="text-sm font-medium text-slate-700 dark:text-zinc-300">
             {respuestasIAUsadas.toLocaleString(
               "es-AR"
             )} /{" "}
@@ -539,7 +539,7 @@ export default function FacturacionPage() {
           </span>
         </div>
 
-        <div className="mt-5 h-3 overflow-hidden rounded-full bg-zinc-800">
+        <div className="mt-5 h-3 overflow-hidden rounded-full bg-slate-200 dark:bg-zinc-800">
           <div
             className={
               porcentajeIA >= 100
@@ -555,15 +555,15 @@ export default function FacturacionPage() {
         </div>
       </div>
 
-      <div className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
-        <h2 className="text-xl font-semibold">
+      <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <h2 className="text-xl font-semibold text-slate-950 dark:text-white">
           Último pago
         </h2>
 
         {empresa
           .mercadopagoPaymentId ? (
-          <div className="mt-6 rounded-xl border border-zinc-800 bg-zinc-950 p-5">
-            <p className="text-sm text-zinc-500">
+          <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-5 dark:border-zinc-800 dark:bg-zinc-950">
+            <p className="text-sm text-slate-500 dark:text-zinc-500">
               ID de Mercado Pago
             </p>
 
@@ -575,7 +575,7 @@ export default function FacturacionPage() {
             </p>
           </div>
         ) : (
-          <div className="mt-6 rounded-xl border border-dashed border-zinc-700 p-10 text-center text-zinc-500">
+          <div className="mt-6 rounded-xl border border-dashed border-slate-300 p-10 text-center text-slate-500 dark:border-zinc-700 dark:text-zinc-500">
             Todavía no hay pagos
             registrados.
           </div>
@@ -585,14 +585,14 @@ export default function FacturacionPage() {
       <div className="mt-8 flex flex-wrap gap-4">
         <Link
           href={`/empresas/${empresaId}/planes`}
-          className="rounded-xl bg-blue-600 px-6 py-3 font-semibold transition hover:bg-blue-500"
+          className="rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-500"
         >
           Cambiar plan
         </Link>
 
         <Link
           href={`/empresas/${empresaId}/dashboard`}
-          className="rounded-xl border border-zinc-700 px-6 py-3 font-semibold text-zinc-300 transition hover:bg-zinc-800"
+          className="rounded-xl border border-slate-300 px-6 py-3 font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
         >
           Volver al dashboard
         </Link>
@@ -613,22 +613,22 @@ function Card({
   estado?: boolean;
 }) {
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
-      <p className="text-zinc-400">
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <p className="text-slate-600 dark:text-zinc-400">
         {titulo}
       </p>
 
       <h2
-        className={`mt-2 text-2xl font-bold ${
+        className={`mt-2 text-2xl font-bold text-slate-950 dark:text-white ${
           estado
-            ? "text-emerald-400"
+            ? "text-emerald-600 dark:text-emerald-400"
             : ""
         }`}
       >
         {valor}
       </h2>
 
-      <p className="mt-4 text-sm text-zinc-500">
+      <p className="mt-4 text-sm text-slate-500 dark:text-zinc-500">
         {descripcion}
       </p>
     </div>
