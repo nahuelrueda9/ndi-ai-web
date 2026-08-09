@@ -13,9 +13,7 @@ export const runtime = "nodejs";
 type InstagramConfig = {
   empresaId?: string;
   instagramAccountId?: string;
-  pageId?: string;
   accessToken?: string;
-  verifyToken?: string;
 };
 
 type RolEmpresa =
@@ -24,11 +22,6 @@ type RolEmpresa =
   | "supervisor"
   | "operador"
   | null;
-
-type PlanEmpresa =
-  | "free"
-  | "pro"
-  | "business";
 
 function obtenerBearerToken(
   request: NextRequest
@@ -169,103 +162,12 @@ function puedeEditarIntegracion(
   );
 }
 
-function convertirFecha(
-  valor: unknown
-) {
-  if (!valor) {
-    return null;
-  }
-
-  if (
-    typeof valor === "object" &&
-    valor !== null &&
-    "toDate" in valor &&
-    typeof (
-      valor as {
-        toDate?: unknown;
-      }
-    ).toDate === "function"
-  ) {
-    return (
-      valor as {
-        toDate: () => Date;
-      }
-    ).toDate();
-  }
-
-  if (valor instanceof Date) {
-    return valor;
-  }
-
-  if (
-    typeof valor === "string" ||
-    typeof valor === "number"
-  ) {
-    const fecha = new Date(valor);
-
-    if (!Number.isNaN(fecha.getTime())) {
-      return fecha;
-    }
-  }
-
-  return null;
-}
-
-async function obtenerPlanEfectivo(
-  empresaId: string
-): Promise<PlanEmpresa | null> {
-  const referencia =
-    adminDb
-      .collection("companies")
-      .doc(empresaId);
-
-  const snapshot =
-    await referencia.get();
-
-  if (!snapshot.exists) {
-    return null;
-  }
-
-  const datos =
-    snapshot.data() ?? {};
-
-  const planGuardado: PlanEmpresa =
-    datos.plan === "pro"
-      ? "pro"
-      : datos.plan === "business"
-        ? "business"
-        : "free";
-
-  if (planGuardado === "free") {
-    return "free";
-  }
-
-  const fechaVencimiento =
-    convertirFecha(
-      datos.subscriptionEndsAt
-    );
-
-  if (
-    fechaVencimiento &&
-    fechaVencimiento.getTime() >
-      Date.now()
-  ) {
-    return planGuardado;
-  }
-
-  await referencia.set(
-    {
-      plan: "free",
-      subscriptionStatus: "expired",
-      maxConversations: 50,
-      updatedAt: new Date(),
-    },
-    {
-      merge: true,
-    }
+function obtenerVerifyToken() {
+  return (
+    process.env
+      .INSTAGRAM_VERIFY_TOKEN
+      ?.trim() || ""
   );
-
-  return "free";
 }
 
 export async function GET(
@@ -338,11 +240,6 @@ export async function GET(
       );
     }
 
-    const plan =
-      await obtenerPlanEfectivo(
-        empresaId
-      );
-
     const documento =
       await adminDb
         .collection("companies")
@@ -351,13 +248,13 @@ export async function GET(
         .doc("instagram")
         .get();
 
+    const verifyToken =
+      obtenerVerifyToken();
+
     if (!documento.exists) {
       return NextResponse.json({
         config: null,
-        plan,
-        puedeConectar:
-          plan === "pro" ||
-          plan === "business",
+        verifyToken,
       });
     }
 
@@ -367,25 +264,14 @@ export async function GET(
     return NextResponse.json({
       config: {
         instagramAccountId:
-          data?.instagramAccountId ??
-          "",
-        pageId:
-          data?.pageId ?? "",
-        verifyToken:
-          data?.verifyToken ?? "",
+          data?.instagramAccountId ?? "",
+        username:
+          data?.username ?? "",
         estado:
           data?.estado ??
           "configurado",
-        pageName:
-          data?.pageName ?? "",
-        instagramUsername:
-          data?.instagramUsername ??
-          "",
       },
-      plan,
-      puedeConectar:
-        plan === "pro" ||
-        plan === "business",
+      verifyToken,
     });
   } catch (error) {
     console.error(
@@ -433,29 +319,35 @@ export async function POST(
     const instagramAccountId =
       body.instagramAccountId?.trim();
 
-    const pageId =
-      body.pageId?.trim();
-
-    const accessToken =
-      body.accessToken?.trim();
-
-    const verifyToken =
-      body.verifyToken?.trim();
+    const accessTokenNuevo =
+      body.accessToken?.trim() || "";
 
     if (
       !empresaId ||
-      !instagramAccountId ||
-      !pageId ||
-      !accessToken ||
-      !verifyToken
+      !instagramAccountId
     ) {
       return NextResponse.json(
         {
           error:
-            "Completá todos los campos.",
+            "Completá el Instagram Account ID.",
         },
         {
           status: 400,
+        }
+      );
+    }
+
+    const verifyToken =
+      obtenerVerifyToken();
+
+    if (!verifyToken) {
+      return NextResponse.json(
+        {
+          error:
+            "Falta configurar INSTAGRAM_VERIFY_TOKEN en el servidor.",
+        },
+        {
+          status: 500,
         }
       );
     }
@@ -494,46 +386,72 @@ export async function POST(
       );
     }
 
-    const plan =
-      await obtenerPlanEfectivo(
-        empresaId
-      );
+    const integracionReferencia =
+      adminDb
+        .collection("companies")
+        .doc(empresaId)
+        .collection("integrations")
+        .doc("instagram");
 
-    if (
-      plan !== "pro" &&
-      plan !== "business"
-    ) {
+    const integracionActual =
+      await integracionReferencia.get();
+
+    const tokenGuardado =
+      typeof integracionActual.data()
+        ?.accessToken === "string"
+        ? integracionActual
+            .data()
+            ?.accessToken.trim()
+        : "";
+
+    const accessToken =
+      accessTokenNuevo ||
+      tokenGuardado;
+
+    if (!accessToken) {
       return NextResponse.json(
         {
           error:
-            "Instagram está disponible únicamente en los planes Pro y Empresa.",
-          upgradeRequired: true,
+            "Ingresá el Access Token para conectar Instagram por primera vez.",
         },
         {
-          status: 403,
+          status: 400,
         }
       );
     }
 
-    await adminDb
-      .collection("companies")
-      .doc(empresaId)
-      .collection("integrations")
-      .doc("instagram")
-      .set(
-        {
-          instagramAccountId,
-          pageId,
-          accessToken,
-          verifyToken,
-          estado: "configurado",
-          updatedAt: new Date(),
-          updatedBy: usuario.uid,
-        },
-        {
-          merge: true,
-        }
-      );
+    const actualizacion: Record<
+      string,
+      unknown
+    > = {
+      instagramAccountId,
+      verifyToken,
+      estado:
+        integracionActual.exists
+          ? integracionActual.data()
+              ?.estado ||
+            "configurado"
+          : "configurado",
+      updatedAt: new Date(),
+      updatedBy: usuario.uid,
+    };
+
+    if (accessTokenNuevo) {
+      actualizacion.accessToken =
+        accessTokenNuevo;
+    } else if (
+      !integracionActual.exists
+    ) {
+      actualizacion.accessToken =
+        accessToken;
+    }
+
+    await integracionReferencia.set(
+      actualizacion,
+      {
+        merge: true,
+      }
+    );
 
     return NextResponse.json({
       success: true,

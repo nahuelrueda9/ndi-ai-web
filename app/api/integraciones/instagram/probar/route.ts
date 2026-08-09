@@ -13,23 +13,18 @@ export const runtime = "nodejs";
 type ProbarInstagramBody = {
   empresaId?: string;
   instagramAccountId?: string;
-  pageId?: string;
   accessToken?: string;
 };
 
 type IntegracionInstagram = {
   instagramAccountId?: string;
-  pageId?: string;
   accessToken?: string;
 };
 
 type RespuestaMeta = {
-  id?: string;
-  name?: string;
+  user_id?: string;
   username?: string;
-  instagram_business_account?: {
-    id?: string;
-  };
+  id?: string;
   error?: {
     message?: string;
     type?: string;
@@ -39,18 +34,24 @@ type RespuestaMeta = {
 };
 
 const META_API_VERSION =
-  process.env.META_GRAPH_API_VERSION?.trim() ||
-  "v25.0";
+  process.env
+    .INSTAGRAM_API_VERSION
+    ?.trim() ||
+  "v26.0";
 
 function obtenerBearerToken(
   request: NextRequest
 ) {
   const authorization =
-    request.headers.get("authorization");
+    request.headers.get(
+      "authorization"
+    );
 
   if (
     !authorization ||
-    !authorization.startsWith("Bearer ")
+    !authorization.startsWith(
+      "Bearer "
+    )
   ) {
     return "";
   }
@@ -67,9 +68,10 @@ async function verificarAccesoEmpresa({
   empresaId: string;
   uid: string;
 }) {
-  const empresaReferencia = adminDb
-    .collection("companies")
-    .doc(empresaId);
+  const empresaReferencia =
+    adminDb
+      .collection("companies")
+      .doc(empresaId);
 
   const empresaSnapshot =
     await empresaReferencia.get();
@@ -82,7 +84,8 @@ async function verificarAccesoEmpresa({
     };
   }
 
-  const empresa = empresaSnapshot.data();
+  const empresa =
+    empresaSnapshot.data();
 
   if (empresa?.userId === uid) {
     return {
@@ -98,7 +101,8 @@ async function verificarAccesoEmpresa({
       .doc(uid)
       .get();
 
-  const miembro = miembroSnapshot.data();
+  const miembro =
+    miembroSnapshot.data();
 
   const permitido =
     miembroSnapshot.exists &&
@@ -117,34 +121,6 @@ async function verificarAccesoEmpresa({
       ? ""
       : "No tenés permisos para probar esta integración.",
   };
-}
-
-async function consultarMeta(
-  url: URL
-): Promise<RespuestaMeta> {
-  const response = await fetch(url, {
-    method: "GET",
-    cache: "no-store",
-    headers: {
-      Accept: "application/json",
-    },
-  });
-
-  const data =
-    (await response.json()) as RespuestaMeta;
-
-  if (
-    !response.ok ||
-    data.error
-  ) {
-    const mensaje =
-      data.error?.message ||
-      "Meta rechazó la solicitud.";
-
-    throw new Error(mensaje);
-  }
-
-  return data;
 }
 
 export async function POST(
@@ -166,10 +142,10 @@ export async function POST(
       );
     }
 
-    let decodedToken;
+    let usuario;
 
     try {
-      decodedToken =
+      usuario =
         await adminAuth.verifyIdToken(
           idToken
         );
@@ -206,7 +182,7 @@ export async function POST(
     const acceso =
       await verificarAccesoEmpresa({
         empresaId,
-        uid: decodedToken.uid,
+        uid: usuario.uid,
       });
 
     if (!acceso.permitido) {
@@ -242,10 +218,6 @@ export async function POST(
         .instagramAccountId
         ?.trim();
 
-    const pageId =
-      body.pageId?.trim() ||
-      configuracionGuardada.pageId?.trim();
-
     const accessToken =
       body.accessToken?.trim() ||
       configuracionGuardada
@@ -254,13 +226,12 @@ export async function POST(
 
     if (
       !instagramAccountId ||
-      !pageId ||
       !accessToken
     ) {
       return NextResponse.json(
         {
           error:
-            "Faltan Instagram Account ID, Facebook Page ID o Access Token.",
+            "Completá Instagram Account ID y Access Token.",
         },
         {
           status: 400,
@@ -268,34 +239,76 @@ export async function POST(
       );
     }
 
-    const paginaUrl = new URL(
-      `https://graph.facebook.com/${META_API_VERSION}/${encodeURIComponent(
-        pageId
-      )}`
+    const url = new URL(
+      `https://graph.instagram.com/${META_API_VERSION}/me`
     );
 
-    paginaUrl.searchParams.set(
+    url.searchParams.set(
       "fields",
-      "id,name,instagram_business_account"
+      "user_id,username"
     );
 
-    paginaUrl.searchParams.set(
+    url.searchParams.set(
       "access_token",
       accessToken
     );
 
-    const pagina =
-      await consultarMeta(paginaUrl);
+    const respuesta =
+      await fetch(url, {
+        method: "GET",
+        headers: {
+          Accept:
+            "application/json",
+        },
+        cache: "no-store",
+      });
 
-    const cuentaVinculadaId =
-      pagina.instagram_business_account
-        ?.id;
+    const data =
+      (await respuesta.json()) as RespuestaMeta;
 
-    if (!cuentaVinculadaId) {
+    if (
+      !respuesta.ok ||
+      data.error
+    ) {
+      const mensaje =
+        data.error?.message ||
+        "Meta rechazó la conexión con Instagram.";
+
+      await integracionReferencia.set(
+        {
+          estado: "configurado",
+          lastConnectionError:
+            mensaje,
+          updatedAt: new Date(),
+        },
+        {
+          merge: true,
+        }
+      );
+
+      return NextResponse.json(
+        {
+          error: mensaje,
+        },
+        {
+          status:
+            respuesta.status >= 400
+              ? respuesta.status
+              : 400,
+        }
+      );
+    }
+
+    const accountIdMeta =
+      data.user_id?.trim() ||
+      data.id?.trim() ||
+      "";
+
+    if (!accountIdMeta) {
       return NextResponse.json(
         {
           error:
-            "La página de Facebook no tiene una cuenta profesional de Instagram vinculada.",
+            "Meta no devolvió el Instagram Account ID.",
         },
         {
           status: 400,
@@ -304,47 +317,13 @@ export async function POST(
     }
 
     if (
-      cuentaVinculadaId !==
+      accountIdMeta !==
       instagramAccountId
     ) {
       return NextResponse.json(
         {
           error:
-            "El Instagram Account ID no coincide con la cuenta vinculada a esta página.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    const instagramUrl = new URL(
-      `https://graph.facebook.com/${META_API_VERSION}/${encodeURIComponent(
-        instagramAccountId
-      )}`
-    );
-
-    instagramUrl.searchParams.set(
-      "fields",
-      "id,username,name"
-    );
-
-    instagramUrl.searchParams.set(
-      "access_token",
-      accessToken
-    );
-
-    const instagram =
-      await consultarMeta(instagramUrl);
-
-    if (
-      instagram.id !==
-      instagramAccountId
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Meta devolvió una cuenta de Instagram diferente.",
+            "El Instagram Account ID no coincide con la cuenta autorizada por el token.",
         },
         {
           status: 400,
@@ -354,41 +333,32 @@ export async function POST(
 
     await integracionReferencia.set(
       {
-        instagramAccountId,
-        pageId,
-        estado: "conectado",
-        pageName:
-          pagina.name || "",
-        instagramUsername:
-          instagram.username || "",
+        instagramAccountId:
+          accountIdMeta,
+        username:
+          data.username || "",
+        estado:
+          "conectado",
         connectedAt:
           new Date(),
         updatedAt:
           new Date(),
-        lastConnectionError: null,
+        lastConnectionError:
+          null,
       },
       {
         merge: true,
       }
     );
 
-    const nombreVisible =
-      instagram.username
-        ? `@${instagram.username}`
-        : instagramAccountId;
-
     return NextResponse.json({
-      success: true,
+      conectado: true,
       message:
-        `Conexión verificada correctamente con ${nombreVisible}.`,
-      account: {
-        id: instagramAccountId,
-        username:
-          instagram.username || "",
-        pageId,
-        pageName:
-          pagina.name || "",
-      },
+        "Conexión con Instagram verificada correctamente.",
+      instagramAccountId:
+        accountIdMeta,
+      username:
+        data.username || "",
     });
   } catch (error) {
     console.error(
@@ -396,17 +366,15 @@ export async function POST(
       error
     );
 
-    const mensaje =
-      error instanceof Error
-        ? error.message
-        : "No se pudo probar la conexión.";
-
     return NextResponse.json(
       {
-        error: mensaje,
+        error:
+          error instanceof Error
+            ? error.message
+            : "No se pudo probar la conexión.",
       },
       {
-        status: 400,
+        status: 500,
       }
     );
   }
