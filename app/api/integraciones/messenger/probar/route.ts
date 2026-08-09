@@ -22,8 +22,11 @@ type IntegracionMessenger = {
 };
 
 type RespuestaMeta = {
-  id?: string;
-  name?: string;
+  data?: Array<{
+    id?: string;
+    name?: string;
+    subscribed_fields?: string[];
+  }>;
   error?: {
     message?: string;
     type?: string;
@@ -251,17 +254,20 @@ export async function POST(
       );
     }
 
+    /*
+     * Para comprobar Messenger no necesitamos leer
+     * los datos públicos de la Página.
+     *
+     * Consultamos subscribed_apps porque este endpoint
+     * usa pages_manage_metadata, permiso necesario para
+     * los webhooks de la Página.
+     */
     const url =
       new URL(
         `https://graph.facebook.com/${META_API_VERSION}/${encodeURIComponent(
           pageId
-        )}`
+        )}/subscribed_apps`
       );
-
-    url.searchParams.set(
-      "fields",
-      "id,name"
-    );
 
     url.searchParams.set(
       "access_token",
@@ -278,9 +284,22 @@ export async function POST(
         cache: "no-store",
       });
 
-    const data =
-      (await respuesta.json()) as
-        RespuestaMeta;
+    const responseText =
+      await respuesta.text();
+
+    let data:
+      RespuestaMeta;
+
+    try {
+      data =
+        JSON.parse(
+          responseText
+        ) as RespuestaMeta;
+    } catch {
+      throw new Error(
+        `Meta devolvió una respuesta inválida. Estado ${respuesta.status}.`
+      );
+    }
 
     if (
       !respuesta.ok ||
@@ -318,46 +337,37 @@ export async function POST(
       );
     }
 
-    const pageIdMeta =
-      data.id?.trim() || "";
+    const suscripciones =
+      Array.isArray(data.data)
+        ? data.data
+        : [];
 
-    if (!pageIdMeta) {
-      return NextResponse.json(
-        {
-          error:
-            "Meta no devolvió el Facebook Page ID.",
-        },
-        {
-          status: 400,
-        }
+    const camposSuscritos =
+      suscripciones
+        .flatMap(
+          (item) =>
+            Array.isArray(
+              item.subscribed_fields
+            )
+              ? item.subscribed_fields
+              : []
+        );
+
+    const messagesSuscrito =
+      camposSuscritos.includes(
+        "messages"
       );
-    }
-
-    if (
-      pageIdMeta !== pageId
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "El Facebook Page ID no coincide con la Página autorizada por el token.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    const pageName =
-      data.name?.trim() || "";
 
     await integracionReferencia
       .set(
         {
-          pageId:
-            pageIdMeta,
-          pageName,
+          pageId,
           estado:
             "conectado",
+          messengerWebhookSubscribed:
+            suscripciones.length > 0,
+          messagesSubscribed:
+            messagesSuscrito,
           connectedAt:
             new Date(),
           updatedAt:
@@ -373,10 +383,17 @@ export async function POST(
     return NextResponse.json({
       conectado: true,
       message:
-        "Conexión con Facebook Messenger verificada correctamente.",
-      pageId:
-        pageIdMeta,
-      pageName,
+        messagesSuscrito
+          ? "Conexión con Facebook Messenger verificada correctamente."
+          : suscripciones.length > 0
+            ? "La Página está conectada, pero Meta no informó el campo messages en la suscripción."
+            : "El Page Access Token es válido para la Página. Revisá que la Página esté suscrita al webhook de Messenger.",
+      pageId,
+      pageName: "",
+      webhookSubscribed:
+        suscripciones.length > 0,
+      messagesSubscribed:
+        messagesSuscrito,
     });
   } catch (error) {
     console.error(
