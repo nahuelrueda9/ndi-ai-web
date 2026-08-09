@@ -60,6 +60,8 @@ type Conversacion = {
   plataforma?: string;
   email?: string;
   telefono?: string;
+  instagramScopedUserId?: string;
+  instagramAccountId?: string;
   etiquetas?: string[];
   puntuacionLead?: number;
   nivelInteres?: "bajo" | "medio" | "alto";
@@ -326,6 +328,10 @@ export default function ConversacionDetallePage() {
           plataforma: data.plataforma,
           email: data.email,
           telefono: data.telefono,
+          instagramScopedUserId:
+            data.instagramScopedUserId,
+          instagramAccountId:
+            data.instagramAccountId,
           etiquetas: data.etiquetas ?? [],
           puntuacionLead:
             data.puntuacionLead ?? 0,
@@ -626,7 +632,8 @@ export default function ConversacionDetallePage() {
 
     if (
       canal !== "web" &&
-      canal !== "whatsapp"
+      canal !== "whatsapp" &&
+      canal !== "instagram"
     ) {
       setMensajeAccion("");
       setError(
@@ -691,6 +698,62 @@ export default function ConversacionDetallePage() {
         setMensajeAccion(
           data.message ||
             "Mensaje enviado por WhatsApp."
+        );
+
+        return;
+      }
+
+      if (canal === "instagram") {
+        const usuario =
+          auth.currentUser;
+
+        if (!usuario) {
+          throw new Error(
+            "Tenés que iniciar sesión nuevamente."
+          );
+        }
+
+        const idToken =
+          await usuario.getIdToken(
+            true
+          );
+
+        const response =
+          await fetch(
+            "/api/conversations/instagram/send",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json",
+                Authorization:
+                  `Bearer ${idToken}`,
+              },
+              body: JSON.stringify({
+                empresaId,
+                chatId,
+                texto: contenido,
+              }),
+            }
+          );
+
+        const data =
+          (await response.json()) as {
+            message?: string;
+            error?: string;
+          };
+
+        if (!response.ok) {
+          throw new Error(
+            data.error ||
+              "No se pudo enviar el mensaje por Instagram."
+          );
+        }
+
+        setRespuesta("");
+        setMensajeAccion(
+          data.message ||
+            "Mensaje enviado por Instagram."
         );
 
         return;
@@ -796,7 +859,8 @@ export default function ConversacionDetallePage() {
 
   const canalConRespuestaDisponible =
     canalActual === "web" ||
-    canalActual === "whatsapp";
+    canalActual === "whatsapp" ||
+    canalActual === "instagram";
 
   const puedeResponder =
     Boolean(conversacion) &&
