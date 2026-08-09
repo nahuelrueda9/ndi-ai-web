@@ -10,39 +10,109 @@ import {
 
 export const runtime = "nodejs";
 
+function limpiarValor(
+  valor?: string
+) {
+  if (!valor) return "";
+
+  let limpio = valor.trim();
+
+  if (
+    (limpio.startsWith('"') &&
+      limpio.endsWith('"')) ||
+    (limpio.startsWith("'") &&
+      limpio.endsWith("'"))
+  ) {
+    limpio = limpio.slice(1, -1).trim();
+  }
+
+  return limpio;
+}
+
 function obtenerVerifyToken() {
-  return (
+  return limpiarValor(
     process.env
       .MESSENGER_VERIFY_TOKEN
-      ?.trim() ||
-    ""
   );
 }
 
-function obtenerAppSecret() {
-  return (
-    process.env
-      .MESSENGER_APP_SECRET
-      ?.trim() ||
-    process.env
-      .META_APP_SECRET
-      ?.trim() ||
-    ""
+type SecretoCandidato = {
+  nombre: string;
+  valor: string;
+};
+
+function obtenerSecretosCandidatos():
+  SecretoCandidato[] {
+  const candidatos: SecretoCandidato[] =
+    [
+      {
+        nombre:
+          "MESSENGER_APP_SECRET",
+        valor: limpiarValor(
+          process.env
+            .MESSENGER_APP_SECRET
+        ),
+      },
+      {
+        nombre:
+          "META_APP_SECRET",
+        valor: limpiarValor(
+          process.env
+            .META_APP_SECRET
+        ),
+      },
+      {
+        nombre:
+          "INSTAGRAM_APP_SECRET",
+        valor: limpiarValor(
+          process.env
+            .INSTAGRAM_APP_SECRET
+        ),
+      },
+    ];
+
+  const vistos =
+    new Set<string>();
+
+  return candidatos.filter(
+    (candidato) => {
+      if (!candidato.valor) {
+        return false;
+      }
+
+      if (
+        vistos.has(
+          candidato.valor
+        )
+      ) {
+        return false;
+      }
+
+      vistos.add(
+        candidato.valor
+      );
+
+      return true;
+    }
   );
 }
 
-function verificarFirmaMeta({
+function verificarFirmaConSecreto({
   cuerpoCrudo,
   firmaRecibida,
   appSecret,
 }: {
-  cuerpoCrudo: string;
-  firmaRecibida: string | null;
+  cuerpoCrudo: Buffer;
+  firmaRecibida: string;
   appSecret: string;
 }) {
+  const firmaNormalizada =
+    firmaRecibida
+      .trim()
+      .toLowerCase();
+
   if (
-    !firmaRecibida ||
-    !firmaRecibida.startsWith(
+    !firmaNormalizada.startsWith(
       "sha256="
     )
   ) {
@@ -50,10 +120,9 @@ function verificarFirmaMeta({
   }
 
   const firmaHex =
-    firmaRecibida
-      .slice("sha256=".length)
-      .trim()
-      .toLowerCase();
+    firmaNormalizada.slice(
+      "sha256=".length
+    );
 
   if (
     !/^[a-f0-9]{64}$/.test(
@@ -63,41 +132,30 @@ function verificarFirmaMeta({
     return false;
   }
 
-  const firmaEsperadaHex =
+  const firmaEsperada =
     createHmac(
       "sha256",
       appSecret
     )
-      .update(
-        Buffer.from(
-          cuerpoCrudo,
-          "utf8"
-        )
-      )
-      .digest("hex");
+      .update(cuerpoCrudo)
+      .digest();
 
-  const firmaBuffer =
+  const firmaRecibidaBuffer =
     Buffer.from(
       firmaHex,
       "hex"
     );
 
-  const firmaEsperadaBuffer =
-    Buffer.from(
-      firmaEsperadaHex,
-      "hex"
-    );
-
   if (
-    firmaBuffer.length !==
-    firmaEsperadaBuffer.length
+    firmaEsperada.length !==
+    firmaRecibidaBuffer.length
   ) {
     return false;
   }
 
   return timingSafeEqual(
-    firmaBuffer,
-    firmaEsperadaBuffer
+    firmaEsperada,
+    firmaRecibidaBuffer
   );
 }
 
@@ -173,12 +231,25 @@ export async function POST(
   request: NextRequest
 ) {
   try {
-    const appSecret =
-      obtenerAppSecret();
+    const arrayBuffer =
+      await request.arrayBuffer();
 
-    if (!appSecret) {
+    const cuerpoCrudo =
+      Buffer.from(arrayBuffer);
+
+    const firmaRecibida =
+      request.headers.get(
+        "x-hub-signature-256"
+      );
+
+    const secretos =
+      obtenerSecretosCandidatos();
+
+    if (
+      secretos.length === 0
+    ) {
       console.error(
-        "Falta configurar MESSENGER_APP_SECRET o META_APP_SECRET."
+        "No hay ningún App Secret configurado para validar Messenger."
       );
 
       return NextResponse.json(
@@ -192,22 +263,73 @@ export async function POST(
       );
     }
 
-    const cuerpoCrudo =
-      await request.text();
-
-    const firmaValida =
-      verificarFirmaMeta({
-        cuerpoCrudo,
-        firmaRecibida:
-          request.headers.get(
-            "x-hub-signature-256"
-          ),
-        appSecret,
-      });
-
-    if (!firmaValida) {
+    if (!firmaRecibida) {
       console.warn(
-        "Webhook de Messenger rechazado por firma inválida."
+        "Webhook de Messenger sin X-Hub-Signature-256.",
+        {
+          bodyBytes:
+            cuerpoCrudo.length,
+          secretosDisponibles:
+            secretos.map(
+              (item) =>
+                item.nombre
+            ),
+        }
+      );
+
+      return NextResponse.json(
+        {
+          error:
+            "Falta la firma de Meta.",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
+    let secretoCoincidente:
+      string | null = null;
+
+    for (
+      const secreto of secretos
+    ) {
+      const coincide =
+        verificarFirmaConSecreto({
+          cuerpoCrudo,
+          firmaRecibida,
+          appSecret:
+            secreto.valor,
+        });
+
+      if (coincide) {
+        secretoCoincidente =
+          secreto.nombre;
+        break;
+      }
+    }
+
+    if (!secretoCoincidente) {
+      console.warn(
+        "Webhook de Messenger rechazado por firma inválida.",
+        {
+          firmaPresente: true,
+          firmaEmpiezaConSha256:
+            firmaRecibida
+              .toLowerCase()
+              .startsWith(
+                "sha256="
+              ),
+          firmaLongitud:
+            firmaRecibida.length,
+          bodyBytes:
+            cuerpoCrudo.length,
+          secretosDisponibles:
+            secretos.map(
+              (item) =>
+                item.nombre
+            ),
+        }
       );
 
       return NextResponse.json(
@@ -225,9 +347,15 @@ export async function POST(
 
     try {
       body = JSON.parse(
-        cuerpoCrudo
+        cuerpoCrudo.toString(
+          "utf8"
+        )
       );
     } catch {
+      console.warn(
+        "Webhook de Messenger con JSON inválido."
+      );
+
       return NextResponse.json(
         {
           error:
@@ -238,6 +366,16 @@ export async function POST(
         }
       );
     }
+
+    console.log(
+      "✅ Webhook de Messenger validado.",
+      {
+        secretoUsado:
+          secretoCoincidente,
+        bodyBytes:
+          cuerpoCrudo.length,
+      }
+    );
 
     console.log(
       "📨 Webhook de Messenger recibido:",
