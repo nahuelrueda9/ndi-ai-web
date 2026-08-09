@@ -76,6 +76,19 @@ type RespuestaEnvioMessenger = {
   };
 };
 
+type RespuestaPerfilMessenger = {
+  id?: string;
+  name?: string;
+  first_name?: string;
+  last_name?: string;
+  error?: {
+    message?: string;
+    type?: string;
+    code?: number;
+    error_subcode?: number;
+  };
+};
+
 type SecretoCandidato = {
   nombre: string;
   valor: string;
@@ -316,6 +329,102 @@ async function buscarEmpresaPorMessenger(
     integracion:
       integracionDocumento.data(),
   };
+}
+
+async function obtenerPerfilMessenger({
+  messengerSenderId,
+  accessToken,
+}: {
+  messengerSenderId: string;
+  accessToken: string;
+}) {
+  const version =
+    process.env
+      .MESSENGER_API_VERSION
+      ?.trim() ||
+    "v26.0";
+
+  try {
+    const url = new URL(
+      `https://graph.facebook.com/${version}/${encodeURIComponent(
+        messengerSenderId
+      )}`
+    );
+
+    url.searchParams.set(
+      "fields",
+      "name,first_name,last_name"
+    );
+
+    const response =
+      await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization:
+            `Bearer ${accessToken}`,
+          Accept:
+            "application/json",
+        },
+        cache: "no-store",
+      });
+
+    const responseText =
+      await response.text();
+
+    let data:
+      RespuestaPerfilMessenger;
+
+    try {
+      data =
+        JSON.parse(
+          responseText
+        ) as
+          RespuestaPerfilMessenger;
+    } catch {
+      return null;
+    }
+
+    if (
+      !response.ok ||
+      data.error
+    ) {
+      console.warn(
+        `No se pudo obtener el perfil de Messenger ${messengerSenderId}:`,
+        data.error?.message ||
+          `estado ${response.status}`
+      );
+
+      return null;
+    }
+
+    const nombreCompleto =
+      data.name?.trim() ||
+      [
+        data.first_name?.trim(),
+        data.last_name?.trim(),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
+
+    if (!nombreCompleto) {
+      return null;
+    }
+
+    return {
+      nombre:
+        nombreCompleto,
+    };
+  } catch (error) {
+    console.warn(
+      `No se pudo consultar el perfil de Messenger ${messengerSenderId}:`,
+      error instanceof Error
+        ? error.message
+        : "Error desconocido"
+    );
+
+    return null;
+  }
 }
 
 function obtenerTextoMensaje(
@@ -831,6 +940,27 @@ export async function POST(
         const empresaId =
           empresaReferencia.id;
 
+        const integracion =
+          conexion.integracion ??
+          {};
+
+        const accessToken =
+          typeof integracion
+            .accessToken ===
+          "string"
+            ? integracion
+                .accessToken
+                .trim()
+            : "";
+
+        const perfilMessenger =
+          accessToken
+            ? await obtenerPerfilMessenger({
+                messengerSenderId,
+                accessToken,
+              })
+            : null;
+
         const conversacionId =
           `messenger_${messengerSenderId}`;
 
@@ -888,17 +1018,30 @@ export async function POST(
                     .data() ??
                   {};
 
-                const nombreContacto =
+                const nombrePrevio =
                   typeof datosPrevios
                     .nombreContacto ===
-                    "string" &&
-                  datosPrevios
-                    .nombreContacto
-                    .trim()
+                    "string"
                     ? datosPrevios
                         .nombreContacto
                         .trim()
-                    : `Messenger ${messengerSenderId}`;
+                    : "";
+
+                const nombrePrevioEsGenerico =
+                  !nombrePrevio ||
+                  nombrePrevio
+                    .toLowerCase()
+                    .startsWith(
+                      "messenger "
+                    );
+
+                const nombreContacto =
+                  perfilMessenger?.nombre ||
+                  (
+                    !nombrePrevioEsGenerico
+                      ? nombrePrevio
+                      : `Messenger ${messengerSenderId}`
+                  );
 
                 transaction.set(
                   conversacionReferencia,
@@ -1050,19 +1193,6 @@ export async function POST(
 
           continue;
         }
-
-        const integracion =
-          conexion.integracion ??
-          {};
-
-        const accessToken =
-          typeof integracion
-            .accessToken ===
-          "string"
-            ? integracion
-                .accessToken
-                .trim()
-            : "";
 
         if (!accessToken) {
           console.error(
