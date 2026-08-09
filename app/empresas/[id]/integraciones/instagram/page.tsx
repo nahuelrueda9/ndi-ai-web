@@ -6,6 +6,7 @@ import {
 } from "react";
 import {
   onAuthStateChanged,
+  type User,
 } from "firebase/auth";
 import {
   doc,
@@ -15,11 +16,30 @@ import {
   useParams,
   useRouter,
 } from "next/navigation";
+import {
+  AtSign,
+  CheckCircle2,
+  Copy,
+  ExternalLink,
+  Camera,
+  KeyRound,
+  PlugZap,
+  ShieldCheck,
+} from "lucide-react";
 
-import { auth, db } from "@/lib/firebase";
-import Badge from "@/components/Ui/Badge";
+import {
+  auth,
+  db,
+} from "@/lib/firebase";
 import Button from "@/components/Ui/Button";
 import Card from "@/components/Ui/Card";
+import Input from "@/components/Ui/Input";
+
+type EstadoConexion =
+  | "sin_configurar"
+  | "configurado"
+  | "probando"
+  | "conectado";
 
 type RolEmpresa =
   | "propietario"
@@ -39,51 +59,29 @@ type MiembroData = {
   estado?: "activo" | "inactivo";
 };
 
-type Integracion = {
-  id: string;
-  nombre: string;
-  descripcion: string;
-  icono: string;
-  estado:
-    | "disponible"
-    | "proximamente";
-  ruta?: string;
-  detallePlan?: string;
+type ConfiguracionInstagram = {
+  instagramAccountId?: string;
+  username?: string;
+  estado?: EstadoConexion;
 };
 
-const integraciones: Integracion[] = [
-  {
-    id: "whatsapp",
-    nombre: "WhatsApp",
-    descripcion:
-      "Conectá WhatsApp Business para que NDI AI reciba consultas y responda automáticamente por tu negocio.",
-    icono: "💬",
-    estado: "disponible",
-    ruta: "whatsapp",
-    detallePlan: "Incluido en Free",
-  },
-  {
-    id: "instagram",
-    nombre: "Instagram",
-    descripcion:
-      "Conectá una cuenta profesional de Instagram para recibir mensajes directos y gestionarlos desde NDI AI.",
-    icono: "📸",
-    estado: "disponible",
-    ruta: "instagram",
-    detallePlan: "Disponible",
-  },
-  {
-    id: "messenger",
-    nombre: "Facebook Messenger",
-    descripcion:
-      "La integración con Facebook Messenger todavía no está disponible.",
-    icono: "📨",
-    estado: "proximamente",
-    detallePlan: "Próximamente",
-  },
-];
+type RespuestaConfiguracion = {
+  config?: ConfiguracionInstagram | null;
+  verifyToken?: string;
+  error?: string;
+};
 
-export default function IntegracionesPage() {
+type RespuestaApi = {
+  message?: string;
+  error?: string;
+  instagramAccountId?: string;
+  username?: string;
+};
+
+const WEBHOOK_URL =
+  "https://ndi-ai-web.vercel.app/api/webhooks/instagram";
+
+export default function InstagramPage() {
   const params = useParams();
   const router = useRouter();
 
@@ -98,16 +96,67 @@ export default function IntegracionesPage() {
         | string
         | undefined);
 
+  const [usuario, setUsuario] =
+    useState<User | null>(null);
+
   const [
     accesoVerificado,
     setAccesoVerificado,
   ] = useState(false);
 
-  const [cargando, setCargando] =
-    useState(true);
+  const [
+    verificandoAcceso,
+    setVerificandoAcceso,
+  ] = useState(true);
+
+  const [
+    cargandoConfiguracion,
+    setCargandoConfiguracion,
+  ] = useState(false);
+
+  const [
+    instagramAccountId,
+    setInstagramAccountId,
+  ] = useState("");
+
+  const [
+    accessToken,
+    setAccessToken,
+  ] = useState("");
+
+  const [
+    verifyToken,
+    setVerifyToken,
+  ] = useState("");
+
+  const [
+    username,
+    setUsername,
+  ] = useState("");
+
+  const [estado, setEstado] =
+    useState<EstadoConexion>(
+      "sin_configurar"
+    );
+
+  const [guardando, setGuardando] =
+    useState(false);
+
+  const [probando, setProbando] =
+    useState(false);
+
+  const [mensaje, setMensaje] =
+    useState("");
 
   const [error, setError] =
     useState("");
+
+  const [
+    copiado,
+    setCopiado,
+  ] = useState<
+    "webhook" | "verify" | null
+  >(null);
 
   useEffect(() => {
     const cancelarAuth =
@@ -121,9 +170,9 @@ export default function IntegracionesPage() {
 
           if (!empresaId) {
             setError(
-              "No se encontró el ID de la empresa."
+              "No se encontró la empresa."
             );
-            setCargando(false);
+            setVerificandoAcceso(false);
             return;
           }
 
@@ -133,9 +182,10 @@ export default function IntegracionesPage() {
           const usuarioSeguro =
             currentUser;
 
+          setUsuario(usuarioSeguro);
           setAccesoVerificado(false);
+          setVerificandoAcceso(true);
           setError("");
-          setCargando(true);
 
           try {
             const empresaReferencia =
@@ -156,7 +206,6 @@ export default function IntegracionesPage() {
               setError(
                 "La empresa no existe."
               );
-              setCargando(false);
               return;
             }
 
@@ -168,7 +217,6 @@ export default function IntegracionesPage() {
               usuarioSeguro.uid
             ) {
               setAccesoVerificado(true);
-              setCargando(false);
               return;
             }
 
@@ -216,17 +264,17 @@ export default function IntegracionesPage() {
             }
 
             setAccesoVerificado(true);
-            setCargando(false);
           } catch (firebaseError) {
             console.error(
-              "Error al verificar acceso a integraciones:",
+              "Error al verificar acceso a Instagram:",
               firebaseError
             );
 
             setError(
               "No se pudo verificar el acceso a la empresa."
             );
-            setCargando(false);
+          } finally {
+            setVerificandoAcceso(false);
           }
         }
       );
@@ -234,46 +282,375 @@ export default function IntegracionesPage() {
     return () => cancelarAuth();
   }, [empresaId, router]);
 
-  function abrirIntegracion(
-    integracion: Integracion
-  ) {
+  useEffect(() => {
     if (
       !empresaId ||
-      !accesoVerificado ||
-      integracion.estado !==
-        "disponible" ||
-      !integracion.ruta
+      !usuario ||
+      !accesoVerificado
     ) {
       return;
     }
 
-    router.push(
-      `/empresas/${empresaId}/integraciones/${integracion.ruta}`
-    );
+    const empresaIdSeguro =
+      empresaId;
+
+    const usuarioSeguro =
+      usuario;
+
+    let activo = true;
+
+    async function cargarConfiguracion() {
+      setCargandoConfiguracion(true);
+      setError("");
+
+      try {
+        const idToken =
+          await usuarioSeguro.getIdToken();
+
+        const response = await fetch(
+          `/api/integraciones/instagram/config?empresaId=${encodeURIComponent(
+            empresaIdSeguro
+          )}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization:
+                `Bearer ${idToken}`,
+            },
+            cache: "no-store",
+          }
+        );
+
+        const data =
+          (await response.json()) as RespuestaConfiguracion;
+
+        if (!response.ok) {
+          throw new Error(
+            data.error ||
+              "No se pudo cargar la configuración."
+          );
+        }
+
+        if (!activo) {
+          return;
+        }
+
+        setVerifyToken(
+          data.verifyToken ?? ""
+        );
+
+        if (!data.config) {
+          setEstado(
+            "sin_configurar"
+          );
+          return;
+        }
+
+        setInstagramAccountId(
+          data.config.instagramAccountId ??
+            ""
+        );
+
+        setUsername(
+          data.config.username ?? ""
+        );
+
+        setEstado(
+          data.config.estado ===
+          "conectado"
+            ? "conectado"
+            : "configurado"
+        );
+      } catch (requestError) {
+        console.error(
+          "No se pudo cargar Instagram:",
+          requestError
+        );
+
+        if (activo) {
+          setError(
+            requestError instanceof Error
+              ? requestError.message
+              : "No se pudo cargar la configuración."
+          );
+        }
+      } finally {
+        if (activo) {
+          setCargandoConfiguracion(
+            false
+          );
+        }
+      }
+    }
+
+    void cargarConfiguracion();
+
+    return () => {
+      activo = false;
+    };
+  }, [
+    accesoVerificado,
+    empresaId,
+    usuario,
+  ]);
+
+  async function obtenerTokenUsuario() {
+    if (!usuario) {
+      throw new Error(
+        "Tenés que iniciar sesión."
+      );
+    }
+
+    return usuario.getIdToken(true);
   }
 
-  if (cargando) {
+  function validarConfiguracion() {
+    if (
+      !instagramAccountId.trim()
+    ) {
+      return "Ingresá el Instagram Account ID.";
+    }
+
+    if (
+      estado === "sin_configurar" &&
+      !accessToken.trim()
+    ) {
+      return "Ingresá el Access Token.";
+    }
+
+    return "";
+  }
+
+  async function guardarConfiguracion() {
+    const validacion =
+      validarConfiguracion();
+
+    if (validacion) {
+      throw new Error(validacion);
+    }
+
+    if (
+      !empresaId ||
+      !accesoVerificado
+    ) {
+      throw new Error(
+        "No se encontró la empresa."
+      );
+    }
+
+    const idToken =
+      await obtenerTokenUsuario();
+
+    const response = await fetch(
+      "/api/integraciones/instagram/config",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+          Authorization:
+            `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          empresaId,
+          instagramAccountId:
+            instagramAccountId.trim(),
+          accessToken:
+            accessToken.trim(),
+        }),
+      }
+    );
+
+    const data =
+      (await response.json()) as RespuestaApi;
+
+    if (!response.ok) {
+      throw new Error(
+        data.error ||
+          "No se pudo guardar la configuración."
+      );
+    }
+
+    setEstado("configurado");
+  }
+
+  async function ejecutarPrueba() {
+    if (!empresaId) {
+      throw new Error(
+        "No se encontró la empresa."
+      );
+    }
+
+    const idToken =
+      await obtenerTokenUsuario();
+
+    const response = await fetch(
+      "/api/integraciones/instagram/probar",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+          Authorization:
+            `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          empresaId,
+          instagramAccountId:
+            instagramAccountId.trim(),
+          accessToken:
+            accessToken.trim(),
+        }),
+      }
+    );
+
+    const data =
+      (await response.json()) as RespuestaApi;
+
+    if (!response.ok) {
+      throw new Error(
+        data.error ||
+          "No se pudo conectar con Instagram."
+      );
+    }
+
+    setEstado("conectado");
+
+    setInstagramAccountId(
+      data.instagramAccountId ||
+        instagramAccountId
+    );
+
+    setUsername(
+      data.username ?? ""
+    );
+
+    return data;
+  }
+
+  async function guardarYConectar() {
+    if (guardando || probando) {
+      return;
+    }
+
+    setGuardando(true);
+    setError("");
+    setMensaje("");
+
+    try {
+      await guardarConfiguracion();
+
+      setProbando(true);
+      setEstado("probando");
+
+      const data =
+        await ejecutarPrueba();
+
+      setAccessToken("");
+
+      setMensaje(
+        data.message ||
+          "Instagram quedó conectado correctamente."
+      );
+    } catch (requestError) {
+      setEstado(
+        estado === "sin_configurar"
+          ? "sin_configurar"
+          : "configurado"
+      );
+
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "No se pudo conectar Instagram."
+      );
+    } finally {
+      setGuardando(false);
+      setProbando(false);
+    }
+  }
+
+  async function probarNuevamente() {
+    if (guardando || probando) {
+      return;
+    }
+
+    setProbando(true);
+    setEstado("probando");
+    setError("");
+    setMensaje("");
+
+    try {
+      const data =
+        await ejecutarPrueba();
+
+      setAccessToken("");
+
+      setMensaje(
+        data.message ||
+          "Conexión con Instagram verificada correctamente."
+      );
+    } catch (requestError) {
+      setEstado("configurado");
+
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "No se pudo probar la conexión."
+      );
+    } finally {
+      setProbando(false);
+    }
+  }
+
+  async function copiar(
+    valor: string,
+    tipo: "webhook" | "verify"
+  ) {
+    try {
+      await navigator.clipboard.writeText(
+        valor
+      );
+
+      setCopiado(tipo);
+
+      window.setTimeout(() => {
+        setCopiado(null);
+      }, 1500);
+    } catch {
+      setError(
+        "No se pudo copiar automáticamente."
+      );
+    }
+  }
+
+  if (
+    verificandoAcceso ||
+    cargandoConfiguracion
+  ) {
     return (
-      <section className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8">
+      <section className="mx-auto w-full max-w-5xl px-5 py-8 sm:px-8">
         <Card className="p-10 text-center">
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-fuchsia-600 dark:border-zinc-700 dark:border-t-fuchsia-500" />
 
           <p className="mt-4 text-sm text-slate-600 dark:text-zinc-400">
-            Verificando acceso a
-            integraciones...
+            Verificando acceso y cargando
+            Instagram...
           </p>
         </Card>
       </section>
     );
   }
 
-  if (error || !accesoVerificado) {
+  if (
+    error &&
+    !accesoVerificado
+  ) {
     return (
-      <section className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8">
+      <section className="mx-auto w-full max-w-5xl px-5 py-8 sm:px-8">
         <Card className="border-red-200 bg-red-50 p-6 dark:border-red-500/20 dark:bg-red-500/10">
           <p className="text-sm text-red-700 dark:text-red-400">
-            {error ||
-              "No tenés permisos para acceder a esta sección."}
+            {error}
           </p>
 
           <Button
@@ -291,102 +668,352 @@ export default function IntegracionesPage() {
     );
   }
 
+  if (!accesoVerificado) {
+    return null;
+  }
+
   return (
-    <section className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8">
-      <header className="mb-8">
-        <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
-          Canales
-        </p>
+    <section className="mx-auto w-full max-w-5xl space-y-6 px-5 py-8 sm:px-8">
+      <header className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+        <div>
+          <p className="text-sm font-medium text-fuchsia-700 dark:text-fuchsia-400">
+            Canal social de NDI AI
+          </p>
 
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">
-          Integraciones
-        </h1>
+          <h1 className="mt-2 text-3xl font-bold text-slate-950 dark:text-white">
+            Conectar Instagram
+          </h1>
 
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
-          Conectá los canales que usa tu negocio para centralizar
-          conversaciones y atención desde NDI AI.
-        </p>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700 dark:text-zinc-400">
+            Conectá una cuenta profesional de
+            Instagram para que NDI AI reciba
+            mensajes directos y pueda atenderlos
+            desde el inbox omnicanal.
+          </p>
+        </div>
+
+        <EstadoBadge
+          estado={estado}
+        />
       </header>
 
-      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-        {integraciones.map(
-          (integracion) => (
-            <Card
-              key={integracion.id}
-              className="flex min-h-64 flex-col p-6"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-2xl dark:bg-zinc-800">
-                  {integracion.icono}
-                </div>
+      {estado === "conectado" && (
+        <Card className="border-emerald-200 bg-emerald-50 p-5 dark:border-emerald-500/20 dark:bg-emerald-500/5">
+          <div className="flex gap-3">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
 
-                <Badge
-                  variant={
-                    integracion.estado ===
-                    "disponible"
-                      ? "success"
-                      : "default"
-                  }
-                >
-                  {integracion.estado ===
-                  "disponible"
-                    ? "Disponible"
-                    : "Próximamente"}
-                </Badge>
-              </div>
-
-              <div className="mt-5 flex flex-wrap items-center gap-2">
-                <h2 className="text-xl font-semibold text-slate-950 dark:text-white">
-                  {integracion.nombre}
-                </h2>
-
-                {integracion.detallePlan && (
-                  <span
-                    className={
-                      integracion.estado === "disponible"
-                        ? "rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300"
-                        : "rounded-full border border-slate-300 bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400"
-                    }
-                  >
-                    {integracion.detallePlan}
-                  </span>
-                )}
-              </div>
-
-              <p className="mt-2 flex-1 text-sm leading-6 text-slate-600 dark:text-zinc-400">
-                {
-                  integracion.descripcion
-                }
+            <div>
+              <p className="font-medium text-slate-950 dark:text-white">
+                Instagram conectado
               </p>
 
-              <Button
-                type="button"
-                className="mt-6 w-full"
-                variant={
-                  integracion.estado ===
-                  "disponible"
-                    ? "primary"
-                    : "secondary"
-                }
-                disabled={
-                  integracion.estado !==
-                  "disponible"
-                }
-                onClick={() =>
-                  abrirIntegracion(
-                    integracion
-                  )
-                }
-              >
-                {integracion.estado ===
-                "disponible"
-                  ? "Configurar"
-                  : "Próximamente"}
-              </Button>
-            </Card>
-          )
-        )}
+              <p className="mt-1 text-sm text-slate-700 dark:text-zinc-400">
+                {username
+                  ? `@${username}`
+                  : instagramAccountId
+                    ? `Cuenta ${instagramAccountId}`
+                    : "Meta verificó correctamente la conexión."}
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="space-y-5">
+          <Card className="p-6">
+            <div className="flex items-center gap-3">
+              <Camera className="h-5 w-5 text-fuchsia-600 dark:text-fuchsia-400" />
+
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-zinc-500">
+                  Paso 1
+                </p>
+
+                <h2 className="mt-1 font-semibold text-slate-950 dark:text-white">
+                  Conseguí los datos en Meta
+                </h2>
+              </div>
+            </div>
+
+            <p className="mt-4 text-sm leading-6 text-slate-700 dark:text-zinc-400">
+              En Meta Developers, dentro de la
+              API de Instagram, necesitás estos
+              dos datos:
+            </p>
+
+            <div className="mt-4 space-y-2 text-sm text-slate-700 dark:text-zinc-300">
+              <p>• Instagram Account ID</p>
+              <p>• Access Token</p>
+            </div>
+
+            <a
+              href="https://developers.facebook.com/apps/"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              Abrir Meta Developers
+              <ExternalLink className="h-4 w-4" />
+            </a>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center gap-3">
+              <PlugZap className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-zinc-500">
+                  Paso 2
+                </p>
+
+                <h2 className="mt-1 font-semibold text-slate-950 dark:text-white">
+                  Webhook de Instagram
+                </h2>
+              </div>
+            </div>
+
+            <p className="mt-4 text-sm leading-6 text-slate-700 dark:text-zinc-400">
+              Usá estos datos en Meta y mantené
+              suscrito el campo{" "}
+              <strong className="text-slate-950 dark:text-zinc-200">
+                messages
+              </strong>.
+            </p>
+
+            <CopyField
+              label="URL de devolución"
+              value={WEBHOOK_URL}
+              copiado={
+                copiado === "webhook"
+              }
+              onCopy={() =>
+                copiar(
+                  WEBHOOK_URL,
+                  "webhook"
+                )
+              }
+            />
+
+            <CopyField
+              label="Token de verificación"
+              value={
+                verifyToken ||
+                "No configurado"
+              }
+              copiado={
+                copiado === "verify"
+              }
+              onCopy={() =>
+                verifyToken &&
+                copiar(
+                  verifyToken,
+                  "verify"
+                )
+              }
+              disabled={!verifyToken}
+            />
+          </Card>
+
+          <Card className="border-amber-200 bg-amber-50 p-5 dark:border-amber-500/20 dark:bg-amber-500/5">
+            <div className="flex gap-3">
+              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
+
+              <p className="text-sm leading-6 text-slate-700 dark:text-zinc-400">
+                El Access Token es sensible.
+                Pegalo únicamente dentro de NDI
+                AI. Una vez guardado, no se
+                volverá a mostrar.
+              </p>
+            </div>
+          </Card>
+        </div>
+
+        <Card className="h-fit space-y-5 p-6">
+          <div className="flex items-center gap-3">
+            <KeyRound className="h-5 w-5 text-fuchsia-600 dark:text-fuchsia-400" />
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-zinc-500">
+                Paso 3
+              </p>
+
+              <h2 className="mt-1 text-lg font-semibold text-slate-950 dark:text-white">
+                Conectá tu cuenta
+              </h2>
+            </div>
+          </div>
+
+          <Input
+            id="instagram-account-id"
+            label="Instagram Account ID"
+            value={instagramAccountId}
+            onChange={(event) =>
+              setInstagramAccountId(
+                event.target.value
+              )
+            }
+            placeholder="Ejemplo: 17841468366931325"
+          />
+
+          <Input
+            id="instagram-token"
+            label="Access Token"
+            type="password"
+            value={accessToken}
+            onChange={(event) =>
+              setAccessToken(
+                event.target.value
+              )
+            }
+            placeholder={
+              estado === "sin_configurar"
+                ? "Pegá el token generado por Meta"
+                : "Dejalo vacío para conservar el token actual"
+            }
+          />
+
+          {username && (
+            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300">
+              <AtSign className="h-4 w-4" />
+              {username}
+            </div>
+          )}
+
+          {mensaje && (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
+              {mensaje}
+            </div>
+          )}
+
+          {error && (
+            <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400">
+              {error}
+            </div>
+          )}
+
+          <Button
+            type="button"
+            onClick={
+              guardarYConectar
+            }
+            disabled={
+              guardando || probando
+            }
+            className="w-full"
+          >
+            {guardando ||
+            probando
+              ? "Comprobando conexión..."
+              : estado === "conectado"
+                ? "Guardar cambios y comprobar"
+                : "Guardar y conectar Instagram"}
+          </Button>
+
+          {estado !==
+            "sin_configurar" && (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={
+                probarNuevamente
+              }
+              disabled={
+                guardando ||
+                probando
+              }
+              className="w-full"
+            >
+              {probando
+                ? "Probando..."
+                : "Probar conexión nuevamente"}
+            </Button>
+          )}
+
+          <p className="text-xs leading-5 text-slate-600 dark:text-zinc-500">
+            NDI AI no muestra nuevamente el
+            Access Token guardado. Si
+            necesitás cambiarlo, pegá uno
+            nuevo y guardá.
+          </p>
+        </Card>
       </div>
     </section>
+  );
+}
+
+function EstadoBadge({
+  estado,
+}: {
+  estado: EstadoConexion;
+}) {
+  const estilos = {
+    conectado:
+      "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400",
+    probando:
+      "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400",
+    configurado:
+      "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-400",
+    sin_configurar:
+      "border-slate-300 bg-slate-100 text-slate-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400",
+  };
+
+  const textos = {
+    conectado: "● Conectado",
+    probando:
+      "● Probando conexión...",
+    configurado: "● Configurado",
+    sin_configurar:
+      "● Sin configurar",
+  };
+
+  return (
+    <div
+      className={`w-fit rounded-full border px-4 py-2 text-sm ${estilos[estado]}`}
+    >
+      {textos[estado]}
+    </div>
+  );
+}
+
+function CopyField({
+  label,
+  value,
+  copiado,
+  onCopy,
+  disabled = false,
+}: {
+  label: string;
+  value: string;
+  copiado: boolean;
+  onCopy: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="mt-4">
+      <p className="mb-2 text-xs font-medium text-slate-600 dark:text-zinc-500">
+        {label}
+      </p>
+
+      <div className="flex gap-2">
+        <div className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-xs text-slate-800 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300">
+          <p className="truncate">
+            {value}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={onCopy}
+          disabled={disabled}
+          className="flex h-11 shrink-0 items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 text-xs font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:bg-transparent dark:text-zinc-300 dark:hover:bg-zinc-800"
+        >
+          <Copy className="h-4 w-4" />
+          {copiado
+            ? "Copiado"
+            : "Copiar"}
+        </button>
+      </div>
+    </div>
   );
 }
