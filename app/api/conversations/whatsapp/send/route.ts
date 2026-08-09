@@ -134,6 +134,56 @@ function numeroWhatsApp(
     .slice(0, 20);
 }
 
+type MetaWhatsAppResponse = {
+  messages?: Array<{
+    id?: string;
+  }>;
+  error?: {
+    message?: string;
+    code?: number;
+  };
+};
+
+function obtenerDestinosAlternativosArgentina(
+  numeroCliente: string
+) {
+  /*
+   * Meta normalmente entrega celulares argentinos como:
+   * 549 + código de área + número local.
+   *
+   * En el entorno de prueba, la lista de destinatarios puede guardar
+   * el mismo número con el formato histórico:
+   * 54 + código de área + 15 + número local.
+   *
+   * No reemplazamos el número original: solamente probamos estas
+   * variantes si Meta devuelve específicamente el error #131030.
+   */
+  if (!/^549\d{10}$/.test(numeroCliente)) {
+    return [];
+  }
+
+  const numeroNacional = numeroCliente.slice(3);
+
+  return [2, 3, 4]
+    .map((longitudCodigoArea) => {
+      const codigoArea = numeroNacional.slice(
+        0,
+        longitudCodigoArea
+      );
+
+      const numeroLocal = numeroNacional.slice(
+        longitudCodigoArea
+      );
+
+      return `54${codigoArea}15${numeroLocal}`;
+    })
+    .filter(
+      (destino, indice, lista) =>
+        destino !== numeroCliente &&
+        lista.indexOf(destino) === indice
+    );
+}
+
 async function enviarAMeta({
   phoneNumberId,
   accessToken,
@@ -150,77 +200,115 @@ async function enviarAMeta({
       .WHATSAPP_API_VERSION
       ?.trim() || "v26.0";
 
-  const response = await fetch(
+  const endpoint =
     `https://graph.facebook.com/${version}/${encodeURIComponent(
       phoneNumberId
-    )}/messages`,
-    {
-      method: "POST",
-      headers: {
-        Authorization:
-          `Bearer ${accessToken}`,
-        "Content-Type":
-          "application/json",
-      },
-      body: JSON.stringify({
-        messaging_product:
-          "whatsapp",
-        recipient_type:
-          "individual",
-        to: numeroCliente,
-        type: "text",
-        text: {
-          preview_url: false,
-          body: texto.slice(
-            0,
-            4096
-          ),
+    )}/messages`;
+
+  const destinosAIntentar = [
+    numeroCliente,
+    ...obtenerDestinosAlternativosArgentina(
+      numeroCliente
+    ),
+  ];
+
+  let ultimoError =
+    "No se pudo enviar el mensaje por WhatsApp.";
+
+  for (
+    let indice = 0;
+    indice < destinosAIntentar.length;
+    indice += 1
+  ) {
+    const destino = destinosAIntentar[indice];
+
+    const response = await fetch(
+      endpoint,
+      {
+        method: "POST",
+        headers: {
+          Authorization:
+            `Bearer ${accessToken}`,
+          "Content-Type":
+            "application/json",
         },
-      }),
-      cache: "no-store",
+        body: JSON.stringify({
+          messaging_product:
+            "whatsapp",
+          recipient_type:
+            "individual",
+          to: destino,
+          type: "text",
+          text: {
+            preview_url: false,
+            body: texto.slice(
+              0,
+              4096
+            ),
+          },
+        }),
+        cache: "no-store",
+      }
+    );
+
+    const responseText =
+      await response.text();
+
+    let data: MetaWhatsAppResponse = {};
+
+    try {
+      data = JSON.parse(
+        responseText
+      ) as MetaWhatsAppResponse;
+    } catch {
+      throw new Error(
+        `Meta devolvió una respuesta inválida (${response.status}).`
+      );
     }
-  );
 
-  const responseText =
-    await response.text();
+    if (response.ok) {
+      const whatsappMessageId =
+        data.messages?.[0]?.id?.trim();
 
-  let data: {
-    messages?: Array<{
-      id?: string;
-    }>;
-    error?: {
-      message?: string;
-      code?: number;
-    };
-  } = {};
+      if (!whatsappMessageId) {
+        throw new Error(
+          "Meta no devolvió el ID del mensaje."
+        );
+      }
 
-  try {
-    data = JSON.parse(
-      responseText
-    );
-  } catch {
-    throw new Error(
-      `Meta devolvió una respuesta inválida (${response.status}).`
-    );
-  }
+      if (destino !== numeroCliente) {
+        console.log(
+          `✅ Respuesta humana enviada usando formato argentino alternativo ${destino}.`
+        );
+      }
 
-  if (!response.ok) {
-    throw new Error(
+      return whatsappMessageId;
+    }
+
+    ultimoError =
       data.error?.message ||
-        `Meta rechazó el mensaje (${response.status}).`
+      `Meta rechazó el mensaje (${response.status}).`;
+
+    const esErrorListaPermitida =
+      data.error?.code === 131030;
+
+    const quedanAlternativas =
+      indice <
+      destinosAIntentar.length - 1;
+
+    if (
+      !esErrorListaPermitida ||
+      !quedanAlternativas
+    ) {
+      throw new Error(ultimoError);
+    }
+
+    console.warn(
+      `Meta rechazó ${destino} con #131030. Probando otra representación argentina.`
     );
   }
 
-  const whatsappMessageId =
-    data.messages?.[0]?.id?.trim();
-
-  if (!whatsappMessageId) {
-    throw new Error(
-      "Meta no devolvió el ID del mensaje."
-    );
-  }
-
-  return whatsappMessageId;
+  throw new Error(ultimoError);
 }
 
 export async function POST(
