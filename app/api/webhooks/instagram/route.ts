@@ -51,6 +51,29 @@ type InstagramWebhookBody = {
   entry?: InstagramEntry[];
 };
 
+type RolMensaje = "user" | "assistant";
+
+type MensajeHistorial = {
+  role: RolMensaje;
+  content: string;
+};
+
+type GeminiResponse = {
+  respuesta?: string;
+  error?: string;
+};
+
+type RespuestaEnvioInstagram = {
+  recipient_id?: string;
+  message_id?: string;
+  error?: {
+    message?: string;
+    type?: string;
+    code?: number;
+    error_subcode?: number;
+  };
+};
+
 function obtenerVerifyToken() {
   return (
     process.env.INSTAGRAM_VERIFY_TOKEN?.trim() ||
@@ -163,6 +186,214 @@ function obtenerTextoMensaje(
     evento.message?.text?.trim() || "";
 
   return texto.slice(0, 4096);
+}
+
+async function obtenerHistorialConversacion(
+  conversacionReferencia: FirebaseFirestore.DocumentReference,
+  mensajeActualId: string
+): Promise<MensajeHistorial[]> {
+  const mensajesSnapshot =
+    await conversacionReferencia
+      .collection("messages")
+      .orderBy("createdAt", "desc")
+      .limit(21)
+      .get();
+
+  return mensajesSnapshot.docs
+    .filter(
+      (documento) =>
+        documento.id !== mensajeActualId
+    )
+    .map((documento) => {
+      const data = documento.data();
+
+      return {
+        role:
+          data.role === "assistant"
+            ? "assistant"
+            : "user",
+        content:
+          typeof data.content === "string"
+            ? data.content.trim()
+            : "",
+      } as MensajeHistorial;
+    })
+    .filter(
+      (mensaje) =>
+        mensaje.content.length > 0
+    )
+    .reverse()
+    .slice(-20);
+}
+
+async function generarRespuestaConIA({
+  request,
+  mensaje,
+  historial,
+  empresa,
+  empresaId,
+  conversacionId,
+}: {
+  request: NextRequest;
+  mensaje: string;
+  historial: MensajeHistorial[];
+  empresa: FirebaseFirestore.DocumentData;
+  empresaId: string;
+  conversacionId: string;
+}) {
+  const secretoInterno =
+    process.env
+      .INTERNAL_API_SECRET
+      ?.trim();
+
+  if (!secretoInterno) {
+    throw new Error(
+      "Falta configurar INTERNAL_API_SECRET."
+    );
+  }
+
+  const urlGemini = new URL(
+    "/api/gemini",
+    request.nextUrl.origin
+  );
+
+  const respuesta = await fetch(
+    urlGemini,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/json",
+        "x-ndi-internal-secret":
+          secretoInterno,
+      },
+      body: JSON.stringify({
+        mensaje,
+        historial,
+        empresa,
+        empresaId,
+        chatId: conversacionId,
+      }),
+      cache: "no-store",
+    }
+  );
+
+  const responseText =
+    await respuesta.text();
+
+  let data: GeminiResponse;
+
+  try {
+    data = JSON.parse(
+      responseText
+    ) as GeminiResponse;
+  } catch {
+    throw new Error(
+      `La API de IA devolvió una respuesta inválida. Estado ${respuesta.status}.`
+    );
+  }
+
+  if (!respuesta.ok) {
+    throw new Error(
+      data.error ||
+        `La IA respondió con estado ${respuesta.status}.`
+    );
+  }
+
+  const texto =
+    typeof data.respuesta === "string"
+      ? data.respuesta.trim()
+      : "";
+
+  if (!texto) {
+    throw new Error(
+      "La IA devolvió una respuesta vacía."
+    );
+  }
+
+  return texto;
+}
+
+async function enviarMensajeInstagram({
+  instagramAccountId,
+  instagramSenderId,
+  accessToken,
+  texto,
+}: {
+  instagramAccountId: string;
+  instagramSenderId: string;
+  accessToken: string;
+  texto: string;
+}) {
+  const version =
+    process.env
+      .INSTAGRAM_API_VERSION
+      ?.trim() ||
+    "v26.0";
+
+  const response = await fetch(
+    `https://graph.instagram.com/${version}/${encodeURIComponent(
+      instagramAccountId
+    )}/messages`,
+    {
+      method: "POST",
+      headers: {
+        Authorization:
+          `Bearer ${accessToken}`,
+        "Content-Type":
+          "application/json",
+      },
+      body: JSON.stringify({
+        recipient: {
+          id: instagramSenderId,
+        },
+        message: {
+          text: texto.slice(
+            0,
+            1000
+          ),
+        },
+      }),
+      cache: "no-store",
+    }
+  );
+
+  const responseText =
+    await response.text();
+
+  let data:
+    RespuestaEnvioInstagram;
+
+  try {
+    data = JSON.parse(
+      responseText
+    ) as RespuestaEnvioInstagram;
+  } catch {
+    throw new Error(
+      `Instagram devolvió una respuesta inválida. Estado ${response.status}.`
+    );
+  }
+
+  if (
+    !response.ok ||
+    data.error
+  ) {
+    throw new Error(
+      data.error?.message ||
+        `Instagram respondió con estado ${response.status}.`
+    );
+  }
+
+  const messageId =
+    data.message_id?.trim();
+
+  if (!messageId) {
+    throw new Error(
+      "Instagram no devolvió el ID del mensaje enviado."
+    );
+  }
+
+  return messageId;
 }
 
 export async function GET(
@@ -527,6 +758,239 @@ export async function POST(
             instagramAccountId,
           },
         });
+
+        /*
+         * Si una persona tomó el control del chat,
+         * guardamos el DM pero la IA no responde.
+         */
+        const estadoConversacion =
+          await conversacionReferencia.get();
+
+        const datosConversacion =
+          estadoConversacion.data() ?? {};
+
+        const humanoActivo =
+          datosConversacion
+            .humanoActivo === true ||
+          datosConversacion
+            .atendidoPor === "humano";
+
+        if (humanoActivo) {
+          console.log(
+            `La conversación ${conversacionId} está siendo atendida por una persona.`
+          );
+
+          continue;
+        }
+
+        const integracion =
+          conexion.integracion ?? {};
+
+        const accessToken =
+          typeof integracion
+            .accessToken === "string"
+            ? integracion
+                .accessToken
+                .trim()
+            : "";
+
+        if (!accessToken) {
+          console.error(
+            `La empresa ${empresaId} no tiene Access Token de Instagram.`
+          );
+
+          continue;
+        }
+
+        const empresaSnapshot =
+          await empresaReferencia.get();
+
+        if (!empresaSnapshot.exists) {
+          console.error(
+            `La empresa ${empresaId} ya no existe.`
+          );
+
+          continue;
+        }
+
+        const empresa =
+          empresaSnapshot.data() ?? {};
+
+        const historial =
+          await obtenerHistorialConversacion(
+            conversacionReferencia,
+            messageId
+          );
+
+        let respuestaIA: string;
+
+        try {
+          respuestaIA =
+            await generarRespuestaConIA({
+              request,
+              mensaje: contenido,
+              historial,
+              empresa,
+              empresaId,
+              conversacionId,
+            });
+        } catch (errorIA) {
+          console.error(
+            `No se pudo generar respuesta de IA para ${conversacionId}:`,
+            errorIA
+          );
+
+          continue;
+        }
+
+        /*
+         * Revisión final por si una persona tomó el
+         * chat mientras la IA estaba generando.
+         */
+        const estadoAntesDeEnviar =
+          await conversacionReferencia.get();
+
+        const datosAntesDeEnviar =
+          estadoAntesDeEnviar.data() ??
+          {};
+
+        const humanoTomoControl =
+          datosAntesDeEnviar
+            .humanoActivo === true ||
+          datosAntesDeEnviar
+            .atendidoPor === "humano";
+
+        if (humanoTomoControl) {
+          console.log(
+            `La respuesta automática de Instagram se canceló porque una persona tomó ${conversacionId}.`
+          );
+
+          continue;
+        }
+
+        const respuestaReferencia =
+          conversacionReferencia
+            .collection("messages")
+            .doc(`ai_${messageId}`);
+
+        const respuestaFueCreada =
+          await adminDb.runTransaction(
+            async (transaction) => {
+              const respuestaExistente =
+                await transaction.get(
+                  respuestaReferencia
+                );
+
+              if (
+                respuestaExistente.exists
+              ) {
+                return false;
+              }
+
+              transaction.set(
+                respuestaReferencia,
+                {
+                  role:
+                    "assistant",
+                  content:
+                    respuestaIA,
+                  enviadoPor:
+                    "ia",
+                  canal:
+                    "instagram",
+                  respuestaA:
+                    messageId,
+                  estadoEnvio:
+                    "pendiente",
+                  createdAt:
+                    FieldValue.serverTimestamp(),
+                }
+              );
+
+              transaction.set(
+                conversacionReferencia,
+                {
+                  ultimoMensaje:
+                    respuestaIA,
+                  ultimoRol:
+                    "assistant",
+                  cantidadMensajes:
+                    FieldValue.increment(
+                      1
+                    ),
+                  atendidoPor:
+                    "ia",
+                  humanoActivo:
+                    false,
+                  updatedAt:
+                    FieldValue.serverTimestamp(),
+                },
+                {
+                  merge: true,
+                }
+              );
+
+              return true;
+            }
+          );
+
+        if (!respuestaFueCreada) {
+          console.log(
+            `La respuesta de Instagram para ${messageId} ya existía.`
+          );
+
+          continue;
+        }
+
+        try {
+          const instagramMessageId =
+            await enviarMensajeInstagram({
+              instagramAccountId,
+              instagramSenderId,
+              accessToken,
+              texto:
+                respuestaIA,
+            });
+
+          await respuestaReferencia.set(
+            {
+              estadoEnvio:
+                "enviado",
+              instagramMessageId,
+              enviadoAt:
+                FieldValue.serverTimestamp(),
+            },
+            {
+              merge: true,
+            }
+          );
+
+          console.log(
+            `✅ La IA respondió por Instagram a ${instagramSenderId}.`
+          );
+        } catch (errorEnvio) {
+          console.error(
+            `No se pudo enviar la respuesta por Instagram a ${instagramSenderId}:`,
+            errorEnvio
+          );
+
+          await respuestaReferencia.set(
+            {
+              estadoEnvio:
+                "error",
+              errorEnvio:
+                errorEnvio instanceof
+                Error
+                  ? errorEnvio.message
+                  : "Error desconocido",
+              updatedAt:
+                FieldValue.serverTimestamp(),
+            },
+            {
+              merge: true,
+            }
+          );
+        }
       }
     }
 
