@@ -76,10 +76,11 @@ const integraciones: Integracion[] = [
     id: "messenger",
     nombre: "Facebook Messenger",
     descripcion:
-      "La integración con Facebook Messenger todavía no está disponible.",
+      "Conectá una Página de Facebook para recibir mensajes de Messenger y gestionarlos desde NDI AI.",
     icono: "📨",
-    estado: "proximamente",
-    detallePlan: "Próximamente",
+    estado: "disponible",
+    ruta: "messenger",
+    detallePlan: "Disponible",
   },
 ];
 
