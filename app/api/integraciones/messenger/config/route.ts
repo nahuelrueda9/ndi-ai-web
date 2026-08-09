@@ -475,3 +475,116 @@ export async function POST(
     );
   }
 }
+
+export async function DELETE(
+  request: NextRequest
+) {
+  try {
+    const usuario =
+      await obtenerUsuario(request);
+
+    if (!usuario) {
+      return NextResponse.json(
+        {
+          error:
+            "Tenés que iniciar sesión.",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
+    const empresaId =
+      request.nextUrl.searchParams
+        .get("empresaId")
+        ?.trim();
+
+    if (!empresaId) {
+      return NextResponse.json(
+        {
+          error:
+            "empresaId requerido.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    const acceso =
+      await obtenerRolEmpresa({
+        empresaId,
+        uid: usuario.uid,
+      });
+
+    if (!acceso.existe) {
+      return NextResponse.json(
+        {
+          error:
+            "La empresa no existe.",
+        },
+        {
+          status: 404,
+        }
+      );
+    }
+
+    if (
+      !puedeEditarIntegracion(
+        acceso.rol
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Solo el Propietario o un Administrador pueden desconectar esta integración.",
+        },
+        {
+          status: 403,
+        }
+      );
+    }
+
+    const integracionReferencia =
+      adminDb
+        .collection("companies")
+        .doc(empresaId)
+        .collection("integrations")
+        .doc("messenger");
+
+    const integracionActual =
+      await integracionReferencia.get();
+
+    if (!integracionActual.exists) {
+      return NextResponse.json({
+        success: true,
+        message:
+          "Messenger ya estaba desconectado.",
+      });
+    }
+
+    await integracionReferencia.delete();
+
+    return NextResponse.json({
+      success: true,
+      message:
+        "Facebook Messenger fue desconectado correctamente. Las conversaciones guardadas se conservaron.",
+    });
+  } catch (error) {
+    console.error(
+      "Error desconectando Messenger:",
+      error
+    );
+
+    return NextResponse.json(
+      {
+        error:
+          "No se pudo desconectar Messenger.",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
+}

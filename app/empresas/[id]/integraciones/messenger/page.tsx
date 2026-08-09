@@ -24,6 +24,7 @@ import {
   MessageCircle,
   PlugZap,
   ShieldCheck,
+  Unplug,
 } from "lucide-react";
 
 import {
@@ -141,6 +142,11 @@ export default function MessengerPage() {
 
   const [probando, setProbando] =
     useState(false);
+
+  const [
+    desconectando,
+    setDesconectando,
+  ] = useState(false);
 
   const [mensaje, setMensaje] =
     useState("");
@@ -594,6 +600,102 @@ export default function MessengerPage() {
     }
   }
 
+  async function desconectarMessenger() {
+    if (
+      guardando ||
+      probando ||
+      desconectando
+    ) {
+      return;
+    }
+
+    if (
+      !empresaId ||
+      !accesoVerificado
+    ) {
+      setError(
+        "No se encontró la empresa."
+      );
+      return;
+    }
+
+    const confirmar =
+      window.confirm(
+        "¿Querés desconectar Messenger? NDI AI dejará de recibir y responder mensajes de esta Página. Las conversaciones guardadas no se borrarán."
+      );
+
+    if (!confirmar) {
+      return;
+    }
+
+    setDesconectando(true);
+    setError("");
+    setMensaje("");
+
+    try {
+      const idToken =
+        await obtenerTokenUsuario();
+
+      const response = await fetch(
+        `/api/integraciones/messenger/config?empresaId=${encodeURIComponent(
+          empresaId
+        )}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization:
+              `Bearer ${idToken}`,
+          },
+          cache: "no-store",
+        }
+      );
+
+      const responseText =
+        await response.text();
+
+      let data: RespuestaApi = {};
+
+      if (responseText) {
+        try {
+          data = JSON.parse(
+            responseText
+          ) as RespuestaApi;
+        } catch {
+          throw new Error(
+            "El servidor devolvió una respuesta inválida al desconectar Messenger."
+          );
+        }
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+            "No se pudo desconectar Messenger."
+        );
+      }
+
+      setEstado(
+        "sin_configurar"
+      );
+      setPageId("");
+      setPageName("");
+      setAccessToken("");
+
+      setMensaje(
+        data.message ||
+          "Facebook Messenger fue desconectado correctamente."
+      );
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "No se pudo desconectar Messenger."
+      );
+    } finally {
+      setDesconectando(false);
+    }
+  }
+
   async function copiar(
     valor: string,
     tipo: "webhook" | "verify"
@@ -889,7 +991,9 @@ export default function MessengerPage() {
               guardarYConectar
             }
             disabled={
-              guardando || probando
+              guardando ||
+              probando ||
+              desconectando
             }
             className="w-full"
           >
@@ -911,7 +1015,8 @@ export default function MessengerPage() {
               }
               disabled={
                 guardando ||
-                probando
+                probando ||
+                desconectando
               }
               className="w-full"
             >
@@ -919,6 +1024,27 @@ export default function MessengerPage() {
                 ? "Probando..."
                 : "Probar conexión nuevamente"}
             </Button>
+          )}
+
+          {estado !==
+            "sin_configurar" && (
+            <button
+              type="button"
+              onClick={
+                desconectarMessenger
+              }
+              disabled={
+                guardando ||
+                probando ||
+                desconectando
+              }
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300 dark:hover:bg-red-500/15"
+            >
+              <Unplug className="h-4 w-4" />
+              {desconectando
+                ? "Desconectando..."
+                : "Desconectar Messenger"}
+            </button>
           )}
 
           <p className="text-xs leading-5 text-slate-600 dark:text-zinc-500">
