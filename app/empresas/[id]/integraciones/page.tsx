@@ -66,10 +66,11 @@ const integraciones: Integracion[] = [
     id: "instagram",
     nombre: "Instagram",
     descripcion:
-      "La integración con mensajes de Instagram está en preparación y se habilitará más adelante.",
+      "Conectá una cuenta profesional de Instagram para recibir mensajes directos y gestionarlos desde NDI AI.",
     icono: "📸",
-    estado: "proximamente",
-    detallePlan: "Próximamente",
+    estado: "disponible",
+    ruta: "instagram",
+    detallePlan: "Disponible",
   },
   {
     id: "messenger",
@@ -302,8 +303,8 @@ export default function IntegracionesPage() {
         </h1>
 
         <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
-          Empezá conectando WhatsApp, el canal principal de NDI AI.
-          Las demás integraciones se habilitarán cuando estén listas.
+          Conectá los canales que usa tu negocio para centralizar
+          conversaciones y atención desde NDI AI.
         </p>
       </header>
 
