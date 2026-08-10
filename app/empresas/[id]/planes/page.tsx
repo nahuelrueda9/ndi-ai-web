@@ -72,47 +72,60 @@ const PLANES: Plan[] = [
     id: "free",
     nombre: "Free",
     precio: "$0",
-    descripcion: "Para emprendedores que quieren automatizar la atención por WhatsApp.",
+    descripcion:
+      "Para empezar con una presencia digital profesional y probar NDI AI.",
     funciones: [
       "1 empresa",
+      "Página pública del negocio",
+      "Servicios y productos",
+      "Logo, portada y galería",
+      "Datos de contacto, horarios y ubicación",
+      "Botón de WhatsApp",
+      "Redes sociales",
+      "QR y enlace para compartir",
+      "Formulario de contacto",
       "50 conversaciones por mes",
       "250 respuestas de IA por mes",
-      "WhatsApp con respuestas de IA",
-      "Base de conocimiento",
-      "Panel de conversaciones",
       "Estadísticas básicas",
-      "Firma NDI AI en la primera respuesta automática",
+      "Marca NDI AI visible",
     ],
   },
   {
     id: "pro",
     nombre: "Pro",
-    precio: "$14.999 / mes",
-    descripcion: "Para negocios que necesitan automatizar su atención.",
+    precio: "$14.999 / 30 días",
+    descripcion:
+      "Para negocios que quieren convertir su página en una herramienta de atención y ventas.",
     destacado: true,
     funciones: [
       "Todo lo incluido en Free",
       "1.000 conversaciones por mes",
       "5.000 respuestas de IA por mes",
-      "Widget web",
-      "Automatizaciones",
-      "Agenda y turnos",
-      "Equipo y operadores",
-      "Instagram y Facebook cuando estén disponibles",
+      "Asistente de IA en la página",
+      "Agenda y reservas online",
+      "Solicitudes de presupuesto",
+      "Captura y gestión de leads",
+      "Notificaciones en tiempo real",
       "Estadísticas avanzadas",
+      "Base de conocimiento",
+      "Automatizaciones",
+      "Equipo y operadores",
       "Atención humana",
-      "Sin publicidad ni firma de NDI AI",
+      "Sin marca comercial de NDI AI",
     ],
   },
   {
     id: "business",
     nombre: "Empresa",
     precio: "A medida",
-    descripcion: "Para equipos con mayor volumen y necesidades especiales.",
+    descripcion:
+      "Para empresas con mayor volumen, equipos de trabajo y necesidades especiales.",
     funciones: [
       "Todo lo incluido en Pro",
-      "Conversaciones personalizadas",
+      "10.000 conversaciones por mes",
+      "20.000 respuestas de IA por mes",
       "Múltiples agentes",
+      "Mayor capacidad operativa",
       "Soporte prioritario",
       "Configuración asistida",
       "Integraciones personalizadas",
@@ -411,7 +424,8 @@ export default function PlanesPage() {
         </h1>
 
         <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
-          Elegí el plan que mejor se adapte al volumen de atención de{" "}
+          Elegí el plan que mejor se adapte a la presencia digital,
+          atención y crecimiento de{" "}
           {empresa?.nombre || empresa?.name || "tu empresa"}.
         </p>
       </header>

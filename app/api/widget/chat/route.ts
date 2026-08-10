@@ -8,6 +8,7 @@ import {
 } from "firebase-admin/firestore";
 
 import { adminDb } from "@/lib/firebaseAdmin";
+import { empresaTieneFuncion } from "@/lib/plans/planAccess";
 
 type MensajeHistorial = {
   role: "user" | "assistant";
@@ -838,20 +839,29 @@ export async function GET(request: Request) {
       );
     }
 
-    const empresa = obtenerEmpresaPublica(
-      empresaSnapshot.data() ?? {}
-    );
+    const datosEmpresa =
+      empresaSnapshot.data() ?? {};
 
-    if (empresa.plan === "free") {
+    if (
+      !empresaTieneFuncion(
+        datosEmpresa,
+        "asistente_ia"
+      )
+    ) {
       return NextResponse.json(
         {
           error:
-            "El widget web está disponible en los planes Pro y Empresa.",
+            "El asistente de IA está disponible en los planes Pro y Empresa.",
           upgradeRequired: true,
         },
         { status: 403 }
       );
     }
+
+    const empresa =
+      obtenerEmpresaPublica(
+        datosEmpresa
+      );
 
     const conversacionId = limpiarTexto(
       url.searchParams.get("conversacionId"),
@@ -942,20 +952,29 @@ export async function POST(request: Request) {
       );
     }
 
-    const empresa = obtenerEmpresaPublica(
-      empresaSnapshot.data() ?? {}
-    );
+    const datosEmpresa =
+      empresaSnapshot.data() ?? {};
 
-    if (empresa.plan === "free") {
+    if (
+      !empresaTieneFuncion(
+        datosEmpresa,
+        "asistente_ia"
+      )
+    ) {
       return NextResponse.json(
         {
           error:
-            "El widget web está disponible en los planes Pro y Empresa.",
+            "El asistente de IA está disponible en los planes Pro y Empresa.",
           upgradeRequired: true,
         },
         { status: 403 }
       );
     }
+
+    const empresa =
+      obtenerEmpresaPublica(
+        datosEmpresa
+      );
 
     let referenciaConversacion: DocumentReference<DocumentData>;
     let accessToken = limpiarTexto(body.accessToken, 200);

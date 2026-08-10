@@ -5,6 +5,7 @@ import {
 import { FieldValue } from "firebase-admin/firestore";
 
 import { adminDb } from "@/lib/firebaseAdmin";
+import { empresaTieneFuncion } from "@/lib/plans/planAccess";
 import { crearNotificacion } from "@/lib/notifications/notificationService";
 
 type ReservaBody = {
@@ -28,6 +29,8 @@ type CatalogoServicio = {
 
 type EmpresaPublica = {
   nombre?: string;
+  plan?: "free" | "pro" | "business";
+  subscriptionEndsAt?: unknown;
   paginaPublica?: {
     publicada?: boolean;
     slug?: string;
@@ -176,17 +179,22 @@ export async function POST(
           "==",
           slug,
         )
-        .limit(1)
+        .limit(2)
         .get();
 
-    if (empresasSnapshot.empty) {
+    if (empresasSnapshot.size !== 1) {
       return NextResponse.json(
         {
           error:
-            "El negocio no existe.",
+            empresasSnapshot.empty
+              ? "El negocio no existe."
+              : "La URL pública no es válida.",
         },
         {
-          status: 404,
+          status:
+            empresasSnapshot.empty
+              ? 404
+              : 409,
         },
       );
     }
@@ -208,6 +216,23 @@ export async function POST(
         },
         {
           status: 404,
+        },
+      );
+    }
+
+    if (
+      !empresaTieneFuncion(
+        empresa,
+        "turnos",
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Las reservas online requieren un plan Pro o Empresa.",
+        },
+        {
+          status: 403,
         },
       );
     }

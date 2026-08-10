@@ -15,6 +15,7 @@ import { notFound } from "next/navigation";
 import Script from "next/script";
 
 import { adminDb } from "@/lib/firebaseAdmin";
+import { empresaTieneFuncion } from "@/lib/plans/planAccess";
 import ReservaForm from "./ReservaForm";
 import ContactoForm from "./ContactForm";
 import PublicAnalytics from "./PublicAnalytics";
@@ -25,6 +26,8 @@ export const dynamic = "force-dynamic";
 
 interface Empresa {
   nombre?: string;
+  plan?: "free" | "pro" | "business";
+  subscriptionEndsAt?: unknown;
   rubro?: string;
   email?: string;
   telefono?: string;
@@ -217,7 +220,7 @@ export default async function NegocioPage({
   const empresasSnapshot = await adminDb
     .collection("companies")
     .where("paginaPublica.slug", "==", slug)
-    .limit(1)
+    .limit(2)
     .get();
 
   if (empresasSnapshot.size !== 1) {
@@ -364,6 +367,30 @@ export default async function NegocioPage({
       url: string;
     } => Boolean(red.url),
   );
+
+  const puedeUsarTurnos =
+    empresaTieneFuncion(
+      empresa,
+      "turnos",
+    );
+
+  const puedeUsarPresupuestos =
+    empresaTieneFuncion(
+      empresa,
+      "presupuestos",
+    );
+
+  const puedeUsarAsistenteIA =
+    empresaTieneFuncion(
+      empresa,
+      "asistente_ia",
+    );
+
+  const sinMarcaNDI =
+    empresaTieneFuncion(
+      empresa,
+      "sin_marca_ndi",
+    );
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
@@ -693,28 +720,29 @@ export default async function NegocioPage({
       )}
 
       {/* RESERVA ONLINE */}
-      {servicios.length > 0 && (
-        <section className="border-y border-zinc-800 bg-zinc-900/40">
-          <div className="mx-auto max-w-4xl px-5 py-20 sm:px-8">
-            <ReservaForm
-              slug={slug}
-              servicios={servicios.map(
-                (servicio) => ({
-                  id: servicio.id,
-                  nombre: servicio.nombre,
-                  precio:
-                    servicio.precio,
-                  duracionMinutos:
-                    servicio.duracionMinutos,
-                }),
-              )}
-              colorPrincipal={
-                colorPrincipal
-              }
-            />
-          </div>
-        </section>
-      )}
+      {puedeUsarTurnos &&
+        servicios.length > 0 && (
+          <section className="border-y border-zinc-800 bg-zinc-900/40">
+            <div className="mx-auto max-w-4xl px-5 py-20 sm:px-8">
+              <ReservaForm
+                slug={slug}
+                servicios={servicios.map(
+                  (servicio) => ({
+                    id: servicio.id,
+                    nombre: servicio.nombre,
+                    precio:
+                      servicio.precio,
+                    duracionMinutos:
+                      servicio.duracionMinutos,
+                  }),
+                )}
+                colorPrincipal={
+                  colorPrincipal
+                }
+              />
+            </div>
+          </section>
+        )}
 
       {/* PRODUCTOS */}
       {productos.length > 0 && (
@@ -754,20 +782,22 @@ export default async function NegocioPage({
       )}
 
       {/* PRESUPUESTO */}
-      <section className="border-y border-zinc-800 bg-zinc-900/40">
-        <div className="mx-auto max-w-4xl px-5 py-20 sm:px-8">
-          <PresupuestoFormulario
-            slug={slug}
-            items={catalogo.map(
-              (item) => ({
-                id: item.id,
-                nombre: item.nombre,
-                tipo: item.tipo,
-              }),
-            )}
-          />
-        </div>
-      </section>
+      {puedeUsarPresupuestos && (
+        <section className="border-y border-zinc-800 bg-zinc-900/40">
+          <div className="mx-auto max-w-4xl px-5 py-20 sm:px-8">
+            <PresupuestoFormulario
+              slug={slug}
+              items={catalogo.map(
+                (item) => ({
+                  id: item.id,
+                  nombre: item.nombre,
+                  tipo: item.tipo,
+                }),
+              )}
+            />
+          </div>
+        </section>
+      )}
 
       {/* GALERÍA */}
       {galeria.length > 0 && (
@@ -922,11 +952,13 @@ export default async function NegocioPage({
       </section>
 
       {/* ASISTENTE IA REAL */}
-      <Script
-        src="/widget.js"
-        data-empresa-id={documento.id}
-        strategy="afterInteractive"
-      />
+      {puedeUsarAsistenteIA && (
+        <Script
+          src="/widget.js"
+          data-empresa-id={documento.id}
+          strategy="afterInteractive"
+        />
+      )}
 
       {/* FOOTER */}
       <footer className="border-t border-zinc-800">
@@ -944,12 +976,14 @@ export default async function NegocioPage({
             )}
           </div>
 
-          <p>
-            Página creada con{" "}
-            <span className="font-medium text-zinc-300">
-              NDI AI
-            </span>
-          </p>
+          {!sinMarcaNDI && (
+            <p>
+              Página creada con{" "}
+              <span className="font-medium text-zinc-300">
+                NDI AI
+              </span>
+            </p>
+          )}
         </div>
       </footer>
     </main>

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 
 import { adminDb } from "@/lib/firebaseAdmin";
+import { empresaTieneFuncion } from "@/lib/plans/planAccess";
 import { crearNotificacion } from "@/lib/notifications/notificationService";
 
 type BodyRequest = {
@@ -10,6 +11,7 @@ type BodyRequest = {
   email?: string;
   telefono?: string;
   mensaje?: string;
+  tipo?: "contacto" | "presupuesto";
 
   // Campo honeypot opcional. Debe quedar vacío.
   website?: string;
@@ -108,6 +110,14 @@ export async function POST(
       body.mensaje,
       MAX_MENSAJE
     );
+
+    const esPresupuesto =
+      body.tipo === "presupuesto" ||
+      mensaje
+        .toUpperCase()
+        .startsWith(
+          "SOLICITUD DE PRESUPUESTO"
+        );
 
     if (!slug) {
       return NextResponse.json(
@@ -221,6 +231,25 @@ export async function POST(
       );
     }
 
+    if (
+      esPresupuesto &&
+      !empresaTieneFuncion(
+        empresa,
+        "presupuestos"
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Las solicitudes de presupuesto requieren un plan Pro o Empresa.",
+          upgradeRequired: true,
+        },
+        {
+          status: 403,
+        }
+      );
+    }
+
     const empresaId =
       empresaDocumento.id;
 
@@ -244,7 +273,9 @@ export async function POST(
 
     const etiquetas = [
       "pagina-publica",
-      "contacto-web",
+      esPresupuesto
+        ? "presupuesto-web"
+        : "contacto-web",
     ];
 
     await adminDb.runTransaction(
@@ -272,7 +303,9 @@ export async function POST(
             origen: "pagina_publica",
             canal: "web",
             tipoContacto:
-              "formulario_publico",
+              esPresupuesto
+                ? "presupuesto_publico"
+                : "formulario_publico",
 
             ultimoMensaje: mensaje,
             ultimoRol: "user",
@@ -316,7 +349,9 @@ export async function POST(
         empresaId,
         tipo: "lead",
         titulo:
-          "Nuevo contacto desde la página",
+          esPresupuesto
+            ? "Nueva solicitud de presupuesto"
+            : "Nuevo contacto desde la página",
         descripcion:
           `${nombre}: ${mensaje.slice(0, 140)}`,
         chatId: conversacionRef.id,
@@ -325,6 +360,10 @@ export async function POST(
           `/empresas/${empresaId}/conversaciones/${conversacionRef.id}`,
         metadata: {
           origen: "pagina_publica",
+          tipo:
+            esPresupuesto
+              ? "presupuesto"
+              : "contacto",
           email,
           telefono,
         },
@@ -341,7 +380,9 @@ export async function POST(
         ok: true,
         leadId: conversacionRef.id,
         mensaje:
-          "Consulta enviada correctamente.",
+          esPresupuesto
+            ? "Solicitud de presupuesto enviada correctamente."
+            : "Consulta enviada correctamente.",
       },
       {
         status: 201,
