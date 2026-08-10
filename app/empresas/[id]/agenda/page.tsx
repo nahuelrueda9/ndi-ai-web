@@ -27,10 +27,10 @@ import {
   ChevronRight,
   Clock3,
   Filter,
+  Pencil,
   Plus,
   Trash2,
   UserRound,
-  XCircle,
 } from "lucide-react";
 
 import { db } from "@/lib/firebase";
@@ -43,7 +43,8 @@ type EstadoTurno =
   | "pendiente"
   | "confirmado"
   | "completado"
-  | "cancelado";
+  | "cancelado"
+  | "no_asistio";
 
 type Turno = {
   id: string;
@@ -51,6 +52,8 @@ type Turno = {
   email?: string;
   telefono?: string;
   servicio: string;
+  servicioId?: string;
+  precioServicio?: number;
   fecha: string;
   hora: string;
   duracionMinutos: number;
@@ -66,10 +69,21 @@ type FormularioTurno = {
   email: string;
   telefono: string;
   servicio: string;
+  servicioId: string;
   fecha: string;
   hora: string;
   duracionMinutos: string;
   notas: string;
+};
+
+type CatalogoServicio = {
+  id: string;
+  nombre: string;
+  descripcion?: string;
+  precio?: number;
+  duracionMinutos?: number;
+  activo?: boolean;
+  tipo?: "servicio" | "producto";
 };
 
 type FiltroEstado = "todos" | EstadoTurno;
@@ -79,9 +93,28 @@ type PlanEmpresa =
   | "pro"
   | "business";
 
+type ConfigDiaAgenda = {
+  activo: boolean;
+  apertura: string;
+  cierre: string;
+  descansoInicio: string;
+  descansoFin: string;
+};
+
+type AgendaConfig = {
+  activa: boolean;
+  intervaloMinutos: number;
+  dias: Record<string, ConfigDiaAgenda>;
+};
+
 type EmpresaPlan = {
   plan?: PlanEmpresa;
   subscriptionEndsAt?: unknown;
+  agendaConfig?: {
+    activa?: boolean;
+    intervaloMinutos?: number;
+    dias?: Record<string, Partial<ConfigDiaAgenda>>;
+  };
 };
 
 function convertirFechaPlan(valor: unknown) {
@@ -145,11 +178,78 @@ const DIAS_SEMANA = [
   "Dom",
 ];
 
+const DIAS_CONFIG = [
+  { clave: "1", nombre: "Lunes" },
+  { clave: "2", nombre: "Martes" },
+  { clave: "3", nombre: "Miércoles" },
+  { clave: "4", nombre: "Jueves" },
+  { clave: "5", nombre: "Viernes" },
+  { clave: "6", nombre: "Sábado" },
+  { clave: "0", nombre: "Domingo" },
+];
+
+const AGENDA_CONFIG_INICIAL: AgendaConfig = {
+  activa: false,
+  intervaloMinutos: 30,
+  dias: {
+    "0": {
+      activo: false,
+      apertura: "09:00",
+      cierre: "18:00",
+      descansoInicio: "",
+      descansoFin: "",
+    },
+    "1": {
+      activo: true,
+      apertura: "09:00",
+      cierre: "18:00",
+      descansoInicio: "",
+      descansoFin: "",
+    },
+    "2": {
+      activo: true,
+      apertura: "09:00",
+      cierre: "18:00",
+      descansoInicio: "",
+      descansoFin: "",
+    },
+    "3": {
+      activo: true,
+      apertura: "09:00",
+      cierre: "18:00",
+      descansoInicio: "",
+      descansoFin: "",
+    },
+    "4": {
+      activo: true,
+      apertura: "09:00",
+      cierre: "18:00",
+      descansoInicio: "",
+      descansoFin: "",
+    },
+    "5": {
+      activo: true,
+      apertura: "09:00",
+      cierre: "18:00",
+      descansoInicio: "",
+      descansoFin: "",
+    },
+    "6": {
+      activo: false,
+      apertura: "09:00",
+      cierre: "13:00",
+      descansoInicio: "",
+      descansoFin: "",
+    },
+  },
+};
+
 const FORMULARIO_INICIAL: FormularioTurno = {
   nombreCliente: "",
   email: "",
   telefono: "",
   servicio: "",
+  servicioId: "",
   fecha: obtenerFechaISO(new Date()),
   hora: "09:00",
   duracionMinutos: "60",
@@ -179,6 +279,10 @@ const ESTADOS: Record<
     nombre: "Cancelado",
     variant: "danger",
   },
+  no_asistio: {
+    nombre: "No asistió",
+    variant: "danger",
+  },
 };
 
 export default function AgendaPage() {
@@ -191,6 +295,11 @@ export default function AgendaPage() {
     : (parametroEmpresa as string | undefined);
 
   const [turnos, setTurnos] = useState<Turno[]>([]);
+  const [serviciosCatalogo, setServiciosCatalogo] =
+    useState<CatalogoServicio[]>([]);
+  const [editandoId, setEditandoId] =
+    useState<string | null>(null);
+
   const [mesActual, setMesActual] = useState(() => {
     const fecha = new Date();
     fecha.setDate(1);
@@ -223,6 +332,12 @@ export default function AgendaPage() {
     setAgendaHabilitada,
   ] = useState<boolean | null>(null);
 
+  const [agendaConfig, setAgendaConfig] =
+    useState<AgendaConfig>(AGENDA_CONFIG_INICIAL);
+
+  const [guardandoHorarios, setGuardandoHorarios] =
+    useState(false);
+
   useEffect(() => {
     if (!empresaId) {
       setError("No se encontró la empresa.");
@@ -234,6 +349,10 @@ export default function AgendaPage() {
       empresaId;
 
     let cancelarTurnos:
+      | (() => void)
+      | undefined;
+
+    let cancelarCatalogo:
       | (() => void)
       | undefined;
 
@@ -256,20 +375,68 @@ export default function AgendaPage() {
           return;
         }
 
+        const empresaData =
+          empresaSnapshot.data() as EmpresaPlan;
+
         const habilitada =
           planPermiteAgenda(
-            empresaSnapshot.data() as EmpresaPlan
+            empresaData
           );
 
         setAgendaHabilitada(
           habilitada
         );
 
+        setAgendaConfig(
+          normalizarAgendaConfig(
+            empresaData.agendaConfig
+          )
+        );
+
         if (!habilitada) {
           setTurnos([]);
+          setServiciosCatalogo([]);
           setCargando(false);
           return;
         }
+
+        cancelarCatalogo = onSnapshot(
+          collection(
+            db,
+            "companies",
+            empresaIdSeguro,
+            "catalog"
+          ),
+          (snapshot) => {
+            const servicios = snapshot.docs
+              .map((documento) => ({
+                id: documento.id,
+                ...(documento.data() as Omit<
+                  CatalogoServicio,
+                  "id"
+                >),
+              }))
+              .filter(
+                (item) =>
+                  item.tipo === "servicio" &&
+                  item.activo !== false
+              )
+              .sort((a, b) =>
+                a.nombre.localeCompare(
+                  b.nombre,
+                  "es"
+                )
+              );
+
+            setServiciosCatalogo(servicios);
+          },
+          (firebaseError) => {
+            console.error(
+              "Error al cargar servicios:",
+              firebaseError
+            );
+          }
+        );
 
         const turnosQuery = query(
           collection(
@@ -332,6 +499,7 @@ export default function AgendaPage() {
 
     return () => {
       cancelarTurnos?.();
+      cancelarCatalogo?.();
     };
   }, [empresaId]);
 
@@ -393,6 +561,7 @@ export default function AgendaPage() {
   function abrirNuevoTurno(
     fecha = fechaSeleccionada
   ) {
+    setEditandoId(null);
     setFormulario({
       ...FORMULARIO_INICIAL,
       fecha,
@@ -401,6 +570,57 @@ export default function AgendaPage() {
     setMostrandoFormulario(true);
     setError("");
     setMensaje("");
+  }
+
+  function editarTurno(turno: Turno) {
+    setEditandoId(turno.id);
+    setFormulario({
+      nombreCliente: turno.nombreCliente,
+      email: turno.email || "",
+      telefono: turno.telefono || "",
+      servicio: turno.servicio,
+      servicioId: turno.servicioId || "",
+      fecha: turno.fecha,
+      hora: turno.hora,
+      duracionMinutos: String(
+        turno.duracionMinutos
+      ),
+      notas: turno.notas || "",
+    });
+
+    setFechaSeleccionada(turno.fecha);
+    setMostrandoFormulario(true);
+    setError("");
+    setMensaje("");
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }
+
+  function seleccionarServicio(servicioId: string) {
+    const servicio = serviciosCatalogo.find(
+      (item) => item.id === servicioId
+    );
+
+    if (!servicio) {
+      setFormulario((actual) => ({
+        ...actual,
+        servicioId: "",
+        servicio: "",
+      }));
+      return;
+    }
+
+    setFormulario((actual) => ({
+      ...actual,
+      servicioId: servicio.id,
+      servicio: servicio.nombre,
+      duracionMinutos: String(
+        servicio.duracionMinutos || 60
+      ),
+    }));
   }
 
   function actualizarFormulario<
@@ -447,7 +667,7 @@ export default function AgendaPage() {
     return "";
   }
 
-  async function crearTurno(
+  async function guardarTurno(
     evento: FormEvent<HTMLFormElement>
   ) {
     evento.preventDefault();
@@ -466,46 +686,119 @@ export default function AgendaPage() {
       return;
     }
 
+    const duracion = Number(
+      formulario.duracionMinutos
+    );
+
+    const inicioNuevo =
+      convertirHoraAMinutos(formulario.hora);
+    const finNuevo = inicioNuevo + duracion;
+
+    const conflicto = turnos.find((turno) => {
+      if (
+        turno.id === editandoId ||
+        turno.fecha !== formulario.fecha ||
+        turno.estado === "cancelado" ||
+        turno.estado === "no_asistio"
+      ) {
+        return false;
+      }
+
+      const inicioExistente =
+        convertirHoraAMinutos(turno.hora);
+      const finExistente =
+        inicioExistente + turno.duracionMinutos;
+
+      return (
+        inicioNuevo < finExistente &&
+        finNuevo > inicioExistente
+      );
+    });
+
+    if (conflicto) {
+      setError(
+        `Ese horario se superpone con el turno de ${conflicto.nombreCliente} a las ${conflicto.hora}.`
+      );
+      return;
+    }
+
+    const servicioSeleccionado =
+      serviciosCatalogo.find(
+        (item) =>
+          item.id === formulario.servicioId
+      );
+
     setGuardando(true);
 
     try {
-      await addDoc(
-        collection(
-          db,
-          "companies",
-          empresaId,
-          "appointments"
-        ),
-        {
-          nombreCliente:
-            formulario.nombreCliente.trim(),
-          email: formulario.email.trim(),
-          telefono: formulario.telefono.trim(),
-          servicio: formulario.servicio.trim(),
-          fecha: formulario.fecha,
-          hora: formulario.hora,
-          duracionMinutos: Number(
-            formulario.duracionMinutos
+      const datosTurno = {
+        nombreCliente:
+          formulario.nombreCliente.trim(),
+        email: formulario.email.trim(),
+        telefono: formulario.telefono.trim(),
+        servicio: formulario.servicio.trim(),
+        servicioId:
+          formulario.servicioId || "",
+        precioServicio:
+          servicioSeleccionado?.precio || 0,
+        fecha: formulario.fecha,
+        hora: formulario.hora,
+        duracionMinutos: duracion,
+        notas: formulario.notas.trim(),
+        updatedAt: serverTimestamp(),
+      };
+
+      if (editandoId) {
+        await updateDoc(
+          doc(
+            db,
+            "companies",
+            empresaId,
+            "appointments",
+            editandoId
           ),
-          estado: "pendiente",
-          notas: formulario.notas.trim(),
-          origen: "manual",
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        }
-      );
+          datosTurno
+        );
+
+        setMensaje(
+          "Turno actualizado correctamente."
+        );
+      } else {
+        await addDoc(
+          collection(
+            db,
+            "companies",
+            empresaId,
+            "appointments"
+          ),
+          {
+            ...datosTurno,
+            estado: "pendiente",
+            origen: "manual",
+            createdAt: serverTimestamp(),
+          }
+        );
+
+        setMensaje(
+          "Turno creado correctamente."
+        );
+      }
 
       setFechaSeleccionada(formulario.fecha);
       setMostrandoFormulario(false);
+      setEditandoId(null);
       setFormulario(FORMULARIO_INICIAL);
-      setMensaje("Turno creado correctamente.");
     } catch (firebaseError) {
       console.error(
-        "Error al crear turno:",
+        "Error al guardar turno:",
         firebaseError
       );
 
-      setError("No se pudo crear el turno.");
+      setError(
+        editandoId
+          ? "No se pudo actualizar el turno."
+          : "No se pudo crear el turno."
+      );
     } finally {
       setGuardando(false);
     }
@@ -595,6 +888,129 @@ export default function AgendaPage() {
       setError("No se pudo eliminar el turno.");
     } finally {
       setProcesandoId(null);
+    }
+  }
+
+  function actualizarDiaAgenda(
+    clave: string,
+    campo: keyof ConfigDiaAgenda,
+    valor: string | boolean
+  ) {
+    setAgendaConfig((actual) => ({
+      ...actual,
+      dias: {
+        ...actual.dias,
+        [clave]: {
+          ...actual.dias[clave],
+          [campo]: valor,
+        },
+      },
+    }));
+  }
+
+  async function guardarConfiguracionHorarios() {
+    if (!empresaId || guardandoHorarios) {
+      return;
+    }
+
+    setError("");
+    setMensaje("");
+
+    if (
+      !Number.isFinite(agendaConfig.intervaloMinutos) ||
+      agendaConfig.intervaloMinutos < 5 ||
+      agendaConfig.intervaloMinutos > 240
+    ) {
+      setError("Elegí un intervalo de turnos válido.");
+      return;
+    }
+
+    for (const dia of DIAS_CONFIG) {
+      const config = agendaConfig.dias[dia.clave];
+
+      if (!config?.activo) {
+        continue;
+      }
+
+      if (
+        !horaAgendaValida(config.apertura) ||
+        !horaAgendaValida(config.cierre) ||
+        convertirHoraAMinutos(config.apertura) >=
+          convertirHoraAMinutos(config.cierre)
+      ) {
+        setError(
+          `Revisá el horario de ${dia.nombre.toLowerCase()}.`
+        );
+        return;
+      }
+
+      const tieneInicioDescanso = Boolean(
+        config.descansoInicio
+      );
+      const tieneFinDescanso = Boolean(
+        config.descansoFin
+      );
+
+      if (tieneInicioDescanso !== tieneFinDescanso) {
+        setError(
+          `Completá ambos horarios de descanso de ${dia.nombre.toLowerCase()} o dejalos vacíos.`
+        );
+        return;
+      }
+
+      if (
+        tieneInicioDescanso &&
+        tieneFinDescanso
+      ) {
+        if (
+          !horaAgendaValida(config.descansoInicio) ||
+          !horaAgendaValida(config.descansoFin) ||
+          convertirHoraAMinutos(config.descansoInicio) >=
+            convertirHoraAMinutos(config.descansoFin) ||
+          convertirHoraAMinutos(config.descansoInicio) <
+            convertirHoraAMinutos(config.apertura) ||
+          convertirHoraAMinutos(config.descansoFin) >
+            convertirHoraAMinutos(config.cierre)
+        ) {
+          setError(
+            `Revisá el descanso de ${dia.nombre.toLowerCase()}.`
+          );
+          return;
+        }
+      }
+    }
+
+    setGuardandoHorarios(true);
+
+    try {
+      await updateDoc(
+        doc(
+          db,
+          "companies",
+          empresaId
+        ),
+        {
+          agendaConfig,
+          updatedAt: serverTimestamp(),
+        }
+      );
+
+      setMensaje(
+        agendaConfig.activa
+          ? "Horarios de reservas guardados y activados."
+          : "Horarios guardados. Las reservas online siguen desactivadas."
+      );
+    } catch (firebaseError) {
+      console.error(
+        "Error al guardar horarios de agenda:",
+        firebaseError
+      );
+
+      setError(
+        "No se pudieron guardar los horarios de reservas."
+      );
+    } finally {
+      setGuardandoHorarios(false);
     }
   }
 
@@ -719,6 +1135,188 @@ export default function AgendaPage() {
         />
       </div>
 
+      <Card className="mb-6 overflow-hidden">
+        <div className="flex flex-col justify-between gap-4 border-b border-slate-200 p-5 dark:border-zinc-800 lg:flex-row lg:items-center">
+          <div>
+            <div className="flex flex-wrap items-center gap-3">
+              <h2 className="text-lg font-semibold text-slate-950 dark:text-white">
+                Disponibilidad para reservas online
+              </h2>
+
+              <Badge
+                variant={
+                  agendaConfig.activa
+                    ? "success"
+                    : "default"
+                }
+              >
+                {agendaConfig.activa
+                  ? "Reservas activas"
+                  : "Reservas desactivadas"}
+              </Badge>
+            </div>
+
+            <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
+              Definí qué días y horarios puede elegir un cliente desde la página pública.
+            </p>
+          </div>
+
+          <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950/50">
+            <div>
+              <p className="text-sm font-medium text-slate-950 dark:text-white">
+                Permitir reservas online
+              </p>
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-zinc-500">
+                Los clientes verán solamente horarios libres.
+              </p>
+            </div>
+
+            <input
+              type="checkbox"
+              checked={agendaConfig.activa}
+              onChange={(evento) =>
+                setAgendaConfig((actual) => ({
+                  ...actual,
+                  activa: evento.target.checked,
+                }))
+              }
+              className="h-5 w-5 accent-blue-600"
+            />
+          </label>
+        </div>
+
+        <div className="p-5">
+          <div className="mb-5 max-w-xs">
+            <label
+              htmlFor="intervaloTurnos"
+              className="mb-2 block text-sm font-medium text-slate-700 dark:text-zinc-300"
+            >
+              Intervalo entre horarios ofrecidos
+            </label>
+
+            <select
+              id="intervaloTurnos"
+              value={agendaConfig.intervaloMinutos}
+              onChange={(evento) =>
+                setAgendaConfig((actual) => ({
+                  ...actual,
+                  intervaloMinutos: Number(
+                    evento.target.value
+                  ),
+                }))
+              }
+              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white"
+            >
+              {[15, 30, 45, 60].map((minutos) => (
+                <option key={minutos} value={minutos}>
+                  Cada {minutos} minutos
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-3">
+            {DIAS_CONFIG.map((dia) => {
+              const config = agendaConfig.dias[dia.clave];
+
+              return (
+                <div
+                  key={dia.clave}
+                  className="grid gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-zinc-800 dark:bg-zinc-950/40 lg:grid-cols-[180px_1fr_1fr_1fr_1fr] lg:items-end"
+                >
+                  <label className="flex cursor-pointer items-center gap-3 lg:pb-2">
+                    <input
+                      type="checkbox"
+                      checked={config.activo}
+                      onChange={(evento) =>
+                        actualizarDiaAgenda(
+                          dia.clave,
+                          "activo",
+                          evento.target.checked
+                        )
+                      }
+                      className="h-5 w-5 accent-blue-600"
+                    />
+
+                    <span className="font-medium text-slate-950 dark:text-white">
+                      {dia.nombre}
+                    </span>
+                  </label>
+
+                  <HorarioCampo
+                    label="Apertura"
+                    value={config.apertura}
+                    disabled={!config.activo}
+                    onChange={(valor) =>
+                      actualizarDiaAgenda(
+                        dia.clave,
+                        "apertura",
+                        valor
+                      )
+                    }
+                  />
+
+                  <HorarioCampo
+                    label="Cierre"
+                    value={config.cierre}
+                    disabled={!config.activo}
+                    onChange={(valor) =>
+                      actualizarDiaAgenda(
+                        dia.clave,
+                        "cierre",
+                        valor
+                      )
+                    }
+                  />
+
+                  <HorarioCampo
+                    label="Descanso desde"
+                    value={config.descansoInicio}
+                    disabled={!config.activo}
+                    onChange={(valor) =>
+                      actualizarDiaAgenda(
+                        dia.clave,
+                        "descansoInicio",
+                        valor
+                      )
+                    }
+                  />
+
+                  <HorarioCampo
+                    label="Descanso hasta"
+                    value={config.descansoFin}
+                    disabled={!config.activo}
+                    onChange={(valor) =>
+                      actualizarDiaAgenda(
+                        dia.clave,
+                        "descansoFin",
+                        valor
+                      )
+                    }
+                  />
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-5 flex flex-col justify-between gap-3 border-t border-slate-200 pt-5 dark:border-zinc-800 sm:flex-row sm:items-center">
+            <p className="text-xs leading-5 text-slate-500 dark:text-zinc-500">
+              Los turnos ya ocupados y los horarios de descanso se eliminan automáticamente de la disponibilidad pública.
+            </p>
+
+            <Button
+              type="button"
+              disabled={guardandoHorarios}
+              onClick={guardarConfiguracionHorarios}
+            >
+              {guardandoHorarios
+                ? "Guardando..."
+                : "Guardar horarios"}
+            </Button>
+          </div>
+        </div>
+      </Card>
+
       {mensaje && (
         <Card className="mb-6 border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/10">
           <p className="text-sm text-emerald-700 dark:text-emerald-300">
@@ -739,7 +1337,7 @@ export default function AgendaPage() {
         <Card className="mb-6 p-6">
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-slate-950 dark:text-white">
-              Nuevo turno
+              {editandoId ? "Editar turno" : "Nuevo turno"}
             </h2>
 
             <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
@@ -748,7 +1346,7 @@ export default function AgendaPage() {
           </div>
 
           <form
-            onSubmit={crearTurno}
+            onSubmit={guardarTurno}
             className="space-y-5"
           >
             <div className="grid gap-5 md:grid-cols-2">
@@ -765,18 +1363,62 @@ export default function AgendaPage() {
                 placeholder="Ej: Juan Pérez"
               />
 
-              <Input
-                id="servicio"
-                label="Servicio o motivo"
-                value={formulario.servicio}
-                onChange={(evento) =>
-                  actualizarFormulario(
-                    "servicio",
-                    evento.target.value
-                  )
-                }
-                placeholder="Ej: Consulta inicial"
-              />
+              {serviciosCatalogo.length > 0 ? (
+                <div className="space-y-2">
+                  <label
+                    htmlFor="servicio"
+                    className="block text-sm font-medium text-slate-700 dark:text-zinc-300"
+                  >
+                    Servicio
+                  </label>
+
+                  <select
+                    id="servicio"
+                    value={formulario.servicioId}
+                    onChange={(evento) =>
+                      seleccionarServicio(
+                        evento.target.value
+                      )
+                    }
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white"
+                  >
+                    <option value="">
+                      Seleccioná un servicio
+                    </option>
+
+                    {serviciosCatalogo.map(
+                      (servicio) => (
+                        <option
+                          key={servicio.id}
+                          value={servicio.id}
+                        >
+                          {servicio.nombre}
+                          {servicio.precio
+                            ? ` · $${Number(
+                                servicio.precio
+                              ).toLocaleString(
+                                "es-AR"
+                              )}`
+                            : ""}
+                        </option>
+                      )
+                    )}
+                  </select>
+                </div>
+              ) : (
+                <Input
+                  id="servicio"
+                  label="Servicio o motivo"
+                  value={formulario.servicio}
+                  onChange={(evento) =>
+                    actualizarFormulario(
+                      "servicio",
+                      evento.target.value
+                    )
+                  }
+                  placeholder="Ej: Consulta inicial"
+                />
+              )}
 
               <Input
                 id="email"
@@ -878,6 +1520,7 @@ export default function AgendaPage() {
                 variant="secondary"
                 onClick={() => {
                   setMostrandoFormulario(false);
+                  setEditandoId(null);
                   setFormulario(
                     FORMULARIO_INICIAL
                   );
@@ -893,6 +1536,8 @@ export default function AgendaPage() {
               >
                 {guardando
                   ? "Guardando..."
+                  : editandoId
+                  ? "Guardar cambios"
                   : "Crear turno"}
               </Button>
             </div>
@@ -1083,6 +1728,7 @@ export default function AgendaPage() {
                   "confirmado",
                   "completado",
                   "cancelado",
+                  "no_asistio",
                 ] as FiltroEstado[]
               ).map((estado) => (
                 <button
@@ -1152,6 +1798,7 @@ export default function AgendaPage() {
                     onCambiarEstado={
                       cambiarEstado
                     }
+                    onEditar={editarTurno}
                     onEliminar={eliminarTurno}
                   />
                 ))}
@@ -1168,6 +1815,7 @@ function TurnoCard({
   turno,
   procesando,
   onCambiarEstado,
+  onEditar,
   onEliminar,
 }: {
   turno: Turno;
@@ -1176,6 +1824,7 @@ function TurnoCard({
     turno: Turno,
     estado: EstadoTurno
   ) => void;
+  onEditar: (turno: Turno) => void;
   onEliminar: (turno: Turno) => void;
 }) {
   return (
@@ -1205,15 +1854,27 @@ function TurnoCard({
           </p>
         </div>
 
-        <button
-          type="button"
-          disabled={procesando}
-          onClick={() => onEliminar(turno)}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50 dark:text-zinc-600 dark:hover:bg-red-500/10 dark:hover:text-red-400"
-          title="Eliminar turno"
-        >
-          <Trash2 className="h-4 w-4" />
-        </button>
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            type="button"
+            disabled={procesando}
+            onClick={() => onEditar(turno)}
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-blue-50 hover:text-blue-600 disabled:opacity-50 dark:text-zinc-600 dark:hover:bg-blue-500/10 dark:hover:text-blue-400"
+            title="Editar turno"
+          >
+            <Pencil className="h-4 w-4" />
+          </button>
+
+          <button
+            type="button"
+            disabled={procesando}
+            onClick={() => onEliminar(turno)}
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50 dark:text-zinc-600 dark:hover:bg-red-500/10 dark:hover:text-red-400"
+            title="Eliminar turno"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       <div className="mt-4 grid gap-2 text-xs text-slate-500 dark:text-zinc-500">
@@ -1279,6 +1940,21 @@ function TurnoCard({
           />
         )}
 
+        {turno.estado !== "no_asistio" &&
+          turno.estado !== "cancelado" && (
+            <AccionEstado
+              texto="No asistió"
+              disabled={procesando}
+              danger
+              onClick={() =>
+                onCambiarEstado(
+                  turno,
+                  "no_asistio"
+                )
+              }
+            />
+          )}
+
         {turno.estado !== "pendiente" && (
           <AccionEstado
             texto="Volver a pendiente"
@@ -1324,6 +2000,36 @@ function AccionEstado({
   );
 }
 
+function HorarioCampo({
+  label,
+  value,
+  disabled,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  disabled: boolean;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div>
+      <label className="mb-2 block text-xs font-medium text-slate-500 dark:text-zinc-500">
+        {label}
+      </label>
+
+      <input
+        type="time"
+        value={value}
+        disabled={disabled}
+        onChange={(evento) =>
+          onChange(evento.target.value)
+        }
+        className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+      />
+    </div>
+  );
+}
+
 function ResumenCard({
   titulo,
   valor,
@@ -1350,6 +2056,45 @@ function ResumenCard({
       </p>
     </Card>
   );
+}
+
+function convertirHoraAMinutos(hora: string) {
+  const [horas, minutos] = hora
+    .split(":")
+    .map(Number);
+
+  return horas * 60 + minutos;
+}
+
+function normalizarAgendaConfig(
+  config?: EmpresaPlan["agendaConfig"]
+): AgendaConfig {
+  const base = AGENDA_CONFIG_INICIAL;
+
+  const dias = Object.fromEntries(
+    Object.entries(base.dias).map(
+      ([clave, diaBase]) => [
+        clave,
+        {
+          ...diaBase,
+          ...(config?.dias?.[clave] || {}),
+        },
+      ]
+    )
+  ) as Record<string, ConfigDiaAgenda>;
+
+  return {
+    activa: config?.activa ?? false,
+    intervaloMinutos: Math.max(
+      5,
+      Number(config?.intervaloMinutos) || 30
+    ),
+    dias,
+  };
+}
+
+function horaAgendaValida(valor: string) {
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(valor);
 }
 
 function construirDiasCalendario(

@@ -1,7 +1,9 @@
 export type NombreHerramienta =
   | "solicitar_atencion_humana"
   | "guardar_datos_contacto"
-  | "crear_tarea_comercial";
+  | "crear_tarea_comercial"
+  | "consultar_disponibilidad_turnos"
+  | "crear_turno";
 
 export type SolicitarAtencionHumanaArgs = {
   motivo?: string;
@@ -21,10 +23,29 @@ export type CrearTareaComercialArgs = {
   prioridad?: "baja" | "media" | "alta";
 };
 
+export type ConsultarDisponibilidadTurnosArgs = {
+  servicioId?: string;
+  servicio?: string;
+  fecha: string;
+};
+
+export type CrearTurnoArgs = {
+  servicioId?: string;
+  servicio?: string;
+  fecha: string;
+  hora: string;
+  nombreCliente: string;
+  email?: string;
+  telefono?: string;
+  notas?: string;
+};
+
 export type ArgumentosHerramienta = {
   solicitar_atencion_humana: SolicitarAtencionHumanaArgs;
   guardar_datos_contacto: GuardarDatosContactoArgs;
   crear_tarea_comercial: CrearTareaComercialArgs;
+  consultar_disponibilidad_turnos: ConsultarDisponibilidadTurnosArgs;
+  crear_turno: CrearTurnoArgs;
 };
 
 export type LlamadaHerramienta<
@@ -65,7 +86,7 @@ export const herramientasIA = [
     function: {
       name: "guardar_datos_contacto",
       description:
-  "Guardar automáticamente nombre, email, teléfono y empresa cuando el visitante los mencione. Debe ejecutarse cada vez que el usuario proporcione alguno de esos datos.",
+        "Guardar automáticamente nombre, email, teléfono y empresa cuando el visitante los mencione. Debe ejecutarse cada vez que el usuario proporcione alguno de esos datos.",
       parameters: {
         type: "object",
         properties: {
@@ -118,6 +139,95 @@ export const herramientasIA = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "consultar_disponibilidad_turnos",
+      description:
+        "Consulta los horarios libres reales de un servicio para una fecha. Usar cuando el visitante pregunte por disponibilidad, horarios o quiera sacar un turno. Nunca inventar horarios: primero ejecutar esta herramienta.",
+      parameters: {
+        type: "object",
+        properties: {
+          servicioId: {
+            type: "string",
+            description:
+              "ID del servicio del catálogo si ya se conoce. Es preferible usarlo cuando esté disponible.",
+          },
+          servicio: {
+            type: "string",
+            description:
+              "Nombre del servicio cuando no se conoce su ID exacto.",
+          },
+          fecha: {
+            type: "string",
+            description:
+              "Fecha solicitada en formato YYYY-MM-DD.",
+          },
+        },
+        required: ["fecha"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "crear_turno",
+      description:
+        "Crea una reserva real en la agenda del negocio. Ejecutar únicamente después de que el visitante haya confirmado servicio, fecha y hora y haya proporcionado al menos teléfono o email. No inventar datos faltantes.",
+      parameters: {
+        type: "object",
+        properties: {
+          servicioId: {
+            type: "string",
+            description:
+              "ID del servicio del catálogo si ya se conoce.",
+          },
+          servicio: {
+            type: "string",
+            description:
+              "Nombre del servicio si no se conoce el ID.",
+          },
+          fecha: {
+            type: "string",
+            description:
+              "Fecha confirmada para el turno en formato YYYY-MM-DD.",
+          },
+          hora: {
+            type: "string",
+            description:
+              "Hora confirmada para el turno en formato HH:mm.",
+          },
+          nombreCliente: {
+            type: "string",
+            description:
+              "Nombre del cliente que solicita el turno.",
+          },
+          email: {
+            type: "string",
+            description:
+              "Correo del cliente. Puede omitirse si proporcionó teléfono.",
+          },
+          telefono: {
+            type: "string",
+            description:
+              "Teléfono del cliente. Puede omitirse si proporcionó email.",
+          },
+          notas: {
+            type: "string",
+            description:
+              "Información adicional opcional para la reserva.",
+          },
+        },
+        required: [
+          "fecha",
+          "hora",
+          "nombreCliente"
+        ],
+        additionalProperties: false,
+      },
+    },
+  },
 ] as const;
 
 export function esNombreHerramienta(
@@ -126,12 +236,17 @@ export function esNombreHerramienta(
   return (
     nombre === "solicitar_atencion_humana" ||
     nombre === "guardar_datos_contacto" ||
-    nombre === "crear_tarea_comercial"
+    nombre === "crear_tarea_comercial" ||
+    nombre === "consultar_disponibilidad_turnos" ||
+    nombre === "crear_turno"
   );
 }
 
 export function parsearArgumentosHerramienta(
-  argumentos: string | Record<string, unknown> | undefined
+  argumentos:
+    | string
+    | Record<string, unknown>
+    | undefined
 ): Record<string, unknown> {
   if (!argumentos) {
     return {};
@@ -149,7 +264,10 @@ export function parsearArgumentosHerramienta(
       typeof resultado === "object" &&
       !Array.isArray(resultado)
     ) {
-      return resultado as Record<string, unknown>;
+      return resultado as Record<
+        string,
+        unknown
+      >;
     }
 
     return {};

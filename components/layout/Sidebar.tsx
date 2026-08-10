@@ -27,9 +27,10 @@ import {
   CalendarDays,
   Code2,
   CreditCard,
-  Home,
   HelpCircle,
+  Home,
   MessageSquare,
+  Package,
   Plug,
   Settings,
   Users,
@@ -58,7 +59,10 @@ type EmpresaData = {
 };
 
 type MiembroData = {
-  rol?: Exclude<RolEmpresa, "propietario">;
+  rol?: Exclude<
+    RolEmpresa,
+    "propietario"
+  >;
   estado?: "activo" | "inactivo";
 };
 
@@ -84,7 +88,10 @@ const SOLO_PROPIETARIO: RolEmpresa[] = [
   "propietario",
 ];
 
-const NOMBRE_ROL: Record<RolEmpresa, string> = {
+const NOMBRE_ROL: Record<
+  RolEmpresa,
+  string
+> = {
   propietario: "Propietario",
   administrador: "Administrador",
   supervisor: "Supervisor",
@@ -100,7 +107,7 @@ export default function Sidebar() {
     params.id ?? params.empresaId;
 
   const empresaId = Array.isArray(
-    parametroEmpresa
+    parametroEmpresa,
   )
     ? parametroEmpresa[0]
     : (parametroEmpresa as
@@ -119,17 +126,18 @@ export default function Sidebar() {
   ] = useState(true);
 
   useEffect(() => {
-    const cancelar = onAuthStateChanged(
-      auth,
-      (currentUser) => {
-        setUsuario(currentUser);
+    const cancelar =
+      onAuthStateChanged(
+        auth,
+        (currentUser) => {
+          setUsuario(currentUser);
 
-        if (!currentUser) {
-          setRol(null);
-          setCargandoRol(false);
-        }
-      }
-    );
+          if (!currentUser) {
+            setRol(null);
+            setCargandoRol(false);
+          }
+        },
+      );
 
     return () => cancelar();
   }, []);
@@ -139,8 +147,11 @@ export default function Sidebar() {
       return;
     }
 
-    const empresaIdSeguro = empresaId;
-    const usuarioSeguro = usuario;
+    const empresaIdSeguro =
+      empresaId;
+
+    const usuarioSeguro =
+      usuario;
 
     let activo = true;
 
@@ -148,21 +159,26 @@ export default function Sidebar() {
       setCargandoRol(true);
 
       try {
-        const empresaReferencia = doc(
-          db,
-          "companies",
-          empresaIdSeguro
-        );
+        const empresaReferencia =
+          doc(
+            db,
+            "companies",
+            empresaIdSeguro,
+          );
 
         const empresaSnapshot =
           await getDoc(
-            empresaReferencia
+            empresaReferencia,
           );
 
-        if (!empresaSnapshot.exists()) {
+        if (
+          !empresaSnapshot.exists()
+        ) {
           if (activo) {
             setRol(null);
-            router.replace("/empresas");
+            router.replace(
+              "/empresas",
+            );
           }
 
           return;
@@ -176,29 +192,36 @@ export default function Sidebar() {
           usuarioSeguro.uid
         ) {
           if (activo) {
-            setRol("propietario");
+            setRol(
+              "propietario",
+            );
           }
 
           return;
         }
 
-        const miembroReferencia = doc(
-          db,
-          "companies",
-          empresaIdSeguro,
-          "members",
-          usuarioSeguro.uid
-        );
+        const miembroReferencia =
+          doc(
+            db,
+            "companies",
+            empresaIdSeguro,
+            "members",
+            usuarioSeguro.uid,
+          );
 
         const miembroSnapshot =
           await getDoc(
-            miembroReferencia
+            miembroReferencia,
           );
 
-        if (!miembroSnapshot.exists()) {
+        if (
+          !miembroSnapshot.exists()
+        ) {
           if (activo) {
             setRol(null);
-            router.replace("/empresas");
+            router.replace(
+              "/empresas",
+            );
           }
 
           return;
@@ -208,12 +231,15 @@ export default function Sidebar() {
           miembroSnapshot.data() as MiembroData;
 
         if (
-          miembro.estado !== "activo" ||
+          miembro.estado !==
+            "activo" ||
           !miembro.rol
         ) {
           if (activo) {
             setRol(null);
-            router.replace("/empresas");
+            router.replace(
+              "/empresas",
+            );
           }
 
           return;
@@ -225,12 +251,14 @@ export default function Sidebar() {
       } catch (error) {
         console.error(
           "Error al cargar el rol:",
-          error
+          error,
         );
 
         if (activo) {
           setRol(null);
-          router.replace("/empresas");
+          router.replace(
+            "/empresas",
+          );
         }
       } finally {
         if (activo) {
@@ -250,99 +278,139 @@ export default function Sidebar() {
     usuario,
   ]);
 
-  const items = useMemo<ItemMenu[]>(
-    () => {
-      if (!empresaId) {
-        return [];
-      }
+  const items =
+    useMemo<ItemMenu[]>(
+      () => {
+        if (!empresaId) {
+          return [];
+        }
 
-      return [
-        {
-          label: "Inicio",
-          ruta: "dashboard",
-          icon: Home,
-          roles: TODOS_LOS_ROLES,
-        },
-        {
-          label: "Conversaciones",
-          ruta: "conversaciones",
-          icon: MessageSquare,
-          roles: TODOS_LOS_ROLES,
-        },
-        {
-          label: "Automatizaciones",
-          ruta: "automatizaciones",
-          icon: Zap,
-          roles: ROLES_SUPERVISION,
-        },
-        {
-          label: "Agenda",
-          ruta: "agenda",
-          icon: CalendarDays,
-          roles: TODOS_LOS_ROLES,
-        },
-        {
-          label: "Equipo",
-          ruta: "equipo",
-          icon: Users,
-          roles: ROLES_ADMINISTRACION,
-        },
-        {
-          label: "Estadísticas",
-          ruta: "estadisticas",
-          icon: BarChart3,
-          roles: TODOS_LOS_ROLES,
-        },
-        {
-          label: "Base de conocimiento",
-          ruta: "conocimiento",
-          icon: BookOpen,
-          roles: ROLES_SUPERVISION,
-        },
-        {
-          label: "Widget web",
-          ruta: "widget",
-          icon: Code2,
-          roles: ROLES_ADMINISTRACION,
-        },
-        {
-          label: "Integraciones",
-          ruta: "integraciones",
-          icon: Plug,
-          roles: ROLES_SUPERVISION,
-        },
-        {
-          label: "Facturación",
-          ruta: "facturacion",
-          icon: CreditCard,
-          roles: SOLO_PROPIETARIO,
-        },
-        {
-          label: "Configuración",
-          ruta: "configuracion",
-          icon: Settings,
-          roles: ROLES_ADMINISTRACION,
-        },
-        {
-          label: "Ayuda",
-          ruta: "ayuda",
-          icon: HelpCircle,
-          roles: TODOS_LOS_ROLES,
-        },
-      ];
-    },
-    [empresaId]
-  );
+        return [
+          {
+            label: "Inicio",
+            ruta: "dashboard",
+            icon: Home,
+            roles:
+              TODOS_LOS_ROLES,
+          },
+          {
+            label:
+              "Conversaciones",
+            ruta:
+              "conversaciones",
+            icon:
+              MessageSquare,
+            roles:
+              TODOS_LOS_ROLES,
+          },
+          {
+            label:
+              "Automatizaciones",
+            ruta:
+              "automatizaciones",
+            icon: Zap,
+            roles:
+              ROLES_SUPERVISION,
+          },
+          {
+            label: "Agenda",
+            ruta: "agenda",
+            icon: CalendarDays,
+            roles:
+              TODOS_LOS_ROLES,
+          },
+          {
+            label:
+              "Servicios y productos",
+            ruta: "catalogo",
+            icon: Package,
+            roles:
+              ROLES_SUPERVISION,
+          },
+          {
+            label: "Equipo",
+            ruta: "equipo",
+            icon: Users,
+            roles:
+              ROLES_ADMINISTRACION,
+          },
+          {
+            label:
+              "Estadísticas",
+            ruta:
+              "estadisticas",
+            icon: BarChart3,
+            roles:
+              TODOS_LOS_ROLES,
+          },
+          {
+            label:
+              "Base de conocimiento",
+            ruta:
+              "conocimiento",
+            icon: BookOpen,
+            roles:
+              ROLES_SUPERVISION,
+          },
+          {
+            label: "Widget web",
+            ruta: "widget",
+            icon: Code2,
+            roles:
+              ROLES_ADMINISTRACION,
+          },
+          {
+            label:
+              "Integraciones",
+            ruta:
+              "integraciones",
+            icon: Plug,
+            roles:
+              ROLES_SUPERVISION,
+          },
+          {
+            label:
+              "Facturación",
+            ruta:
+              "facturacion",
+            icon: CreditCard,
+            roles:
+              SOLO_PROPIETARIO,
+          },
+          {
+            label:
+              "Configuración",
+            ruta:
+              "configuracion",
+            icon: Settings,
+            roles:
+              ROLES_ADMINISTRACION,
+          },
+          {
+            label: "Ayuda",
+            ruta: "ayuda",
+            icon: HelpCircle,
+            roles:
+              TODOS_LOS_ROLES,
+          },
+        ];
+      },
+      [empresaId],
+    );
 
-  const itemsPermitidos = useMemo(
-    () =>
-      rol
-        ? items.filter((item) =>
-            item.roles.includes(rol)
-          )
-        : [],
-    [items, rol]
-  );
+  const itemsPermitidos =
+    useMemo(
+      () =>
+        rol
+          ? items.filter(
+              (item) =>
+                item.roles.includes(
+                  rol,
+                ),
+            )
+          : [],
+      [items, rol],
+    );
 
   useEffect(() => {
     if (
@@ -353,26 +421,27 @@ export default function Sidebar() {
       return;
     }
 
-    const itemActual = items.find(
-      (item) => {
+    const itemActual =
+      items.find((item) => {
         const href =
           `/empresas/${empresaId}/${item.ruta}`;
 
         return (
           pathname === href ||
           pathname.startsWith(
-            `${href}/`
+            `${href}/`,
           )
         );
-      }
-    );
+      });
 
     if (
       itemActual &&
-      !itemActual.roles.includes(rol)
+      !itemActual.roles.includes(
+        rol,
+      )
     ) {
       router.replace(
-        `/empresas/${empresaId}/conversaciones`
+        `/empresas/${empresaId}/conversaciones`,
       );
     }
   }, [
@@ -430,12 +499,12 @@ export default function Sidebar() {
                 activo={
                   pathname === href ||
                   pathname.startsWith(
-                    `${href}/`
+                    `${href}/`,
                   )
                 }
               />
             );
-          }
+          },
         )}
       </nav>
 

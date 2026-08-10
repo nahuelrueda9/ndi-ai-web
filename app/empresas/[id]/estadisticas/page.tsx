@@ -43,6 +43,7 @@ type ChatData = {
   origen?: string;
   source?: string;
   plataforma?: string;
+  tipoContacto?: string;
   estado?: "abierta" | "cerrada";
   atendidoPor?: "ia" | "humano";
   humanoActivo?: boolean;
@@ -60,6 +61,16 @@ type ChatData = {
 type MensajeData = {
   role?: "user" | "assistant";
   enviadoPor?: "cliente" | "ia" | "humano";
+  createdAt?: Timestamp;
+};
+
+type EventoPaginaData = {
+  tipo?:
+    | "page_view"
+    | "whatsapp_click"
+    | "lead_submit"
+    | "appointment_created";
+  visitanteId?: string;
   createdAt?: Timestamp;
 };
 
@@ -81,6 +92,13 @@ type EmbudoGrafico = {
 type EstadisticasCalculadas = {
   totalChats: number;
   totalMensajes: number;
+  visitasPagina: number;
+  visitantesPagina: number;
+  clicsWhatsApp: number;
+  contactosPagina: number;
+  reservasPagina: number;
+  tasaContactoPagina: number;
+  tasaReservaPagina: number;
   conversacionesHoy: number;
   visitantesUnicos: number;
   conversacionesSemana: number;
@@ -111,6 +129,13 @@ type EstadisticasCalculadas = {
 const ESTADISTICAS_INICIALES: EstadisticasCalculadas = {
   totalChats: 0,
   totalMensajes: 0,
+  visitasPagina: 0,
+  visitantesPagina: 0,
+  clicsWhatsApp: 0,
+  contactosPagina: 0,
+  reservasPagina: 0,
+  tasaContactoPagina: 0,
+  tasaReservaPagina: 0,
   conversacionesHoy: 0,
   visitantesUnicos: 0,
   conversacionesSemana: 0,
@@ -294,14 +319,27 @@ export default function EstadisticasPage() {
         setCargando(true);
         setError("");
 
-        const chatsSnapshot = await getDocs(
-          collection(
-            db,
-            "companies",
-            empresaId!,
-            "conversations"
-          )
-        );
+        const [
+          chatsSnapshot,
+          eventosPaginaSnapshot,
+        ] = await Promise.all([
+          getDocs(
+            collection(
+              db,
+              "companies",
+              empresaId!,
+              "conversations"
+            )
+          ),
+          getDocs(
+            collection(
+              db,
+              "companies",
+              empresaId!,
+              "analyticsEvents"
+            )
+          ),
+        ]);
 
         const hoy = obtenerInicioDelDia(new Date());
         const visitantes = new Set<string>();
@@ -339,6 +377,74 @@ export default function EstadisticasPage() {
           ganado: 0,
           perdido: 0,
         };
+
+        const eventosPagina =
+          eventosPaginaSnapshot.docs.map(
+            (documento) =>
+              documento.data() as EventoPaginaData
+          );
+
+        const visitasPagina =
+          eventosPagina.filter(
+            (evento) =>
+              evento.tipo === "page_view"
+          ).length;
+
+        const visitantesPaginaSet =
+          new Set<string>();
+
+        eventosPagina.forEach(
+          (evento, indice) => {
+            if (
+              evento.tipo !== "page_view"
+            ) {
+              return;
+            }
+
+            visitantesPaginaSet.add(
+              evento.visitanteId?.trim() ||
+                `visita-${indice}`
+            );
+          }
+        );
+
+        const visitantesPagina =
+          visitantesPaginaSet.size;
+
+        const clicsWhatsApp =
+          eventosPagina.filter(
+            (evento) =>
+              evento.tipo ===
+              "whatsapp_click"
+          ).length;
+
+        const contactosPagina =
+          eventosPagina.filter(
+            (evento) =>
+              evento.tipo ===
+              "lead_submit"
+          ).length;
+
+        const reservasPagina =
+          eventosPagina.filter(
+            (evento) =>
+              evento.tipo ===
+              "appointment_created"
+          ).length;
+
+        const tasaContactoPagina =
+          visitasPagina > 0
+            ? (contactosPagina /
+                visitasPagina) *
+              100
+            : 0;
+
+        const tasaReservaPagina =
+          visitasPagina > 0
+            ? (reservasPagina /
+                visitasPagina) *
+              100
+            : 0;
 
         let ingresosGanados = 0;
         let pipelineEstimado = 0;
@@ -582,6 +688,13 @@ export default function EstadisticasPage() {
         setEstadisticas({
           totalChats,
           totalMensajes,
+          visitasPagina,
+          visitantesPagina,
+          clicsWhatsApp,
+          contactosPagina,
+          reservasPagina,
+          tasaContactoPagina,
+          tasaReservaPagina,
           conversacionesHoy,
           visitantesUnicos:
             visitantes.size,
@@ -720,6 +833,36 @@ export default function EstadisticasPage() {
         </div>
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <StatCard
+            titulo="Visitas a la página"
+            valor={estadisticas.visitasPagina}
+            descripcion={`${estadisticas.visitantesPagina} visitantes registrados`}
+          />
+
+          <StatCard
+            titulo="Contactos desde la página"
+            valor={estadisticas.contactosPagina}
+            descripcion={`${estadisticas.tasaContactoPagina.toFixed(
+              1
+            )}% de las visitas`}
+          />
+
+          <StatCard
+            titulo="Clics en WhatsApp"
+            valor={estadisticas.clicsWhatsApp}
+            descripcion="Desde la página pública"
+          />
+
+          <StatCard
+            titulo="Reservas online"
+            valor={estadisticas.reservasPagina}
+            descripcion={`${estadisticas.tasaReservaPagina.toFixed(
+              1
+            )}% de las visitas`}
+          />
+        </section>
+
+        <section className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
             titulo="Ventas ganadas"
             valor={estadisticas.ganados}

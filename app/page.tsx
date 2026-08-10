@@ -4,127 +4,325 @@ import Link from "next/link";
 import {
   ArrowRight,
   Bot,
+  Building2,
+  CalendarDays,
   Check,
   Clock3,
+  FileText,
+  MapPin,
   MessageCircle,
-  ShieldCheck,
+  Package,
+  QrCode,
   Sparkles,
   UserRoundCheck,
   Zap,
 } from "lucide-react";
 
+const problemas = [
+  "Clientes preguntando siempre lo mismo",
+  "Consultas que llegan fuera de horario",
+  "Precios e información repartidos entre redes",
+  "Turnos organizados manualmente por mensajes",
+  "Negocios que dependen solamente de Instagram",
+  "Clientes que no encuentran rápido lo que necesitan",
+];
+
 const funciones = [
   {
-    titulo: "WhatsApp con IA",
+    titulo: "Página inteligente",
     descripcion:
-      "Tus clientes escriben al WhatsApp de tu negocio y NDI AI responde automáticamente usando la información que cargaste.",
-    icono: MessageCircle,
+      "Un espacio propio para mostrar tu negocio, servicios, productos, horarios, ubicación, contacto y toda la información importante.",
+    icono: Building2,
+    estado: "principal",
   },
   {
-    titulo: "Respuestas con tu información",
+    titulo: "Asistente con IA",
     descripcion:
-      "Cargá servicios, precios, horarios, preguntas frecuentes y políticas para que la IA responda con datos reales.",
+      "La IA puede responder consultas desde tu página utilizando la información real que cargaste sobre tu negocio.",
     icono: Sparkles,
+    estado: "principal",
   },
   {
-    titulo: "Control humano",
+    titulo: "Turnos y reservas",
     descripcion:
-      "Revisá las conversaciones y tomá el control manualmente cuando una consulta necesite una persona.",
+      "Estamos preparando un sistema para organizar disponibilidad, servicios y reservas directamente desde NDI AI.",
+    icono: CalendarDays,
+    estado: "preparacion",
+  },
+  {
+    titulo: "Productos y servicios",
+    descripcion:
+      "Mostrá qué ofrecés, agregá descripciones, precios y organizá tu propuesta para que tus clientes la entiendan rápido.",
+    icono: Package,
+    estado: "principal",
+  },
+  {
+    titulo: "Presupuestos y contacto",
+    descripcion:
+      "Facilitá que potenciales clientes puedan dejar sus datos, pedir información o solicitar un presupuesto.",
+    icono: FileText,
+    estado: "principal",
+  },
+  {
+    titulo: "WhatsApp directo",
+    descripcion:
+      "Tus clientes pueden pasar de tu página directamente a una conversación con tu negocio mediante WhatsApp.",
+    icono: MessageCircle,
+    estado: "principal",
+  },
+  {
+    titulo: "QR para compartir",
+    descripcion:
+      "Compartí tu página desde redes, cartelería, tarjetas o tu propio local utilizando un acceso rápido mediante QR.",
+    icono: QrCode,
+    estado: "preparacion",
+  },
+  {
+    titulo: "Leads y clientes",
+    descripcion:
+      "Centralizá los contactos interesados y administrá la información de potenciales clientes desde NDI AI.",
     icono: UserRoundCheck,
-  },
-  {
-    titulo: "Disponible mientras trabajás",
-    descripcion:
-      "Automatizá consultas repetitivas y evitá dejar clientes esperando cuando estás ocupado.",
-    icono: Clock3,
+    estado: "principal",
   },
 ];
 
 const pasos = [
-  ["01", "Configurá tu negocio", "Definí cómo se llama tu empresa, qué ofrece y cómo querés que responda la IA."],
-  ["02", "Cargá tu información", "Agregá precios, servicios, horarios, políticas y preguntas frecuentes."],
-  ["03", "Conectá WhatsApp", "Vinculá tu WhatsApp Business Platform desde el panel de Integraciones."],
-  ["04", "Dejá que NDI AI responda", "La IA atiende consultas y vos podés entrar a cualquier conversación cuando quieras."],
+  {
+    numero: "01",
+    titulo: "Configurás tu negocio",
+    descripcion:
+      "Definís el nombre, información, contacto, ubicación y apariencia general de tu negocio.",
+  },
+  {
+    numero: "02",
+    titulo: "Cargás lo que ofrecés",
+    descripcion:
+      "Agregás servicios, productos, precios, horarios, preguntas frecuentes y demás información.",
+  },
+  {
+    numero: "03",
+    titulo: "Tu página queda lista",
+    descripcion:
+      "La información del negocio se transforma en una presencia digital clara y accesible para tus clientes.",
+  },
+  {
+    numero: "04",
+    titulo: "Tus clientes ingresan",
+    descripcion:
+      "Pueden conocer tu negocio, revisar servicios, consultar información y contactarte fácilmente.",
+  },
+  {
+    numero: "05",
+    titulo: "NDI AI los acompaña",
+    descripcion:
+      "El asistente inteligente puede responder preguntas utilizando los datos reales de tu negocio.",
+  },
+  {
+    numero: "06",
+    titulo: "Vos administrás todo",
+    descripcion:
+      "Gestionás información, contactos y las próximas herramientas desde un solo panel.",
+  },
 ];
 
-const freeFeatures = [
-  "WhatsApp + respuestas con IA",
-  "50 conversaciones por mes",
-  "250 respuestas de IA por mes",
+const ejemplos = [
+  {
+    rubro: "Barberías y estética",
+    titulo: "Servicios, precios y futuras reservas",
+    descripcion:
+      "Una página donde tus clientes puedan conocer servicios, horarios, ubicación y contactarte sin buscar información entre publicaciones.",
+    icono: CalendarDays,
+  },
+  {
+    rubro: "Alojamiento y turismo",
+    titulo: "Todo el alojamiento en un solo lugar",
+    descripcion:
+      "Mostrá habitaciones, servicios, ubicación, fotografías, preguntas frecuentes y formas de contacto.",
+    icono: MapPin,
+  },
+  {
+    rubro: "Profesionales",
+    titulo: "Una presencia más profesional",
+    descripcion:
+      "Presentá tus servicios, experiencia, horarios de atención y permití que potenciales clientes puedan consultarte.",
+    icono: UserRoundCheck,
+  },
+  {
+    rubro: "Talleres y comercios",
+    titulo: "Servicios claros para tus clientes",
+    descripcion:
+      "Centralizá trabajos, productos, información útil, horarios y contacto sin depender únicamente de redes sociales.",
+    icono: Building2,
+  },
+];
+
+const planExpress = [
+  "Página pública del negocio",
+  "Información general",
+  "Servicios",
+  "Horarios",
+  "Ubicación",
+  "Contacto",
+  "WhatsApp directo",
+];
+
+const planNegocio = [
+  "Todo lo incluido en Express",
+  "Productos y catálogo",
+  "Más secciones para tu negocio",
+  "Solicitud de presupuesto",
+  "QR para compartir",
+  "Sistema de turnos cuando esté disponible",
+];
+
+const planInteligente = [
+  "Todo lo incluido en Negocio",
+  "Asistente IA en la página",
+  "Respuestas con información del negocio",
   "Base de conocimiento",
-  "Panel de conversaciones",
-  "Estadísticas básicas",
-  "Firma “Respondido con NDI AI” en la primera respuesta",
+  "Captura de leads",
+  "Automatización de turnos en una etapa posterior",
 ];
 
-const proFeatures = [
-  "Todo lo incluido en Free",
-  "1.000 conversaciones por mes",
-  "5.000 respuestas de IA por mes",
-  "Widget web",
-  "Automatizaciones",
-  "Agenda y turnos",
-  "Equipo y operadores",
-  "Estadísticas avanzadas",
-  "Sin firma ni publicidad de NDI AI",
+const proximamente = [
+  {
+    titulo: "WhatsApp Business",
+    descripcion:
+      "Atención automática directamente desde WhatsApp Business.",
+    icono: MessageCircle,
+  },
+  {
+    titulo: "Instagram",
+    descripcion:
+      "Automatización de consultas y mensajes recibidos desde Instagram.",
+    icono: MessageCircle,
+  },
+  {
+    titulo: "Facebook Messenger",
+    descripcion:
+      "Atención y respuestas automáticas también desde Messenger.",
+    icono: MessageCircle,
+  },
 ];
 
 export default function HomePage() {
   return (
     <main className="min-h-screen overflow-hidden bg-zinc-950 text-white">
+      {/* HEADER */}
       <header className="sticky top-0 z-50 border-b border-zinc-800/80 bg-zinc-950/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
           <Link href="/" className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600">
               <Bot className="h-6 w-6" />
             </div>
+
             <div>
-              <p className="text-xs uppercase tracking-[0.22em] text-blue-400">NDI AI</p>
-              <p className="font-semibold text-white">Atención inteligente</p>
+              <p className="text-xs uppercase tracking-[0.22em] text-blue-400">
+                NDI AI
+              </p>
+              <p className="font-semibold text-white">
+                Páginas inteligentes
+              </p>
             </div>
           </Link>
 
+          <nav className="hidden items-center gap-7 lg:flex">
+            <a
+              href="#funciones"
+              className="text-sm text-zinc-400 transition hover:text-white"
+            >
+              Funciones
+            </a>
+
+            <a
+              href="#como-funciona"
+              className="text-sm text-zinc-400 transition hover:text-white"
+            >
+              Cómo funciona
+            </a>
+
+            <a
+              href="#planes"
+              className="text-sm text-zinc-400 transition hover:text-white"
+            >
+              Planes
+            </a>
+
+            <a
+              href="#proximamente"
+              className="text-sm text-zinc-400 transition hover:text-white"
+            >
+              Próximamente
+            </a>
+          </nav>
+
           <nav className="flex items-center gap-2 sm:gap-3">
-            <Link href="/login" className="rounded-xl px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white sm:px-4">
+            <Link
+              href="/login"
+              className="rounded-xl px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white sm:px-4"
+            >
               Iniciar sesión
             </Link>
-            <Link href="/register" className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500">
-              Empezar gratis
+
+            <Link
+              href="/register"
+              className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500"
+            >
+              Quiero mi página
             </Link>
           </nav>
         </div>
       </header>
 
+      {/* HERO */}
       <section className="relative">
-        <div className="absolute inset-x-0 top-0 h-[600px] bg-[radial-gradient(circle_at_top,rgba(37,99,235,0.20),transparent_62%)]" />
-        <div className="relative mx-auto grid max-w-7xl gap-14 px-5 py-20 sm:px-8 sm:py-28 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+        <div className="absolute inset-x-0 top-0 h-[760px] bg-[radial-gradient(circle_at_top,rgba(37,99,235,0.22),transparent_62%)]" />
+
+        <div className="relative mx-auto grid max-w-7xl gap-16 px-5 py-20 sm:px-8 sm:py-28 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 text-sm text-blue-300">
               <Zap className="h-4 w-4" />
-              IA para atender clientes por WhatsApp
+              Una nueva forma de mostrar y atender tu negocio
             </div>
 
             <h1 className="mt-7 max-w-3xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-              Tus clientes escriben.
-              <span className="text-blue-400"> NDI AI responde por vos.</span>
+              Tu negocio, disponible
+              <span className="text-blue-400">
+                {" "}
+                incluso cuando vos no estás.
+              </span>
             </h1>
 
             <p className="mt-6 max-w-2xl text-base leading-8 text-zinc-400 sm:text-lg">
-              Pensado para emprendedores y negocios que reciben consultas por WhatsApp y no pueden estar respondiendo todo el día. La IA usa la información de tu negocio y vos mantenés el control.
+              Mostrá tus servicios, productos, precios, horarios y ubicación
+              desde una página profesional. Recibí consultas, conectá con
+              WhatsApp y sumá inteligencia artificial para atender mejor a tus
+              clientes.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/register" className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 font-semibold text-white transition hover:bg-blue-500">
-                Probar gratis
-                <ArrowRight className="h-5 w-5" />
-              </Link>
-              <a href="#como-funciona" className="inline-flex items-center justify-center rounded-xl border border-zinc-700 px-6 py-3.5 font-semibold text-zinc-200 transition hover:bg-zinc-900">
+              <a
+                href="#como-funciona"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 font-semibold text-white transition hover:bg-blue-500"
+              >
                 Ver cómo funciona
+                <ArrowRight className="h-5 w-5" />
               </a>
+
+              <Link
+                href="/register"
+                className="inline-flex items-center justify-center rounded-xl border border-zinc-700 px-6 py-3.5 font-semibold text-zinc-200 transition hover:bg-zinc-900"
+              >
+                Quiero mi página
+              </Link>
             </div>
 
             <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm text-zinc-400">
-              {["Plan Free", "Sin tarjeta", "Tutorial incluido"].map((item) => (
+              {[
+                "Tu información en un solo lugar",
+                "WhatsApp directo",
+                "Administración desde NDI AI",
+              ].map((item) => (
                 <span key={item} className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-emerald-400" />
                   {item}
@@ -133,39 +331,107 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* MOCKUP */}
           <div className="relative">
             <div className="absolute -inset-8 rounded-[3rem] bg-blue-600/10 blur-3xl" />
-            <div className="relative overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900 shadow-2xl">
-              <div className="flex items-center justify-between border-b border-zinc-800 px-5 py-4">
-                <div>
-                  <p className="font-semibold">WhatsApp · Atención automática</p>
-                  <p className="mt-1 text-xs text-zinc-500">NDI AI atendiendo por tu negocio</p>
+
+            <div className="relative">
+              <div className="overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900 shadow-2xl">
+                <div className="flex items-center justify-between border-b border-zinc-800 px-5 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600">
+                      <Building2 className="h-5 w-5" />
+                    </div>
+
+                    <div>
+                      <p className="font-semibold">Estudio Norte</p>
+                      <p className="mt-0.5 text-xs text-zinc-500">
+                        Página del negocio
+                      </p>
+                    </div>
+                  </div>
+
+                  <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400">
+                    Disponible
+                  </span>
                 </div>
-                <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400">IA activa</span>
+
+                <div className="relative h-40 border-b border-zinc-800 bg-gradient-to-br from-blue-600/30 via-zinc-900 to-zinc-950 p-6">
+                  <div className="absolute bottom-5 left-5">
+                    <p className="text-xs uppercase tracking-[0.18em] text-blue-300">
+                      Tu negocio online
+                    </p>
+                    <p className="mt-2 text-2xl font-bold">
+                      Todo lo que tus clientes necesitan saber.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 p-5 sm:grid-cols-2">
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+                    <div className="flex items-center gap-3">
+                      <Package className="h-5 w-5 text-blue-400" />
+                      <div>
+                        <p className="text-sm font-medium">Servicios</p>
+                        <p className="mt-1 text-xs text-zinc-500">
+                          Información y precios
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+                    <div className="flex items-center gap-3">
+                      <Clock3 className="h-5 w-5 text-blue-400" />
+                      <div>
+                        <p className="text-sm font-medium">Horarios</p>
+                        <p className="mt-1 text-xs text-zinc-500">
+                          Siempre actualizados
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+                    <div className="flex items-center gap-3">
+                      <MapPin className="h-5 w-5 text-blue-400" />
+                      <div>
+                        <p className="text-sm font-medium">Ubicación</p>
+                        <p className="mt-1 text-xs text-zinc-500">
+                          Fácil de encontrar
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+                    <div className="flex items-center gap-3">
+                      <MessageCircle className="h-5 w-5 text-emerald-400" />
+                      <div>
+                        <p className="text-sm font-medium">WhatsApp</p>
+                        <p className="mt-1 text-xs text-zinc-500">
+                          Contacto directo
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="space-y-5 p-5 sm:p-6">
-                <div className="flex justify-start">
-                  <div className="max-w-[82%] rounded-2xl rounded-tl-md bg-zinc-800 px-4 py-3">
-                    <p className="text-sm leading-6 text-zinc-200">Hola, ¿hasta qué hora atienden hoy?</p>
-                    <p className="mt-2 text-[11px] text-zinc-500">Cliente · WhatsApp</p>
+              <div className="relative -mt-5 ml-8 rounded-2xl border border-blue-500/20 bg-zinc-950 p-4 shadow-2xl sm:ml-20">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400">
+                    <Sparkles className="h-4 w-4" />
                   </div>
-                </div>
 
-                <div className="flex justify-end">
-                  <div className="max-w-[85%] rounded-2xl rounded-tr-md bg-blue-600 px-4 py-3">
-                    <p className="text-sm leading-6 text-white">¡Hola! Hoy atendemos de 9:00 a 18:00. ¿Necesitás que te ayude con algo más?</p>
-                    <p className="mt-2 text-[11px] text-blue-200">Respondido por NDI AI</p>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
-                  <div className="flex items-center gap-3">
-                    <ShieldCheck className="h-5 w-5 text-emerald-400" />
-                    <div>
-                      <p className="text-sm font-medium text-white">Vos seguís teniendo el control</p>
-                      <p className="mt-1 text-xs text-zinc-500">Podés tomar la conversación manualmente desde el panel.</p>
-                    </div>
+                  <div>
+                    <p className="text-sm font-medium text-white">
+                      Asistente NDI AI
+                    </p>
+                    <p className="mt-1 text-sm leading-6 text-zinc-400">
+                      “Sí, ese servicio está disponible. El horario de atención
+                      de hoy es de 9:00 a 18:00.”
+                    </p>
                   </div>
                 </div>
               </div>
@@ -174,123 +440,585 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* RESUMEN */}
       <section className="border-y border-zinc-800 bg-zinc-900/40">
         <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8">
           <p className="text-center text-sm font-medium uppercase tracking-[0.2em] text-zinc-500">
-            Hecho para negocios que reciben consultas todos los días
+            Una presencia digital pensada para negocios reales
           </p>
-          <div className="mt-8 grid gap-4 sm:grid-cols-3">
+
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              ["24/7", "La IA puede recibir consultas a cualquier hora"],
-              ["1 panel", "Para revisar conversaciones y tomar el control"],
-              ["$0", "Para empezar con el plan Free"],
+              ["01", "Página profesional"],
+              ["02", "Información centralizada"],
+              ["03", "WhatsApp directo"],
+              ["04", "Asistente inteligente"],
             ].map(([valor, texto]) => (
-              <div key={valor} className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5 text-center">
-                <p className="text-2xl font-bold text-white">{valor}</p>
-                <p className="mt-1 text-sm text-zinc-500">{texto}</p>
+              <div
+                key={valor}
+                className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5 text-center"
+              >
+                <p className="text-sm font-bold text-blue-400">{valor}</p>
+                <p className="mt-2 font-medium text-white">{texto}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
+      {/* PROBLEMA */}
       <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-24">
-        <div className="max-w-2xl">
-          <p className="text-sm font-medium text-blue-400">Qué hace NDI AI</p>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-            Menos tiempo respondiendo lo mismo. Más tiempo para tu negocio.
-          </h2>
-        </div>
+        <div className="grid gap-14 lg:grid-cols-2 lg:items-center">
+          <div>
+            <p className="text-sm font-medium text-blue-400">
+              El problema
+            </p>
 
-        <div className="mt-12 grid gap-5 sm:grid-cols-2">
-          {funciones.map(({ titulo, descripcion, icono: Icono }) => (
-            <article key={titulo} className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-400">
-                <Icono className="h-6 w-6" />
+            <h2 className="mt-3 max-w-xl text-3xl font-bold tracking-tight sm:text-4xl">
+              Tener Instagram no siempre significa tener tu negocio ordenado
+              online.
+            </h2>
+
+            <p className="mt-5 max-w-xl leading-8 text-zinc-400">
+              Muchos negocios tienen información repartida entre publicaciones,
+              historias, mensajes y WhatsApp. El cliente termina preguntando
+              cosas que podrían estar disponibles en segundos.
+            </p>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            {problemas.map((problema) => (
+              <div
+                key={problema}
+                className="flex items-start gap-3 rounded-2xl border border-zinc-800 bg-zinc-900 p-4"
+              >
+                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-800">
+                  <span className="text-sm text-zinc-400">×</span>
+                </div>
+
+                <p className="text-sm leading-6 text-zinc-300">
+                  {problema}
+                </p>
               </div>
-              <h3 className="mt-5 text-xl font-semibold">{titulo}</h3>
-              <p className="mt-3 leading-7 text-zinc-400">{descripcion}</p>
-            </article>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
-      <section id="como-funciona" className="border-y border-zinc-800 bg-zinc-900/40">
+      {/* SOLUCIÓN */}
+      <section className="border-y border-zinc-800 bg-zinc-900/40">
         <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-24">
-          <div className="max-w-2xl">
-            <p className="text-sm font-medium text-blue-400">Cómo funciona</p>
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-sm font-medium text-blue-400">
+              La solución
+            </p>
+
             <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-              De cero a una IA atendiendo tu WhatsApp.
+              Un solo lugar para mostrar, atender y organizar tu negocio.
+            </h2>
+
+            <p className="mt-5 leading-8 text-zinc-400">
+              NDI AI está evolucionando para unir tu presencia digital con
+              herramientas inteligentes que ayuden a convertir consultas en
+              oportunidades reales.
+            </p>
+          </div>
+
+          <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
+            {[
+              "Página profesional",
+              "Asistente IA",
+              "Turnos",
+              "Leads",
+              "WhatsApp directo",
+            ].map((item, index) => (
+              <div key={item} className="flex items-center gap-3">
+                <div className="rounded-xl border border-zinc-800 bg-zinc-950 px-5 py-3 text-sm font-medium text-zinc-200">
+                  {item}
+                </div>
+
+                {index < 4 && (
+                  <span className="hidden text-zinc-700 sm:inline">+</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FUNCIONES */}
+      <section
+        id="funciones"
+        className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-24"
+      >
+        <div className="max-w-3xl">
+          <p className="text-sm font-medium text-blue-400">
+            Todo alrededor de tu negocio
+          </p>
+
+          <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+            Más que una página web.
+          </h2>
+
+          <p className="mt-5 max-w-2xl leading-8 text-zinc-400">
+            La idea es que tu página sea el punto de entrada a todo lo que un
+            cliente necesita para conocerte, consultarte y avanzar.
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {funciones.map(
+            ({ titulo, descripcion, icono: Icono, estado }) => (
+              <article
+                key={titulo}
+                className="relative rounded-2xl border border-zinc-800 bg-zinc-900 p-6"
+              >
+                {estado === "preparacion" && (
+                  <span className="absolute right-4 top-4 rounded-full border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-[11px] font-medium text-amber-300">
+                    En preparación
+                  </span>
+                )}
+
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-400">
+                  <Icono className="h-6 w-6" />
+                </div>
+
+                <h3 className="mt-5 text-lg font-semibold">{titulo}</h3>
+
+                <p className="mt-3 text-sm leading-7 text-zinc-400">
+                  {descripcion}
+                </p>
+              </article>
+            ),
+          )}
+        </div>
+      </section>
+
+      {/* CÓMO FUNCIONA */}
+      <section
+        id="como-funciona"
+        className="border-y border-zinc-800 bg-zinc-900/40"
+      >
+        <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-24">
+          <div className="max-w-3xl">
+            <p className="text-sm font-medium text-blue-400">
+              Cómo funciona
+            </p>
+
+            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+              De la información de tu negocio a una presencia digital completa.
             </h2>
           </div>
 
-          <div className="mt-12 grid gap-5 md:grid-cols-2">
-            {pasos.map(([numero, titulo, descripcion]) => (
-              <div key={numero} className="rounded-2xl border border-zinc-800 bg-zinc-950 p-6">
-                <span className="text-sm font-bold text-blue-400">{numero}</span>
+          <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {pasos.map(({ numero, titulo, descripcion }) => (
+              <div
+                key={numero}
+                className="rounded-2xl border border-zinc-800 bg-zinc-950 p-6"
+              >
+                <span className="text-sm font-bold text-blue-400">
+                  {numero}
+                </span>
+
                 <h3 className="mt-3 text-xl font-semibold">{titulo}</h3>
-                <p className="mt-3 leading-7 text-zinc-400">{descripcion}</p>
+
+                <p className="mt-3 leading-7 text-zinc-400">
+                  {descripcion}
+                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="planes" className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-24">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-medium text-blue-400">Planes</p>
+      {/* EJEMPLOS */}
+      <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-24">
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="text-sm font-medium text-blue-400">
+            Para distintos rubros
+          </p>
+
           <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-            Empezá gratis. Pasá a Pro cuando necesites más.
+            NDI AI no está pensado para un solo tipo de negocio.
           </h2>
+
+          <p className="mt-5 leading-8 text-zinc-400">
+            La misma plataforma puede adaptarse a distintas actividades,
+            mostrando la información que realmente necesita cada cliente.
+          </p>
         </div>
 
-        <div className="mx-auto mt-12 grid max-w-5xl gap-6 lg:grid-cols-2">
-          <PlanCard
-            nombre="Free"
-            precio="$0"
-            descripcion="Para probar NDI AI atendiendo consultas reales de tu negocio."
-            features={freeFeatures}
-          />
-          <PlanCard
-            nombre="Pro"
-            precio="$14.999"
-            sufijo="/ 30 días"
-            descripcion="Para negocios que necesitan más volumen y herramientas para organizar la atención."
-            features={proFeatures}
-            destacado
-          />
-        </div>
+        <div className="mt-12 grid gap-5 md:grid-cols-2">
+          {ejemplos.map(
+            ({ rubro, titulo, descripcion, icono: Icono }) => (
+              <article
+                key={rubro}
+                className="group rounded-3xl border border-zinc-800 bg-zinc-900 p-7 transition hover:border-zinc-700"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-400">
+                    <Icono className="h-6 w-6" />
+                  </div>
 
-        <p className="mx-auto mt-6 max-w-3xl text-center text-xs leading-5 text-zinc-600">
-          Instagram y Facebook/Messenger se incorporarán cuando sus integraciones estén disponibles. No forman parte de las funciones activas actuales.
-        </p>
+                  <span className="rounded-full border border-zinc-800 bg-zinc-950 px-3 py-1 text-xs text-zinc-500">
+                    {rubro}
+                  </span>
+                </div>
+
+                <h3 className="mt-6 text-xl font-semibold">{titulo}</h3>
+
+                <p className="mt-3 leading-7 text-zinc-400">
+                  {descripcion}
+                </p>
+              </article>
+            ),
+          )}
+        </div>
       </section>
 
+      {/* TURNOS */}
+      <section className="border-y border-zinc-800 bg-zinc-900/40">
+        <div className="mx-auto grid max-w-7xl gap-14 px-5 py-20 sm:px-8 sm:py-24 lg:grid-cols-2 lg:items-center">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1.5 text-sm text-amber-300">
+              <CalendarDays className="h-4 w-4" />
+              En preparación
+            </div>
+
+            <h2 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl">
+              Tus turnos, ordenados desde un solo lugar.
+            </h2>
+
+            <p className="mt-5 max-w-xl leading-8 text-zinc-400">
+              Una de las próximas grandes funciones de NDI AI será un sistema
+              propio de reservas para negocios y profesionales que trabajan
+              con horarios.
+            </p>
+
+            <div className="mt-7 space-y-3">
+              {[
+                "Turnos del día",
+                "Próximas reservas",
+                "Calendario semanal y mensual",
+                "Servicios y duración",
+                "Horarios disponibles",
+                "Estados de cada turno",
+              ].map((item) => (
+                <div
+                  key={item}
+                  className="flex items-center gap-3 text-sm text-zinc-300"
+                >
+                  <Check className="h-4 w-4 text-blue-400" />
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-5 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-5">
+              <div>
+                <p className="font-semibold">Agenda</p>
+                <p className="mt-1 text-xs text-zinc-500">
+                  Ejemplo de próxima función
+                </p>
+              </div>
+
+              <span className="rounded-full bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-300">
+                Agosto
+              </span>
+            </div>
+
+            <div className="mt-5 grid grid-cols-7 gap-2 text-center text-xs text-zinc-500">
+              {["L", "M", "X", "J", "V", "S", "D"].map((dia) => (
+                <div key={dia} className="py-2">
+                  {dia}
+                </div>
+              ))}
+
+              {Array.from({ length: 28 }, (_, index) => index + 1).map(
+                (dia) => (
+                  <div
+                    key={dia}
+                    className={`rounded-lg py-2.5 ${
+                      dia === 12
+                        ? "bg-blue-600 font-semibold text-white"
+                        : dia === 18 || dia === 22
+                          ? "bg-zinc-800 text-zinc-200"
+                          : "text-zinc-500"
+                    }`}
+                  >
+                    {dia}
+                  </div>
+                ),
+              )}
+            </div>
+
+            <div className="mt-5 space-y-3 border-t border-zinc-800 pt-5">
+              <div className="flex items-center justify-between rounded-xl bg-zinc-900 p-3">
+                <div>
+                  <p className="text-sm font-medium">16:00</p>
+                  <p className="mt-1 text-xs text-zinc-500">
+                    Servicio reservado
+                  </p>
+                </div>
+
+                <span className="text-xs text-emerald-400">
+                  Confirmado
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between rounded-xl bg-zinc-900 p-3">
+                <div>
+                  <p className="text-sm font-medium">17:30</p>
+                  <p className="mt-1 text-xs text-zinc-500">
+                    Próximo horario
+                  </p>
+                </div>
+
+                <span className="text-xs text-blue-400">
+                  Disponible
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* IA */}
+      <section className="mx-auto grid max-w-7xl gap-14 px-5 py-20 sm:px-8 sm:py-24 lg:grid-cols-2 lg:items-center">
+        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl">
+          <div className="flex items-center gap-3 border-b border-zinc-800 pb-5">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600">
+              <Bot className="h-5 w-5" />
+            </div>
+
+            <div>
+              <p className="font-semibold">Asistente NDI AI</p>
+              <p className="mt-1 text-xs text-zinc-500">
+                Respuestas con información del negocio
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5 space-y-4">
+            <div className="max-w-[82%] rounded-2xl rounded-tl-md bg-zinc-800 px-4 py-3">
+              <p className="text-sm leading-6 text-zinc-200">
+                ¿Cuánto cuesta el servicio y hasta qué hora atienden?
+              </p>
+              <p className="mt-2 text-[11px] text-zinc-500">
+                Cliente
+              </p>
+            </div>
+
+            <div className="ml-auto max-w-[88%] rounded-2xl rounded-tr-md bg-blue-600 px-4 py-3">
+              <p className="text-sm leading-6 text-white">
+                El servicio cuesta $15.000 y hoy atendemos hasta las 18:00.
+                También puedo ayudarte con la ubicación o los servicios
+                disponibles.
+              </p>
+
+              <p className="mt-2 text-[11px] text-blue-200">
+                Respondido por NDI AI
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <p className="text-sm font-medium text-blue-400">
+            Inteligencia artificial
+          </p>
+
+          <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+            Una IA que conoce tu negocio.
+          </h2>
+
+          <p className="mt-5 max-w-xl leading-8 text-zinc-400">
+            En lugar de responder de forma genérica, NDI AI utiliza la
+            información que cargaste para ayudar a tus clientes desde tu propia
+            página.
+          </p>
+
+          <div className="mt-7 grid gap-3 sm:grid-cols-2">
+            {[
+              "Servicios",
+              "Productos",
+              "Precios",
+              "Horarios",
+              "Ubicación",
+              "Preguntas frecuentes",
+            ].map((item) => (
+              <div
+                key={item}
+                className="flex items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm text-zinc-300"
+              >
+                <Check className="h-4 w-4 text-blue-400" />
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PLANES */}
+      <section
+        id="planes"
+        className="border-y border-zinc-800 bg-zinc-900/40"
+      >
+        <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-24">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-sm font-medium text-blue-400">
+              Planes
+            </p>
+
+            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+              Elegí hasta dónde querés llevar tu negocio.
+            </h2>
+
+            <p className="mt-5 leading-8 text-zinc-400">
+              Los precios finales todavía no están definidos. Estamos
+              preparando las primeras versiones de cada propuesta.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-6 lg:grid-cols-3">
+            <PlanCard
+              nombre="Express"
+              descripcion="Para negocios que necesitan una presencia profesional, clara y fácil de compartir."
+              features={planExpress}
+            />
+
+            <PlanCard
+              nombre="Negocio"
+              descripcion="Para quienes necesitan mostrar más información y sumar herramientas para organizar consultas."
+              features={planNegocio}
+              destacado
+            />
+
+            <PlanCard
+              nombre="Inteligente"
+              descripcion="Para negocios que quieren sumar inteligencia artificial y aprovechar al máximo NDI AI."
+              features={planInteligente}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* PRÓXIMAMENTE */}
+      <section
+        id="proximamente"
+        className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-24"
+      >
+        <div className="mx-auto max-w-3xl text-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-400">
+            <Sparkles className="h-4 w-4 text-blue-400" />
+            Próximamente
+          </div>
+
+          <h2 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl">
+            NDI AI va a seguir creciendo.
+          </h2>
+
+          <p className="mt-5 leading-8 text-zinc-400">
+            Estas integraciones ya forman parte de nuestra evolución técnica,
+            pero todavía no están disponibles comercialmente para conectar
+            cuentas externas.
+          </p>
+        </div>
+
+        <div className="mx-auto mt-12 grid max-w-5xl gap-5 md:grid-cols-3">
+          {proximamente.map(
+            ({ titulo, descripcion, icono: Icono }) => (
+              <article
+                key={titulo}
+                className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6 text-center"
+              >
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-800 text-zinc-300">
+                  <Icono className="h-6 w-6" />
+                </div>
+
+                <h3 className="mt-5 text-lg font-semibold">{titulo}</h3>
+
+                <p className="mt-3 text-sm leading-7 text-zinc-500">
+                  {descripcion}
+                </p>
+
+                <span className="mt-5 inline-flex rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-300">
+                  Próximamente
+                </span>
+              </article>
+            ),
+          )}
+        </div>
+      </section>
+
+      {/* CTA FINAL */}
       <section className="border-y border-zinc-800 bg-zinc-900/40">
         <div className="mx-auto max-w-5xl px-5 py-20 text-center sm:px-8">
-          <div className="rounded-3xl border border-blue-500/20 bg-blue-500/10 px-6 py-12 sm:px-12">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Que una consulta no se pierda porque estabas ocupado.
-            </h2>
-            <p className="mx-auto mt-4 max-w-2xl leading-7 text-zinc-300">
-              Creá tu cuenta gratis, cargá la información de tu negocio y prepará NDI AI para responder por vos.
-            </p>
-            <Link href="/register" className="mt-8 inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 font-semibold text-white transition hover:bg-blue-500">
-              Empezar gratis
-              <ArrowRight className="h-5 w-5" />
-            </Link>
+          <div className="relative overflow-hidden rounded-3xl border border-blue-500/20 bg-blue-500/10 px-6 py-12 sm:px-12">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(37,99,235,0.18),transparent_60%)]" />
+
+            <div className="relative">
+              <p className="text-sm font-medium text-blue-300">
+                NDI AI
+              </p>
+
+              <h2 className="mx-auto mt-3 max-w-3xl text-3xl font-bold tracking-tight sm:text-4xl">
+                Dale a tu negocio una presencia digital que trabaje por vos.
+              </h2>
+
+              <p className="mx-auto mt-5 max-w-2xl leading-7 text-zinc-300">
+                Estamos preparando las primeras páginas inteligentes de NDI AI.
+                Creá tu cuenta y acompañá esta nueva etapa del proyecto.
+              </p>
+
+              <Link
+                href="/register"
+                className="mt-8 inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 font-semibold text-white transition hover:bg-blue-500"
+              >
+                Quiero mi página
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
+      {/* FOOTER */}
       <footer className="border-t border-zinc-800">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-5 py-8 text-sm text-zinc-500 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <p>© 2026 NDI AI. Todos los derechos reservados.</p>
-          <div className="flex flex-wrap gap-x-5 gap-y-2">
-            <Link href="/privacidad" className="transition hover:text-white">Privacidad</Link>
-            <Link href="/terminos" className="transition hover:text-white">Términos</Link>
-            <Link href="/login" className="transition hover:text-white">Iniciar sesión</Link>
+          <div>
+            <p className="font-medium text-zinc-300">NDI AI</p>
+            <p className="mt-1">
+              Páginas inteligentes para negocios.
+            </p>
           </div>
+
+          <div className="flex flex-wrap gap-x-5 gap-y-2">
+            <Link
+              href="/privacidad"
+              className="transition hover:text-white"
+            >
+              Privacidad
+            </Link>
+
+            <Link
+              href="/terminos"
+              className="transition hover:text-white"
+            >
+              Términos
+            </Link>
+
+            <Link
+              href="/login"
+              className="transition hover:text-white"
+            >
+              Iniciar sesión
+            </Link>
+          </div>
+
+          <p>© 2026 NDI AI.</p>
         </div>
       </footer>
     </main>
@@ -299,46 +1027,59 @@ export default function HomePage() {
 
 function PlanCard({
   nombre,
-  precio,
-  sufijo,
   descripcion,
   features,
   destacado = false,
 }: {
   nombre: string;
-  precio: string;
-  sufijo?: string;
   descripcion: string;
   features: string[];
   destacado?: boolean;
 }) {
   return (
-    <article className={`relative rounded-3xl p-7 sm:p-8 ${
-      destacado
-        ? "border border-blue-500/30 bg-blue-500/5"
-        : "border border-zinc-800 bg-zinc-900"
-    }`}>
+    <article
+      className={`relative rounded-3xl p-7 sm:p-8 ${
+        destacado
+          ? "border border-blue-500/30 bg-blue-500/5"
+          : "border border-zinc-800 bg-zinc-900"
+      }`}
+    >
       {destacado && (
         <span className="absolute right-6 top-6 rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold text-white">
           Recomendado
         </span>
       )}
 
-      <p className={destacado ? "text-sm font-medium text-blue-400" : "text-sm font-medium text-zinc-400"}>
+      <p
+        className={
+          destacado
+            ? "text-sm font-medium text-blue-400"
+            : "text-sm font-medium text-zinc-400"
+        }
+      >
         {nombre}
       </p>
 
-      <div className="mt-3 flex items-end gap-2">
-        <span className="text-4xl font-bold">{precio}</span>
-        {sufijo && <span className="pb-1 text-sm text-zinc-500">{sufijo}</span>}
+      <div className="mt-4">
+        <span className="text-2xl font-bold">Consultar precio</span>
       </div>
 
-      <p className="mt-4 text-sm leading-6 text-zinc-400">{descripcion}</p>
+      <p className="mt-4 text-sm leading-6 text-zinc-400">
+        {descripcion}
+      </p>
 
       <div className="mt-7 space-y-3">
         {features.map((feature) => (
-          <div key={feature} className="flex items-start gap-3 text-sm text-zinc-300">
-            <Check className={`mt-0.5 h-4 w-4 shrink-0 ${destacado ? "text-blue-400" : "text-emerald-400"}`} />
+          <div
+            key={feature}
+            className="flex items-start gap-3 text-sm text-zinc-300"
+          >
+            <Check
+              className={`mt-0.5 h-4 w-4 shrink-0 ${
+                destacado ? "text-blue-400" : "text-emerald-400"
+              }`}
+            />
+
             <span>{feature}</span>
           </div>
         ))}
@@ -352,7 +1093,7 @@ function PlanCard({
             : "border border-zinc-700 hover:bg-zinc-800"
         }`}
       >
-        {destacado ? "Crear cuenta" : "Empezar gratis"}
+        Quiero mi página
       </Link>
     </article>
   );

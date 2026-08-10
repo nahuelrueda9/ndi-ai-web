@@ -71,6 +71,15 @@ type Conocimiento = {
   contenido?: string;
 };
 
+type CatalogoIA = {
+  id: string;
+  tipo: "servicio" | "producto";
+  nombre: string;
+  descripcion: string;
+  precio: number | null;
+  duracionMinutos: number | null;
+};
+
 type MemoriaCliente = {
   nombre?: string;
   empresa?: string;
@@ -546,6 +555,729 @@ function limpiarConocimientos(
       );
     }
   );
+}
+
+async function obtenerCatalogoEmpresa(
+  empresaId: string
+): Promise<CatalogoIA[]> {
+  const snapshot = await adminDb
+    .collection("companies")
+    .doc(empresaId)
+    .collection("catalog")
+    .limit(120)
+    .get();
+
+  const catalogo: CatalogoIA[] = [];
+
+  for (const documento of snapshot.docs) {
+    const datos = documento.data();
+
+    if (datos.activo === false) {
+      continue;
+    }
+
+    const tipo: CatalogoIA["tipo"] | null =
+      datos.tipo === "servicio"
+        ? "servicio"
+        : datos.tipo === "producto"
+          ? "producto"
+          : null;
+
+    const nombre =
+      typeof datos.nombre === "string"
+        ? datos.nombre.trim().slice(0, 300)
+        : "";
+
+    if (!tipo || !nombre) {
+      continue;
+    }
+
+    const descripcion =
+      typeof datos.descripcion === "string"
+        ? datos.descripcion.trim().slice(0, 2_000)
+        : "";
+
+    const precioNumero = Number(datos.precio);
+    const duracionNumero = Number(datos.duracionMinutos);
+
+    catalogo.push({
+      id: documento.id,
+      tipo,
+      nombre,
+      descripcion,
+      precio: Number.isFinite(precioNumero)
+        ? precioNumero
+        : null,
+      duracionMinutos:
+        tipo === "servicio" &&
+        Number.isFinite(duracionNumero) &&
+        duracionNumero > 0
+          ? duracionNumero
+          : null,
+    });
+  }
+
+  catalogo.sort((a, b) => {
+    if (a.tipo !== b.tipo) {
+      return a.tipo === "servicio" ? -1 : 1;
+    }
+
+    return a.nombre.localeCompare(b.nombre, "es");
+  });
+
+  return catalogo;
+}
+
+function construirBloqueCatalogo(
+  catalogo: CatalogoIA[]
+) {
+  if (catalogo.length === 0) {
+    return [
+      "CATÁLOGO ACTUAL DE LA EMPRESA:",
+      "No hay servicios ni productos activos cargados.",
+      "No inventes servicios, productos, precios ni duraciones.",
+    ].join("\n");
+  }
+
+  const lineas = [
+    "CATÁLOGO ACTUAL DE LA EMPRESA:",
+    "Estos datos son la fuente de verdad para servicios, productos, precios y duración.",
+    "No inventes datos que no estén informados.",
+    "",
+  ];
+
+  for (const item of catalogo) {
+    const detalles = [
+      `- ${item.tipo === "servicio" ? "SERVICIO" : "PRODUCTO"}: ${item.nombre}`,
+    ];
+
+    if (item.descripcion) {
+      detalles.push(`Descripción: ${item.descripcion}`);
+    }
+
+    detalles.push(
+      item.precio !== null
+        ? `Precio: $${item.precio.toLocaleString("es-AR")}`
+        : "Precio: no informado"
+    );
+
+    if (item.tipo === "servicio") {
+      detalles.push(
+        item.duracionMinutos !== null
+          ? `Duración: ${item.duracionMinutos} minutos`
+          : "Duración: no informada"
+      );
+    }
+
+    lineas.push(detalles.join(" | "));
+  }
+
+  return lineas.join("\n").slice(0, 14_000);
+}
+
+
+
+function contieneIntencionTurno(texto: string) {
+  const normalizado = normalizarTexto(texto);
+
+  return /\b(turno|turnos|cita|citas|reservar|reserva|reservas|reservacion|reservaciones)\b/.test(
+    normalizado
+  );
+}
+
+function historialTieneFlujoTurno(
+  historial: MensajeHistorial[]
+) {
+  return historial
+    .slice(-10)
+    .some((item) => {
+      if (
+        item.role === "user" &&
+        contieneIntencionTurno(item.content)
+      ) {
+        return true;
+      }
+
+      if (item.role === "assistant") {
+        const normalizado =
+          normalizarTexto(item.content);
+
+        return (
+          normalizado.includes(
+            "que servicio queres reservar"
+          ) ||
+          normalizado.includes(
+            "que servicio desea reservar"
+          ) ||
+          normalizado.includes(
+            "para que dia queres reservar"
+          ) ||
+          normalizado.includes(
+            "horarios disponibles"
+          ) ||
+          normalizado.includes(
+            "pasame tu nombre"
+          ) ||
+          normalizado.includes(
+            "telefono o email"
+          )
+        );
+      }
+
+      return false;
+    });
+}
+
+function obtenerTextoUsuariosReciente(
+  historial: MensajeHistorial[],
+  mensaje: string
+) {
+  return [
+    ...historial
+      .filter(
+        (item) => item.role === "user"
+      )
+      .slice(-8)
+      .map((item) => item.content),
+    mensaje,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+function buscarServicioMencionado(
+  catalogo: CatalogoIA[],
+  texto: string
+) {
+  const textoNormalizado =
+    normalizarTexto(texto);
+
+  const servicios = catalogo
+    .filter(
+      (item) =>
+        item.tipo === "servicio"
+    )
+    .map((item) => ({
+      ...item,
+      nombreNormalizado:
+        normalizarTexto(item.nombre),
+    }))
+    .filter(
+      (item) =>
+        item.nombreNormalizado.length > 0 &&
+        textoNormalizado.includes(
+          item.nombreNormalizado
+        )
+    )
+    .sort(
+      (a, b) =>
+        b.nombreNormalizado.length -
+        a.nombreNormalizado.length
+    );
+
+  return servicios[0] ?? null;
+}
+
+function fechaActualArgentinaISO() {
+  const partes =
+    new Intl.DateTimeFormat(
+      "en-CA",
+      {
+        timeZone:
+          "America/Argentina/Buenos_Aires",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }
+    ).formatToParts(new Date());
+
+  const anio =
+    partes.find(
+      (parte) =>
+        parte.type === "year"
+    )?.value ?? "";
+
+  const mes =
+    partes.find(
+      (parte) =>
+        parte.type === "month"
+    )?.value ?? "";
+
+  const dia =
+    partes.find(
+      (parte) =>
+        parte.type === "day"
+    )?.value ?? "";
+
+  return `${anio}-${mes}-${dia}`;
+}
+
+function sumarDiasISO(
+  fechaISO: string,
+  dias: number
+) {
+  const fecha =
+    new Date(
+      `${fechaISO}T12:00:00Z`
+    );
+
+  fecha.setUTCDate(
+    fecha.getUTCDate() + dias
+  );
+
+  return fecha
+    .toISOString()
+    .slice(0, 10);
+}
+
+function extraerFechaTurno(
+  texto: string
+) {
+  const fechaISO =
+    texto.match(
+      /\b(20\d{2}-\d{2}-\d{2})\b/
+    )?.[1];
+
+  if (fechaISO) {
+    return fechaISO;
+  }
+
+  const fechaConBarras =
+    texto.match(
+      /\b(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\b/
+    );
+
+  if (fechaConBarras) {
+    const dia = Number(
+      fechaConBarras[1]
+    );
+    const mes = Number(
+      fechaConBarras[2]
+    );
+
+    const hoy =
+      fechaActualArgentinaISO();
+
+    let anio = fechaConBarras[3]
+      ? Number(fechaConBarras[3])
+      : Number(hoy.slice(0, 4));
+
+    if (
+      fechaConBarras[3] &&
+      anio < 100
+    ) {
+      anio += 2000;
+    }
+
+    if (
+      dia >= 1 &&
+      dia <= 31 &&
+      mes >= 1 &&
+      mes <= 12
+    ) {
+      return `${String(anio).padStart(
+        4,
+        "0"
+      )}-${String(mes).padStart(
+        2,
+        "0"
+      )}-${String(dia).padStart(
+        2,
+        "0"
+      )}`;
+    }
+  }
+
+  const normalizado =
+    normalizarTexto(texto);
+
+  const hoy =
+    fechaActualArgentinaISO();
+
+  if (
+    normalizado.includes(
+      "pasado manana"
+    )
+  ) {
+    return sumarDiasISO(hoy, 2);
+  }
+
+  if (
+    /\bmanana\b/.test(
+      normalizado
+    )
+  ) {
+    return sumarDiasISO(hoy, 1);
+  }
+
+  if (
+    /\bhoy\b/.test(
+      normalizado
+    )
+  ) {
+    return hoy;
+  }
+
+  return "";
+}
+
+function extraerHoraTurno(
+  texto: string
+) {
+  const horaCompleta =
+    texto.match(
+      /\b([01]?\d|2[0-3])[:.]([0-5]\d)\b/
+    );
+
+  if (horaCompleta) {
+    return `${String(
+      Number(horaCompleta[1])
+    ).padStart(
+      2,
+      "0"
+    )}:${horaCompleta[2]}`;
+  }
+
+  const normalizado =
+    normalizarTexto(texto);
+
+  const horaSimple =
+    normalizado.match(
+      /\b(?:a las|las|de las)\s+([01]?\d|2[0-3])\b/
+    );
+
+  if (horaSimple) {
+    return `${String(
+      Number(horaSimple[1])
+    ).padStart(
+      2,
+      "0"
+    )}:00`;
+  }
+
+  if (
+    normalizado.length <= 5 &&
+    /^\d{1,2}$/.test(
+      normalizado
+    )
+  ) {
+    const numero =
+      Number(normalizado);
+
+    if (
+      numero >= 0 &&
+      numero <= 23
+    ) {
+      return `${String(
+        numero
+      ).padStart(
+        2,
+        "0"
+      )}:00`;
+    }
+  }
+
+  return "";
+}
+
+function esEleccionExplicitaDeHora(
+  mensaje: string
+) {
+  const hora =
+    extraerHoraTurno(mensaje);
+
+  if (!hora) {
+    return false;
+  }
+
+  const normalizado =
+    normalizarTexto(mensaje);
+
+  if (
+    normalizado ===
+      hora.replace(":00", "") ||
+    normalizado === hora ||
+    normalizado.length <= 8
+  ) {
+    return true;
+  }
+
+  return /\b(quiero|elijo|elegir|reservame|reservar|confirmo|confirmar|ese|esa|esa hora|ese horario|de las|a las)\b/.test(
+    normalizado
+  );
+}
+
+function ultimoAsistentePidioContacto(
+  historial: MensajeHistorial[]
+) {
+  const ultimoAsistente =
+    [...historial]
+      .reverse()
+      .find(
+        (item) =>
+          item.role ===
+          "assistant"
+      );
+
+  if (!ultimoAsistente) {
+    return false;
+  }
+
+  const normalizado =
+    normalizarTexto(
+      ultimoAsistente.content
+    );
+
+  return (
+    normalizado.includes(
+      "pasame tu nombre"
+    ) ||
+    normalizado.includes(
+      "nombre y un telefono"
+    ) ||
+    normalizado.includes(
+      "nombre y telefono"
+    ) ||
+    normalizado.includes(
+      "telefono o email"
+    ) ||
+    normalizado.includes(
+      "telefono o correo"
+    )
+  );
+}
+
+function obtenerHorariosDeResultado(
+  datos:
+    | Record<string, unknown>
+    | undefined
+) {
+  const horarios =
+    datos?.horarios;
+
+  if (!Array.isArray(horarios)) {
+    return [];
+  }
+
+  return horarios.filter(
+    (hora): hora is string =>
+      typeof hora === "string"
+  );
+}
+
+async function manejarFlujoTurnoDeterministico({
+  mensaje,
+  historial,
+  catalogo,
+  empresaId,
+  chatId,
+  memoria,
+}: {
+  mensaje: string;
+  historial: MensajeHistorial[];
+  catalogo: CatalogoIA[];
+  empresaId: string;
+  chatId: string;
+  memoria: MemoriaCliente;
+}): Promise<string | null> {
+  if (!chatId) {
+    return null;
+  }
+
+  const esFlujoTurno =
+    contieneIntencionTurno(
+      mensaje
+    ) ||
+    historialTieneFlujoTurno(
+      historial
+    );
+
+  if (!esFlujoTurno) {
+    return null;
+  }
+
+  const servicios =
+    catalogo.filter(
+      (item) =>
+        item.tipo === "servicio"
+    );
+
+  if (
+    servicios.length === 0
+  ) {
+    return "En este momento no hay servicios activos disponibles para reservar.";
+  }
+
+  const textoUsuarios =
+    obtenerTextoUsuariosReciente(
+      historial,
+      mensaje
+    );
+
+  const servicio =
+    buscarServicioMencionado(
+      catalogo,
+      textoUsuarios
+    );
+
+  if (!servicio) {
+    const nombres =
+      servicios
+        .slice(0, 6)
+        .map(
+          (item) => item.nombre
+        );
+
+    const opciones =
+      nombres.length > 0
+        ? `\n\nServicios disponibles: ${nombres.join(
+            ", "
+          )}.`
+        : "";
+
+    return `Claro, ¿qué servicio querés reservar?${opciones}`;
+  }
+
+  const fecha =
+    extraerFechaTurno(
+      mensaje
+    ) ||
+    extraerFechaTurno(
+      textoUsuarios
+    );
+
+  if (!fecha) {
+    return `Perfecto. ¿Para qué día querés reservar ${servicio.nombre}?`;
+  }
+
+  const disponibilidad =
+    await ejecutarHerramienta({
+      empresaId,
+      chatId,
+      nombre:
+        "consultar_disponibilidad_turnos",
+      argumentos: {
+        servicioId:
+          servicio.id,
+        fecha,
+      },
+    });
+
+  if (!disponibilidad.exito) {
+    return disponibilidad.mensaje;
+  }
+
+  const horarios =
+    obtenerHorariosDeResultado(
+      disponibilidad.datos
+    );
+
+  if (
+    horarios.length === 0
+  ) {
+    return `No quedan horarios disponibles para ${servicio.nombre} el ${fecha}. ¿Querés probar con otro día?`;
+  }
+
+  const horaMensaje =
+    extraerHoraTurno(
+      mensaje
+    );
+
+  const horaHistorial =
+    extraerHoraTurno(
+      textoUsuarios
+    );
+
+  const hora =
+    horaMensaje ||
+    horaHistorial;
+
+  const vieneDeEleccionAnterior =
+    !horaMensaje &&
+    Boolean(horaHistorial) &&
+    ultimoAsistentePidioContacto(
+      historial
+    );
+
+  if (!hora) {
+    const opciones =
+      horarios
+        .slice(0, 6)
+        .join(", ");
+
+    const extra =
+      horarios.length > 6
+        ? " También hay más horarios disponibles."
+        : "";
+
+    return `Tengo estos horarios disponibles para ${servicio.nombre} el ${fecha}: ${opciones}.${extra} ¿Cuál preferís?`;
+  }
+
+  if (
+    !horarios.includes(hora)
+  ) {
+    const opciones =
+      horarios
+        .slice(0, 6)
+        .join(", ");
+
+    return `Ese horario ya no está disponible. Los horarios libres son: ${opciones}. ¿Cuál preferís?`;
+  }
+
+  const eleccionExplicita =
+    esEleccionExplicitaDeHora(
+      mensaje
+    ) ||
+    vieneDeEleccionAnterior;
+
+  if (!eleccionExplicita) {
+    return `Sí, ${hora} está disponible para ${servicio.nombre} el ${fecha}. ¿Querés reservar ese horario?`;
+  }
+
+  const nombreCliente =
+    typeof memoria.nombre ===
+      "string"
+      ? memoria.nombre.trim()
+      : "";
+
+  const telefono =
+    typeof memoria.telefono ===
+      "string"
+      ? memoria.telefono.trim()
+      : "";
+
+  const email =
+    typeof memoria.email ===
+      "string"
+      ? memoria.email.trim()
+      : "";
+
+  if (
+    !nombreCliente ||
+    (!telefono && !email)
+  ) {
+    return `Perfecto, ${hora} está disponible. Para reservarlo, pasame tu nombre y un teléfono o email.`;
+  }
+
+  const creacion =
+    await ejecutarHerramienta({
+      empresaId,
+      chatId,
+      nombre: "crear_turno",
+      argumentos: {
+        servicioId:
+          servicio.id,
+        fecha,
+        hora,
+        nombreCliente,
+        telefono:
+          telefono || undefined,
+        email:
+          email || undefined,
+      },
+    });
+
+  return creacion.mensaje;
 }
 
 
@@ -1026,16 +1758,54 @@ const {
   actividades,
 });
 
-      const instruccionesDelSistema =
-  construirSystemPrompt({
-    empresa,
-    intencion,
-    memoriaDelVisitante,
-    bloqueTags,
-    bloqueNotas,
-    bloqueActividades,
-    baseDeConocimiento,
-  });
+      const catalogo =
+        await obtenerCatalogoEmpresa(empresaId);
+
+      const bloqueCatalogo =
+        construirBloqueCatalogo(catalogo);
+
+      const respuestaTurno =
+        await manejarFlujoTurnoDeterministico({
+          mensaje,
+          historial,
+          catalogo,
+          empresaId,
+          chatId,
+          memoria,
+        });
+
+      if (respuestaTurno) {
+        return NextResponse.json({
+          respuesta: respuestaTurno,
+          metadata: {
+            flujoTurno: true,
+            conocimientosDisponibles:
+              conocimientos.length,
+            conocimientosUtilizados:
+              conocimientosSeleccionados.length,
+            memoriaDisponible:
+              Object.keys(memoria).length > 0,
+          },
+        });
+      }
+
+      const instruccionesBase =
+        construirSystemPrompt({
+          empresa,
+          intencion,
+          memoriaDelVisitante,
+          bloqueTags,
+          bloqueNotas,
+          bloqueActividades,
+          baseDeConocimiento,
+        });
+
+      const instruccionesDelSistema = [
+        instruccionesBase,
+        bloqueCatalogo,
+      ]
+        .filter(Boolean)
+        .join("\n\n");
 
   let mensajeIA;
 

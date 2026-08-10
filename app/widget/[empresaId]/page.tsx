@@ -259,7 +259,7 @@ export default function WidgetPublicoPage() {
     useState("");
 
   const [chatAbierto, setChatAbierto] =
-    useState(true);
+    useState(false);
 
   const [
     estadoConversacion,
