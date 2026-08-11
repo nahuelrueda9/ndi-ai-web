@@ -272,6 +272,11 @@ export default function PlanesPage() {
   );
 
   const [
+    procesandoRenovacion,
+    setProcesandoRenovacion,
+  ] = useState(false);
+
+  const [
     cargando,
     setCargando,
   ] = useState(true);
@@ -497,6 +502,94 @@ export default function PlanesPage() {
       empresa.subscriptionEndsAt,
     );
 
+  const tuvoSuscripcion =
+    typeof empresa.subscriptionMonthlyPrice ===
+      "number" &&
+    empresa.subscriptionMonthlyPrice >
+      0;
+
+  const precioRenovacion =
+    typeof empresa.subscriptionMonthlyPrice ===
+      "number" &&
+    empresa.subscriptionMonthlyPrice >
+      0
+      ? empresa.subscriptionMonthlyPrice
+      : precioPlanActual.mensual;
+
+  async function abrirCheckout(
+    planId: PlanId,
+    tipoPago: "alta" | "renovacion",
+  ) {
+    if (
+      !empresaId ||
+      !usuario ||
+      !accesoVerificado
+    ) {
+      throw new Error(
+        "No se encontró la empresa o el usuario.",
+      );
+    }
+
+    const idToken =
+      await usuario.getIdToken(
+        true,
+      );
+
+    const response =
+      await fetch(
+        "/api/payments/mercadopago/create-preference",
+        {
+          method:
+            "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            Authorization:
+              `Bearer ${idToken}`,
+          },
+
+          body:
+            JSON.stringify({
+              empresaId,
+              plan:
+                planId,
+              tipoPago,
+            }),
+        },
+      );
+
+    const data =
+      (await response.json()) as {
+        error?: string;
+        checkoutUrl?: string;
+        initPoint?: string;
+        sandboxInitPoint?: string;
+      };
+
+    if (!response.ok) {
+      throw new Error(
+        data.error ||
+          "No se pudo iniciar el pago con Mercado Pago.",
+      );
+    }
+
+    const checkoutUrl =
+      data.checkoutUrl ||
+      data.initPoint ||
+      data.sandboxInitPoint;
+
+    if (!checkoutUrl) {
+      throw new Error(
+        "Mercado Pago no devolvió el enlace de pago.",
+      );
+    }
+
+    window.location.href =
+      checkoutUrl;
+  }
+
   async function seleccionarPlan(
     planId: PlanId,
   ) {
@@ -504,89 +597,40 @@ export default function PlanesPage() {
     setMensaje("");
 
     if (
-      !empresaId ||
-      !usuario ||
-      !accesoVerificado
+      suscripcionActiva
     ) {
-      setError(
-        "No se encontró la empresa o el usuario.",
-      );
+      if (
+        planId ===
+          planActual
+      ) {
+        setMensaje(
+          "Este es tu plan actual.",
+        );
+      } else {
+        setMensaje(
+          "El cambio de plan todavía no está habilitado mientras tu suscripción está activa.",
+        );
+      }
+
       return;
     }
 
-    if (
-      suscripcionActiva &&
+    const esRenovacion =
+      tuvoSuscripcion &&
       planId ===
-        planActual
-    ) {
-      setMensaje(
-        "Este es tu plan actual.",
-      );
-      return;
-    }
+        planActual;
 
     setProcesandoPlan(
       planId,
     );
 
     try {
-      const idToken =
-        await usuario.getIdToken(
-          true,
-        );
-
-      const response =
-        await fetch(
-          "/api/payments/mercadopago/create-preference",
-          {
-            method:
-              "POST",
-
-            headers: {
-              "Content-Type":
-                "application/json",
-
-              Authorization:
-                `Bearer ${idToken}`,
-            },
-
-            body:
-              JSON.stringify({
-                empresaId,
-                plan:
-                  planId,
-              }),
-          },
-        );
-
-      const data =
-        (await response.json()) as {
-          error?: string;
-          checkoutUrl?: string;
-          initPoint?: string;
-          sandboxInitPoint?: string;
-        };
-
-      if (!response.ok) {
-        throw new Error(
-          data.error ||
-            "No se pudo iniciar el pago con Mercado Pago.",
-        );
-      }
-
-      const checkoutUrl =
-        data.checkoutUrl ||
-        data.initPoint ||
-        data.sandboxInitPoint;
-
-      if (!checkoutUrl) {
-        throw new Error(
-          "Mercado Pago no devolvió el enlace de pago.",
-        );
-      }
-
-      window.location.href =
-        checkoutUrl;
+      await abrirCheckout(
+        planId,
+        esRenovacion
+          ? "renovacion"
+          : "alta",
+      );
     } catch (
       paymentError
     ) {
@@ -603,6 +647,48 @@ export default function PlanesPage() {
     } finally {
       setProcesandoPlan(
         null,
+      );
+    }
+  }
+
+  async function renovarPlan() {
+    setError("");
+    setMensaje("");
+
+    if (
+      !tuvoSuscripcion
+    ) {
+      setError(
+        "Esta empresa todavía no tiene una suscripción para renovar.",
+      );
+      return;
+    }
+
+    setProcesandoRenovacion(
+      true,
+    );
+
+    try {
+      await abrirCheckout(
+        planActual,
+        "renovacion",
+      );
+    } catch (
+      paymentError
+    ) {
+      console.error(
+        "Error al iniciar la renovación:",
+        paymentError,
+      );
+
+      setError(
+        paymentError instanceof Error
+          ? paymentError.message
+          : "No se pudo iniciar la renovación.",
+      );
+    } finally {
+      setProcesandoRenovacion(
+        false,
       );
     }
   }
@@ -647,6 +733,17 @@ export default function PlanesPage() {
             const esActual =
               suscripcionActiva &&
               plan.id ===
+                planActual;
+
+            const esUltimoPlan =
+              !suscripcionActiva &&
+              tuvoSuscripcion &&
+              plan.id ===
+                planActual;
+
+            const cambioBloqueado =
+              suscripcionActiva &&
+              plan.id !==
                 planActual;
 
             const precios =
@@ -764,8 +861,10 @@ export default function PlanesPage() {
                   type="button"
                   disabled={
                     esActual ||
+                    cambioBloqueado ||
                     procesandoPlan !==
-                      null
+                      null ||
+                    procesandoRenovacion
                   }
                   onClick={() =>
                     seleccionarPlan(
@@ -785,10 +884,18 @@ export default function PlanesPage() {
                 >
                   {esActual
                     ? "Plan actual"
-                    : procesandoPlan ===
-                        plan.id
-                      ? "Abriendo Mercado Pago..."
-                      : "Elegir plan"}
+                    : cambioBloqueado
+                      ? "Cambio de plan próximamente"
+                      : procesandoPlan ===
+                          plan.id
+                        ? esUltimoPlan
+                          ? "Abriendo renovación..."
+                          : "Abriendo Mercado Pago..."
+                        : esUltimoPlan
+                          ? `Renovar por ${formatearPrecio(
+                              precioRenovacion,
+                            )}`
+                          : "Elegir plan"}
                 </button>
               </article>
             );
@@ -798,55 +905,97 @@ export default function PlanesPage() {
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_auto]">
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="font-medium text-slate-950 dark:text-white">
-            Tu suscripción
-          </p>
-
-          <div className="mt-3 flex flex-wrap gap-x-8 gap-y-3 text-sm text-slate-600 dark:text-zinc-400">
-            <p>
-              Plan:{" "}
-              <span className="font-semibold text-slate-950 dark:text-white">
-                {
-                  nombrePlanActual
-                }
-              </span>
-            </p>
-
-            <p>
-              Mensualidad:{" "}
-              <span className="font-semibold text-slate-950 dark:text-white">
-                {suscripcionActiva
-                  ? `${formatearPrecio(
-                      precioMensualActual,
-                    )}/mes`
-                  : "—"}
-              </span>
-            </p>
-
-            <p>
-              Estado:{" "}
-              <span
-                className={
-                  estado ===
-                  "Activo"
-                    ? "font-semibold text-emerald-600 dark:text-emerald-400"
-                    : "font-semibold text-amber-600 dark:text-amber-400"
-                }
-              >
-                {estado}
-              </span>
-            </p>
-
-            {suscripcionActiva &&
-              vencimiento && (
-              <p>
-                Próximo vencimiento:{" "}
-                <span className="font-semibold text-slate-950 dark:text-white">
-                  {formatearFecha(
-                    vencimiento,
-                  )}
-                </span>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="font-medium text-slate-950 dark:text-white">
+                Tu suscripción
               </p>
+
+              <div className="mt-3 flex flex-wrap gap-x-8 gap-y-3 text-sm text-slate-600 dark:text-zinc-400">
+                <p>
+                  Plan:{" "}
+                  <span className="font-semibold text-slate-950 dark:text-white">
+                    {suscripcionActiva ||
+                    tuvoSuscripcion
+                      ? obtenerNombrePlan(
+                          planActual,
+                        )
+                      : nombrePlanActual}
+                  </span>
+                </p>
+
+                <p>
+                  Mensualidad:{" "}
+                  <span className="font-semibold text-slate-950 dark:text-white">
+                    {suscripcionActiva ||
+                    tuvoSuscripcion
+                      ? `${formatearPrecio(
+                          precioRenovacion,
+                        )}/mes`
+                      : "—"}
+                  </span>
+                </p>
+
+                <p>
+                  Estado:{" "}
+                  <span
+                    className={
+                      suscripcionActiva
+                        ? "font-semibold text-emerald-600 dark:text-emerald-400"
+                        : "font-semibold text-amber-600 dark:text-amber-400"
+                    }
+                  >
+                    {suscripcionActiva
+                      ? estado
+                      : tuvoSuscripcion
+                        ? "Vencido / sin renovar"
+                        : "Sin plan activo"}
+                  </span>
+                </p>
+
+                {vencimiento && (
+                  <p>
+                    {suscripcionActiva
+                      ? "Próximo vencimiento"
+                      : "Último vencimiento"}
+                    :{" "}
+                    <span className="font-semibold text-slate-950 dark:text-white">
+                      {formatearFecha(
+                        vencimiento,
+                      )}
+                    </span>
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {tuvoSuscripcion && (
+              <div className="shrink-0 sm:text-right">
+                <button
+                  type="button"
+                  disabled={
+                    procesandoRenovacion ||
+                    procesandoPlan !==
+                      null
+                  }
+                  onClick={
+                    renovarPlan
+                  }
+                  className="w-full rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                >
+                  {procesandoRenovacion
+                    ? "Abriendo Mercado Pago..."
+                    : `Renovar por ${formatearPrecio(
+                        precioRenovacion,
+                      )}`}
+                </button>
+
+                {suscripcionActiva && (
+                  <p className="mt-2 max-w-xs text-xs leading-5 text-slate-500 dark:text-zinc-500">
+                    Si renovás antes del vencimiento, se suman 30 días sin perder los días que ya tenés pagos.
+                  </p>
+                )}
+              </div>
             )}
           </div>
         </div>
