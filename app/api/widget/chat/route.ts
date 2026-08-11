@@ -8,7 +8,12 @@ import {
 } from "firebase-admin/firestore";
 
 import { adminDb } from "@/lib/firebaseAdmin";
-import { empresaTieneFuncion } from "@/lib/plans/planAccess";
+import {
+  empresaTieneFuncion,
+  obtenerLimitesPlan,
+  obtenerPlanEfectivo,
+  type PlanId,
+} from "@/lib/plans/planAccess";
 
 type MensajeHistorial = {
   role: "user" | "assistant";
@@ -57,7 +62,7 @@ type ResultadoAutomatizacion = {
 
 type EmpresaPublica = {
   nombre?: string;
-  plan?: "free" | "pro" | "business";
+  plan?: PlanId;
   descripcion?: string;
   personalidad?: string;
   objetivo?: string;
@@ -93,18 +98,6 @@ const MAXIMO_MENSAJE = 2_000;
 const MAXIMO_VISITANTE_ID = 160;
 const MAXIMO_HISTORIAL = 20;
 const MAXIMO_MENSAJES_DEVUELTOS = 200;
-
-const LIMITES_CONVERSACIONES = {
-  free: 50,
-  pro: 1000,
-  business: 10000,
-} as const;
-
-const LIMITES_RESPUESTAS_IA = {
-  free: 250,
-  pro: 5000,
-  business: 20000,
-} as const;
 
 class LimitePlanAlcanzadoError extends Error {
   constructor() {
@@ -147,9 +140,9 @@ async function reservarRespuestaIA(
         obtenerPlanEfectivo(datos);
 
       const limite =
-        LIMITES_RESPUESTAS_IA[
+        obtenerLimitesPlan(
           plan
-        ];
+        ).respuestasIA;
 
       const mesActual =
         obtenerMesActualArgentina();
@@ -188,76 +181,6 @@ async function reservarRespuestaIA(
       );
     }
   );
-}
-
-function convertirFecha(valor: unknown) {
-  if (!valor) {
-    return null;
-  }
-
-  if (
-    typeof valor === "object" &&
-    valor !== null &&
-    "toDate" in valor &&
-    typeof (valor as { toDate?: unknown }).toDate === "function"
-  ) {
-    return (
-      valor as {
-        toDate: () => Date;
-      }
-    ).toDate();
-  }
-
-  if (valor instanceof Date) {
-    return valor;
-  }
-
-  if (
-    typeof valor === "string" ||
-    typeof valor === "number"
-  ) {
-    const fecha = new Date(valor);
-
-    if (!Number.isNaN(fecha.getTime())) {
-      return fecha;
-    }
-  }
-
-  return null;
-}
-
-function obtenerPlanEfectivo(
-  datos: DocumentData
-): keyof typeof LIMITES_CONVERSACIONES {
-  const planGuardado =
-    datos.plan === "pro"
-      ? "pro"
-      : datos.plan === "business"
-        ? "business"
-        : "free";
-
-  if (planGuardado === "free") {
-    return "free";
-  }
-
-  if (planGuardado === "business") {
-    return "business";
-  }
-
-  const fechaVencimiento =
-    convertirFecha(
-      datos.subscriptionEndsAt
-    );
-
-  if (
-    !fechaVencimiento ||
-    fechaVencimiento.getTime() <=
-      Date.now()
-  ) {
-    return "free";
-  }
-
-  return "pro";
 }
 
 function obtenerMesActualArgentina() {
@@ -473,33 +396,9 @@ async function crearConversacion({
         obtenerPlanEfectivo(datos);
 
       const limite =
-        LIMITES_CONVERSACIONES[plan];
-
-      const planGuardado =
-        datos.plan === "pro" ||
-        datos.plan === "business"
-          ? datos.plan
-          : "free";
-
-      if (
-        plan === "free" &&
-        planGuardado !== "free"
-      ) {
-        transaccion.set(
-          empresaReferencia,
-          {
-            plan: "free",
-            subscriptionStatus:
-              "expired",
-            maxConversations: 50,
-            updatedAt:
-              FieldValue.serverTimestamp(),
-          },
-          {
-            merge: true,
-          }
-        );
-      }
+        obtenerLimitesPlan(
+          plan
+        ).conversaciones;
 
       const mesGuardado =
         typeof datos.conversationsUsageMonth ===
@@ -851,7 +750,7 @@ export async function GET(request: Request) {
       return NextResponse.json(
         {
           error:
-            "El asistente de IA está disponible en los planes Pro y Empresa.",
+            "El asistente de IA está disponible únicamente en Business IA.",
           upgradeRequired: true,
         },
         { status: 403 }
@@ -964,7 +863,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "El asistente de IA está disponible en los planes Pro y Empresa.",
+            "El asistente de IA está disponible únicamente en Business IA.",
           upgradeRequired: true,
         },
         { status: 403 }
@@ -1051,7 +950,6 @@ export async function POST(request: Request) {
     }
 
     if (
-      empresa.plan === "pro" ||
       empresa.plan === "business"
     ) {
       const resultadoAutomatizacion =

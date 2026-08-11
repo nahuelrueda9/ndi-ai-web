@@ -6,7 +6,6 @@ import type {
 } from "react";
 import {
   useEffect,
-  useMemo,
   useState,
 } from "react";
 import {
@@ -763,15 +762,6 @@ export default function ConfigurarAgentePage() {
       unsubscribe();
   }, [empresaId, router]);
 
-  const contrasteWidget =
-    useMemo(
-      () =>
-        tema === "oscuro"
-          ? "text-white"
-          : "text-zinc-900",
-      [tema],
-    );
-
   const urlPublica =
     paginaSlug
       ? `/negocio/${paginaSlug}`
@@ -1463,7 +1453,7 @@ export default function ConfigurarAgentePage() {
 
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-3xl font-bold tracking-tight text-slate-950 dark:text-white">
-              Configuración del negocio
+              Mi página
             </h1>
 
             <Badge variant="success">
@@ -1472,10 +1462,9 @@ export default function ConfigurarAgentePage() {
           </div>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
-            Configurá la información,
-            la página pública y el
-            asistente inteligente de{" "}
-            {nombre}.
+            Configurá la información y la página pública de{" "}
+            {nombre}. Todo lo que ajustes acá define
+            lo que verán tus clientes.
           </p>
         </div>
 
@@ -1514,7 +1503,7 @@ export default function ConfigurarAgentePage() {
         <Card className="overflow-hidden">
           <SectionHeader
             title="Información del negocio"
-            description="Datos generales que utilizarán la página pública y el asistente inteligente."
+            description="Datos generales del negocio que pueden mostrarse en tu página pública."
             right={
               rubro ? (
                 <Badge variant="info">
@@ -2537,446 +2526,9 @@ export default function ConfigurarAgentePage() {
               </button>
 
               <p className="mt-3 text-center text-xs text-slate-500 dark:text-zinc-600">
-                La ruta pública la
-                creamos en el siguiente
-                paso.
+                Abrí la página para comprobar
+                cómo la ven tus clientes.
               </p>
-            </div>
-          </div>
-        </Card>
-
-        {/* IA */}
-        <Card className="overflow-hidden">
-          <SectionHeader
-            title="Comportamiento de la IA"
-            description="Definí cómo debe hablar, qué objetivo tiene y cuáles son sus límites."
-            right={
-              <Badge variant="purple">
-                {idioma}
-              </Badge>
-            }
-          />
-
-          <div className="grid gap-5 p-6 md:grid-cols-2">
-            <Input
-              id="personalidad"
-              label="Personalidad"
-              value={personalidad}
-              onChange={(e) =>
-                setPersonalidad(
-                  e.target.value,
-                )
-              }
-              placeholder="Amable, profesional y breve"
-              helperText="Por ejemplo: cercana, clara, comercial y breve."
-            />
-
-            <SelectField
-              id="idioma"
-              label="Idioma"
-              value={idioma}
-              onChange={setIdioma}
-              options={[
-                "Español",
-                "Inglés",
-                "Portugués",
-              ]}
-              helperText="Idioma principal en el que responderá el agente."
-            />
-
-            <div className="md:col-span-2">
-              <TextArea
-                id="objetivo"
-                label="Objetivo principal"
-                value={objetivo}
-                onChange={(e) =>
-                  setObjetivo(
-                    e.target.value,
-                  )
-                }
-                placeholder="Ejemplo: responder consultas y conseguir nuevos clientes."
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <TextArea
-                id="instrucciones"
-                label="Instrucciones especiales"
-                value={
-                  instrucciones
-                }
-                onChange={(e) =>
-                  setInstrucciones(
-                    e.target.value,
-                  )
-                }
-                placeholder="Ejemplo: pedir nombre y teléfono antes de derivar una consulta."
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <TextArea
-                id="restricciones"
-                label="Qué no debe hacer"
-                value={
-                  restricciones
-                }
-                onChange={(e) =>
-                  setRestricciones(
-                    e.target.value,
-                  )
-                }
-                placeholder="Ejemplo: no inventar precios, promociones ni disponibilidad."
-                helperText="Estas reglas ayudan a reducir respuestas incorrectas."
-              />
-            </div>
-          </div>
-        </Card>
-
-        <div
-          id="apariencia-widget"
-          className="scroll-mt-24"
-        />
-
-        {/* WIDGET */}
-        <Card className="overflow-hidden">
-          <SectionHeader
-            title="Apariencia del widget"
-            description="Personalizá el chat que verán los visitantes del sitio web."
-            right={
-              <Badge variant="info">
-                Vista previa en vivo
-              </Badge>
-            }
-          />
-
-          <div className="grid gap-6 p-6 xl:grid-cols-[1fr_420px]">
-            <div className="grid content-start gap-5 md:grid-cols-2">
-              <Input
-                id="nombreBot"
-                label="Nombre del bot"
-                value={nombreBot}
-                onChange={(e) =>
-                  setNombreBot(
-                    e.target.value,
-                  )
-                }
-                placeholder="Asistente virtual"
-                required
-              />
-
-              <Input
-                id="textoPlaceholder"
-                label="Texto del campo"
-                value={
-                  textoPlaceholder
-                }
-                onChange={(e) =>
-                  setTextoPlaceholder(
-                    e.target.value,
-                  )
-                }
-                placeholder="Escribí tu mensaje..."
-              />
-
-              <div className="md:col-span-2">
-                <TextArea
-                  id="mensajeBienvenida"
-                  label="Mensaje de bienvenida"
-                  value={
-                    mensajeBienvenida
-                  }
-                  onChange={(e) =>
-                    setMensajeBienvenida(
-                      e.target.value,
-                    )
-                  }
-                  placeholder="¡Hola! ¿En qué puedo ayudarte?"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label
-                  htmlFor="colorPrincipal"
-                  className="block text-sm font-medium text-slate-700 dark:text-zinc-200"
-                >
-                  Color principal
-                </label>
-
-                <div className="flex gap-3">
-                  <input
-                    id="colorPrincipal"
-                    type="color"
-                    value={
-                      colorPrincipal
-                    }
-                    onChange={(e) =>
-                      setColorPrincipal(
-                        e.target.value,
-                      )
-                    }
-                    className="h-11 w-14 cursor-pointer rounded-xl border border-slate-300 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-900"
-                  />
-
-                  <input
-                    value={
-                      colorPrincipal
-                    }
-                    onChange={(e) =>
-                      setColorPrincipal(
-                        e.target.value,
-                      )
-                    }
-                    className="h-11 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              <SelectField
-                id="tema"
-                label="Tema"
-                value={tema}
-                onChange={(value) =>
-                  setTema(
-                    value as TemaWidget,
-                  )
-                }
-                options={[
-                  "oscuro",
-                  "claro",
-                ]}
-              />
-
-              <SelectField
-                id="posicion"
-                label="Posición"
-                value={posicion}
-                onChange={(value) =>
-                  setPosicion(
-                    value as PosicionWidget,
-                  )
-                }
-                options={[
-                  "derecha",
-                  "izquierda",
-                ]}
-              />
-
-              <SelectField
-                id="formaBoton"
-                label="Forma del botón"
-                value={formaBoton}
-                onChange={(value) =>
-                  setFormaBoton(
-                    value as FormaWidget,
-                  )
-                }
-                options={[
-                  "redondo",
-                  "cuadrado",
-                ]}
-              />
-
-              <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 md:col-span-2 dark:border-zinc-800 dark:bg-zinc-950/50">
-                <div>
-                  <p className="text-sm font-medium text-slate-950 dark:text-white">
-                    Mostrar “Creado con
-                    NDI AI”
-                  </p>
-
-                  <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
-                    Podrás ocultarlo en
-                    los planes
-                    superiores.
-                  </p>
-                </div>
-
-                <input
-                  type="checkbox"
-                  checked={
-                    mostrarMarca
-                  }
-                  onChange={(e) =>
-                    setMostrarMarca(
-                      e.target
-                        .checked,
-                    )
-                  }
-                  className="h-5 w-5 accent-blue-500"
-                />
-              </label>
-            </div>
-
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
-              <div className="mb-4 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-white">
-                    Vista previa
-                  </p>
-
-                  <p className="text-xs text-zinc-500">
-                    Así se verá el
-                    widget en tu web.
-                  </p>
-                </div>
-
-                <Badge variant="success">
-                  En vivo
-                </Badge>
-              </div>
-
-              <div className="relative min-h-[500px] overflow-hidden rounded-2xl border border-zinc-800 bg-[radial-gradient(circle_at_top,#27272a,transparent_55%)] p-5">
-                <div className="rounded-xl border border-zinc-800 bg-zinc-900/80 p-4">
-                  <div className="h-3 w-28 rounded bg-zinc-800" />
-                  <div className="mt-3 h-2 w-full rounded bg-zinc-800/70" />
-                  <div className="mt-2 h-2 w-3/4 rounded bg-zinc-800/70" />
-                </div>
-
-                <div
-                  className={`absolute bottom-20 w-[calc(100%-40px)] max-w-sm ${
-                    posicion ===
-                    "derecha"
-                      ? "right-5"
-                      : "left-5"
-                  }`}
-                >
-                  <div
-                    className={`overflow-hidden rounded-2xl border shadow-2xl ${
-                      tema ===
-                      "oscuro"
-                        ? "border-zinc-700 bg-zinc-900"
-                        : "border-zinc-200 bg-white"
-                    }`}
-                  >
-                    <div
-                      className="flex items-center gap-3 px-4 py-3"
-                      style={{
-                        backgroundColor:
-                          colorPrincipal,
-                      }}
-                    >
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-white">
-                        ✦
-                      </div>
-
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-semibold text-white">
-                          {nombreBot ||
-                            "Asistente virtual"}
-                        </p>
-
-                        <p className="text-xs text-white/75">
-                          En línea
-                        </p>
-                      </div>
-
-                      <span className="text-white/80">
-                        —
-                      </span>
-                    </div>
-
-                    <div
-                      className={`space-y-4 p-4 ${
-                        tema ===
-                        "oscuro"
-                          ? "bg-zinc-900"
-                          : "bg-zinc-50"
-                      }`}
-                    >
-                      <div className="flex items-start gap-2">
-                        <div
-                          className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs text-white"
-                          style={{
-                            backgroundColor:
-                              colorPrincipal,
-                          }}
-                        >
-                          ✦
-                        </div>
-
-                        <div
-                          className={`max-w-[82%] rounded-2xl rounded-tl-md px-3 py-2 text-sm ${
-                            tema ===
-                            "oscuro"
-                              ? "bg-zinc-800 text-zinc-200"
-                              : "bg-white text-zinc-700 shadow-sm"
-                          }`}
-                        >
-                          {mensajeBienvenida ||
-                            "¡Hola! ¿En qué puedo ayudarte?"}
-                        </div>
-                      </div>
-
-                      <div
-                        className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${
-                          tema ===
-                          "oscuro"
-                            ? "border-zinc-700 bg-zinc-950"
-                            : "border-zinc-200 bg-white"
-                        }`}
-                      >
-                        <span
-                          className={`min-w-0 flex-1 truncate text-sm ${
-                            tema ===
-                            "oscuro"
-                              ? "text-zinc-500"
-                              : "text-zinc-400"
-                          }`}
-                        >
-                          {textoPlaceholder ||
-                            "Escribí tu mensaje..."}
-                        </span>
-
-                        <button
-                          type="button"
-                          className="flex h-8 w-8 items-center justify-center rounded-lg text-white"
-                          style={{
-                            backgroundColor:
-                              colorPrincipal,
-                          }}
-                        >
-                          ↑
-                        </button>
-                      </div>
-
-                      {mostrarMarca && (
-                        <p
-                          className={`text-center text-[10px] ${
-                            tema ===
-                            "oscuro"
-                              ? "text-zinc-600"
-                              : "text-zinc-400"
-                          }`}
-                        >
-                          Creado con NDI AI
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  className={`absolute bottom-5 flex h-14 w-14 items-center justify-center text-2xl text-white shadow-xl ${
-                    posicion ===
-                    "derecha"
-                      ? "right-5"
-                      : "left-5"
-                  } ${
-                    formaBoton ===
-                    "redondo"
-                      ? "rounded-full"
-                      : "rounded-2xl"
-                  }`}
-                  style={{
-                    backgroundColor:
-                      colorPrincipal,
-                  }}
-                  aria-label="Abrir chat"
-                >
-                  💬
-                </button>
-              </div>
             </div>
           </div>
         </Card>
@@ -3000,12 +2552,11 @@ export default function ConfigurarAgentePage() {
         <Card className="sticky bottom-4 z-20 flex flex-col gap-4 border-slate-200 bg-white/95 p-5 shadow-2xl backdrop-blur sm:flex-row sm:items-center sm:justify-between dark:border-zinc-700/80 dark:bg-zinc-900/95">
           <div>
             <p className="text-sm font-medium text-slate-950 dark:text-white">
-              Configuración general
+              Mi página
             </p>
 
             <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
-              Guardá los cambios antes
-              de salir.
+              Guardá los cambios antes de salir.
             </p>
           </div>
 
@@ -3015,23 +2566,29 @@ export default function ConfigurarAgentePage() {
               variant="secondary"
               onClick={() =>
                 router.push(
-                  `/empresas/${empresaId}/conocimiento`,
+                  `/empresas/${empresaId}/catalogo`,
                 )
               }
             >
-              Base de conocimiento
+              Servicios y productos
             </Button>
 
             <Button
               type="button"
               variant="secondary"
-              onClick={() =>
-                router.push(
-                  `/empresas/${empresaId}/probar`,
-                )
-              }
+              disabled={!paginaSlug}
+              onClick={() => {
+                if (!paginaSlug) {
+                  return;
+                }
+
+                window.open(
+                  urlPublica,
+                  "_blank",
+                );
+              }}
             >
-              Probar agente
+              Ver página pública
             </Button>
 
             <Button
@@ -3040,7 +2597,7 @@ export default function ConfigurarAgentePage() {
             >
               {guardando
                 ? "Guardando..."
-                : "Guardar configuración"}
+                : "Guardar cambios"}
             </Button>
           </div>
         </Card>
@@ -3165,63 +2722,6 @@ function ImagenUploader({
           }}
         />
       </label>
-    </div>
-  );
-}
-
-function SelectField({
-  id,
-  label,
-  value,
-  onChange,
-  options,
-  helperText,
-}: {
-  id: string;
-  label: string;
-  value: string;
-  onChange: (
-    value: string,
-  ) => void;
-  options: string[];
-  helperText?: string;
-}) {
-  return (
-    <div className="space-y-2">
-      <label
-        htmlFor={id}
-        className="block text-sm font-medium text-slate-700 dark:text-zinc-200"
-      >
-        {label}
-      </label>
-
-      <select
-        id={id}
-        value={value}
-        onChange={(e) =>
-          onChange(
-            e.target.value,
-          )
-        }
-        className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm capitalize text-slate-900 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
-      >
-        {options.map(
-          (option) => (
-            <option
-              key={option}
-              value={option}
-            >
-              {option}
-            </option>
-          ),
-        )}
-      </select>
-
-      {helperText && (
-        <p className="text-sm text-slate-500 dark:text-zinc-500">
-          {helperText}
-        </p>
-      )}
     </div>
   );
 }

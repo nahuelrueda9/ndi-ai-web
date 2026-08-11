@@ -58,9 +58,9 @@ const integraciones: Integracion[] = [
     descripcion:
       "Conectá WhatsApp Business para que NDI AI reciba consultas y responda automáticamente por tu negocio.",
     icono: "💬",
-    estado: "disponible",
+    estado: "proximamente",
     ruta: "whatsapp",
-    detallePlan: "Incluido en Free",
+    detallePlan: "Próximamente",
   },
   {
     id: "instagram",
@@ -68,9 +68,9 @@ const integraciones: Integracion[] = [
     descripcion:
       "Conectá una cuenta profesional de Instagram para recibir mensajes directos y gestionarlos desde NDI AI.",
     icono: "📸",
-    estado: "disponible",
+    estado: "proximamente",
     ruta: "instagram",
-    detallePlan: "Disponible",
+    detallePlan: "Próximamente",
   },
   {
     id: "messenger",
@@ -78,9 +78,9 @@ const integraciones: Integracion[] = [
     descripcion:
       "Conectá una Página de Facebook para recibir mensajes de Messenger y gestionarlos desde NDI AI.",
     icono: "📨",
-    estado: "disponible",
+    estado: "proximamente",
     ruta: "messenger",
-    detallePlan: "Disponible",
+    detallePlan: "Próximamente",
   },
 ];
 

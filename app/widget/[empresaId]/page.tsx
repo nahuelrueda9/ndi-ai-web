@@ -4,6 +4,7 @@ import {
   type FormEvent,
   type KeyboardEvent,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -259,7 +260,7 @@ export default function WidgetPublicoPage() {
     useState("");
 
   const [chatAbierto, setChatAbierto] =
-    useState(false);
+    useState(true);
 
   const [
     estadoConversacion,
@@ -275,6 +276,41 @@ export default function WidgetPublicoPage() {
 
   const actualizandoRef =
     useRef(false);
+
+  useLayoutEffect(() => {
+    const html =
+      document.documentElement;
+    const body =
+      document.body;
+
+    const htmlBackgroundAnterior =
+      html.style.background;
+    const bodyBackgroundAnterior =
+      body.style.background;
+    const bodyMarginAnterior =
+      body.style.margin;
+    const bodyOverflowAnterior =
+      body.style.overflow;
+
+    html.style.background =
+      "transparent";
+    body.style.background =
+      "transparent";
+    body.style.margin = "0";
+    body.style.overflow =
+      "hidden";
+
+    return () => {
+      html.style.background =
+        htmlBackgroundAnterior;
+      body.style.background =
+        bodyBackgroundAnterior;
+      body.style.margin =
+        bodyMarginAnterior;
+      body.style.overflow =
+        bodyOverflowAnterior;
+    };
+  }, []);
 
   function enviarMensajeAlContenedor(
     type:
@@ -814,7 +850,7 @@ export default function WidgetPublicoPage() {
   if (!chatAbierto) {
     return (
       <main
-        className={`flex min-h-screen items-end bg-transparent p-3 ${
+        className={`flex min-h-screen items-end overflow-hidden bg-transparent p-3 ${
           posicion === "izquierda"
             ? "justify-start"
             : "justify-end"
@@ -843,10 +879,10 @@ export default function WidgetPublicoPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-end justify-center bg-transparent p-3 sm:p-4">
+    <main className="flex min-h-screen items-end justify-center overflow-hidden bg-transparent p-3 sm:p-4">
       <section
         className={[
-          "flex h-[min(680px,calc(100vh-24px))] w-full max-w-[420px] flex-col overflow-hidden rounded-3xl border shadow-2xl",
+          "flex h-[min(680px,calc(100vh-24px))] w-full max-w-[420px] flex-col overflow-hidden rounded-3xl border shadow-2xl sm:h-[min(680px,calc(100vh-32px))]",
           temaOscuro
             ? "border-zinc-700 bg-zinc-950"
             : "border-zinc-200 bg-white",

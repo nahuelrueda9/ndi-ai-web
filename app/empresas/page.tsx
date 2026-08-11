@@ -4,7 +4,6 @@ import type { FormEvent } from "react";
 import {
   ArrowRight,
   Building2,
-  MessageSquareText,
   Plus,
   Settings2,
   Sparkles,
@@ -34,6 +33,11 @@ import {
 } from "firebase/firestore";
 
 import { auth, db } from "@/lib/firebase";
+import {
+  empresaTieneSuscripcionActiva,
+  obtenerNombrePlan,
+  type PlanId,
+} from "@/lib/plans/planAccess";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Avatar from "@/components/Ui/Avatar";
 import Badge from "@/components/Ui/Badge";
@@ -57,6 +61,9 @@ interface Empresa {
   email: string;
   telefono: string;
   userId: string;
+  plan?: PlanId;
+  subscriptionStatus?: string;
+  subscriptionEndsAt?: Timestamp;
   createdAt?: Timestamp;
   acceso: TipoAcceso;
   rol?: RolEquipo;
@@ -463,6 +470,17 @@ setEmpresasCompartidas(
           email: email.trim(),
           telefono: telefono.trim(),
           userId: user.uid,
+
+          /*
+           * "free" se conserva únicamente como ID interno
+           * compatible para Página Simple.
+           *
+           * NO guardamos subscriptionStatus ni vencimiento acá:
+           * la empresa queda SIN PLAN ACTIVO hasta que Mercado Pago
+           * confirme una compra desde el backend.
+           */
+          plan: "free",
+
           createdAt:
             serverTimestamp(),
           updatedAt:
@@ -528,7 +546,7 @@ setEmpresasCompartidas(
                 </h1>
 
                 <p className="mt-3 max-w-xl text-sm leading-6 text-blue-100 sm:text-base">
-                  Elegí la empresa con la que querés trabajar o creá un nuevo espacio para empezar a atender clientes con NDI AI.
+                  Elegí la empresa con la que querés trabajar o creá un nuevo espacio para configurar su página, servicios y plan en NDI AI.
                 </p>
               </div>
 
@@ -662,9 +680,8 @@ setEmpresasCompartidas(
 
               <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
                 Cargá los datos principales.
-                Después podrás configurar su
-                agente y la base de
-                conocimiento.
+                Después elegís el plan que querés
+                contratar para este negocio.
               </p>
             </div>
 
@@ -803,6 +820,24 @@ setEmpresasCompartidas(
                     ]
                   : "Propietario";
 
+              const planInterno: PlanId =
+                empresa.plan === "pro" ||
+                empresa.plan === "business"
+                  ? empresa.plan
+                  : "free";
+
+              const suscripcionActiva =
+                empresaTieneSuscripcionActiva(
+                  empresa
+                );
+
+              const nombrePlan =
+                suscripcionActiva
+                  ? obtenerNombrePlan(
+                      planInterno
+                    )
+                  : "Sin plan activo";
+
               return (
                 <Card
                   key={empresa.id}
@@ -861,12 +896,12 @@ setEmpresasCompartidas(
                       />
                     </div>
 
-                    <div className="mt-5 grid grid-cols-2 gap-3">
+                    <div className="mt-5 grid gap-3 sm:grid-cols-3">
                       <MiniMetric
                         label="Acceso"
                         value={
                           esPropietario
-                            ? "Completo"
+                            ? "Propietario"
                             : "Equipo"
                         }
                       />
@@ -875,7 +910,25 @@ setEmpresasCompartidas(
                         label="Rol"
                         value={nombreRol}
                       />
+
+                      <MiniMetric
+                        label="Plan"
+                        value={nombrePlan}
+                      />
                     </div>
+
+                    {esPropietario &&
+                      !suscripcionActiva && (
+                        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-500/20 dark:bg-amber-500/10">
+                          <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+                            Todavía no hay un plan activo.
+                          </p>
+
+                          <p className="mt-1 text-xs leading-5 text-amber-700 dark:text-amber-400">
+                            Elegí Página Simple, Página Completa o Business IA para activar las funciones comerciales del negocio.
+                          </p>
+                        </div>
+                      )}
                   </div>
 
                   <div className="grid gap-3 border-t border-slate-200 p-4 dark:border-zinc-800 sm:grid-cols-[1fr_auto]">
@@ -883,12 +936,25 @@ setEmpresasCompartidas(
                       type="button"
                       onClick={() => {
                         window.location.href =
-                          `/empresas/${empresa.id}/conversaciones`;
+                          esPropietario &&
+                          !suscripcionActiva
+                            ? `/empresas/${empresa.id}/planes`
+                            : `/empresas/${empresa.id}/dashboard`;
                       }}
                       className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500"
                     >
-                      <MessageSquareText className="h-4 w-4" />
-                      Entrar al panel
+                      {esPropietario &&
+                      !suscripcionActiva ? (
+                        <Sparkles className="h-4 w-4" />
+                      ) : (
+                        <Building2 className="h-4 w-4" />
+                      )}
+
+                      {esPropietario &&
+                      !suscripcionActiva
+                        ? "Elegir plan"
+                        : "Entrar al panel"}
+
                       <ArrowRight className="h-4 w-4" />
                     </button>
 
@@ -898,14 +964,14 @@ setEmpresasCompartidas(
                         window.location.href =
                           esPropietario
                             ? `/empresas/${empresa.id}`
-                            : `/empresas/${empresa.id}/agenda`;
+                            : `/empresas/${empresa.id}/dashboard`;
                       }}
                       className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
                     >
                       <Settings2 className="h-4 w-4" />
                       {esPropietario
                         ? "Configurar"
-                        : "Agenda"}
+                        : "Ver panel"}
                     </button>
                   </div>
                 </Card>

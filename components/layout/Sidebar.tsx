@@ -29,12 +29,10 @@ import {
   CreditCard,
   HelpCircle,
   Home,
+  Globe2,
   MessageSquare,
   Package,
   Plug,
-  Settings,
-  Users,
-  Zap,
   type LucideIcon,
 } from "lucide-react";
 
@@ -87,6 +85,30 @@ const ROLES_ADMINISTRACION: RolEmpresa[] = [
 const SOLO_PROPIETARIO: RolEmpresa[] = [
   "propietario",
 ];
+
+function obtenerHrefMenu(
+  empresaId: string,
+  ruta: string,
+) {
+  return ruta
+    ? `/empresas/${empresaId}/${ruta}`
+    : `/empresas/${empresaId}`;
+}
+
+function rutaEstaActiva(
+  pathname: string,
+  href: string,
+  ruta: string,
+) {
+  if (!ruta) {
+    return pathname === href;
+  }
+
+  return (
+    pathname === href ||
+    pathname.startsWith(`${href}/`)
+  );
+}
 
 const NOMBRE_ROL: Record<
   RolEmpresa,
@@ -290,108 +312,73 @@ export default function Sidebar() {
             label: "Inicio",
             ruta: "dashboard",
             icon: Home,
-            roles:
-              TODOS_LOS_ROLES,
+            roles: TODOS_LOS_ROLES,
           },
           {
-            label:
-              "Conversaciones",
-            ruta:
-              "conversaciones",
-            icon:
-              MessageSquare,
-            roles:
-              TODOS_LOS_ROLES,
+            label: "Mi página",
+            ruta: "",
+            icon: Globe2,
+            roles: ROLES_ADMINISTRACION,
           },
           {
-            label:
-              "Automatizaciones",
-            ruta:
-              "automatizaciones",
-            icon: Zap,
-            roles:
-              ROLES_SUPERVISION,
+            label: "Servicios y productos",
+            ruta: "catalogo",
+            icon: Package,
+            roles: ROLES_SUPERVISION,
           },
           {
             label: "Agenda",
             ruta: "agenda",
             icon: CalendarDays,
-            roles:
-              TODOS_LOS_ROLES,
+            roles: TODOS_LOS_ROLES,
           },
           {
-            label:
-              "Servicios y productos",
-            ruta: "catalogo",
-            icon: Package,
-            roles:
-              ROLES_SUPERVISION,
+            label: "Consultas",
+            ruta: "conversaciones",
+            icon: MessageSquare,
+            roles: TODOS_LOS_ROLES,
           },
           {
-            label: "Equipo",
-            ruta: "equipo",
-            icon: Users,
-            roles:
-              ROLES_ADMINISTRACION,
-          },
-          {
-            label:
-              "Estadísticas",
-            ruta:
-              "estadisticas",
+            label: "Estadísticas",
+            ruta: "estadisticas",
             icon: BarChart3,
-            roles:
-              TODOS_LOS_ROLES,
+            roles: TODOS_LOS_ROLES,
           },
           {
-            label:
-              "Base de conocimiento",
-            ruta:
-              "conocimiento",
+            label: "Base de conocimiento",
+            ruta: "conocimiento",
             icon: BookOpen,
-            roles:
-              ROLES_SUPERVISION,
+            roles: ROLES_SUPERVISION,
+          },
+          {
+            label: "Asistente IA",
+            ruta: "configuracion",
+            icon: Bot,
+            roles: ROLES_ADMINISTRACION,
           },
           {
             label: "Widget web",
             ruta: "widget",
             icon: Code2,
-            roles:
-              ROLES_ADMINISTRACION,
+            roles: ROLES_ADMINISTRACION,
           },
           {
-            label:
-              "Integraciones",
-            ruta:
-              "integraciones",
-            icon: Plug,
-            roles:
-              ROLES_SUPERVISION,
-          },
-          {
-            label:
-              "Facturación",
-            ruta:
-              "facturacion",
+            label: "Facturación",
+            ruta: "facturacion",
             icon: CreditCard,
-            roles:
-              SOLO_PROPIETARIO,
-          },
-          {
-            label:
-              "Configuración",
-            ruta:
-              "configuracion",
-            icon: Settings,
-            roles:
-              ROLES_ADMINISTRACION,
+            roles: SOLO_PROPIETARIO,
           },
           {
             label: "Ayuda",
             ruta: "ayuda",
             icon: HelpCircle,
-            roles:
-              TODOS_LOS_ROLES,
+            roles: TODOS_LOS_ROLES,
+          },
+          {
+            label: "Próximamente",
+            ruta: "integraciones",
+            icon: Plug,
+            roles: ROLES_SUPERVISION,
           },
         ];
       },
@@ -423,14 +410,15 @@ export default function Sidebar() {
 
     const itemActual =
       items.find((item) => {
-        const href =
-          `/empresas/${empresaId}/${item.ruta}`;
+        const href = obtenerHrefMenu(
+          empresaId,
+          item.ruta,
+        );
 
-        return (
-          pathname === href ||
-          pathname.startsWith(
-            `${href}/`,
-          )
+        return rutaEstaActiva(
+          pathname,
+          href,
+          item.ruta,
         );
       });
 
@@ -478,7 +466,7 @@ export default function Sidebar() {
             </p>
 
             <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-              Workspace
+              Negocio
             </h2>
           </div>
         </div>
@@ -487,21 +475,22 @@ export default function Sidebar() {
       <nav className="flex-1 space-y-2 p-4">
         {itemsPermitidos.map(
           (item) => {
-            const href =
-              `/empresas/${empresaId}/${item.ruta}`;
+            const href = obtenerHrefMenu(
+              empresaId,
+              item.ruta,
+            );
 
             return (
               <NavItem
-                key={href}
+                key={`${item.label}-${href}`}
                 label={item.label}
                 href={href}
                 icon={item.icon}
-                activo={
-                  pathname === href ||
-                  pathname.startsWith(
-                    `${href}/`,
-                  )
-                }
+                activo={rutaEstaActiva(
+                  pathname,
+                  href,
+                  item.ruta,
+                )}
               />
             );
           },
@@ -514,7 +503,7 @@ export default function Sidebar() {
             <div className="h-3 w-3 rounded-full bg-emerald-500" />
 
             <span className="text-sm text-slate-900 dark:text-white">
-              Agente activo
+              Panel del negocio
             </span>
           </div>
 

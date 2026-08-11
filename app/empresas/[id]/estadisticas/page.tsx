@@ -22,38 +22,10 @@ import {
 import { db } from "@/lib/firebase";
 import StatCard from "@/components/dashboard/StatCard";
 
-type Canal =
-  | "web"
-  | "whatsapp"
-  | "instagram"
-  | "messenger";
-
-type EstadoComercial =
-  | "nuevo"
-  | "calificado"
-  | "propuesta"
-  | "ganado"
-  | "perdido";
-
 type ChatData = {
-  visitanteId?: string;
-  userId?: string;
-  canal?: string;
-  channel?: string;
-  origen?: string;
-  source?: string;
-  plataforma?: string;
-  tipoContacto?: string;
   estado?: "abierta" | "cerrada";
   atendidoPor?: "ia" | "humano";
   humanoActivo?: boolean;
-  email?: string;
-  telefono?: string;
-  nivelInteres?: "bajo" | "medio" | "alto";
-  puntuacionLead?: number;
-  estadoComercial?: EstadoComercial;
-  valorEstimado?: number;
-  fechaConversion?: Timestamp;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
 };
@@ -74,93 +46,59 @@ type EventoPaginaData = {
   createdAt?: Timestamp;
 };
 
-type GraficoDia = {
+type ActividadDia = {
   dia: string;
-  conversaciones: number;
+  fechaClave: string;
+  visitas: number;
+  contactos: number;
+  reservas: number;
 };
 
-type CanalGrafico = {
-  canal: string;
-  conversaciones: number;
-};
-
-type EmbudoGrafico = {
+type EmbudoPagina = {
   etapa: string;
-  oportunidades: number;
+  cantidad: number;
 };
 
 type EstadisticasCalculadas = {
-  totalChats: number;
-  totalMensajes: number;
   visitasPagina: number;
   visitantesPagina: number;
-  clicsWhatsApp: number;
   contactosPagina: number;
   reservasPagina: number;
+  clicsWhatsApp: number;
   tasaContactoPagina: number;
   tasaReservaPagina: number;
-  conversacionesHoy: number;
-  visitantesUnicos: number;
-  conversacionesSemana: number;
-  promedioMensajes: number;
+
+  totalConsultas: number;
+  consultasSemana: number;
   abiertas: number;
   cerradas: number;
   atendidasIA: number;
   atendidasHumano: number;
-  leadsIdentificados: number;
-  leadsAltoInteres: number;
-  tasaCaptura: number;
   tiempoRespuestaPromedio: number | null;
-  nuevos: number;
-  calificados: number;
-  propuestas: number;
-  ganados: number;
-  perdidos: number;
-  tasaConversion: number;
-  tasaCierre: number;
-  ingresosGanados: number;
-  pipelineEstimado: number;
-  ticketPromedio: number;
-  datosGrafico: GraficoDia[];
-  datosCanales: CanalGrafico[];
-  datosEmbudo: EmbudoGrafico[];
+
+  actividadPagina: ActividadDia[];
+  embudoPagina: EmbudoPagina[];
 };
 
 const ESTADISTICAS_INICIALES: EstadisticasCalculadas = {
-  totalChats: 0,
-  totalMensajes: 0,
   visitasPagina: 0,
   visitantesPagina: 0,
-  clicsWhatsApp: 0,
   contactosPagina: 0,
   reservasPagina: 0,
+  clicsWhatsApp: 0,
   tasaContactoPagina: 0,
   tasaReservaPagina: 0,
-  conversacionesHoy: 0,
-  visitantesUnicos: 0,
-  conversacionesSemana: 0,
-  promedioMensajes: 0,
+
+  totalConsultas: 0,
+  consultasSemana: 0,
   abiertas: 0,
   cerradas: 0,
   atendidasIA: 0,
   atendidasHumano: 0,
-  leadsIdentificados: 0,
-  leadsAltoInteres: 0,
-  tasaCaptura: 0,
   tiempoRespuestaPromedio: null,
-  nuevos: 0,
-  calificados: 0,
-  propuestas: 0,
-  ganados: 0,
-  perdidos: 0,
-  tasaConversion: 0,
-  tasaCierre: 0,
-  ingresosGanados: 0,
-  pipelineEstimado: 0,
-  ticketPromedio: 0,
-  datosGrafico: [],
-  datosCanales: [],
-  datosEmbudo: [],
+
+  actividadPagina: [],
+  embudoPagina: [],
 };
 
 function obtenerInicioDelDia(fecha: Date) {
@@ -169,66 +107,37 @@ function obtenerInicioDelDia(fecha: Date) {
   return resultado;
 }
 
+function claveFecha(fecha: Date) {
+  const year = fecha.getFullYear();
+  const month = String(fecha.getMonth() + 1).padStart(2, "0");
+  const day = String(fecha.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 function formatearDia(fecha: Date) {
-  return fecha.toLocaleDateString("es-AR", {
+  return new Intl.DateTimeFormat("es-AR", {
     weekday: "short",
-  });
-}
-
-function normalizarCanal(valor?: string): Canal {
-  const canal = valor?.trim().toLowerCase();
-
-  if (canal === "whatsapp" || canal === "wa") {
-    return "whatsapp";
-  }
-
-  if (canal === "instagram" || canal === "ig") {
-    return "instagram";
-  }
-
-  if (
-    canal === "messenger" ||
-    canal === "facebook" ||
-    canal === "facebook_messenger"
-  ) {
-    return "messenger";
-  }
-
-  return "web";
-}
-
-function obtenerCanal(chat: ChatData) {
-  return normalizarCanal(
-    chat.canal ||
-      chat.channel ||
-      chat.origen ||
-      chat.source ||
-      chat.plataforma
-  );
-}
-
-function obtenerNombreCanal(canal: Canal) {
-  if (canal === "whatsapp") return "WhatsApp";
-  if (canal === "instagram") return "Instagram";
-  if (canal === "messenger") return "Messenger";
-  return "Web";
+  })
+    .format(fecha)
+    .replace(".", "");
 }
 
 function obtenerTiempoPrimeraRespuesta(
-  mensajes: MensajeData[]
+  mensajes: MensajeData[],
 ): number | null {
   const ordenados = mensajes
     .filter((mensaje) => mensaje.createdAt)
     .sort(
       (a, b) =>
         (a.createdAt?.toMillis() ?? 0) -
-        (b.createdAt?.toMillis() ?? 0)
+        (b.createdAt?.toMillis() ?? 0),
     );
 
   const indicePrimerCliente = ordenados.findIndex(
     (mensaje) =>
       mensaje.role === "user" ||
-      mensaje.enviadoPor === "cliente"
+      mensaje.enviadoPor === "cliente",
   );
 
   if (indicePrimerCliente === -1) {
@@ -236,16 +145,20 @@ function obtenerTiempoPrimeraRespuesta(
   }
 
   const primerCliente = ordenados[indicePrimerCliente];
+
   const primeraRespuesta = ordenados
     .slice(indicePrimerCliente + 1)
     .find(
       (mensaje) =>
         mensaje.role === "assistant" ||
         mensaje.enviadoPor === "ia" ||
-        mensaje.enviadoPor === "humano"
+        mensaje.enviadoPor === "humano",
     );
 
-  if (!primerCliente.createdAt || !primeraRespuesta?.createdAt) {
+  if (
+    !primerCliente.createdAt ||
+    !primeraRespuesta?.createdAt
+  ) {
     return null;
   }
 
@@ -260,15 +173,9 @@ function obtenerTiempoPrimeraRespuesta(
   return diferencia / 60000;
 }
 
-function formatearMoneda(valor: number) {
-  return new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-    maximumFractionDigits: 0,
-  }).format(valor);
-}
-
-function formatearTiempoRespuesta(minutos: number | null) {
+function formatearTiempoRespuesta(
+  minutos: number | null,
+) {
   if (minutos === null) {
     return "Sin datos";
   }
@@ -292,7 +199,9 @@ function formatearTiempoRespuesta(minutos: number | null) {
 
 export default function EstadisticasPage() {
   const params = useParams();
-  const parametroEmpresa = params.id ?? params.empresaId;
+
+  const parametroEmpresa =
+    params.id ?? params.empresaId;
 
   const empresaId = Array.isArray(parametroEmpresa)
     ? parametroEmpresa[0]
@@ -300,9 +209,10 @@ export default function EstadisticasPage() {
 
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
+
   const [estadisticas, setEstadisticas] =
     useState<EstadisticasCalculadas>(
-      ESTADISTICAS_INICIALES
+      ESTADISTICAS_INICIALES,
     );
 
   useEffect(() => {
@@ -328,109 +238,126 @@ export default function EstadisticasPage() {
               db,
               "companies",
               empresaId!,
-              "conversations"
-            )
+              "conversations",
+            ),
           ),
           getDocs(
             collection(
               db,
               "companies",
               empresaId!,
-              "analyticsEvents"
-            )
+              "analyticsEvents",
+            ),
           ),
         ]);
 
-        const hoy = obtenerInicioDelDia(new Date());
-        const visitantes = new Set<string>();
+        const hoy =
+          obtenerInicioDelDia(new Date());
 
-        const ultimosSieteDias = Array.from(
-          { length: 7 },
-          (_, indice) => {
-            const fecha = new Date(hoy);
-            fecha.setDate(
-              hoy.getDate() - (6 - indice)
-            );
+        const actividadPagina: ActividadDia[] =
+          Array.from(
+            { length: 7 },
+            (_, indice) => {
+              const fecha = new Date(hoy);
 
-            return {
-              fecha,
-              dia: formatearDia(fecha),
-              conversaciones: 0,
-            };
-          }
-        );
+              fecha.setDate(
+                hoy.getDate() - (6 - indice),
+              );
 
-        const canales: Record<Canal, number> = {
-          web: 0,
-          whatsapp: 0,
-          instagram: 0,
-          messenger: 0,
-        };
-
-        const etapasComerciales: Record<
-          EstadoComercial,
-          number
-        > = {
-          nuevo: 0,
-          calificado: 0,
-          propuesta: 0,
-          ganado: 0,
-          perdido: 0,
-        };
+              return {
+                dia: formatearDia(fecha),
+                fechaClave: claveFecha(fecha),
+                visitas: 0,
+                contactos: 0,
+                reservas: 0,
+              };
+            },
+          );
 
         const eventosPagina =
           eventosPaginaSnapshot.docs.map(
             (documento) =>
-              documento.data() as EventoPaginaData
+              documento.data() as EventoPaginaData,
           );
-
-        const visitasPagina =
-          eventosPagina.filter(
-            (evento) =>
-              evento.tipo === "page_view"
-          ).length;
 
         const visitantesPaginaSet =
           new Set<string>();
 
+        let visitasPagina = 0;
+        let contactosPagina = 0;
+        let reservasPagina = 0;
+        let clicsWhatsApp = 0;
+
         eventosPagina.forEach(
           (evento, indice) => {
             if (
-              evento.tipo !== "page_view"
+              evento.tipo === "page_view"
             ) {
+              visitasPagina += 1;
+
+              visitantesPaginaSet.add(
+                evento.visitanteId?.trim() ||
+                  `visita-${indice}`,
+              );
+            }
+
+            if (
+              evento.tipo === "lead_submit"
+            ) {
+              contactosPagina += 1;
+            }
+
+            if (
+              evento.tipo ===
+              "appointment_created"
+            ) {
+              reservasPagina += 1;
+            }
+
+            if (
+              evento.tipo === "whatsapp_click"
+            ) {
+              clicsWhatsApp += 1;
+            }
+
+            const fechaEvento =
+              evento.createdAt?.toDate();
+
+            if (!fechaEvento) {
               return;
             }
 
-            visitantesPaginaSet.add(
-              evento.visitanteId?.trim() ||
-                `visita-${indice}`
-            );
-          }
-        );
+            const itemDia =
+              actividadPagina.find(
+                (item) =>
+                  item.fechaClave ===
+                  claveFecha(fechaEvento),
+              );
 
-        const visitantesPagina =
-          visitantesPaginaSet.size;
+            if (!itemDia) {
+              return;
+            }
 
-        const clicsWhatsApp =
-          eventosPagina.filter(
-            (evento) =>
-              evento.tipo ===
-              "whatsapp_click"
-          ).length;
+            if (
+              evento.tipo === "page_view"
+            ) {
+              itemDia.visitas += 1;
+            }
 
-        const contactosPagina =
-          eventosPagina.filter(
-            (evento) =>
-              evento.tipo ===
-              "lead_submit"
-          ).length;
+            if (
+              evento.tipo === "lead_submit"
+            ) {
+              itemDia.contactos += 1;
+            }
 
-        const reservasPagina =
-          eventosPagina.filter(
-            (evento) =>
+            if (
               evento.tipo ===
               "appointment_created"
-          ).length;
+            ) {
+              itemDia.reservas += 1;
+            }
+          },
+        );
 
         const tasaContactoPagina =
           visitasPagina > 0
@@ -446,148 +373,98 @@ export default function EstadisticasPage() {
               100
             : 0;
 
-        let ingresosGanados = 0;
-        let pipelineEstimado = 0;
-        let conversacionesHoy = 0;
         let abiertas = 0;
         let cerradas = 0;
         let atendidasIA = 0;
         let atendidasHumano = 0;
-        let leadsIdentificados = 0;
-        let leadsAltoInteres = 0;
+        let consultasSemana = 0;
 
-        const resultadosMensajes = await Promise.all(
-          chatsSnapshot.docs.map(async (chatDocumento) => {
-            const chat =
-              chatDocumento.data() as ChatData;
+        const resultadosMensajes =
+          await Promise.all(
+            chatsSnapshot.docs.map(
+              async (chatDocumento) => {
+                const chat =
+                  chatDocumento.data() as ChatData;
 
-            const visitante =
-              chat.visitanteId ||
-              chat.userId ||
-              chatDocumento.id;
+                if (
+                  chat.estado === "cerrada"
+                ) {
+                  cerradas += 1;
+                } else {
+                  abiertas += 1;
+                }
 
-            visitantes.add(visitante);
+                if (
+                  chat.humanoActivo === true ||
+                  chat.atendidoPor === "humano"
+                ) {
+                  atendidasHumano += 1;
+                } else {
+                  atendidasIA += 1;
+                }
 
-            const canal = obtenerCanal(chat);
-            canales[canal] += 1;
+                const fechaChat =
+                  chat.createdAt?.toDate() ||
+                  chat.updatedAt?.toDate();
 
-            if (chat.estado === "cerrada") {
-              cerradas += 1;
-            } else {
-              abiertas += 1;
-            }
+                if (fechaChat) {
+                  const diferencia =
+                    hoy.getTime() -
+                    obtenerInicioDelDia(
+                      fechaChat,
+                    ).getTime();
 
-            if (
-              chat.humanoActivo === true ||
-              chat.atendidoPor === "humano"
-            ) {
-              atendidasHumano += 1;
-            } else {
-              atendidasIA += 1;
-            }
+                  const dias =
+                    diferencia /
+                    (1000 * 60 * 60 * 24);
 
-            if (
-              Boolean(chat.email?.trim()) ||
-              Boolean(chat.telefono?.trim())
-            ) {
-              leadsIdentificados += 1;
-            }
+                  if (
+                    dias >= 0 &&
+                    dias <= 6
+                  ) {
+                    consultasSemana += 1;
+                  }
+                }
 
-            if (
-              chat.nivelInteres === "alto" ||
-              (chat.puntuacionLead ?? 0) >= 70
-            ) {
-              leadsAltoInteres += 1;
-            }
+                const mensajesSnapshot =
+                  await getDocs(
+                    collection(
+                      db,
+                      "companies",
+                      empresaId!,
+                      "conversations",
+                      chatDocumento.id,
+                      "messages",
+                    ),
+                  );
 
-            const estadoComercial =
-              chat.estadoComercial ?? "nuevo";
+                const mensajes =
+                  mensajesSnapshot.docs.map(
+                    (documento) =>
+                      documento.data() as MensajeData,
+                  );
 
-            etapasComerciales[estadoComercial] += 1;
-
-            const valorEstimado =
-              typeof chat.valorEstimado === "number" &&
-              Number.isFinite(chat.valorEstimado) &&
-              chat.valorEstimado > 0
-                ? chat.valorEstimado
-                : 0;
-
-            if (estadoComercial === "ganado") {
-              ingresosGanados += valorEstimado;
-            } else if (estadoComercial !== "perdido") {
-              pipelineEstimado += valorEstimado;
-            }
-
-            if (chat.createdAt) {
-              const fechaChat = obtenerInicioDelDia(
-                chat.createdAt.toDate()
-              );
-
-              if (
-                fechaChat.getTime() === hoy.getTime()
-              ) {
-                conversacionesHoy += 1;
-              }
-
-              const diaEncontrado =
-                ultimosSieteDias.find(
-                  (item) =>
-                    item.fecha.getTime() ===
-                    fechaChat.getTime()
-                );
-
-              if (diaEncontrado) {
-                diaEncontrado.conversaciones += 1;
-              }
-            }
-
-            const mensajesSnapshot = await getDocs(
-              collection(
-                db,
-                "companies",
-                empresaId!,
-                "conversations",
-                chatDocumento.id,
-                "messages"
-              )
-            );
-
-            const mensajes =
-              mensajesSnapshot.docs.map(
-                (documento) =>
-                  documento.data() as MensajeData
-              );
-
-            return {
-              cantidadMensajes:
-                mensajesSnapshot.size,
-              tiempoRespuesta:
-                obtenerTiempoPrimeraRespuesta(
-                  mensajes
-                ),
-            };
-          })
-        );
-
-        const totalMensajes =
-          resultadosMensajes.reduce(
-            (total, resultado) =>
-              total +
-              resultado.cantidadMensajes,
-            0
+                return {
+                  tiempoRespuesta:
+                    obtenerTiempoPrimeraRespuesta(
+                      mensajes,
+                    ),
+                };
+              },
+            ),
           );
 
         const tiemposRespuesta =
           resultadosMensajes
             .map(
               (resultado) =>
-                resultado.tiempoRespuesta
+                resultado.tiempoRespuesta,
             )
             .filter(
               (
-                tiempo
+                tiempo,
               ): tiempo is number =>
-                typeof tiempo === "number"
+                typeof tiempo === "number",
             );
 
         const tiempoRespuestaPromedio =
@@ -595,151 +472,59 @@ export default function EstadisticasPage() {
             ? tiemposRespuesta.reduce(
                 (total, tiempo) =>
                   total + tiempo,
-                0
-              ) / tiemposRespuesta.length
+                0,
+              ) /
+              tiemposRespuesta.length
             : null;
-
-        const totalChats = chatsSnapshot.size;
-
-        const conversacionesSemana =
-          ultimosSieteDias.reduce(
-            (total, item) =>
-              total + item.conversaciones,
-            0
-          );
-
-        const promedioMensajes =
-          totalChats > 0
-            ? totalMensajes / totalChats
-            : 0;
-
-        const tasaCaptura =
-          totalChats > 0
-            ? (leadsIdentificados /
-                totalChats) *
-              100
-            : 0;
-
-        const nuevos =
-          etapasComerciales.nuevo;
-        const calificados =
-          etapasComerciales.calificado;
-        const propuestas =
-          etapasComerciales.propuesta;
-        const ganados =
-          etapasComerciales.ganado;
-        const perdidos =
-          etapasComerciales.perdido;
-
-        const tasaConversion =
-          totalChats > 0
-            ? (ganados / totalChats) * 100
-            : 0;
-
-        const oportunidadesCerradas =
-          ganados + perdidos;
-
-        const tasaCierre =
-          oportunidadesCerradas > 0
-            ? (ganados /
-                oportunidadesCerradas) *
-              100
-            : 0;
-
-        const ticketPromedio =
-          ganados > 0
-            ? ingresosGanados / ganados
-            : 0;
-
-        const datosEmbudo: EmbudoGrafico[] = [
-          {
-            etapa: "Nuevos",
-            oportunidades: nuevos,
-          },
-          {
-            etapa: "Calificados",
-            oportunidades: calificados,
-          },
-          {
-            etapa: "Propuestas",
-            oportunidades: propuestas,
-          },
-          {
-            etapa: "Ganados",
-            oportunidades: ganados,
-          },
-          {
-            etapa: "Perdidos",
-            oportunidades: perdidos,
-          },
-        ];
-
-        const datosCanales: CanalGrafico[] = (
-          Object.keys(canales) as Canal[]
-        ).map((canal) => ({
-          canal: obtenerNombreCanal(canal),
-          conversaciones: canales[canal],
-        }));
 
         if (!activo) {
           return;
         }
 
         setEstadisticas({
-          totalChats,
-          totalMensajes,
           visitasPagina,
-          visitantesPagina,
-          clicsWhatsApp,
+          visitantesPagina:
+            visitantesPaginaSet.size,
           contactosPagina,
           reservasPagina,
+          clicsWhatsApp,
           tasaContactoPagina,
           tasaReservaPagina,
-          conversacionesHoy,
-          visitantesUnicos:
-            visitantes.size,
-          conversacionesSemana,
-          promedioMensajes,
+
+          totalConsultas:
+            chatsSnapshot.size,
+          consultasSemana,
           abiertas,
           cerradas,
           atendidasIA,
           atendidasHumano,
-          leadsIdentificados,
-          leadsAltoInteres,
-          tasaCaptura,
           tiempoRespuestaPromedio,
-          nuevos,
-          calificados,
-          propuestas,
-          ganados,
-          perdidos,
-          tasaConversion,
-          tasaCierre,
-          ingresosGanados,
-          pipelineEstimado,
-          ticketPromedio,
-          datosGrafico:
-            ultimosSieteDias.map(
-              ({
-                dia,
-                conversaciones,
-              }) => ({
-                dia,
-                conversaciones,
-              })
-            ),
-          datosCanales,
-          datosEmbudo,
+
+          actividadPagina,
+          embudoPagina: [
+            {
+              etapa: "Visitas",
+              cantidad: visitasPagina,
+            },
+            {
+              etapa: "Contactos",
+              cantidad: contactosPagina,
+            },
+            {
+              etapa: "Reservas",
+              cantidad: reservasPagina,
+            },
+          ],
         });
       } catch (requestError) {
         console.error(
           "Error al cargar estadísticas:",
-          requestError
+          requestError,
         );
 
         if (activo) {
           setError(
-            "No se pudieron cargar las estadísticas."
+            "No se pudieron cargar las estadísticas.",
           );
         }
       } finally {
@@ -757,34 +542,39 @@ export default function EstadisticasPage() {
   }, [empresaId]);
 
   const porcentajeIA = useMemo(() => {
-    if (estadisticas.totalChats === 0) {
+    if (
+      estadisticas.totalConsultas === 0
+    ) {
       return 0;
     }
 
     return (
       (estadisticas.atendidasIA /
-        estadisticas.totalChats) *
+        estadisticas.totalConsultas) *
       100
     );
   }, [
     estadisticas.atendidasIA,
-    estadisticas.totalChats,
+    estadisticas.totalConsultas,
   ]);
 
-  const porcentajeHumano = useMemo(() => {
-    if (estadisticas.totalChats === 0) {
-      return 0;
-    }
+  const porcentajeHumano =
+    useMemo(() => {
+      if (
+        estadisticas.totalConsultas === 0
+      ) {
+        return 0;
+      }
 
-    return (
-      (estadisticas.atendidasHumano /
-        estadisticas.totalChats) *
-      100
-    );
-  }, [
-    estadisticas.atendidasHumano,
-    estadisticas.totalChats,
-  ]);
+      return (
+        (estadisticas.atendidasHumano /
+          estadisticas.totalConsultas) *
+        100
+      );
+    }, [
+      estadisticas.atendidasHumano,
+      estadisticas.totalConsultas,
+    ]);
 
   if (cargando) {
     return (
@@ -819,227 +609,89 @@ export default function EstadisticasPage() {
       <div className="mx-auto max-w-7xl">
         <div className="mb-8">
           <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
-            Rendimiento comercial
+            Rendimiento de tu página
           </p>
 
           <h1 className="mt-2 text-3xl font-bold text-slate-950 dark:text-white sm:text-4xl">
-            Analytics
+            Estadísticas
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-zinc-400 sm:text-base">
-            Medí conversaciones, canales, leads y
-            rendimiento del agente.
+            Medí cuántas personas visitan tu página,
+            cuántas dejan una consulta y cuántas terminan reservando.
           </p>
         </div>
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
-            titulo="Visitas a la página"
+            titulo="Visitas"
             valor={estadisticas.visitasPagina}
-            descripcion={`${estadisticas.visitantesPagina} visitantes registrados`}
+            descripcion="A la página pública"
           />
 
           <StatCard
-            titulo="Contactos desde la página"
+            titulo="Visitantes únicos"
+            valor={estadisticas.visitantesPagina}
+            descripcion="Personas registradas"
+          />
+
+          <StatCard
+            titulo="Contactos"
             valor={estadisticas.contactosPagina}
-            descripcion={`${estadisticas.tasaContactoPagina.toFixed(
-              1
-            )}% de las visitas`}
+            descripcion="Formularios enviados"
+          />
+
+          <StatCard
+            titulo="Reservas"
+            valor={estadisticas.reservasPagina}
+            descripcion="Turnos generados online"
+          />
+        </section>
+
+        <section className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <StatCard
+            titulo="Tasa de contacto"
+            valor={`${estadisticas.tasaContactoPagina.toFixed(
+              1,
+            )}%`}
+            descripcion="Contactos sobre visitas"
+          />
+
+          <StatCard
+            titulo="Tasa de reserva"
+            valor={`${estadisticas.tasaReservaPagina.toFixed(
+              1,
+            )}%`}
+            descripcion="Reservas sobre visitas"
           />
 
           <StatCard
             titulo="Clics en WhatsApp"
             valor={estadisticas.clicsWhatsApp}
-            descripcion="Desde la página pública"
+            descripcion="Desde tu página pública"
           />
 
           <StatCard
-            titulo="Reservas online"
-            valor={estadisticas.reservasPagina}
-            descripcion={`${estadisticas.tasaReservaPagina.toFixed(
-              1
-            )}% de las visitas`}
+            titulo="Consultas al asistente"
+            valor={estadisticas.totalConsultas}
+            descripcion="Conversaciones del widget"
           />
         </section>
 
-        <section className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard
-            titulo="Ventas ganadas"
-            valor={estadisticas.ganados}
-            descripcion="Oportunidades convertidas"
-          />
-
-          <StatCard
-            titulo="Ingresos ganados"
-            valor={formatearMoneda(
-              estadisticas.ingresosGanados
-            )}
-            descripcion="Valor estimado de ventas"
-          />
-
-          <StatCard
-            titulo="Conversión"
-            valor={`${estadisticas.tasaConversion.toFixed(
-              1
-            )}%`}
-            descripcion="Ganadas sobre conversaciones"
-          />
-
-          <StatCard
-            titulo="Pipeline abierto"
-            valor={formatearMoneda(
-              estadisticas.pipelineEstimado
-            )}
-            descripcion="Valor de oportunidades activas"
-          />
-        </section>
-
-        <section className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard
-            titulo="Ventas perdidas"
-            valor={estadisticas.perdidos}
-            descripcion="Oportunidades no concretadas"
-          />
-
-          <StatCard
-            titulo="Leads identificados"
-            valor={
-              estadisticas.leadsIdentificados
-            }
-            descripcion="Con email o teléfono"
-          />
-
-          <StatCard
-            titulo="Conversaciones de hoy"
-            valor={
-              estadisticas.conversacionesHoy
-            }
-            descripcion="Iniciadas desde las 00:00"
-          />
-
-          <StatCard
-            titulo="Respuesta promedio"
-            valor={formatearTiempoRespuesta(
-              estadisticas.tiempoRespuestaPromedio
-            )}
-            descripcion="Primera respuesta del agente"
-          />
-        </section>
-
-        <section className="mt-6 grid gap-6 xl:grid-cols-[2fr_1fr]">
+        <section className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.8fr)]">
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
             <div className="mb-6">
               <p className="text-sm text-slate-600 dark:text-zinc-400">
-                Proceso comercial
+                Últimos 7 días
               </p>
 
               <h2 className="mt-1 text-xl font-semibold text-slate-950 dark:text-white">
-                Embudo de oportunidades
+                Actividad de la página
               </h2>
-            </div>
 
-            <div className="h-80 w-full">
-              <ResponsiveContainer
-                width="100%"
-                height="100%"
-              >
-                <BarChart
-                  data={
-                    estadisticas.datosEmbudo
-                  }
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="var(--border)"
-                  />
-
-                  <XAxis
-                    dataKey="etapa"
-                    stroke="var(--muted)"
-                    tickLine={false}
-                    axisLine={false}
-                  />
-
-                  <YAxis
-                    allowDecimals={false}
-                    stroke="var(--muted)"
-                    tickLine={false}
-                    axisLine={false}
-                  />
-
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "var(--surface)",
-                      border:
-                        "1px solid var(--border)",
-                      borderRadius: "12px",
-                    }}
-                    labelStyle={{
-                      color: "var(--foreground)",
-                    }}
-                  />
-
-                  <Bar
-                    dataKey="oportunidades"
-                    fill="#10b981"
-                    radius={[8, 8, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
-            <p className="text-sm text-slate-600 dark:text-zinc-400">
-              Ventas
-            </p>
-
-            <h2 className="mt-1 text-xl font-semibold text-slate-950 dark:text-white">
-              Rendimiento comercial
-            </h2>
-
-            <div className="mt-6 space-y-4">
-              <Resumen
-                titulo="Tasa de cierre"
-                valor={`${estadisticas.tasaCierre.toFixed(
-                  1
-                )}%`}
-                descripcion="Ganadas sobre cerradas"
-              />
-
-              <Resumen
-                titulo="Ticket promedio"
-                valor={formatearMoneda(
-                  estadisticas.ticketPromedio
-                )}
-                descripcion="Promedio de ventas ganadas"
-              />
-
-              <Resumen
-                titulo="Propuestas enviadas"
-                valor={estadisticas.propuestas}
-                descripcion="Oportunidades en negociación"
-              />
-
-              <Resumen
-                titulo="Leads calificados"
-                valor={estadisticas.calificados}
-                descripcion="Oportunidades con potencial"
-              />
-            </div>
-          </div>
-        </section>
-
-        <section className="mt-6 grid gap-6 xl:grid-cols-[2fr_1fr]">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
-            <div className="mb-6">
-              <p className="text-sm text-slate-600 dark:text-zinc-400">
-                Actividad reciente
+              <p className="mt-2 text-sm text-slate-500 dark:text-zinc-500">
+                Visitas, contactos y reservas generadas por día.
               </p>
-
-              <h2 className="mt-1 text-xl font-semibold text-slate-950 dark:text-white">
-                Conversaciones de los últimos 7 días
-              </h2>
             </div>
 
             <div className="h-80 w-full">
@@ -1049,7 +701,7 @@ export default function EstadisticasPage() {
               >
                 <LineChart
                   data={
-                    estadisticas.datosGrafico
+                    estadisticas.actividadPagina
                   }
                 >
                   <CartesianGrid
@@ -1073,23 +725,43 @@ export default function EstadisticasPage() {
 
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "var(--surface)",
+                      backgroundColor:
+                        "var(--surface)",
                       border:
                         "1px solid var(--border)",
                       borderRadius: "12px",
                     }}
                     labelStyle={{
-                      color: "var(--foreground)",
-                    }}
-                    itemStyle={{
-                      color: "#60a5fa",
+                      color:
+                        "var(--foreground)",
                     }}
                   />
 
                   <Line
                     type="monotone"
-                    dataKey="conversaciones"
+                    dataKey="visitas"
+                    name="Visitas"
                     stroke="#3b82f6"
+                    strokeWidth={3}
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+
+                  <Line
+                    type="monotone"
+                    dataKey="contactos"
+                    name="Contactos"
+                    stroke="#8b5cf6"
+                    strokeWidth={3}
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+
+                  <Line
+                    type="monotone"
+                    dataKey="reservas"
+                    name="Reservas"
+                    stroke="#10b981"
                     strokeWidth={3}
                     dot={{ r: 4 }}
                     activeDot={{ r: 6 }}
@@ -1101,69 +773,25 @@ export default function EstadisticasPage() {
 
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
             <p className="text-sm text-slate-600 dark:text-zinc-400">
-              Resumen
+              Conversión
             </p>
 
             <h2 className="mt-1 text-xl font-semibold text-slate-950 dark:text-white">
-              Rendimiento general
+              Embudo de la página
             </h2>
 
-            <div className="mt-6 space-y-4">
-              <Resumen
-                titulo="Promedio de mensajes"
-                valor={estadisticas.promedioMensajes.toFixed(
-                  1
-                )}
-                descripcion="Por conversación"
-              />
+            <p className="mt-2 text-sm text-slate-500 dark:text-zinc-500">
+              El recorrido desde una visita hasta una reserva.
+            </p>
 
-              <Resumen
-                titulo="Conversaciones esta semana"
-                valor={
-                  estadisticas.conversacionesSemana
-                }
-                descripcion="Últimos siete días"
-              />
-
-              <Resumen
-                titulo="Tasa de captura"
-                valor={`${estadisticas.tasaCaptura.toFixed(
-                  1
-                )}%`}
-                descripcion="Conversaciones con datos de contacto"
-              />
-
-              <Resumen
-                titulo="Leads de interés alto"
-                valor={
-                  estadisticas.leadsAltoInteres
-                }
-                descripcion="Puntuación 70+ o interés alto"
-              />
-            </div>
-          </div>
-        </section>
-
-        <section className="mt-6 grid gap-6 xl:grid-cols-2">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
-            <div className="mb-6">
-              <p className="text-sm text-slate-600 dark:text-zinc-400">
-                Distribución
-              </p>
-
-              <h2 className="mt-1 text-xl font-semibold text-slate-950 dark:text-white">
-                Conversaciones por canal
-              </h2>
-            </div>
-
-            <div className="h-80 w-full">
+            <div className="mt-6 h-72 w-full">
               <ResponsiveContainer
                 width="100%"
                 height="100%"
               >
                 <BarChart
                   data={
-                    estadisticas.datosCanales
+                    estadisticas.embudoPagina
                   }
                 >
                   <CartesianGrid
@@ -1172,7 +800,7 @@ export default function EstadisticasPage() {
                   />
 
                   <XAxis
-                    dataKey="canal"
+                    dataKey="etapa"
                     stroke="var(--muted)"
                     tickLine={false}
                     axisLine={false}
@@ -1187,61 +815,105 @@ export default function EstadisticasPage() {
 
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "var(--surface)",
+                      backgroundColor:
+                        "var(--surface)",
                       border:
                         "1px solid var(--border)",
                       borderRadius: "12px",
                     }}
                     labelStyle={{
-                      color: "var(--foreground)",
+                      color:
+                        "var(--foreground)",
                     }}
                   />
 
                   <Bar
-                    dataKey="conversaciones"
-                    fill="#8b5cf6"
+                    dataKey="cantidad"
+                    name="Cantidad"
+                    fill="#3b82f6"
                     radius={[8, 8, 0, 0]}
                   />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
+        </section>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
+        <section className="mt-6">
+          <div className="mb-4">
             <p className="text-sm text-slate-600 dark:text-zinc-400">
-              Atención
+              Asistente web
             </p>
 
             <h2 className="mt-1 text-xl font-semibold text-slate-950 dark:text-white">
-              IA frente a operadores
+              Actividad de consultas
             </h2>
 
-            <div className="mt-8 space-y-7">
-              <BarraProgreso
-                titulo="Atendidas por IA"
-                valor={estadisticas.atendidasIA}
-                porcentaje={porcentajeIA}
-              />
+            <p className="mt-2 text-sm text-slate-500 dark:text-zinc-500">
+              Esta información queda como apoyo para controlar
+              qué está pasando dentro del chat de tu página.
+            </p>
+          </div>
 
-              <BarraProgreso
-                titulo="Atendidas por humano"
-                valor={
-                  estadisticas.atendidasHumano
-                }
-                porcentaje={porcentajeHumano}
-              />
-
-              <div className="grid grid-cols-2 gap-4 pt-2">
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <Resumen
-                  titulo="Abiertas"
-                  valor={estadisticas.abiertas}
-                  descripcion="Conversaciones activas"
+                  titulo="Consultas totales"
+                  valor={
+                    estadisticas.totalConsultas
+                  }
+                  descripcion="Conversaciones del asistente"
                 />
 
                 <Resumen
-                  titulo="Cerradas"
+                  titulo="Últimos 7 días"
+                  valor={
+                    estadisticas.consultasSemana
+                  }
+                  descripcion="Consultas recientes"
+                />
+
+                <Resumen
+                  titulo="Abiertas"
+                  valor={estadisticas.abiertas}
+                  descripcion="Consultas activas"
+                />
+
+                <Resumen
+                  titulo="Resueltas"
                   valor={estadisticas.cerradas}
-                  descripcion="Conversaciones finalizadas"
+                  descripcion="Consultas cerradas"
+                />
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
+              <div className="space-y-7">
+                <BarraProgreso
+                  titulo="Atendidas por IA"
+                  valor={
+                    estadisticas.atendidasIA
+                  }
+                  porcentaje={porcentajeIA}
+                />
+
+                <BarraProgreso
+                  titulo="Atendidas por humano"
+                  valor={
+                    estadisticas.atendidasHumano
+                  }
+                  porcentaje={
+                    porcentajeHumano
+                  }
+                />
+
+                <Resumen
+                  titulo="Primera respuesta"
+                  valor={formatearTiempoRespuesta(
+                    estadisticas.tiempoRespuestaPromedio,
+                  )}
+                  descripcion="Promedio del asistente o del equipo"
                 />
               </div>
             </div>
@@ -1249,9 +921,8 @@ export default function EstadisticasPage() {
         </section>
 
         <p className="mt-6 text-xs leading-5 text-slate-500 dark:text-zinc-600">
-          Los ingresos, el pipeline y el ticket promedio
-          se calculan usando el valor estimado guardado
-          en cada conversación.
+          Las métricas principales se calculan con la actividad
+          registrada en la página pública de este negocio.
         </p>
       </div>
     </main>
@@ -1311,7 +982,7 @@ function BarraProgreso({
           style={{
             width: `${Math.min(
               100,
-              Math.max(0, porcentaje)
+              Math.max(0, porcentaje),
             )}%`,
           }}
         />

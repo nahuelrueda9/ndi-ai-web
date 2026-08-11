@@ -15,10 +15,15 @@ import {
 import {
   adminDb,
 } from "@/lib/firebaseAdmin";
+import {
+  obtenerNombrePlan,
+  obtenerPrecioPlan,
+  type PlanId,
+} from "@/lib/plans/planAccess";
 
 export const runtime = "nodejs";
 
-type PlanPago = "pro";
+type PlanPago = PlanId;
 
 type NotificacionMercadoPago = {
   type?: string;
@@ -40,27 +45,14 @@ type PagoMercadoPago = {
     empresa_id?: string;
     propietario_uid?: string;
     plan?: string;
+    payment_type?: string;
+    initial_price?: number | string;
+    monthly_price?: number | string;
   };
 };
 
-type ConfiguracionPlan = {
-  precio: number;
-  limiteConversaciones: number;
-};
-
-const PLANES: Record<
-  PlanPago,
-  ConfiguracionPlan
-> = {
-  pro: {
-    precio: 14999,
-    limiteConversaciones: 1000,
-  },
-
-};
-
 function extraerFirma(
-  xSignature: string
+  xSignature: string,
 ) {
   const partes =
     xSignature.split(",");
@@ -68,21 +60,34 @@ function extraerFirma(
   let timestamp = "";
   let firma = "";
 
-  for (const parte of partes) {
+  for (
+    const parte of partes
+  ) {
     const [
       clave,
       ...resto
-    ] = parte.trim().split("=");
+    ] =
+      parte
+        .trim()
+        .split("=");
 
     const valor =
-      resto.join("=").trim();
+      resto
+        .join("=")
+        .trim();
 
-    if (clave === "ts") {
-      timestamp = valor;
+    if (
+      clave === "ts"
+    ) {
+      timestamp =
+        valor;
     }
 
-    if (clave === "v1") {
-      firma = valor;
+    if (
+      clave === "v1"
+    ) {
+      firma =
+        valor;
     }
   }
 
@@ -94,19 +99,19 @@ function extraerFirma(
 
 function compararFirmas(
   firmaRecibida: string,
-  firmaEsperada: string
+  firmaEsperada: string,
 ) {
   try {
     const recibida =
       Buffer.from(
         firmaRecibida,
-        "hex"
+        "hex",
       );
 
     const esperada =
       Buffer.from(
         firmaEsperada,
-        "hex"
+        "hex",
       );
 
     if (
@@ -120,7 +125,7 @@ function compararFirmas(
 
     return timingSafeEqual(
       recibida,
-      esperada
+      esperada,
     );
   } catch {
     return false;
@@ -138,12 +143,12 @@ function validarFirmaWebhook({
 }) {
   const xSignature =
     request.headers.get(
-      "x-signature"
+      "x-signature",
     );
 
   const requestId =
     request.headers.get(
-      "x-request-id"
+      "x-request-id",
     );
 
   if (!xSignature) {
@@ -153,9 +158,10 @@ function validarFirmaWebhook({
   const {
     timestamp,
     firma,
-  } = extraerFirma(
-    xSignature
-  );
+  } =
+    extraerFirma(
+      xSignature,
+    );
 
   if (
     !timestamp ||
@@ -182,35 +188,48 @@ function validarFirmaWebhook({
   const firmaEsperada =
     createHmac(
       "sha256",
-      secreto
+      secreto,
     )
-      .update(plantilla)
+      .update(
+        plantilla,
+      )
       .digest("hex");
 
   return compararFirmas(
     firma,
-    firmaEsperada
+    firmaEsperada,
   );
 }
 
 function esPlanPago(
-  valor: string
+  valor: unknown,
 ): valor is PlanPago {
-  return valor === "pro";
+  return (
+    valor === "free" ||
+    valor === "pro" ||
+    valor === "business"
+  );
 }
 
 function parsearReferencia(
-  referencia: string
+  referencia: string,
 ) {
   const partes =
     referencia.split(":");
 
   /*
-   * Formato creado por create-preference:
-   * ndi-ai:{empresaId}:{propietarioUid}:{plan}:{timestamp}
+   * Formato nuevo creado por create-preference:
+   *
+   * ndi-ai:{empresaId}:{propietarioUid}:{plan}:alta:{timestamp}
+   *
+   * Los IDs internos se mantienen por compatibilidad:
+   *
+   * free     = Página Simple
+   * pro      = Página Completa
+   * business = Business IA
    */
   if (
-    partes.length !== 5 ||
+    partes.length !== 6 ||
     partes[0] !== "ndi-ai"
   ) {
     return null;
@@ -225,15 +244,18 @@ function parsearReferencia(
   const plan =
     partes[3]?.trim();
 
-  const timestamp =
+  const tipoPago =
     partes[4]?.trim();
+
+  const timestamp =
+    partes[5]?.trim();
 
   if (
     !empresaId ||
     !propietarioUid ||
-    !plan ||
-    !timestamp ||
-    !esPlanPago(plan)
+    !esPlanPago(plan) ||
+    tipoPago !== "alta" ||
+    !timestamp
   ) {
     return null;
   }
@@ -242,23 +264,90 @@ function parsearReferencia(
     empresaId,
     propietarioUid,
     plan,
+    tipoPago,
     timestamp,
   };
 }
 
 function numerosCoinciden(
   recibido: number,
-  esperado: number
+  esperado: number,
 ) {
   return (
     Math.abs(
-      recibido - esperado
+      recibido -
+        esperado,
     ) < 0.01
   );
 }
 
+function numeroMetadata(
+  valor: unknown,
+) {
+  if (
+    typeof valor ===
+      "number" &&
+    Number.isFinite(valor)
+  ) {
+    return valor;
+  }
+
+  if (
+    typeof valor ===
+    "string"
+  ) {
+    const numero =
+      Number(valor);
+
+    if (
+      Number.isFinite(
+        numero,
+      )
+    ) {
+      return numero;
+    }
+  }
+
+  return null;
+}
+
+function obtenerMesActualArgentina(
+  fecha = new Date(),
+) {
+  const partes =
+    new Intl.DateTimeFormat(
+      "en-US",
+      {
+        timeZone:
+          "America/Argentina/Buenos_Aires",
+        year:
+          "numeric",
+        month:
+          "2-digit",
+      },
+    ).formatToParts(
+      fecha,
+    );
+
+  const anio =
+    partes.find(
+      (parte) =>
+        parte.type ===
+        "year",
+    )?.value ?? "";
+
+  const mes =
+    partes.find(
+      (parte) =>
+        parte.type ===
+        "month",
+    )?.value ?? "";
+
+  return `${anio}-${mes}`;
+}
+
 export async function POST(
-  request: NextRequest
+  request: NextRequest,
 ) {
   try {
     const accessToken =
@@ -273,7 +362,7 @@ export async function POST(
 
     if (!accessToken) {
       console.error(
-        "Falta MERCADOPAGO_ACCESS_TOKEN."
+        "Falta MERCADOPAGO_ACCESS_TOKEN.",
       );
 
       return NextResponse.json(
@@ -283,13 +372,13 @@ export async function POST(
         },
         {
           status: 500,
-        }
+        },
       );
     }
 
     if (!webhookSecret) {
       console.error(
-        "Falta MERCADOPAGO_WEBHOOK_SECRET."
+        "Falta MERCADOPAGO_WEBHOOK_SECRET.",
       );
 
       return NextResponse.json(
@@ -299,7 +388,7 @@ export async function POST(
         },
         {
           status: 500,
-        }
+        },
       );
     }
 
@@ -317,7 +406,7 @@ export async function POST(
         },
         {
           status: 400,
-        }
+        },
       );
     }
 
@@ -329,7 +418,9 @@ export async function POST(
         .get("topic") ||
       "";
 
-    if (tipo !== "payment") {
+    if (
+      tipo !== "payment"
+    ) {
       return NextResponse.json({
         received: true,
         ignored: true,
@@ -344,7 +435,8 @@ export async function POST(
         .get("id")
         ?.trim() ||
       String(
-        body.data?.id || ""
+        body.data?.id ||
+          "",
       ).trim();
 
     if (!paymentId) {
@@ -355,20 +447,22 @@ export async function POST(
         },
         {
           status: 400,
-        }
+        },
       );
     }
 
     const firmaValida =
       validarFirmaWebhook({
         request,
-        dataId: paymentId,
-        secreto: webhookSecret,
+        dataId:
+          paymentId,
+        secreto:
+          webhookSecret,
       });
 
     if (!firmaValida) {
       console.warn(
-        "Webhook de Mercado Pago con firma inválida."
+        "Webhook de Mercado Pago con firma inválida.",
       );
 
       return NextResponse.json(
@@ -378,27 +472,31 @@ export async function POST(
         },
         {
           status: 401,
-        }
+        },
       );
     }
 
-    const response = await fetch(
-      `https://api.mercadopago.com/v1/payments/${encodeURIComponent(
-        paymentId
-      )}`,
-      {
-        method: "GET",
+    const response =
+      await fetch(
+        `https://api.mercadopago.com/v1/payments/${encodeURIComponent(
+          paymentId,
+        )}`,
+        {
+          method:
+            "GET",
 
-        headers: {
-          Authorization:
-            `Bearer ${accessToken}`,
-          Accept:
-            "application/json",
+          headers: {
+            Authorization:
+              `Bearer ${accessToken}`,
+
+            Accept:
+              "application/json",
+          },
+
+          cache:
+            "no-store",
         },
-
-        cache: "no-store",
-      }
-    );
+      );
 
     const payment =
       (await response.json()) as PagoMercadoPago;
@@ -406,7 +504,7 @@ export async function POST(
     if (!response.ok) {
       console.error(
         "No se pudo consultar el pago en Mercado Pago:",
-        payment
+        payment,
       );
 
       return NextResponse.json(
@@ -416,13 +514,15 @@ export async function POST(
         },
         {
           status: 502,
-        }
+        },
       );
     }
 
     if (
-      String(payment.id || "") !==
-      paymentId
+      String(
+        payment.id ||
+          "",
+      ) !== paymentId
     ) {
       return NextResponse.json(
         {
@@ -431,7 +531,7 @@ export async function POST(
         },
         {
           status: 400,
-        }
+        },
       );
     }
 
@@ -443,27 +543,32 @@ export async function POST(
         received: true,
         processed: false,
         status:
-          payment.status || "unknown",
+          payment.status ||
+          "unknown",
       });
     }
 
     const referencia =
       String(
         payment.external_reference ||
-          ""
+          "",
       ).trim();
 
     const referenciaParseada =
       parsearReferencia(
-        referencia
+        referencia,
       );
 
     /*
-     * Puede ser un pago ajeno al producto NDI AI,
-     * pero perteneciente a la misma cuenta de Mercado Pago.
-     * Lo ignoramos para evitar reintentos innecesarios.
+     * Puede llegar un pago viejo de NDI AI o un pago ajeno
+     * perteneciente a la misma cuenta de Mercado Pago.
+     *
+     * Si no utiliza el formato nuevo, lo ignoramos con 200
+     * para no provocar reintentos innecesarios.
      */
-    if (!referenciaParseada) {
+    if (
+      !referenciaParseada
+    ) {
       return NextResponse.json({
         received: true,
         ignored: true,
@@ -474,28 +579,43 @@ export async function POST(
       empresaId,
       propietarioUid,
       plan,
-    } = referenciaParseada;
+      tipoPago,
+    } =
+      referenciaParseada;
 
-    const configuracionPlan =
-      PLANES[plan];
+    const nombrePlan =
+      obtenerNombrePlan(
+        plan,
+      );
 
-    const fechaInicio =
-      payment.date_approved
-        ? new Date(payment.date_approved)
-        : new Date();
+    const precios =
+      obtenerPrecioPlan(
+        plan,
+      );
 
-    const fechaVencimiento =
-      new Date(fechaInicio);
+    const precioInicial =
+      precios.inicial;
 
-    fechaVencimiento.setDate(
-      fechaVencimiento.getDate() + 30
-    );
+    const precioMensual =
+      precios.mensual;
+
+    const importeEsperado =
+      precioInicial +
+      precioMensual;
 
     if (
       !Number.isFinite(
-        configuracionPlan.precio
+        precioInicial,
       ) ||
-      configuracionPlan.precio <= 0
+      precioInicial <= 0 ||
+      !Number.isFinite(
+        precioMensual,
+      ) ||
+      precioMensual <= 0 ||
+      !Number.isFinite(
+        importeEsperado,
+      ) ||
+      importeEsperado <= 0
     ) {
       return NextResponse.json(
         {
@@ -504,7 +624,7 @@ export async function POST(
         },
         {
           status: 500,
-        }
+        },
       );
     }
 
@@ -519,7 +639,7 @@ export async function POST(
         },
         {
           status: 400,
-        }
+        },
       );
     }
 
@@ -529,7 +649,7 @@ export async function POST(
         "number" ||
       !numerosCoinciden(
         payment.transaction_amount,
-        configuracionPlan.precio
+        importeEsperado,
       )
     ) {
       return NextResponse.json(
@@ -539,12 +659,13 @@ export async function POST(
         },
         {
           status: 400,
-        }
+        },
       );
     }
 
     const metadata =
-      payment.metadata || {};
+      payment.metadata ||
+      {};
 
     if (
       metadata.empresa_id &&
@@ -558,7 +679,7 @@ export async function POST(
         },
         {
           status: 400,
-        }
+        },
       );
     }
 
@@ -574,13 +695,14 @@ export async function POST(
         },
         {
           status: 400,
-        }
+        },
       );
     }
 
     if (
       metadata.plan &&
-      metadata.plan !== plan
+      metadata.plan !==
+        plan
     ) {
       return NextResponse.json(
         {
@@ -589,41 +711,154 @@ export async function POST(
         },
         {
           status: 400,
-        }
+        },
       );
     }
 
+    if (
+      metadata.payment_type &&
+      metadata.payment_type !==
+        "setup_and_first_month"
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "El tipo de pago no coincide.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    const metadataPrecioInicial =
+      numeroMetadata(
+        metadata.initial_price,
+      );
+
+    if (
+      metadataPrecioInicial !==
+        null &&
+      !numerosCoinciden(
+        metadataPrecioInicial,
+        precioInicial,
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "El precio inicial del pago no coincide.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    const metadataPrecioMensual =
+      numeroMetadata(
+        metadata.monthly_price,
+      );
+
+    if (
+      metadataPrecioMensual !==
+        null &&
+      !numerosCoinciden(
+        metadataPrecioMensual,
+        precioMensual,
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "El precio mensual del pago no coincide.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    const fechaInicio =
+      payment.date_approved
+        ? new Date(
+            payment.date_approved,
+          )
+        : new Date();
+
+    if (
+      Number.isNaN(
+        fechaInicio.getTime(),
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "La fecha de aprobación del pago no es válida.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    const fechaVencimiento =
+      new Date(
+        fechaInicio,
+      );
+
+    fechaVencimiento.setDate(
+      fechaVencimiento.getDate() +
+        30,
+    );
+
+    const mesUso =
+      obtenerMesActualArgentina(
+        fechaInicio,
+      );
+
     const empresaReferencia =
       adminDb
-        .collection("companies")
-        .doc(empresaId);
+        .collection(
+          "companies",
+        )
+        .doc(
+          empresaId,
+        );
 
     const pagoReferencia =
       empresaReferencia
-        .collection("payments")
-        .doc(paymentId);
+        .collection(
+          "payments",
+        )
+        .doc(
+          paymentId,
+        );
 
     const resultado =
       await adminDb.runTransaction(
-        async (transaction) => {
+        async (
+          transaction,
+        ) => {
           const [
             empresaSnapshot,
             pagoSnapshot,
-          ] = await Promise.all([
-            transaction.get(
-              empresaReferencia
-            ),
+          ] =
+            await Promise.all([
+              transaction.get(
+                empresaReferencia,
+              ),
 
-            transaction.get(
-              pagoReferencia
-            ),
-          ]);
+              transaction.get(
+                pagoReferencia,
+              ),
+            ]);
 
           if (
             !empresaSnapshot.exists
           ) {
             throw new Error(
-              "La empresa no existe."
+              "La empresa no existe.",
             );
           }
 
@@ -635,17 +870,19 @@ export async function POST(
             propietarioUid
           ) {
             throw new Error(
-              "El propietario de la empresa no coincide con el pago."
+              "El propietario de la empresa no coincide con el pago.",
             );
           }
 
           if (
             pagoSnapshot.exists &&
             pagoSnapshot.data()
-              ?.processed === true
+              ?.processed ===
+              true
           ) {
             return {
-              alreadyProcessed: true,
+              alreadyProcessed:
+                true,
             };
           }
 
@@ -653,88 +890,203 @@ export async function POST(
             pagoReferencia,
             {
               paymentId,
+
               externalReference:
                 referencia,
+
               plan,
+
+              planName:
+                nombrePlan,
+
+              paymentType:
+                "setup_and_first_month",
+
+              initialPrice:
+                precioInicial,
+
+              monthlyPrice:
+                precioMensual,
+
               amount:
-                payment.transaction_amount,
+                payment
+                  .transaction_amount,
+
               currency:
                 payment.currency_id,
+
               status:
                 payment.status,
+
               statusDetail:
                 payment.status_detail ||
                 "",
+
               approvedAt:
                 payment.date_approved ||
                 null,
+
               propietarioUid,
-              processed: true,
+
+              processed:
+                true,
+
               processedAt:
                 FieldValue.serverTimestamp(),
             },
             {
               merge: true,
-            }
+            },
           );
 
           transaction.set(
             empresaReferencia,
             {
+              /*
+               * IDs internos conservados:
+               *
+               * free     = Página Simple
+               * pro      = Página Completa
+               * business = Business IA
+               */
               plan,
-              maxConversations:
-                configuracionPlan
-                  .limiteConversaciones,
+
               subscriptionStatus:
                 "active",
+
               subscriptionStartedAt:
                 fechaInicio,
+
               subscriptionEndsAt:
                 fechaVencimiento,
+
+              /*
+               * Guardamos el precio mensual exacto con el que
+               * contrató el cliente.
+               *
+               * Esto permite que un cliente Business de lanzamiento
+               * conserve $15.999/mes aunque el precio público suba
+               * más adelante.
+               */
+              subscriptionMonthlyPrice:
+                precioMensual,
+
+              subscriptionInitialPrice:
+                precioInicial,
+
+              subscriptionPriceLockedAt:
+                fechaInicio,
+
+              subscriptionPricingVersion:
+                "launch-2026-08",
+
+              subscriptionIsLaunchPrice:
+                plan ===
+                "business",
+
+              /*
+               * El período mensual de uso empieza desde cero
+               * al activar el nuevo plan.
+               */
+              conversationsThisMonth:
+                0,
+
+              conversationsUsageMonth:
+                mesUso,
+
+              aiResponsesThisMonth:
+                0,
+
+              aiResponsesUsageMonth:
+                mesUso,
+
               pendingPlan:
                 FieldValue.delete(),
+
+              pendingPlanName:
+                FieldValue.delete(),
+
+              pendingPaymentType:
+                FieldValue.delete(),
+
+              pendingInitialPrice:
+                FieldValue.delete(),
+
+              pendingMonthlyPrice:
+                FieldValue.delete(),
+
               mercadopagoPaymentId:
                 paymentId,
+
               mercadopagoPaymentStatus:
                 payment.status,
+
               mercadopagoPaymentAmount:
                 payment.transaction_amount,
+
               mercadopagoPaymentCurrency:
                 payment.currency_id,
+
               mercadopagoPaymentApprovedAt:
                 payment.date_approved ||
                 null,
+
               mercadoPagoPreferenceId:
                 FieldValue.delete(),
+
               mercadoPagoExternalReference:
                 FieldValue.delete(),
+
+              mercadoPagoPreferenceCreatedAt:
+                FieldValue.delete(),
+
+              mercadoPagoPreferenceCreatedBy:
+                FieldValue.delete(),
+
               planUpdatedAt:
                 FieldValue.serverTimestamp(),
+
               updatedAt:
                 FieldValue.serverTimestamp(),
             },
             {
               merge: true,
-            }
+            },
           );
 
           return {
-            alreadyProcessed: false,
+            alreadyProcessed:
+              false,
           };
-        }
+        },
       );
 
     return NextResponse.json({
       success: true,
+
       alreadyProcessed:
         resultado.alreadyProcessed,
+
       empresaId,
+
       plan,
+
+      planName:
+        nombrePlan,
+
+      paymentType:
+        tipoPago,
+
+      monthlyPrice:
+        precioMensual,
+
+      subscriptionEndsAt:
+        fechaVencimiento.toISOString(),
     });
   } catch (error) {
     console.error(
       "Error procesando webhook de Mercado Pago:",
-      error
+      error,
     );
 
     return NextResponse.json(
@@ -746,7 +1098,7 @@ export async function POST(
       },
       {
         status: 500,
-      }
+      },
     );
   }
 }
