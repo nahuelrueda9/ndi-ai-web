@@ -19,11 +19,14 @@ import {
 } from "firebase/firestore";
 import {
   Box,
+  ImageIcon,
   Package,
   Pencil,
   Plus,
   Scissors,
   Trash2,
+  Upload,
+  X,
 } from "lucide-react";
 
 import { auth, db } from "@/lib/firebase";
@@ -55,6 +58,7 @@ interface CatalogoItem {
   descripcion: string;
   precio: number;
   duracionMinutos?: number;
+  imagenUrl?: string;
   activo: boolean;
   createdAt?: Timestamp;
 }
@@ -87,6 +91,9 @@ export default function CatalogoPage() {
   const [descripcion, setDescripcion] = useState("");
   const [precio, setPrecio] = useState("");
   const [duracion, setDuracion] = useState("");
+  const [imagenUrl, setImagenUrl] = useState("");
+  const [subiendoImagen, setSubiendoImagen] =
+    useState(false);
 
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
@@ -254,6 +261,8 @@ export default function CatalogoPage() {
     setDescripcion("");
     setPrecio("");
     setDuracion("");
+    setImagenUrl("");
+    setSubiendoImagen(false);
     setError("");
   }
 
@@ -279,6 +288,10 @@ export default function CatalogoPage() {
         : "",
     );
 
+    setImagenUrl(
+      item.imagenUrl?.trim() || "",
+    );
+
     setMensaje("");
     setError("");
     setMostrarFormulario(true);
@@ -289,12 +302,212 @@ export default function CatalogoPage() {
     });
   }
 
+  async function subirImagenCatalogo(
+    archivo: File,
+  ) {
+    if (
+      !user ||
+      !empresaId ||
+      subiendoImagen
+    ) {
+      return;
+    }
+
+    if (
+      !archivo.type.startsWith("image/")
+    ) {
+      setError(
+        "Seleccioná una imagen válida.",
+      );
+      return;
+    }
+
+    const TAMANO_MAXIMO =
+      5 * 1024 * 1024;
+
+    if (archivo.size > TAMANO_MAXIMO) {
+      setError(
+        "La imagen no puede superar los 5 MB.",
+      );
+      return;
+    }
+
+    setSubiendoImagen(true);
+    setError("");
+    setMensaje("");
+
+    try {
+      const idToken =
+        await user.getIdToken();
+
+      const authResponse =
+        await fetch(
+          `/api/imagekit/auth?empresaId=${encodeURIComponent(
+            empresaId,
+          )}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization:
+                `Bearer ${idToken}`,
+            },
+            cache: "no-store",
+          },
+        );
+
+      const authData =
+        (await authResponse.json()) as {
+          token?: string;
+          expire?: number;
+          signature?: string;
+          publicKey?: string;
+          error?: string;
+        };
+
+      if (!authResponse.ok) {
+        throw new Error(
+          authData.error ||
+            "No se pudo autorizar la subida.",
+        );
+      }
+
+      if (
+        !authData.token ||
+        !authData.expire ||
+        !authData.signature ||
+        !authData.publicKey
+      ) {
+        throw new Error(
+          "ImageKit devolvió una autorización incompleta.",
+        );
+      }
+
+      const extension =
+        archivo.name
+          .split(".")
+          .pop()
+          ?.toLowerCase()
+          .replace(/[^a-z0-9]/g, "") ||
+        "jpg";
+
+      const baseNombre =
+        archivo.name
+          .replace(/\.[^.]+$/, "")
+          .normalize("NFD")
+          .replace(
+            /[\u0300-\u036f]/g,
+            "",
+          )
+          .replace(
+            /[^a-zA-Z0-9_-]+/g,
+            "-",
+          )
+          .replace(/^-+|-+$/g, "")
+          .slice(0, 60) ||
+        "catalogo";
+
+      const fileName =
+        `catalogo-${Date.now()}-${baseNombre}.${extension}`;
+
+      const formData =
+        new FormData();
+
+      formData.append(
+        "file",
+        archivo,
+      );
+      formData.append(
+        "fileName",
+        fileName,
+      );
+      formData.append(
+        "publicKey",
+        authData.publicKey,
+      );
+      formData.append(
+        "token",
+        authData.token,
+      );
+      formData.append(
+        "expire",
+        String(authData.expire),
+      );
+      formData.append(
+        "signature",
+        authData.signature,
+      );
+      formData.append(
+        "useUniqueFileName",
+        "true",
+      );
+      formData.append(
+        "folder",
+        `/ndi-ai/companies/${empresaId}/catalog`,
+      );
+
+      const uploadResponse =
+        await fetch(
+          "https://upload.imagekit.io/api/v1/files/upload",
+          {
+            method: "POST",
+            body: formData,
+          },
+        );
+
+      const uploadData =
+        (await uploadResponse.json()) as {
+          url?: string;
+          message?: string;
+          error?: string;
+        };
+
+      if (!uploadResponse.ok) {
+        throw new Error(
+          uploadData.message ||
+            uploadData.error ||
+            "ImageKit rechazó la imagen.",
+        );
+      }
+
+      const url =
+        uploadData.url?.trim();
+
+      if (!url) {
+        throw new Error(
+          "ImageKit no devolvió la URL de la imagen.",
+        );
+      }
+
+      setImagenUrl(url);
+      setMensaje(
+        "Imagen cargada correctamente.",
+      );
+    } catch (uploadError) {
+      console.error(
+        "Error subiendo imagen del catálogo:",
+        uploadError,
+      );
+
+      setError(
+        uploadError instanceof Error
+          ? uploadError.message
+          : "No se pudo subir la imagen.",
+      );
+    } finally {
+      setSubiendoImagen(false);
+    }
+  }
+
   async function guardarItem(
     event: FormEvent<HTMLFormElement>,
   ) {
     event.preventDefault();
 
-    if (!empresaId || guardando) {
+    if (
+      !empresaId ||
+      guardando ||
+      subiendoImagen
+    ) {
       return;
     }
 
@@ -345,6 +558,8 @@ export default function CatalogoPage() {
           tipo === "servicio"
             ? duracionNumero || 0
             : 0,
+        imagenUrl:
+          imagenUrl.trim(),
         updatedAt: serverTimestamp(),
       };
 
@@ -628,6 +843,125 @@ export default function CatalogoPage() {
             )}
 
             <div className="md:col-span-2">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium">
+                    Imagen
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
+                    Opcional. Recomendado: imagen horizontal o cuadrada, hasta 5 MB.
+                  </p>
+                </div>
+              </div>
+
+              {imagenUrl ? (
+                <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 dark:border-zinc-800 dark:bg-zinc-950">
+                  <img
+                    src={imagenUrl}
+                    alt="Vista previa"
+                    className="h-56 w-full object-cover sm:h-64"
+                  />
+
+                  <div className="absolute right-3 top-3 flex gap-2">
+                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-black/70 px-3 py-2 text-xs font-medium text-white backdrop-blur transition hover:bg-black/80">
+                      <Upload className="h-4 w-4" />
+                      Cambiar
+
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={subiendoImagen}
+                        onChange={(event) => {
+                          const archivo =
+                            event.target.files?.[0];
+
+                          if (archivo) {
+                            void subirImagenCatalogo(
+                              archivo,
+                            );
+                          }
+
+                          event.currentTarget.value =
+                            "";
+                        }}
+                      />
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setImagenUrl("")
+                      }
+                      disabled={subiendoImagen}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-black/70 text-white backdrop-blur transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+                      aria-label="Quitar imagen"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  {subiendoImagen && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/55 text-sm font-medium text-white backdrop-blur-sm">
+                      Subiendo imagen...
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <label
+                  className={`flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed px-6 py-8 text-center transition ${
+                    subiendoImagen
+                      ? "cursor-wait border-blue-400 bg-blue-50 dark:border-blue-500/50 dark:bg-blue-500/10"
+                      : "border-slate-300 bg-slate-50 hover:border-blue-400 hover:bg-blue-50 dark:border-zinc-700 dark:bg-zinc-950 dark:hover:border-blue-500/50 dark:hover:bg-blue-500/10"
+                  }`}
+                >
+                  {subiendoImagen ? (
+                    <>
+                      <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
+                      <p className="mt-3 text-sm font-medium">
+                        Subiendo imagen...
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-500">
+                        <ImageIcon className="h-5 w-5" />
+                      </div>
+
+                      <p className="mt-3 text-sm font-medium">
+                        Subir imagen
+                      </p>
+
+                      <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
+                        JPG, PNG, WEBP u otro formato de imagen
+                      </p>
+                    </>
+                  )}
+
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={subiendoImagen}
+                    onChange={(event) => {
+                      const archivo =
+                        event.target.files?.[0];
+
+                      if (archivo) {
+                        void subirImagenCatalogo(
+                          archivo,
+                        );
+                      }
+
+                      event.currentTarget.value =
+                        "";
+                    }}
+                  />
+                </label>
+              )}
+            </div>
+
+            <div className="md:col-span-2">
               <label
                 htmlFor="descripcion"
                 className="mb-2 block text-sm font-medium"
@@ -658,10 +992,15 @@ export default function CatalogoPage() {
 
               <Button
                 type="submit"
-                disabled={guardando}
+                disabled={
+                  guardando ||
+                  subiendoImagen
+                }
               >
-                {guardando
-                  ? "Guardando..."
+                {subiendoImagen
+                  ? "Subiendo imagen..."
+                  : guardando
+                    ? "Guardando..."
                   : editandoId
                     ? "Guardar cambios"
                     : "Crear"}
@@ -802,6 +1141,16 @@ function SeccionCatalogo({
             key={item.id}
             className="overflow-hidden"
           >
+            {item.imagenUrl && (
+              <div className="aspect-[16/9] overflow-hidden border-b border-slate-200 bg-slate-100 dark:border-zinc-800 dark:bg-zinc-950">
+                <img
+                  src={item.imagenUrl}
+                  alt={item.nombre}
+                  className="h-full w-full object-cover transition duration-300 hover:scale-[1.02]"
+                />
+              </div>
+            )}
+
             <div className="p-6">
               <div className="flex items-start justify-between gap-4">
                 <div>

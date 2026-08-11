@@ -39,6 +39,18 @@ import Button from "@/components/Ui/Button";
 import Card from "@/components/Ui/Card";
 import Input from "@/components/Ui/Input";
 
+type TemaPagina = "oscuro" | "claro";
+
+type TestimonioPagina = {
+  nombre: string;
+  cargo?: string;
+  texto: string;
+};
+
+type PreguntaFrecuentePagina = {
+  pregunta: string;
+  respuesta: string;
+};
 type TemaWidget = "oscuro" | "claro";
 type PosicionWidget = "derecha" | "izquierda";
 type FormaWidget = "redondo" | "cuadrado";
@@ -75,6 +87,7 @@ interface Empresa {
     subtitulo?: string;
 
     colorPrincipal?: string;
+    tema?: TemaPagina;
 
     logoUrl?: string;
     portadaUrl?: string;
@@ -84,6 +97,15 @@ interface Empresa {
     mostrarEmail?: boolean;
     mostrarDireccion?: boolean;
     mostrarHorarios?: boolean;
+
+    mostrarServicios?: boolean;
+    mostrarProductos?: boolean;
+    mostrarGaleria?: boolean;
+    mostrarMapa?: boolean;
+    mostrarContacto?: boolean;
+
+    testimonios?: TestimonioPagina[];
+    preguntasFrecuentes?: PreguntaFrecuentePagina[];
   };
 
   widget?: {
@@ -182,6 +204,11 @@ export default function ConfigurarAgentePage() {
   ] = useState("#2563eb");
 
   const [
+    paginaTema,
+    setPaginaTema,
+  ] = useState<TemaPagina>("oscuro");
+
+  const [
     paginaLogoUrl,
     setPaginaLogoUrl,
   ] = useState("");
@@ -222,6 +249,66 @@ export default function ConfigurarAgentePage() {
     paginaMostrarHorarios,
     setPaginaMostrarHorarios,
   ] = useState(true);
+
+  const [
+    paginaMostrarServicios,
+    setPaginaMostrarServicios,
+  ] = useState(true);
+
+  const [
+    paginaMostrarProductos,
+    setPaginaMostrarProductos,
+  ] = useState(true);
+
+  const [
+    paginaMostrarGaleria,
+    setPaginaMostrarGaleria,
+  ] = useState(true);
+
+  const [
+    paginaMostrarMapa,
+    setPaginaMostrarMapa,
+  ] = useState(true);
+
+  const [
+    paginaMostrarContacto,
+    setPaginaMostrarContacto,
+  ] = useState(true);
+
+  const [
+    paginaTestimonios,
+    setPaginaTestimonios,
+  ] = useState<TestimonioPagina[]>([]);
+
+  const [
+    testimonioNombre,
+    setTestimonioNombre,
+  ] = useState("");
+
+  const [
+    testimonioCargo,
+    setTestimonioCargo,
+  ] = useState("");
+
+  const [
+    testimonioTexto,
+    setTestimonioTexto,
+  ] = useState("");
+
+  const [
+    paginaPreguntasFrecuentes,
+    setPaginaPreguntasFrecuentes,
+  ] = useState<PreguntaFrecuentePagina[]>([]);
+
+  const [
+    preguntaFrecuentePregunta,
+    setPreguntaFrecuentePregunta,
+  ] = useState("");
+
+  const [
+    preguntaFrecuenteRespuesta,
+    setPreguntaFrecuenteRespuesta,
+  ] = useState("");
 
   // IA
   const [personalidad, setPersonalidad] =
@@ -436,6 +523,13 @@ export default function ConfigurarAgentePage() {
                 "#2563eb",
             );
 
+            setPaginaTema(
+              empresa.paginaPublica
+                ?.tema === "claro"
+                ? "claro"
+                : "oscuro",
+            );
+
             setPaginaLogoUrl(
               empresa.paginaPublica
                 ?.logoUrl || "",
@@ -483,6 +577,96 @@ export default function ConfigurarAgentePage() {
               empresa.paginaPublica
                 ?.mostrarHorarios ??
                 true,
+            );
+
+            setPaginaMostrarServicios(
+              empresa.paginaPublica
+                ?.mostrarServicios ??
+                true,
+            );
+
+            setPaginaMostrarProductos(
+              empresa.paginaPublica
+                ?.mostrarProductos ??
+                true,
+            );
+
+            setPaginaMostrarGaleria(
+              empresa.paginaPublica
+                ?.mostrarGaleria ??
+                true,
+            );
+
+            setPaginaMostrarMapa(
+              empresa.paginaPublica
+                ?.mostrarMapa ??
+                true,
+            );
+
+            setPaginaMostrarContacto(
+              empresa.paginaPublica
+                ?.mostrarContacto ??
+                true,
+            );
+
+            setPaginaTestimonios(
+              Array.isArray(
+                empresa.paginaPublica
+                  ?.testimonios,
+              )
+                ? empresa.paginaPublica!.testimonios!
+                    .filter(
+                      (item) =>
+                        item &&
+                        typeof item.nombre === "string" &&
+                        typeof item.texto === "string",
+                    )
+                    .map(
+                      (item) => ({
+                        nombre:
+                          item.nombre.trim(),
+                        cargo:
+                          item.cargo?.trim() || "",
+                        texto:
+                          item.texto.trim(),
+                      }),
+                    )
+                    .filter(
+                      (item) =>
+                        item.nombre &&
+                        item.texto,
+                    )
+                    .slice(0, 6)
+                : [],
+            );
+
+            setPaginaPreguntasFrecuentes(
+              Array.isArray(
+                empresa.paginaPublica
+                  ?.preguntasFrecuentes,
+              )
+                ? empresa.paginaPublica!.preguntasFrecuentes!
+                    .filter(
+                      (item) =>
+                        item &&
+                        typeof item.pregunta === "string" &&
+                        typeof item.respuesta === "string",
+                    )
+                    .map(
+                      (item) => ({
+                        pregunta:
+                          item.pregunta.trim(),
+                        respuesta:
+                          item.respuesta.trim(),
+                      }),
+                    )
+                    .filter(
+                      (item) =>
+                        item.pregunta &&
+                        item.respuesta,
+                    )
+                    .slice(0, 8)
+                : [],
             );
 
             // IA
@@ -826,6 +1010,130 @@ export default function ConfigurarAgentePage() {
     );
   };
 
+  const agregarTestimonio = () => {
+    const nombreLimpio =
+      testimonioNombre.trim();
+
+    const textoLimpio =
+      testimonioTexto.trim();
+
+    if (!nombreLimpio || !textoLimpio) {
+      setError(
+        "Completá el nombre y el testimonio.",
+      );
+      return;
+    }
+
+    if (
+      paginaTestimonios.length >= 6
+    ) {
+      setError(
+        "Podés mostrar hasta 6 testimonios.",
+      );
+      return;
+    }
+
+    setPaginaTestimonios(
+      (actual) => [
+        ...actual,
+        {
+          nombre:
+            nombreLimpio.slice(
+              0,
+              80,
+            ),
+          cargo:
+            testimonioCargo
+              .trim()
+              .slice(0, 100),
+          texto:
+            textoLimpio.slice(
+              0,
+              500,
+            ),
+        },
+      ],
+    );
+
+    setTestimonioNombre("");
+    setTestimonioCargo("");
+    setTestimonioTexto("");
+    setError("");
+  };
+
+  const quitarTestimonio = (
+    indice: number,
+  ) => {
+    setPaginaTestimonios(
+      (actual) =>
+        actual.filter(
+          (_, index) =>
+            index !== indice,
+        ),
+    );
+  };
+
+  const agregarPreguntaFrecuente = () => {
+    const preguntaLimpia =
+      preguntaFrecuentePregunta.trim();
+
+    const respuestaLimpia =
+      preguntaFrecuenteRespuesta.trim();
+
+    if (
+      !preguntaLimpia ||
+      !respuestaLimpia
+    ) {
+      setError(
+        "Completá la pregunta y la respuesta.",
+      );
+      return;
+    }
+
+    if (
+      paginaPreguntasFrecuentes.length >= 8
+    ) {
+      setError(
+        "Podés mostrar hasta 8 preguntas frecuentes.",
+      );
+      return;
+    }
+
+    setPaginaPreguntasFrecuentes(
+      (actual) => [
+        ...actual,
+        {
+          pregunta:
+            preguntaLimpia.slice(
+              0,
+              160,
+            ),
+          respuesta:
+            respuestaLimpia.slice(
+              0,
+              700,
+            ),
+        },
+      ],
+    );
+
+    setPreguntaFrecuentePregunta("");
+    setPreguntaFrecuenteRespuesta("");
+    setError("");
+  };
+
+  const quitarPreguntaFrecuente = (
+    indice: number,
+  ) => {
+    setPaginaPreguntasFrecuentes(
+      (actual) =>
+        actual.filter(
+          (_, index) =>
+            index !== indice,
+        ),
+    );
+  };
+
   const handleGuardar = async (
     event: FormEvent<HTMLFormElement>,
   ) => {
@@ -969,6 +1277,9 @@ export default function ConfigurarAgentePage() {
             colorPrincipal:
               paginaColorPrincipal,
 
+            tema:
+              paginaTema,
+
             logoUrl:
               paginaLogoUrl,
 
@@ -989,6 +1300,27 @@ export default function ConfigurarAgentePage() {
 
             mostrarHorarios:
               paginaMostrarHorarios,
+
+            mostrarServicios:
+              paginaMostrarServicios,
+
+            mostrarProductos:
+              paginaMostrarProductos,
+
+            mostrarGaleria:
+              paginaMostrarGaleria,
+
+            mostrarMapa:
+              paginaMostrarMapa,
+
+            mostrarContacto:
+              paginaMostrarContacto,
+
+            testimonios:
+              paginaTestimonios,
+
+            preguntasFrecuentes:
+              paginaPreguntasFrecuentes,
           },
 
           personalidad:
@@ -1562,6 +1894,91 @@ export default function ConfigurarAgentePage() {
                 </div>
               </div>
 
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm font-medium text-slate-700 dark:text-zinc-200">
+                    Tema de la página
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
+                    Elegí la apariencia general que verán tus clientes.
+                  </p>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPaginaTema("oscuro")
+                    }
+                    className={`overflow-hidden rounded-2xl border p-1 text-left transition ${
+                      paginaTema ===
+                      "oscuro"
+                        ? "border-blue-500 ring-2 ring-blue-500/20"
+                        : "border-slate-200 hover:border-slate-300 dark:border-zinc-800 dark:hover:border-zinc-700"
+                    }`}
+                  >
+                    <div className="rounded-xl bg-zinc-950 p-4 text-white">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="h-8 w-8 rounded-lg"
+                          style={{
+                            backgroundColor:
+                              paginaColorPrincipal,
+                          }}
+                        />
+                        <div>
+                          <p className="text-sm font-semibold">
+                            Oscuro
+                          </p>
+                          <p className="text-[11px] text-zinc-500">
+                            Moderno y de alto contraste
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 h-2 w-3/4 rounded-full bg-zinc-800" />
+                      <div className="mt-2 h-2 w-1/2 rounded-full bg-zinc-800/70" />
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPaginaTema("claro")
+                    }
+                    className={`overflow-hidden rounded-2xl border p-1 text-left transition ${
+                      paginaTema ===
+                      "claro"
+                        ? "border-blue-500 ring-2 ring-blue-500/20"
+                        : "border-slate-200 hover:border-slate-300 dark:border-zinc-800 dark:hover:border-zinc-700"
+                    }`}
+                  >
+                    <div className="rounded-xl border border-slate-200 bg-white p-4 text-slate-950">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="h-8 w-8 rounded-lg"
+                          style={{
+                            backgroundColor:
+                              paginaColorPrincipal,
+                          }}
+                        />
+                        <div>
+                          <p className="text-sm font-semibold">
+                            Claro
+                          </p>
+                          <p className="text-[11px] text-slate-500">
+                            Limpio y profesional
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 h-2 w-3/4 rounded-full bg-slate-200" />
+                      <div className="mt-2 h-2 w-1/2 rounded-full bg-slate-100" />
+                    </div>
+                  </button>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <label
                   htmlFor="paginaColorPrincipal"
@@ -1675,7 +2092,302 @@ export default function ConfigurarAgentePage() {
                       setPaginaMostrarHorarios
                     }
                   />
+
+                  <ToggleOpcion
+                    titulo="Servicios"
+                    descripcion="Mostrar la sección de servicios."
+                    checked={
+                      paginaMostrarServicios
+                    }
+                    onChange={
+                      setPaginaMostrarServicios
+                    }
+                  />
+
+                  <ToggleOpcion
+                    titulo="Productos"
+                    descripcion="Mostrar la sección de productos."
+                    checked={
+                      paginaMostrarProductos
+                    }
+                    onChange={
+                      setPaginaMostrarProductos
+                    }
+                  />
+
+                  <ToggleOpcion
+                    titulo="Galería"
+                    descripcion="Mostrar las imágenes del negocio."
+                    checked={
+                      paginaMostrarGaleria
+                    }
+                    onChange={
+                      setPaginaMostrarGaleria
+                    }
+                  />
+
+                  <ToggleOpcion
+                    titulo="Mapa"
+                    descripcion="Mostrar el mapa y la ubicación."
+                    checked={
+                      paginaMostrarMapa
+                    }
+                    onChange={
+                      setPaginaMostrarMapa
+                    }
+                  />
+
+                  <ToggleOpcion
+                    titulo="Formulario de contacto"
+                    descripcion="Permitir consultas desde la página."
+                    checked={
+                      paginaMostrarContacto
+                    }
+                    onChange={
+                      setPaginaMostrarContacto
+                    }
+                  />
                 </div>
+              </div>
+
+              <div className="md:col-span-2 space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-zinc-800 dark:bg-zinc-950/50">
+                <div>
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-950 dark:text-white">
+                        Testimonios
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
+                        Agregá reseñas reales de clientes para generar más confianza.
+                      </p>
+                    </div>
+
+                    <Badge variant="info">
+                      {paginaTestimonios.length}/6
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-2">
+                  <Input
+                    id="testimonioNombre"
+                    label="Nombre del cliente"
+                    value={
+                      testimonioNombre
+                    }
+                    onChange={(e) =>
+                      setTestimonioNombre(
+                        e.target.value,
+                      )
+                    }
+                    placeholder="Ejemplo: María Gómez"
+                  />
+
+                  <Input
+                    id="testimonioCargo"
+                    label="Detalle opcional"
+                    value={
+                      testimonioCargo
+                    }
+                    onChange={(e) =>
+                      setTestimonioCargo(
+                        e.target.value,
+                      )
+                    }
+                    placeholder="Ejemplo: Cliente frecuente"
+                  />
+
+                  <div className="md:col-span-2">
+                    <TextArea
+                      id="testimonioTexto"
+                      label="Testimonio"
+                      value={
+                        testimonioTexto
+                      }
+                      onChange={(e) =>
+                        setTestimonioTexto(
+                          e.target.value,
+                        )
+                      }
+                      placeholder="Contá qué dijo el cliente sobre el negocio."
+                    />
+                  </div>
+
+                  <div className="md:col-span-2 flex justify-end">
+                    <Button
+                      type="button"
+                      onClick={
+                        agregarTestimonio
+                      }
+                      disabled={
+                        paginaTestimonios.length >= 6
+                      }
+                    >
+                      Agregar testimonio
+                    </Button>
+                  </div>
+                </div>
+
+                {paginaTestimonios.length >
+                0 ? (
+                  <div className="grid gap-3">
+                    {paginaTestimonios.map(
+                      (
+                        testimonio,
+                        index,
+                      ) => (
+                        <div
+                          key={`${testimonio.nombre}-${index}`}
+                          className="flex items-start justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
+                        >
+                          <div className="min-w-0">
+                            <p className="font-medium text-slate-950 dark:text-white">
+                              {
+                                testimonio.nombre
+                              }
+                            </p>
+
+                            {testimonio.cargo && (
+                              <p className="mt-0.5 text-xs text-slate-500 dark:text-zinc-500">
+                                {
+                                  testimonio.cargo
+                                }
+                              </p>
+                            )}
+
+                            <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600 dark:text-zinc-400">
+                              {
+                                testimonio.texto
+                              }
+                            </p>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              quitarTestimonio(
+                                index,
+                              )
+                            }
+                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-red-200 text-red-600 transition hover:bg-red-50 dark:border-red-500/20 dark:text-red-400 dark:hover:bg-red-500/10"
+                            aria-label="Eliminar testimonio"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ),
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-500 dark:text-zinc-500">
+                    Todavía no agregaste testimonios.
+                  </p>
+                )}
+              </div>
+
+              <div className="md:col-span-2 space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-zinc-800 dark:bg-zinc-950/50">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-950 dark:text-white">
+                      Preguntas frecuentes
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
+                      Mostrá respuestas rápidas a las dudas más comunes del negocio.
+                    </p>
+                  </div>
+
+                  <Badge variant="info">
+                    {paginaPreguntasFrecuentes.length}/8
+                  </Badge>
+                </div>
+
+                <div className="grid gap-3">
+                  <Input
+                    id="preguntaFrecuentePregunta"
+                    label="Pregunta"
+                    value={
+                      preguntaFrecuentePregunta
+                    }
+                    onChange={(e) =>
+                      setPreguntaFrecuentePregunta(
+                        e.target.value,
+                      )
+                    }
+                    placeholder="Ejemplo: ¿Trabajan con turno previo?"
+                  />
+
+                  <TextArea
+                    id="preguntaFrecuenteRespuesta"
+                    label="Respuesta"
+                    value={
+                      preguntaFrecuenteRespuesta
+                    }
+                    onChange={(e) =>
+                      setPreguntaFrecuenteRespuesta(
+                        e.target.value,
+                      )
+                    }
+                    placeholder="Ejemplo: Sí, podés reservar desde esta misma página."
+                  />
+
+                  <div className="flex justify-end">
+                    <Button
+                      type="button"
+                      onClick={
+                        agregarPreguntaFrecuente
+                      }
+                      disabled={
+                        paginaPreguntasFrecuentes.length >= 8
+                      }
+                    >
+                      Agregar pregunta
+                    </Button>
+                  </div>
+                </div>
+
+                {paginaPreguntasFrecuentes.length >
+                0 ? (
+                  <div className="grid gap-3">
+                    {paginaPreguntasFrecuentes.map(
+                      (
+                        item,
+                        index,
+                      ) => (
+                        <div
+                          key={`${item.pregunta}-${index}`}
+                          className="flex items-start justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
+                        >
+                          <div className="min-w-0">
+                            <p className="font-medium text-slate-950 dark:text-white">
+                              {item.pregunta}
+                            </p>
+
+                            <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600 dark:text-zinc-400">
+                              {item.respuesta}
+                            </p>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              quitarPreguntaFrecuente(
+                                index,
+                              )
+                            }
+                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-red-200 text-red-600 transition hover:bg-red-50 dark:border-red-500/20 dark:text-red-400 dark:hover:bg-red-500/10"
+                            aria-label="Eliminar pregunta frecuente"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ),
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-500 dark:text-zinc-500">
+                    Todavía no agregaste preguntas frecuentes.
+                  </p>
+                )}
               </div>
             </div>
 

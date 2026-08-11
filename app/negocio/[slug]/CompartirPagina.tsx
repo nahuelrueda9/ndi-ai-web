@@ -15,11 +15,15 @@ import {
 
 type Props = {
   nombre: string;
+  tema?: "oscuro" | "claro";
 };
 
 export default function CompartirPagina({
   nombre,
+  tema = "oscuro",
 }: Props) {
+  const esClaro = tema === "claro";
+
   const [url, setUrl] =
     useState("");
   const [abierto, setAbierto] =
@@ -87,13 +91,17 @@ export default function CompartirPagina({
     await copiarEnlace();
   }
 
+  const botonHero = esClaro
+    ? "border-slate-300 bg-white/90 text-slate-900 hover:bg-white"
+    : "border-white/15 bg-white/10 text-white hover:bg-white/15";
+
   return (
     <>
       <div className="flex flex-wrap gap-3">
         <button
           type="button"
           onClick={compartir}
-          className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15"
+          className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold shadow-sm backdrop-blur transition ${botonHero}`}
         >
           <Share2 className="h-4 w-4" />
           Compartir
@@ -104,7 +112,7 @@ export default function CompartirPagina({
           onClick={() =>
             setAbierto(true)
           }
-          className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15"
+          className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold shadow-sm backdrop-blur transition ${botonHero}`}
         >
           <QrCode className="h-4 w-4" />
           Ver QR
@@ -119,22 +127,44 @@ export default function CompartirPagina({
           }
         >
           <div
-            className="w-full max-w-sm rounded-3xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl"
+            className={`w-full max-w-sm rounded-3xl border p-6 shadow-2xl ${
+              esClaro
+                ? "border-slate-200 bg-white"
+                : "border-zinc-800 bg-zinc-950"
+            }`}
             onClick={(event) =>
               event.stopPropagation()
             }
           >
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                <p
+                  className={`text-xs font-semibold uppercase tracking-[0.18em] ${
+                    esClaro
+                      ? "text-slate-400"
+                      : "text-zinc-500"
+                  }`}
+                >
                   Compartir negocio
                 </p>
 
-                <h3 className="mt-1 text-xl font-bold text-white">
+                <h3
+                  className={`mt-1 text-xl font-bold ${
+                    esClaro
+                      ? "text-slate-950"
+                      : "text-white"
+                  }`}
+                >
                   Código QR
                 </h3>
 
-                <p className="mt-1 text-sm text-zinc-400">
+                <p
+                  className={`mt-1 text-sm ${
+                    esClaro
+                      ? "text-slate-600"
+                      : "text-zinc-400"
+                  }`}
+                >
                   Escanealo para abrir la
                   página de {nombre}.
                 </p>
@@ -146,13 +176,17 @@ export default function CompartirPagina({
                   setAbierto(false)
                 }
                 aria-label="Cerrar"
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-400 transition hover:text-white"
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition ${
+                  esClaro
+                    ? "border-slate-200 bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-950"
+                    : "border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-white"
+                }`}
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            <div className="rounded-2xl bg-white p-4">
+            <div className="rounded-2xl border border-slate-200 bg-white p-4">
               {qrUrl ? (
                 <img
                   src={qrUrl}
@@ -164,8 +198,20 @@ export default function CompartirPagina({
               )}
             </div>
 
-            <div className="mt-5 rounded-xl border border-zinc-800 bg-zinc-900 p-3">
-              <p className="truncate text-xs text-zinc-400">
+            <div
+              className={`mt-5 rounded-xl border p-3 ${
+                esClaro
+                  ? "border-slate-200 bg-slate-50"
+                  : "border-zinc-800 bg-zinc-900"
+              }`}
+            >
+              <p
+                className={`truncate text-xs ${
+                  esClaro
+                    ? "text-slate-500"
+                    : "text-zinc-400"
+                }`}
+              >
                 {url || "Cargando enlace..."}
               </p>
             </div>
@@ -174,7 +220,11 @@ export default function CompartirPagina({
               type="button"
               onClick={copiarEnlace}
               disabled={!url}
-              className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-bold text-zinc-950 transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+              className={`mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-50 ${
+                esClaro
+                  ? "bg-slate-950 text-white hover:bg-slate-800"
+                  : "bg-white text-zinc-950 hover:bg-zinc-200"
+              }`}
             >
               {copiado ? (
                 <>

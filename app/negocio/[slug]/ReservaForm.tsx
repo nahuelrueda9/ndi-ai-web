@@ -23,6 +23,7 @@ type Props = {
   slug: string;
   servicios: Servicio[];
   colorPrincipal: string;
+  tema?: "oscuro" | "claro";
 };
 
 type DisponibilidadResponse = {
@@ -39,7 +40,9 @@ export default function ReservaForm({
   slug,
   servicios,
   colorPrincipal,
+  tema = "oscuro",
 }: Props) {
+  const esClaro = tema === "claro";
   const [servicioId, setServicioId] =
     useState(servicios[0]?.id || "");
 
@@ -92,6 +95,66 @@ export default function ReservaForm({
     refrescarDisponibilidad,
     setRefrescarDisponibilidad,
   ] = useState(0);
+
+  useEffect(() => {
+    function seleccionarServicioDesdeHash() {
+      const hash =
+        window.location.hash || "";
+
+      const prefijo =
+        "#reservar-servicio-";
+
+      if (!hash.startsWith(prefijo)) {
+        return;
+      }
+
+      const servicioDesdeHash =
+        decodeURIComponent(
+          hash.slice(prefijo.length),
+        );
+
+      const existe =
+        servicios.some(
+          (servicio) =>
+            servicio.id ===
+            servicioDesdeHash,
+        );
+
+      if (!existe) {
+        return;
+      }
+
+      setServicioId(
+        servicioDesdeHash,
+      );
+      setHora("");
+      setExito("");
+      setError("");
+
+      requestAnimationFrame(() => {
+        document
+          .getElementById("reservar")
+          ?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+      });
+    }
+
+    seleccionarServicioDesdeHash();
+
+    window.addEventListener(
+      "hashchange",
+      seleccionarServicioDesdeHash,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "hashchange",
+        seleccionarServicioDesdeHash,
+      );
+    };
+  }, [servicios]);
 
   useEffect(() => {
     setHora("");
@@ -198,6 +261,34 @@ export default function ReservaForm({
     servicioId,
     fecha,
     refrescarDisponibilidad,
+  ]);
+
+  useEffect(() => {
+    if (servicios.length === 0) {
+      if (servicioId) {
+        setServicioId("");
+      }
+
+      return;
+    }
+
+    const sigueDisponible =
+      servicios.some(
+        (servicio) =>
+          servicio.id ===
+          servicioId,
+      );
+
+    if (!sigueDisponible) {
+      setServicioId(
+        servicios[0].id,
+      );
+      setHora("");
+      setHorarios([]);
+    }
+  }, [
+    servicios,
+    servicioId,
   ]);
 
   async function reservar(
@@ -345,7 +436,13 @@ export default function ReservaForm({
   }
 
   return (
-    <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6 sm:p-8">
+    <div
+      className={`rounded-3xl border p-6 sm:p-8 ${
+        esClaro
+          ? "border-slate-200 bg-white shadow-sm"
+          : "border-zinc-800 bg-zinc-900"
+      }`}
+    >
       <div className="flex items-start gap-4">
         <div
           className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
@@ -372,7 +469,13 @@ export default function ReservaForm({
             Pedí tu turno
           </h2>
 
-          <p className="mt-2 text-sm leading-6 text-zinc-400">
+          <p
+            className={`mt-2 text-sm leading-6 ${
+              esClaro
+                ? "text-slate-600"
+                : "text-zinc-400"
+            }`}
+          >
             Elegí un servicio, una fecha y uno de los
             horarios disponibles.
           </p>
@@ -385,7 +488,13 @@ export default function ReservaForm({
       >
         {/* SERVICIO */}
         <div className="sm:col-span-2">
-          <label className="mb-2 block text-sm font-medium text-zinc-300">
+          <label
+            className={`mb-2 block text-sm font-medium ${
+              esClaro
+                ? "text-slate-700"
+                : "text-zinc-300"
+            }`}
+          >
             Servicio
           </label>
 
@@ -400,7 +509,11 @@ export default function ReservaForm({
               setError("");
             }}
             required
-            className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-white outline-none transition focus:border-blue-500"
+            className={`w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:border-blue-500 ${
+              esClaro
+                ? "border-slate-300 bg-white text-slate-950"
+                : "border-zinc-700 bg-zinc-950 text-white"
+            }`}
           >
             {servicios.map(
               (servicio) => (
@@ -430,6 +543,7 @@ export default function ReservaForm({
           onChange={setNombreCliente}
           placeholder="Tu nombre"
           required
+          claro={esClaro}
         />
 
         <Campo
@@ -438,6 +552,7 @@ export default function ReservaForm({
           onChange={setTelefono}
           placeholder="+54 9..."
           type="tel"
+          claro={esClaro}
         />
 
         <Campo
@@ -446,11 +561,18 @@ export default function ReservaForm({
           onChange={setEmail}
           placeholder="correo@ejemplo.com"
           type="email"
+          claro={esClaro}
         />
 
         {/* FECHA */}
         <div>
-          <label className="mb-2 block text-sm font-medium text-zinc-300">
+          <label
+            className={`mb-2 block text-sm font-medium ${
+              esClaro
+                ? "text-slate-700"
+                : "text-zinc-300"
+            }`}
+          >
             Fecha
           </label>
 
@@ -467,27 +589,55 @@ export default function ReservaForm({
               setError("");
             }}
             required
-            className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-white outline-none transition focus:border-blue-500"
+            className={`w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:border-blue-500 ${
+              esClaro
+                ? "border-slate-300 bg-white text-slate-950"
+                : "border-zinc-700 bg-zinc-950 text-white"
+            }`}
           />
         </div>
 
         {/* HORARIOS */}
         <div className="sm:col-span-2">
           <div className="mb-3 flex items-center gap-2">
-            <Clock3 className="h-4 w-4 text-zinc-500" />
+            <Clock3
+              className={`h-4 w-4 ${
+                esClaro
+                  ? "text-slate-400"
+                  : "text-zinc-500"
+              }`}
+            />
 
-            <label className="text-sm font-medium text-zinc-300">
+            <label
+              className={`text-sm font-medium ${
+                esClaro
+                  ? "text-slate-700"
+                  : "text-zinc-300"
+              }`}
+            >
               Horarios disponibles
             </label>
           </div>
 
           {!fecha ? (
-            <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-5 text-sm text-zinc-500">
+            <div
+              className={`rounded-xl border p-5 text-sm ${
+                esClaro
+                  ? "border-slate-200 bg-slate-50 text-slate-500"
+                  : "border-zinc-800 bg-zinc-950 text-zinc-500"
+              }`}
+            >
               Seleccioná una fecha para ver los
               horarios disponibles.
             </div>
           ) : cargandoHorarios ? (
-            <div className="flex items-center justify-center gap-3 rounded-xl border border-zinc-800 bg-zinc-950 p-6 text-sm text-zinc-400">
+            <div
+              className={`flex items-center justify-center gap-3 rounded-xl border p-6 text-sm ${
+                esClaro
+                  ? "border-slate-200 bg-slate-50 text-slate-600"
+                  : "border-zinc-800 bg-zinc-950 text-zinc-400"
+              }`}
+            >
               <Loader2 className="h-5 w-5 animate-spin" />
               Consultando horarios...
             </div>
@@ -523,7 +673,9 @@ export default function ReservaForm({
                         "rounded-xl border px-3 py-3 text-sm font-semibold transition",
                         seleccionado
                           ? "text-white"
-                          : "border-zinc-700 bg-zinc-950 text-zinc-300 hover:border-zinc-500 hover:bg-zinc-800",
+                          : esClaro
+                            ? "border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50"
+                            : "border-zinc-700 bg-zinc-950 text-zinc-300 hover:border-zinc-500 hover:bg-zinc-800",
                       ].join(" ")}
                     >
                       {horario}
@@ -538,7 +690,9 @@ export default function ReservaForm({
                 "rounded-xl border p-5 text-sm",
                 configuracionPendiente
                   ? "border-amber-500/20 bg-amber-500/10 text-amber-300"
-                  : "border-zinc-800 bg-zinc-950 text-zinc-400",
+                  : esClaro
+                    ? "border-slate-200 bg-slate-50 text-slate-600"
+                    : "border-zinc-800 bg-zinc-950 text-zinc-400",
               ].join(" ")}
             >
               {mensajeDisponibilidad ||
@@ -562,7 +716,13 @@ export default function ReservaForm({
 
         {/* NOTAS */}
         <div className="sm:col-span-2">
-          <label className="mb-2 block text-sm font-medium text-zinc-300">
+          <label
+            className={`mb-2 block text-sm font-medium ${
+              esClaro
+                ? "text-slate-700"
+                : "text-zinc-300"
+            }`}
+          >
             Nota opcional
           </label>
 
@@ -576,7 +736,11 @@ export default function ReservaForm({
               )
             }
             placeholder="Algo que quieras aclarar..."
-            className="w-full resize-none rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-600 focus:border-blue-500"
+            className={`w-full resize-none rounded-xl border px-4 py-3 text-sm outline-none focus:border-blue-500 ${
+              esClaro
+                ? "border-slate-300 bg-white text-slate-950 placeholder:text-slate-400"
+                : "border-zinc-700 bg-zinc-950 text-white placeholder:text-zinc-600"
+            }`}
           />
         </div>
 
@@ -630,7 +794,13 @@ export default function ReservaForm({
               : "Seleccioná un horario"}
         </button>
 
-        <p className="text-center text-xs text-zinc-600 sm:col-span-2">
+        <p
+          className={`text-center text-xs sm:col-span-2 ${
+            esClaro
+              ? "text-slate-500"
+              : "text-zinc-600"
+          }`}
+        >
           Ingresá al menos un teléfono o correo para que el
           negocio pueda contactarte.
         </p>
@@ -646,6 +816,7 @@ function Campo({
   placeholder,
   type = "text",
   required = false,
+  claro = false,
 }: {
   label: string;
   value: string;
@@ -655,10 +826,17 @@ function Campo({
   placeholder: string;
   type?: string;
   required?: boolean;
+  claro?: boolean;
 }) {
   return (
     <div>
-      <label className="mb-2 block text-sm font-medium text-zinc-300">
+      <label
+        className={`mb-2 block text-sm font-medium ${
+          claro
+            ? "text-slate-700"
+            : "text-zinc-300"
+        }`}
+      >
         {label}
       </label>
 
@@ -672,7 +850,11 @@ function Campo({
         }
         placeholder={placeholder}
         required={required}
-        className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-600 focus:border-blue-500"
+        className={`w-full rounded-xl border px-4 py-3 text-sm outline-none focus:border-blue-500 ${
+          claro
+            ? "border-slate-300 bg-white text-slate-950 placeholder:text-slate-400"
+            : "border-zinc-700 bg-zinc-950 text-white placeholder:text-zinc-600"
+        }`}
       />
     </div>
   );

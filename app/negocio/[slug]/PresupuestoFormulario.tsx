@@ -6,7 +6,7 @@ import {
   Loader2,
 } from "lucide-react";
 import {
-  FormEvent,
+  type FormEvent,
   useState,
 } from "react";
 
@@ -19,6 +19,7 @@ type ItemPresupuesto = {
 type Props = {
   slug: string;
   items: ItemPresupuesto[];
+  tema?: "oscuro" | "claro";
 };
 
 const VISITOR_KEY =
@@ -90,7 +91,10 @@ async function registrarLeadSubmit(
 export default function PresupuestoFormulario({
   slug,
   items,
+  tema = "oscuro",
 }: Props) {
+  const esClaro = tema === "claro";
+
   const [nombre, setNombre] =
     useState("");
   const [email, setEmail] =
@@ -113,6 +117,18 @@ export default function PresupuestoFormulario({
       (item) =>
         item.id === itemId,
     );
+
+  const campoClass = [
+    "w-full rounded-xl border px-4 py-3 text-sm outline-none transition",
+    esClaro
+      ? "border-slate-300 bg-white text-slate-950 placeholder:text-slate-400 focus:border-slate-500"
+      : "border-zinc-700 bg-zinc-950 text-white placeholder:text-zinc-600 focus:border-zinc-500",
+  ].join(" ");
+
+  const labelClass =
+    esClaro
+      ? "text-slate-700"
+      : "text-zinc-300";
 
   async function enviar(
     event: FormEvent<HTMLFormElement>,
@@ -167,6 +183,7 @@ export default function PresupuestoFormulario({
               telefono:
                 telefono.trim(),
               mensaje,
+              tipo: "presupuesto",
               website: "",
             }),
           },
@@ -207,14 +224,38 @@ export default function PresupuestoFormulario({
 
   if (enviado) {
     return (
-      <div className="rounded-3xl border border-emerald-500/20 bg-emerald-500/10 p-6 sm:p-8">
-        <CheckCircle2 className="h-10 w-10 text-emerald-400" />
+      <div
+        className={`rounded-3xl border p-6 sm:p-8 ${
+          esClaro
+            ? "border-emerald-200 bg-emerald-50"
+            : "border-emerald-500/20 bg-emerald-500/10"
+        }`}
+      >
+        <CheckCircle2
+          className={`h-10 w-10 ${
+            esClaro
+              ? "text-emerald-700"
+              : "text-emerald-400"
+          }`}
+        />
 
-        <h3 className="mt-4 text-xl font-bold text-white">
+        <h3
+          className={`mt-4 text-xl font-bold ${
+            esClaro
+              ? "text-slate-950"
+              : "text-white"
+          }`}
+        >
           Solicitud enviada
         </h3>
 
-        <p className="mt-2 text-sm leading-6 text-zinc-300">
+        <p
+          className={`mt-2 text-sm leading-6 ${
+            esClaro
+              ? "text-slate-600"
+              : "text-zinc-300"
+          }`}
+        >
           El negocio recibió tu
           consulta y podrá
           contactarte para enviarte
@@ -226,7 +267,11 @@ export default function PresupuestoFormulario({
           onClick={() =>
             setEnviado(false)
           }
-          className="mt-5 rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-zinc-800"
+          className={`mt-5 rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${
+            esClaro
+              ? "border-slate-300 bg-white text-slate-800 hover:bg-slate-100"
+              : "border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800"
+          }`}
         >
           Enviar otra solicitud
         </button>
@@ -237,23 +282,51 @@ export default function PresupuestoFormulario({
   return (
     <form
       onSubmit={enviar}
-      className="rounded-3xl border border-zinc-800 bg-zinc-900/70 p-6 sm:p-8"
+      className={`rounded-3xl border p-6 sm:p-8 ${
+        esClaro
+          ? "border-slate-200 bg-white shadow-sm"
+          : "border-zinc-800 bg-zinc-900/70"
+      }`}
     >
       <div className="flex items-start gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-zinc-800 text-white">
+        <div
+          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${
+            esClaro
+              ? "bg-slate-100 text-slate-900"
+              : "bg-zinc-800 text-white"
+          }`}
+        >
           <FileText className="h-5 w-5" />
         </div>
 
         <div>
-          <p className="text-sm font-medium text-zinc-400">
+          <p
+            className={`text-sm font-medium ${
+              esClaro
+                ? "text-slate-500"
+                : "text-zinc-400"
+            }`}
+          >
             Presupuesto
           </p>
 
-          <h2 className="mt-1 text-2xl font-bold text-white">
+          <h2
+            className={`mt-1 text-2xl font-bold ${
+              esClaro
+                ? "text-slate-950"
+                : "text-white"
+            }`}
+          >
             Pedí una cotización
           </h2>
 
-          <p className="mt-1 text-sm leading-6 text-zinc-400">
+          <p
+            className={`mt-1 text-sm leading-6 ${
+              esClaro
+                ? "text-slate-600"
+                : "text-zinc-400"
+            }`}
+          >
             Dejanos tus datos y
             contanos qué necesitás.
           </p>
@@ -262,7 +335,7 @@ export default function PresupuestoFormulario({
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         <label className="block">
-          <span className="mb-2 block text-sm font-medium text-zinc-300">
+          <span className={`mb-2 block text-sm font-medium ${labelClass}`}>
             Nombre *
           </span>
 
@@ -274,13 +347,13 @@ export default function PresupuestoFormulario({
               )
             }
             maxLength={100}
-            className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-zinc-500"
+            className={campoClass}
             placeholder="Tu nombre"
           />
         </label>
 
         <label className="block">
-          <span className="mb-2 block text-sm font-medium text-zinc-300">
+          <span className={`mb-2 block text-sm font-medium ${labelClass}`}>
             Teléfono
           </span>
 
@@ -292,13 +365,13 @@ export default function PresupuestoFormulario({
               )
             }
             maxLength={40}
-            className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-zinc-500"
+            className={campoClass}
             placeholder="+54..."
           />
         </label>
 
         <label className="block sm:col-span-2">
-          <span className="mb-2 block text-sm font-medium text-zinc-300">
+          <span className={`mb-2 block text-sm font-medium ${labelClass}`}>
             Email
           </span>
 
@@ -311,14 +384,14 @@ export default function PresupuestoFormulario({
               )
             }
             maxLength={160}
-            className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-zinc-500"
+            className={campoClass}
             placeholder="tu@email.com"
           />
         </label>
 
         {items.length > 0 && (
           <label className="block sm:col-span-2">
-            <span className="mb-2 block text-sm font-medium text-zinc-300">
+            <span className={`mb-2 block text-sm font-medium ${labelClass}`}>
               Producto o servicio
             </span>
 
@@ -329,7 +402,7 @@ export default function PresupuestoFormulario({
                   event.target.value,
                 )
               }
-              className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-white outline-none transition focus:border-zinc-500"
+              className={campoClass}
             >
               <option value="">
                 Consulta general
@@ -350,7 +423,7 @@ export default function PresupuestoFormulario({
         )}
 
         <label className="block sm:col-span-2">
-          <span className="mb-2 block text-sm font-medium text-zinc-300">
+          <span className={`mb-2 block text-sm font-medium ${labelClass}`}>
             ¿Qué necesitás? *
           </span>
 
@@ -363,14 +436,20 @@ export default function PresupuestoFormulario({
             }
             rows={5}
             maxLength={1500}
-            className="w-full resize-none rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-zinc-500"
+            className={`${campoClass} resize-none`}
             placeholder="Ej: necesito 20 unidades, quiero consultar por un servicio personalizado, medidas, fechas, etc."
           />
         </label>
       </div>
 
       {error && (
-        <p className="mt-4 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+        <p
+          className={`mt-4 rounded-xl border px-4 py-3 text-sm ${
+            esClaro
+              ? "border-red-200 bg-red-50 text-red-700"
+              : "border-red-500/20 bg-red-500/10 text-red-300"
+          }`}
+        >
           {error}
         </p>
       )}
@@ -378,7 +457,11 @@ export default function PresupuestoFormulario({
       <button
         type="submit"
         disabled={enviando}
-        className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 font-bold text-zinc-950 transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-60"
+        className={`mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 font-bold transition disabled:cursor-not-allowed disabled:opacity-60 ${
+          esClaro
+            ? "bg-slate-950 text-white hover:bg-slate-800"
+            : "bg-white text-zinc-950 hover:bg-zinc-200"
+        }`}
       >
         {enviando ? (
           <>

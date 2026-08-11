@@ -8,6 +8,8 @@ import { adminDb } from "@/lib/firebaseAdmin";
 import { empresaTieneFuncion } from "@/lib/plans/planAccess";
 import { crearNotificacion } from "@/lib/notifications/notificationService";
 
+export const runtime = "nodejs";
+
 type ReservaBody = {
   slug?: string;
   servicioId?: string;
@@ -27,6 +29,23 @@ type CatalogoServicio = {
   activo?: boolean;
 };
 
+type ConfigDiaAgenda = {
+  activo?: boolean;
+  apertura?: string;
+  cierre?: string;
+  descansoInicio?: string;
+  descansoFin?: string;
+};
+
+type AgendaConfig = {
+  activa?: boolean;
+  intervaloMinutos?: number;
+  dias?: Record<
+    string,
+    ConfigDiaAgenda | undefined
+  >;
+};
+
 type EmpresaPublica = {
   nombre?: string;
   plan?: "free" | "pro" | "business";
@@ -35,22 +54,106 @@ type EmpresaPublica = {
     publicada?: boolean;
     slug?: string;
   };
+  agendaConfig?: AgendaConfig;
 };
 
-function fechaValida(valor: string) {
-  return /^\d{4}-\d{2}-\d{2}$/.test(valor);
+type TurnoExistente = {
+  hora?: string;
+  duracionMinutos?: number;
+  estado?: string;
+};
+
+const MAX_SLUG = 160;
+const MAX_ID = 180;
+const MAX_NOMBRE = 120;
+const MAX_EMAIL = 180;
+const MAX_TELEFONO = 60;
+const MAX_NOTAS = 1500;
+
+function limpiarTexto(
+  valor: unknown,
+  maximo: number,
+) {
+  return typeof valor === "string"
+    ? valor
+        .trim()
+        .replace(/\u0000/g, "")
+        .slice(0, maximo)
+    : "";
 }
 
-function horaValida(valor: string) {
-  return /^([01]\d|2[0-3]):[0-5]\d$/.test(valor);
+function fechaValida(
+  valor: string,
+) {
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(
+      valor,
+    )
+  ) {
+    return false;
+  }
+
+  const [
+    anioTexto,
+    mesTexto,
+    diaTexto,
+  ] = valor.split("-");
+
+  const anio = Number(anioTexto);
+  const mes = Number(mesTexto);
+  const dia = Number(diaTexto);
+
+  const fecha = new Date(
+    Date.UTC(
+      anio,
+      mes - 1,
+      dia,
+    ),
+  );
+
+  return (
+    fecha.getUTCFullYear() ===
+      anio &&
+    fecha.getUTCMonth() ===
+      mes - 1 &&
+    fecha.getUTCDate() === dia
+  );
 }
 
-function minutosDesdeHora(hora: string) {
-  const [horas, minutos] = hora
-    .split(":")
-    .map(Number);
+function horaValida(
+  valor: string,
+) {
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(
+    valor,
+  );
+}
+
+function minutosDesdeHora(
+  hora: string,
+) {
+  const [horas, minutos] =
+    hora.split(":").map(Number);
 
   return horas * 60 + minutos;
+}
+
+function horaDesdeMinutos(
+  minutosTotales: number,
+) {
+  const horas = Math.floor(
+    minutosTotales / 60,
+  );
+
+  const minutos =
+    minutosTotales % 60;
+
+  return `${String(horas).padStart(
+    2,
+    "0",
+  )}:${String(minutos).padStart(
+    2,
+    "0",
+  )}`;
 }
 
 function seSuperponen(
@@ -59,8 +162,11 @@ function seSuperponen(
   inicioB: number,
   duracionB: number,
 ) {
-  const finA = inicioA + duracionA;
-  const finB = inicioB + duracionB;
+  const finA =
+    inicioA + duracionA;
+
+  const finB =
+    inicioB + duracionB;
 
   return (
     inicioA < finB &&
@@ -68,36 +174,802 @@ function seSuperponen(
   );
 }
 
+function estadoBloqueaHorario(
+  estado?: string,
+) {
+  return (
+    estado !== "cancelado" &&
+    estado !== "no_asistio"
+  );
+}
+
+function obtenerDiaSemana(
+  fecha: string,
+) {
+  const [anio, mes, dia] =
+    fecha.split("-").map(Number);
+
+  return new Date(
+    Date.UTC(
+      anio,
+      mes - 1,
+      dia,
+    ),
+  ).getUTCDay();
+}
+
+function obtenerDuracionServicio(
+  servicio: CatalogoServicio,
+) {
+  return Math.min(
+    1440,
+    Math.max(
+      5,
+      Number(
+        servicio.duracionMinutos,
+      ) || 60,
+    ),
+  );
+}
+
+function obtenerIntervaloAgenda(
+  agenda?: AgendaConfig,
+) {
+  return Math.min(
+    240,
+    Math.max(
+      5,
+      Number(
+        agenda?.intervaloMinutos,
+      ) || 30,
+    ),
+  );
+}
+
+function horarioAgendaValido(
+  dia: ConfigDiaAgenda,
+) {
+  if (
+    !dia.apertura ||
+    !dia.cierre ||
+    !horaValida(dia.apertura) ||
+    !horaValida(dia.cierre)
+  ) {
+    return false;
+  }
+
+  const apertura =
+    minutosDesdeHora(
+      dia.apertura,
+    );
+
+  const cierre =
+    minutosDesdeHora(
+      dia.cierre,
+    );
+
+  if (apertura >= cierre) {
+    return false;
+  }
+
+  const tieneDescansoInicio =
+    Boolean(
+      dia.descansoInicio,
+    );
+
+  const tieneDescansoFin =
+    Boolean(
+      dia.descansoFin,
+    );
+
+  if (
+    tieneDescansoInicio !==
+    tieneDescansoFin
+  ) {
+    return false;
+  }
+
+  if (
+    tieneDescansoInicio &&
+    tieneDescansoFin
+  ) {
+    if (
+      !horaValida(
+        dia.descansoInicio!,
+      ) ||
+      !horaValida(
+        dia.descansoFin!,
+      )
+    ) {
+      return false;
+    }
+
+    const descansoInicio =
+      minutosDesdeHora(
+        dia.descansoInicio!,
+      );
+
+    const descansoFin =
+      minutosDesdeHora(
+        dia.descansoFin!,
+      );
+
+    if (
+      descansoInicio >=
+        descansoFin ||
+      descansoInicio <
+        apertura ||
+      descansoFin > cierre
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function horarioDentroDeAgenda({
+  hora,
+  duracionMinutos,
+  dia,
+  intervaloMinutos,
+}: {
+  hora: string;
+  duracionMinutos: number;
+  dia: ConfigDiaAgenda;
+  intervaloMinutos: number;
+}) {
+  if (
+    !horarioAgendaValido(dia)
+  ) {
+    return false;
+  }
+
+  const apertura =
+    minutosDesdeHora(
+      dia.apertura!,
+    );
+
+  const cierre =
+    minutosDesdeHora(
+      dia.cierre!,
+    );
+
+  const inicio =
+    minutosDesdeHora(hora);
+
+  const fin =
+    inicio + duracionMinutos;
+
+  if (
+    inicio < apertura ||
+    fin > cierre
+  ) {
+    return false;
+  }
+
+  if (
+    (inicio - apertura) %
+      intervaloMinutos !==
+    0
+  ) {
+    return false;
+  }
+
+  if (
+    dia.descansoInicio &&
+    dia.descansoFin
+  ) {
+    const descansoInicio =
+      minutosDesdeHora(
+        dia.descansoInicio,
+      );
+
+    const descansoFin =
+      minutosDesdeHora(
+        dia.descansoFin,
+      );
+
+    if (
+      inicio < descansoFin &&
+      descansoInicio < fin
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function horarioOcupado(
+  hora: string,
+  duracionMinutos: number,
+  turnos: TurnoExistente[],
+) {
+  const inicio =
+    minutosDesdeHora(hora);
+
+  return turnos.some(
+    (turno) => {
+      if (
+        !turno.hora ||
+        !horaValida(
+          turno.hora,
+        ) ||
+        !estadoBloqueaHorario(
+          turno.estado,
+        )
+      ) {
+        return false;
+      }
+
+      const inicioExistente =
+        minutosDesdeHora(
+          turno.hora,
+        );
+
+      const duracionExistente =
+        Math.min(
+          1440,
+          Math.max(
+            5,
+            Number(
+              turno.duracionMinutos,
+            ) || 60,
+          ),
+        );
+
+      return seSuperponen(
+        inicio,
+        duracionMinutos,
+        inicioExistente,
+        duracionExistente,
+      );
+    },
+  );
+}
+
+function generarHorarios({
+  dia,
+  intervaloMinutos,
+  duracionMinutos,
+  turnos,
+}: {
+  dia: ConfigDiaAgenda;
+  intervaloMinutos: number;
+  duracionMinutos: number;
+  turnos: TurnoExistente[];
+}) {
+  if (
+    !horarioAgendaValido(dia)
+  ) {
+    return [];
+  }
+
+  const apertura =
+    minutosDesdeHora(
+      dia.apertura!,
+    );
+
+  const cierre =
+    minutosDesdeHora(
+      dia.cierre!,
+    );
+
+  const horarios: string[] = [];
+
+  for (
+    let inicio = apertura;
+    inicio + duracionMinutos <=
+      cierre;
+    inicio += intervaloMinutos
+  ) {
+    const hora =
+      horaDesdeMinutos(inicio);
+
+    if (
+      !horarioDentroDeAgenda({
+        hora,
+        duracionMinutos,
+        dia,
+        intervaloMinutos,
+      })
+    ) {
+      continue;
+    }
+
+    if (
+      horarioOcupado(
+        hora,
+        duracionMinutos,
+        turnos,
+      )
+    ) {
+      continue;
+    }
+
+    horarios.push(hora);
+  }
+
+  return horarios;
+}
+
+async function resolverEmpresaPublica(
+  slug: string,
+) {
+  const empresasSnapshot =
+    await adminDb
+      .collection("companies")
+      .where(
+        "paginaPublica.slug",
+        "==",
+        slug,
+      )
+      .limit(2)
+      .get();
+
+  if (
+    empresasSnapshot.size !== 1
+  ) {
+    return {
+      error: NextResponse.json(
+        {
+          error:
+            empresasSnapshot.empty
+              ? "El negocio no existe."
+              : "La URL pública no es válida.",
+        },
+        {
+          status:
+            empresasSnapshot.empty
+              ? 404
+              : 409,
+        },
+      ),
+    };
+  }
+
+  const empresaDoc =
+    empresasSnapshot.docs[0];
+
+  const empresa =
+    empresaDoc.data() as EmpresaPublica;
+
+  if (
+    empresa.paginaPublica
+      ?.publicada !== true
+  ) {
+    return {
+      error: NextResponse.json(
+        {
+          error:
+            "La página del negocio no está publicada.",
+        },
+        {
+          status: 404,
+        },
+      ),
+    };
+  }
+
+  if (
+    !empresaTieneFuncion(
+      empresa,
+      "turnos",
+    )
+  ) {
+    return {
+      error: NextResponse.json(
+        {
+          error:
+            "Las reservas online requieren un plan Pro o Empresa.",
+          upgradeRequired: true,
+        },
+        {
+          status: 403,
+        },
+      ),
+    };
+  }
+
+  return {
+    empresaDoc,
+    empresa,
+  };
+}
+
+async function obtenerServicio(
+  empresaId: string,
+  servicioId: string,
+) {
+  const servicioDoc =
+    await adminDb
+      .collection("companies")
+      .doc(empresaId)
+      .collection("catalog")
+      .doc(servicioId)
+      .get();
+
+  if (!servicioDoc.exists) {
+    return {
+      error: NextResponse.json(
+        {
+          error:
+            "El servicio no existe.",
+        },
+        {
+          status: 404,
+        },
+      ),
+    };
+  }
+
+  const servicio =
+    servicioDoc.data() as CatalogoServicio;
+
+  if (
+    servicio.tipo !==
+      "servicio" ||
+    servicio.activo === false ||
+    !servicio.nombre
+  ) {
+    return {
+      error: NextResponse.json(
+        {
+          error:
+            "El servicio no está disponible para reservar.",
+        },
+        {
+          status: 400,
+        },
+      ),
+    };
+  }
+
+  return {
+    servicioDoc,
+    servicio,
+  };
+}
+
+function obtenerConfiguracionDia(
+  empresa: EmpresaPublica,
+  fecha: string,
+) {
+  const agenda =
+    empresa.agendaConfig;
+
+  if (
+    agenda?.activa !== true
+  ) {
+    return {
+      error: NextResponse.json(
+        {
+          disponible: false,
+          configuracionPendiente:
+            true,
+          horarios: [],
+          mensaje:
+            "El negocio todavía no habilitó las reservas online.",
+        },
+        {
+          status: 200,
+        },
+      ),
+    };
+  }
+
+  const diaSemana =
+    String(
+      obtenerDiaSemana(fecha),
+    );
+
+  const dia =
+    agenda.dias?.[diaSemana];
+
+  if (
+    !dia ||
+    dia.activo !== true
+  ) {
+    return {
+      error: NextResponse.json(
+        {
+          disponible: false,
+          configuracionPendiente:
+            false,
+          horarios: [],
+          mensaje:
+            "El negocio no recibe reservas online ese día.",
+        },
+        {
+          status: 200,
+        },
+      ),
+    };
+  }
+
+  if (
+    !horarioAgendaValido(dia)
+  ) {
+    return {
+      error: NextResponse.json(
+        {
+          disponible: false,
+          configuracionPendiente:
+            true,
+          horarios: [],
+          mensaje:
+            "El negocio debe revisar la configuración de horarios de ese día.",
+        },
+        {
+          status: 200,
+        },
+      ),
+    };
+  }
+
+  return {
+    dia,
+    intervaloMinutos:
+      obtenerIntervaloAgenda(
+        agenda,
+      ),
+  };
+}
+
+export async function GET(
+  request: NextRequest,
+) {
+  try {
+    const slug =
+      limpiarTexto(
+        request.nextUrl.searchParams.get(
+          "slug",
+        ),
+        MAX_SLUG,
+      ).toLowerCase();
+
+    const servicioId =
+      limpiarTexto(
+        request.nextUrl.searchParams.get(
+          "servicioId",
+        ),
+        MAX_ID,
+      );
+
+    const fecha =
+      limpiarTexto(
+        request.nextUrl.searchParams.get(
+          "fecha",
+        ),
+        10,
+      );
+
+    if (!slug) {
+      return NextResponse.json(
+        {
+          error:
+            "Falta la página del negocio.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    if (!servicioId) {
+      return NextResponse.json(
+        {
+          error:
+            "Seleccioná un servicio.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    if (!fechaValida(fecha)) {
+      return NextResponse.json(
+        {
+          error:
+            "La fecha no es válida.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    const empresaResultado =
+      await resolverEmpresaPublica(
+        slug,
+      );
+
+    if (
+      "error" in
+      empresaResultado
+    ) {
+      return empresaResultado.error;
+    }
+
+    const {
+      empresaDoc,
+      empresa,
+    } = empresaResultado;
+
+    const servicioResultado =
+      await obtenerServicio(
+        empresaDoc.id,
+        servicioId,
+      );
+
+    if (
+      "error" in
+      servicioResultado
+    ) {
+      return servicioResultado.error;
+    }
+
+    const {
+      servicio,
+    } = servicioResultado;
+
+    const configuracion =
+      obtenerConfiguracionDia(
+        empresa,
+        fecha,
+      );
+
+    if (
+      "error" in configuracion
+    ) {
+      return configuracion.error;
+    }
+
+    const {
+      dia,
+      intervaloMinutos,
+    } = configuracion;
+
+    const duracionMinutos =
+      obtenerDuracionServicio(
+        servicio,
+      );
+
+    const turnosSnapshot =
+      await adminDb
+        .collection("companies")
+        .doc(empresaDoc.id)
+        .collection(
+          "appointments",
+        )
+        .where(
+          "fecha",
+          "==",
+          fecha,
+        )
+        .get();
+
+    const turnos =
+      turnosSnapshot.docs.map(
+        (turnoDoc) =>
+          turnoDoc.data() as TurnoExistente,
+      );
+
+    const horarios =
+      generarHorarios({
+        dia,
+        intervaloMinutos,
+        duracionMinutos,
+        turnos,
+      });
+
+    return NextResponse.json(
+      {
+        disponible:
+          horarios.length > 0,
+        configuracionPendiente:
+          false,
+        horarios,
+        duracionMinutos,
+        servicio:
+          servicio.nombre,
+        mensaje:
+          horarios.length === 0
+            ? "No quedan horarios disponibles para este día."
+            : "",
+      },
+      {
+        status: 200,
+      },
+    );
+  } catch (error) {
+    console.error(
+      "Error consultando disponibilidad pública:",
+      error,
+    );
+
+    return NextResponse.json(
+      {
+        error:
+          "No se pudo consultar la disponibilidad.",
+      },
+      {
+        status: 500,
+      },
+    );
+  }
+}
+
 export async function POST(
   request: NextRequest,
 ) {
   try {
-    const body =
-      (await request.json()) as ReservaBody;
+    let body: ReservaBody;
+
+    try {
+      body =
+        (await request.json()) as ReservaBody;
+    } catch {
+      return NextResponse.json(
+        {
+          error:
+            "La solicitud no es válida.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
 
     const slug =
-      body.slug?.trim() || "";
+      limpiarTexto(
+        body.slug,
+        MAX_SLUG,
+      ).toLowerCase();
 
     const servicioId =
-      body.servicioId?.trim() || "";
+      limpiarTexto(
+        body.servicioId,
+        MAX_ID,
+      );
 
     const nombreCliente =
-      body.nombreCliente?.trim() || "";
+      limpiarTexto(
+        body.nombreCliente,
+        MAX_NOMBRE,
+      );
 
     const email =
-      body.email?.trim() || "";
+      limpiarTexto(
+        body.email,
+        MAX_EMAIL,
+      );
 
     const telefono =
-      body.telefono?.trim() || "";
+      limpiarTexto(
+        body.telefono,
+        MAX_TELEFONO,
+      );
 
     const fecha =
-      body.fecha?.trim() || "";
+      limpiarTexto(
+        body.fecha,
+        10,
+      );
 
     const hora =
-      body.hora?.trim() || "";
+      limpiarTexto(
+        body.hora,
+        5,
+      );
 
     const notas =
-      body.notas?.trim() || "";
+      limpiarTexto(
+        body.notas,
+        MAX_NOTAS,
+      );
 
     if (!slug) {
       return NextResponse.json(
@@ -135,7 +1007,10 @@ export async function POST(
       );
     }
 
-    if (!telefono && !email) {
+    if (
+      !telefono &&
+      !email
+    ) {
       return NextResponse.json(
         {
           error:
@@ -171,187 +1046,104 @@ export async function POST(
       );
     }
 
-    const empresasSnapshot =
-      await adminDb
-        .collection("companies")
-        .where(
-          "paginaPublica.slug",
-          "==",
-          slug,
-        )
-        .limit(2)
-        .get();
-
-    if (empresasSnapshot.size !== 1) {
-      return NextResponse.json(
-        {
-          error:
-            empresasSnapshot.empty
-              ? "El negocio no existe."
-              : "La URL pública no es válida.",
-        },
-        {
-          status:
-            empresasSnapshot.empty
-              ? 404
-              : 409,
-        },
+    const empresaResultado =
+      await resolverEmpresaPublica(
+        slug,
       );
-    }
-
-    const empresaDoc =
-      empresasSnapshot.docs[0];
-
-    const empresa =
-      empresaDoc.data() as EmpresaPublica;
 
     if (
-      !empresa.paginaPublica
-        ?.publicada
+      "error" in
+      empresaResultado
+    ) {
+      return empresaResultado.error;
+    }
+
+    const {
+      empresaDoc,
+      empresa,
+    } = empresaResultado;
+
+    const servicioResultado =
+      await obtenerServicio(
+        empresaDoc.id,
+        servicioId,
+      );
+
+    if (
+      "error" in
+      servicioResultado
+    ) {
+      return servicioResultado.error;
+    }
+
+    const {
+      servicioDoc,
+      servicio,
+    } = servicioResultado;
+
+    const agenda =
+      empresa.agendaConfig;
+
+    if (
+      agenda?.activa !== true
     ) {
       return NextResponse.json(
         {
           error:
-            "La página del negocio no está publicada.",
+            "Las reservas online no están habilitadas.",
         },
         {
-          status: 404,
+          status: 409,
         },
       );
     }
 
+    const diaSemana =
+      String(
+        obtenerDiaSemana(fecha),
+      );
+
+    const dia =
+      agenda.dias?.[diaSemana];
+
     if (
-      !empresaTieneFuncion(
-        empresa,
-        "turnos",
-      )
+      !dia ||
+      dia.activo !== true ||
+      !horarioAgendaValido(dia)
     ) {
       return NextResponse.json(
         {
           error:
-            "Las reservas online requieren un plan Pro o Empresa.",
+            "Ese día no está disponible para reservas.",
         },
         {
-          status: 403,
+          status: 409,
         },
       );
     }
 
-    const servicioDoc =
-      await adminDb
-        .collection("companies")
-        .doc(empresaDoc.id)
-        .collection("catalog")
-        .doc(servicioId)
-        .get();
-
-    if (!servicioDoc.exists) {
-      return NextResponse.json(
-        {
-          error:
-            "El servicio no existe.",
-        },
-        {
-          status: 404,
-        },
+    const intervaloMinutos =
+      obtenerIntervaloAgenda(
+        agenda,
       );
-    }
-
-    const servicio =
-      servicioDoc.data() as CatalogoServicio;
-
-    if (
-      servicio.tipo !== "servicio" ||
-      servicio.activo === false ||
-      !servicio.nombre
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "El servicio no está disponible para reservar.",
-        },
-        {
-          status: 400,
-        },
-      );
-    }
 
     const duracionMinutos =
-      Math.max(
-        5,
-        Number(
-          servicio.duracionMinutos,
-        ) || 60,
+      obtenerDuracionServicio(
+        servicio,
       );
 
-    const turnosDelDia =
-      await adminDb
-        .collection("companies")
-        .doc(empresaDoc.id)
-        .collection("appointments")
-        .where(
-          "fecha",
-          "==",
-          fecha,
-        )
-        .get();
-
-    const nuevoInicio =
-      minutosDesdeHora(hora);
-
-    const ocupado =
-      turnosDelDia.docs.some(
-        (turnoDoc) => {
-          const turno =
-            turnoDoc.data() as {
-              hora?: string;
-              duracionMinutos?: number;
-              estado?: string;
-            };
-
-          if (
-            !turno.hora ||
-            turno.estado ===
-              "cancelado"
-          ) {
-            return false;
-          }
-
-          if (
-            !horaValida(
-              turno.hora,
-            )
-          ) {
-            return false;
-          }
-
-          const inicioExistente =
-            minutosDesdeHora(
-              turno.hora,
-            );
-
-          const duracionExistente =
-            Math.max(
-              5,
-              Number(
-                turno.duracionMinutos,
-              ) || 60,
-            );
-
-          return seSuperponen(
-            nuevoInicio,
-            duracionMinutos,
-            inicioExistente,
-            duracionExistente,
-          );
-        },
-      );
-
-    if (ocupado) {
+    if (
+      !horarioDentroDeAgenda({
+        hora,
+        duracionMinutos,
+        dia,
+        intervaloMinutos,
+      })
+    ) {
       return NextResponse.json(
         {
           error:
-            "Ese horario ya no está disponible. Elegí otro horario.",
+            "Ese horario no está disponible para reservas.",
         },
         {
           status: 409,
@@ -378,60 +1170,143 @@ export async function POST(
         )
         .doc();
 
-    const batch =
-      adminDb.batch();
+    const bloqueoDiaRef =
+      empresaRef
+        .collection(
+          "appointmentLocks",
+        )
+        .doc(fecha);
 
-    batch.set(
-      turnoRef,
-      {
-        nombreCliente,
-        email,
-        telefono,
-        servicio:
-          servicio.nombre,
-        servicioId:
-          servicioDoc.id,
-        precioServicio:
-          Number(
-            servicio.precio,
-          ) || 0,
-        fecha,
-        hora,
-        duracionMinutos,
-        estado: "pendiente",
-        notas,
-        origen: "web",
-        createdAt:
-          FieldValue.serverTimestamp(),
-        updatedAt:
-          FieldValue.serverTimestamp(),
-      },
-    );
+    try {
+      await adminDb.runTransaction(
+        async (transaction) => {
+          /*
+           * Este documento fuerza a serializar
+           * reservas concurrentes del mismo día.
+           */
+          await transaction.get(
+            bloqueoDiaRef,
+          );
 
-    batch.set(
-      analyticsRef,
-      {
-        tipo:
-          "appointment_created",
-        visitanteId:
-          `reserva-${turnoRef.id}`,
-        slug,
-        origen:
-          "pagina_publica",
-        turnoId:
-          turnoRef.id,
-        servicioId:
-          servicioDoc.id,
-        createdAt:
-          FieldValue.serverTimestamp(),
-      },
-    );
+          const turnosQuery =
+            empresaRef
+              .collection(
+                "appointments",
+              )
+              .where(
+                "fecha",
+                "==",
+                fecha,
+              );
 
-    await batch.commit();
+          const turnosSnapshot =
+            await transaction.get(
+              turnosQuery,
+            );
+
+          const turnos =
+            turnosSnapshot.docs.map(
+              (turnoDoc) =>
+                turnoDoc.data() as TurnoExistente,
+            );
+
+          if (
+            horarioOcupado(
+              hora,
+              duracionMinutos,
+              turnos,
+            )
+          ) {
+            throw new Error(
+              "HORARIO_OCUPADO",
+            );
+          }
+
+          transaction.set(
+            bloqueoDiaRef,
+            {
+              fecha,
+              updatedAt:
+                FieldValue.serverTimestamp(),
+            },
+            {
+              merge: true,
+            },
+          );
+
+          transaction.set(
+            turnoRef,
+            {
+              nombreCliente,
+              email,
+              telefono,
+              servicio:
+                servicio.nombre,
+              servicioId:
+                servicioDoc.id,
+              precioServicio:
+                Number(
+                  servicio.precio,
+                ) || 0,
+              fecha,
+              hora,
+              duracionMinutos,
+              estado:
+                "pendiente",
+              notas,
+              origen: "web",
+              createdAt:
+                FieldValue.serverTimestamp(),
+              updatedAt:
+                FieldValue.serverTimestamp(),
+            },
+          );
+
+          transaction.set(
+            analyticsRef,
+            {
+              tipo:
+                "appointment_created",
+              visitanteId:
+                `reserva-${turnoRef.id}`,
+              slug,
+              origen:
+                "pagina_publica",
+              turnoId:
+                turnoRef.id,
+              servicioId:
+                servicioDoc.id,
+              createdAt:
+                FieldValue.serverTimestamp(),
+            },
+          );
+        },
+      );
+    } catch (transactionError) {
+      if (
+        transactionError instanceof
+          Error &&
+        transactionError.message ===
+          "HORARIO_OCUPADO"
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Ese horario ya no está disponible. Elegí otro horario.",
+          },
+          {
+            status: 409,
+          },
+        );
+      }
+
+      throw transactionError;
+    }
 
     try {
       await crearNotificacion({
-        empresaId: empresaDoc.id,
+        empresaId:
+          empresaDoc.id,
         tipo: "sistema",
         titulo:
           "Nuevo turno reservado",
@@ -440,9 +1315,12 @@ export async function POST(
         url:
           `/empresas/${empresaDoc.id}/agenda`,
         metadata: {
-          origen: "pagina_publica",
-          turnoId: turnoRef.id,
-          servicioId: servicioDoc.id,
+          origen:
+            "pagina_publica",
+          turnoId:
+            turnoRef.id,
+          servicioId:
+            servicioDoc.id,
           fecha,
           hora,
           email,
@@ -452,7 +1330,7 @@ export async function POST(
     } catch (notificationError) {
       console.error(
         "No se pudo crear la notificación del turno público:",
-        notificationError
+        notificationError,
       );
     }
 
