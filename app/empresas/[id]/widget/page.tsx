@@ -22,6 +22,9 @@ import {
 } from "next/navigation";
 
 import { auth, db } from "@/lib/firebase";
+import {
+  empresaTieneFuncion,
+} from "@/lib/plans/planAccess";
 import Badge from "@/components/Ui/Badge";
 import Button from "@/components/Ui/Button";
 import Card from "@/components/Ui/Card";
@@ -44,6 +47,9 @@ type RolEmpresa =
 interface Empresa {
   nombre?: string;
   userId: string;
+  plan?: "free" | "pro" | "business";
+  subscriptionStatus?: string;
+  subscriptionEndsAt?: unknown;
   widget?: {
     nombreBot?: string;
     mensajeBienvenida?: string;
@@ -110,6 +116,11 @@ export default function WidgetPage() {
     accesoVerificado,
     setAccesoVerificado,
   ] = useState(false);
+
+  const [
+    widgetHabilitado,
+    setWidgetHabilitado,
+  ] = useState<boolean | null>(null);
 
   const [cargando, setCargando] =
     useState(true);
@@ -217,6 +228,7 @@ export default function WidgetPage() {
           setError("");
           setMensaje("");
           setAccesoVerificado(false);
+          setWidgetHabilitado(null);
 
           try {
             const referencia =
@@ -328,6 +340,12 @@ export default function WidgetPage() {
 
             setUser(currentUser);
             setAccesoVerificado(true);
+            setWidgetHabilitado(
+              empresaTieneFuncion(
+                empresa,
+                "asistente_ia",
+              ),
+            );
 
             setNombreEmpresa(
               empresa.nombre ||
@@ -454,6 +472,13 @@ export default function WidgetPage() {
     }, [empresaId]);
 
   async function copiarCodigo() {
+    if (!widgetHabilitado) {
+      setError(
+        "El Widget web está disponible únicamente con Business IA y una suscripción activa.",
+      );
+      return;
+    }
+
     try {
       await navigator.clipboard.writeText(
         codigoInstalacion,
@@ -487,6 +512,13 @@ export default function WidgetPage() {
       !empresaId ||
       !accesoVerificado
     ) {
+      return;
+    }
+
+    if (!widgetHabilitado) {
+      setError(
+        "El Widget web está disponible únicamente con Business IA y una suscripción activa.",
+      );
       return;
     }
 
@@ -632,6 +664,46 @@ export default function WidgetPage() {
 
   if (!accesoVerificado) {
     return null;
+  }
+
+  if (widgetHabilitado === null) {
+    return null;
+  }
+
+  if (widgetHabilitado === false) {
+    return (
+      <section className="mx-auto w-full max-w-4xl px-5 py-12 sm:px-8">
+        <Card className="border-violet-200 bg-violet-50 p-8 text-center sm:p-12 dark:border-violet-500/20 dark:bg-violet-500/5">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-100 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400">
+            <span className="text-2xl">✦</span>
+          </div>
+
+          <p className="mt-6 text-sm font-semibold uppercase tracking-[0.18em] text-violet-700 dark:text-violet-400">
+            Exclusivo de Business IA
+          </p>
+
+          <h1 className="mt-3 text-3xl font-bold text-slate-950 dark:text-white">
+            Widget web
+          </h1>
+
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
+            El chat con IA para instalar en sitios web está disponible únicamente con Business IA y una suscripción activa.
+          </p>
+
+          <Button
+            type="button"
+            className="mt-7"
+            onClick={() =>
+              router.push(
+                `/empresas/${empresaId}/planes`,
+              )
+            }
+          >
+            Ver Business IA
+          </Button>
+        </Card>
+      </section>
+    );
   }
 
   return (

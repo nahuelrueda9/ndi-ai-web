@@ -1,0 +1,546 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function companyPath(companyId) {
+      return /databases/$(database)/documents/companies/$(companyId);
+    }
+
+    function memberPath(companyId) {
+      return /databases/$(database)/documents/companies/$(companyId)/members/$(request.auth.uid);
+    }
+
+    function companyData(companyId) {
+      return get(companyPath(companyId)).data;
+    }
+
+    function isOwner(companyId) {
+      return signedIn()
+        && companyData(companyId).userId == request.auth.uid;
+    }
+
+    function hasActiveMembership(companyId) {
+      return signedIn()
+        && exists(memberPath(companyId))
+        && get(memberPath(companyId)).data.estado == "activo";
+    }
+
+    function memberRole(companyId) {
+      return get(memberPath(companyId)).data.rol;
+    }
+
+    function isAdministrator(companyId) {
+      return hasActiveMembership(companyId)
+        && memberRole(companyId) == "administrador";
+    }
+
+    function isSupervisor(companyId) {
+      return hasActiveMembership(companyId)
+        && memberRole(companyId) == "supervisor";
+    }
+
+    function hasCompanyAccess(companyId) {
+      return isOwner(companyId)
+        || hasActiveMembership(companyId);
+    }
+
+    function canManageCompany(companyId) {
+      return isOwner(companyId)
+        || isAdministrator(companyId);
+    }
+
+    function canSupervise(companyId) {
+      return canManageCompany(companyId)
+        || isSupervisor(companyId);
+    }
+
+    /*
+     * IDs internos conservados por compatibilidad:
+     *
+     * free     = Página Simple
+     * pro      = Página Completa
+     * business = Business IA
+     *
+     * IMPORTANTE:
+     * "free" ya no representa un plan gratuito comercial.
+     */
+    function hasKnownPlan(companyId) {
+      let company = companyData(companyId);
+      let plan = company.get("plan", "free");
+
+      return plan == "free"
+        || plan == "pro"
+        || plan == "business";
+    }
+
+    /*
+     * Todos los planes comerciales de NDI AI son pagos.
+     *
+     * Una empresa puede existir con el ID interno "free"
+     * antes del pago, pero NO se considera activa hasta que
+     * el backend confirme la suscripción.
+     *
+     * Compatibilidad:
+     * si una empresa antigua figura activa pero todavía no tiene
+     * subscriptionEndsAt, no la bloqueamos automáticamente.
+     */
+    function hasActiveSubscription(companyId) {
+      let company = companyData(companyId);
+      let status = company.get("subscriptionStatus", "");
+
+      let activeStatus =
+        status == "active"
+        || status == "approved"
+        || status == "authorized";
+
+      let hasExpiration =
+        company.keys().hasAny([
+          "subscriptionEndsAt"
+        ]);
+
+      return hasKnownPlan(companyId)
+        && activeStatus
+        && (
+          !hasExpiration
+          || company.subscriptionEndsAt > request.time
+        );
+    }
+
+    /*
+     * Página Completa y Business IA:
+     * agenda, reservas y funciones avanzadas del negocio.
+     */
+    function hasCompleteOrBusinessPlan(companyId) {
+      let company = companyData(companyId);
+      let plan = company.get("plan", "free");
+
+      return hasActiveSubscription(companyId)
+        && (
+          plan == "pro"
+          || plan == "business"
+        );
+    }
+
+    /*
+     * Business IA:
+     * funciones exclusivas de inteligencia artificial.
+     */
+    function hasBusinessIAPlan(companyId) {
+      let company = companyData(companyId);
+
+      return hasActiveSubscription(companyId)
+        && company.get("plan", "free") == "business";
+    }
+
+    function canUseCompleteFeature(companyId) {
+      return hasCompanyAccess(companyId)
+        && hasCompleteOrBusinessPlan(companyId);
+    }
+
+    function canUseBusinessIAFeature(companyId) {
+      return hasCompanyAccess(companyId)
+        && hasBusinessIAPlan(companyId);
+    }
+
+    /*
+     * Campos del documento principal que pertenecen a funciones
+     * comerciales específicas.
+     *
+     * - agendaConfig: Página Completa / Business IA.
+     * - configuración del asistente + widget: Business IA.
+     *
+     * Si esos campos no cambian, una actualización normal del negocio
+     * puede continuar sin depender de estas funciones.
+     */
+    function completeFeatureFieldsAllowedOnUpdate(companyId) {
+      let changedFields = request.resource.data
+        .diff(resource.data)
+        .affectedKeys();
+
+      return !changedFields.hasAny([
+          "agendaConfig"
+        ])
+        || hasCompleteOrBusinessPlan(companyId);
+    }
+
+    function businessIAFieldsAllowedOnUpdate(companyId) {
+      let changedFields = request.resource.data
+        .diff(resource.data)
+        .affectedKeys();
+
+      return !changedFields.hasAny([
+          "agente",
+          "personalidad",
+          "objetivo",
+          "instrucciones",
+          "restricciones",
+          "idioma",
+          "widget"
+        ])
+        || hasBusinessIAPlan(companyId);
+    }
+
+    /*
+     * Catálogo:
+     *
+     * - todos los planes activos pueden administrar servicios;
+     * - los productos requieren Página Completa o Business IA.
+     */
+    function catalogItemAllowed(companyId, itemData) {
+      let itemType = itemData.get("tipo", "");
+
+      return itemType == "servicio"
+        || (
+          itemType == "producto"
+          && hasCompleteOrBusinessPlan(companyId)
+        );
+    }
+
+    function canManageCatalogItem(companyId, itemData) {
+      return canSupervise(companyId)
+        && hasActiveSubscription(companyId)
+        && catalogItemAllowed(companyId, itemData);
+    }
+
+    /*
+     * Campos controlados exclusivamente por backend.
+     *
+     * Incluye los nuevos campos usados para:
+     * - precio inicial,
+     * - mensualidad contratada,
+     * - precio lanzamiento,
+     * - checkout pendiente,
+     * - Mercado Pago,
+     * - consumo mensual.
+     */
+    function billingFieldsUnchanged() {
+      return !request.resource.data
+        .diff(resource.data)
+        .affectedKeys()
+        .hasAny([
+          "plan",
+          "maxConversations",
+
+          "subscriptionStatus",
+          "subscriptionStartedAt",
+          "subscriptionEndsAt",
+          "subscriptionMonthlyPrice",
+          "subscriptionInitialPrice",
+          "subscriptionPriceLockedAt",
+          "subscriptionPricingVersion",
+          "subscriptionIsLaunchPrice",
+
+          "pendingPlan",
+          "pendingPlanName",
+          "pendingPaymentType",
+          "pendingInitialPrice",
+          "pendingMonthlyPrice",
+
+          "planUpdatedAt",
+
+          "conversationsThisMonth",
+          "conversationsUsageMonth",
+          "aiResponsesThisMonth",
+          "aiResponsesUsageMonth",
+
+          "mercadopagoPaymentId",
+          "mercadopagoPaymentStatus",
+          "mercadopagoPaymentAmount",
+          "mercadopagoPaymentCurrency",
+          "mercadopagoPaymentApprovedAt",
+
+          "mercadoPagoPreferenceId",
+          "mercadoPagoExternalReference",
+          "mercadoPagoPreferenceCreatedAt",
+          "mercadoPagoPreferenceCreatedBy"
+        ]);
+    }
+
+    /*
+     * Al crear una empresa desde el navegador:
+     *
+     * - se mantiene "free" como ID interno inicial por compatibilidad;
+     * - NO puede declararse una suscripción activa;
+     * - NO puede asignarse precios;
+     * - NO puede precargar pagos ni consumos.
+     *
+     * El backend de Mercado Pago será quien active el plan.
+     */
+    function billingFieldsSafeOnCreate() {
+      return request.resource.data.get("plan", "free") == "free"
+        && !request.resource.data.keys().hasAny([
+          "maxConversations",
+
+          "subscriptionStatus",
+          "subscriptionStartedAt",
+          "subscriptionEndsAt",
+          "subscriptionMonthlyPrice",
+          "subscriptionInitialPrice",
+          "subscriptionPriceLockedAt",
+          "subscriptionPricingVersion",
+          "subscriptionIsLaunchPrice",
+
+          "pendingPlan",
+          "pendingPlanName",
+          "pendingPaymentType",
+          "pendingInitialPrice",
+          "pendingMonthlyPrice",
+
+          "planUpdatedAt",
+
+          "conversationsThisMonth",
+          "conversationsUsageMonth",
+          "aiResponsesThisMonth",
+          "aiResponsesUsageMonth",
+
+          "mercadopagoPaymentId",
+          "mercadopagoPaymentStatus",
+          "mercadopagoPaymentAmount",
+          "mercadopagoPaymentCurrency",
+          "mercadopagoPaymentApprovedAt",
+
+          "mercadoPagoPreferenceId",
+          "mercadoPagoExternalReference",
+          "mercadoPagoPreferenceCreatedAt",
+          "mercadoPagoPreferenceCreatedBy"
+        ]);
+    }
+
+    match /users/{userId} {
+      allow read, create, update, delete:
+        if signedIn()
+        && request.auth.uid == userId;
+    }
+
+    /*
+     * Soporta collectionGroup("members").
+     * Cada usuario solo puede encontrar su propia membresía activa.
+     */
+    match /{path=**}/members/{memberId} {
+      allow read:
+        if signedIn()
+        && resource.data.uid == request.auth.uid
+        && resource.data.estado == "activo";
+    }
+
+    match /companies/{companyId} {
+      allow create:
+        if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && billingFieldsSafeOnCreate();
+
+      allow read:
+        if signedIn()
+        && (
+          resource.data.userId == request.auth.uid
+          || hasActiveMembership(companyId)
+        );
+
+      allow update:
+        if signedIn()
+        && request.resource.data.userId == resource.data.userId
+        && billingFieldsUnchanged()
+        && completeFeatureFieldsAllowedOnUpdate(companyId)
+        && businessIAFieldsAllowedOnUpdate(companyId)
+        && (
+          resource.data.userId == request.auth.uid
+          || isAdministrator(companyId)
+        );
+
+      allow delete:
+        if signedIn()
+        && resource.data.userId == request.auth.uid;
+
+      /*
+       * Equipo está oculto del producto comercial actual.
+       *
+       * Conservamos lectura para no romper membresías existentes.
+       * Las altas/cambios/bajas quedan cerradas desde cliente.
+       * Admin SDK puede seguir administrándolas cuando retomemos Equipo.
+       */
+      match /members/{memberId} {
+        allow read:
+          if hasCompanyAccess(companyId);
+
+        allow create, update, delete:
+          if false;
+      }
+
+      match /invitations/{invitationId} {
+        allow read:
+          if canManageCompany(companyId);
+
+        allow create, update, delete:
+          if false;
+      }
+
+      /*
+       * Conversaciones, mensajes, notas y actividad asociada.
+       *
+       * El acceso público al asistente IA se controla desde
+       * /api/widget/chat y planAccess.ts.
+       */
+      match /conversations/{conversationId}/{document=**} {
+        allow read, create, update, delete:
+          if hasCompanyAccess(companyId);
+      }
+
+      /*
+       * Agenda:
+       * Página Completa y Business IA con suscripción activa.
+       */
+      match /appointments/{appointmentId} {
+        allow read, create, update, delete:
+          if canUseCompleteFeature(companyId);
+      }
+
+      /*
+       * Catálogo:
+       *
+       * Página Simple activa:
+       * - servicios sí;
+       * - productos no.
+       *
+       * Página Completa / Business IA activos:
+       * - servicios y productos.
+       *
+       * Esto se valida también acá para que no pueda saltarse
+       * la restricción modificando Firestore desde el navegador.
+       */
+      match /catalog/{itemId} {
+        allow read:
+          if hasCompanyAccess(companyId);
+
+        allow create:
+          if canManageCatalogItem(
+            companyId,
+            request.resource.data
+          );
+
+        allow update:
+          if canManageCatalogItem(
+            companyId,
+            request.resource.data
+          );
+
+        allow delete:
+          if canManageCatalogItem(
+            companyId,
+            resource.data
+          );
+      }
+
+      /*
+       * Analytics puede leerse desde el panel.
+       * Los eventos se crean únicamente desde APIs server-side
+       * mediante Firebase Admin.
+       */
+      match /analyticsEvents/{eventId} {
+        allow read:
+          if hasCompanyAccess(companyId);
+
+        allow create, update, delete:
+          if false;
+      }
+
+      match /notifications/{notificationId} {
+        allow read, create, update, delete:
+          if hasCompanyAccess(companyId);
+      }
+
+      /*
+       * Pagos:
+       *
+       * Facturación es exclusiva del propietario.
+       * El navegador puede leer el historial, pero NUNCA crear,
+       * modificar ni borrar pagos. Eso queda exclusivamente en backend.
+       */
+      match /payments/{paymentId} {
+        allow read:
+          if isOwner(companyId);
+
+        allow create, update, delete:
+          if false;
+      }
+
+      /*
+       * Locks de turnos:
+       *
+       * Son documentos técnicos usados por las APIs server-side
+       * para impedir reservas duplicadas. El cliente no necesita
+       * leerlos ni escribirlos.
+       */
+      match /appointmentLocks/{lockId} {
+        allow read, create, update, delete:
+          if false;
+      }
+
+      /*
+       * Automatizaciones no forman parte de los planes comerciales
+       * actuales y están ocultas en el panel.
+       *
+       * Conservamos lectura para compatibilidad, pero las escrituras
+       * desde cliente quedan deshabilitadas.
+       */
+      match /automations/{automationId} {
+        allow read:
+          if hasCompanyAccess(companyId);
+
+        allow create, update, delete:
+          if false;
+      }
+
+      /*
+       * Base de conocimiento:
+       *
+       * Los datos existentes pueden seguir consultándose desde el panel,
+       * pero crear o modificar conocimiento requiere Business IA activo.
+       */
+      match /knowledge/{document=**} {
+        allow read:
+          if hasCompanyAccess(companyId);
+
+        allow create, update, delete:
+          if canSupervise(companyId)
+          && hasBusinessIAPlan(companyId);
+      }
+
+      /*
+       * WhatsApp / Instagram / Messenger:
+       * visibles como "Próximamente".
+       *
+       * Conservamos el backend y permitimos lectura administrativa,
+       * pero bloqueamos conexiones o cambios desde el cliente.
+       * Firebase Admin sigue pudiendo operar estas colecciones.
+       */
+      match /integrations/{document=**} {
+        allow read:
+          if canSupervise(companyId);
+
+        allow create, update, delete:
+          if false;
+      }
+
+      /*
+       * Compatibilidad con otras subcolecciones internas existentes.
+       * Siempre aisladas por empresa.
+       */
+      match /{document=**} {
+        allow read:
+          if hasCompanyAccess(companyId);
+
+        allow create, update, delete:
+          if canSupervise(companyId);
+      }
+    }
+
+    match /{document=**} {
+      allow read, write:
+        if false;
+    }
+  }
+}

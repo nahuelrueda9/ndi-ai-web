@@ -22,6 +22,9 @@ import {
 } from "next/navigation";
 
 import { auth, db } from "@/lib/firebase";
+import {
+  empresaTieneFuncion,
+} from "@/lib/plans/planAccess";
 import Avatar from "@/components/Ui/Avatar";
 import Badge from "@/components/Ui/Badge";
 import Button from "@/components/Ui/Button";
@@ -37,6 +40,9 @@ type RolEmpresa =
 interface Empresa {
   nombre?: string;
   userId: string;
+  plan?: "free" | "pro" | "business";
+  subscriptionStatus?: string;
+  subscriptionEndsAt?: unknown;
 
   personalidad?: string;
   objetivo?: string;
@@ -162,6 +168,11 @@ export default function ConfiguracionPage() {
     setAccesoVerificado,
   ] = useState(false);
 
+  const [
+    asistenteHabilitado,
+    setAsistenteHabilitado,
+  ] = useState<boolean | null>(null);
+
   useEffect(() => {
     const unsubscribeAuth =
       onAuthStateChanged(
@@ -185,6 +196,7 @@ export default function ConfiguracionPage() {
 
           setUser(null);
           setAccesoVerificado(false);
+          setAsistenteHabilitado(null);
           setError("");
           setMensaje("");
           setLoading(true);
@@ -295,6 +307,12 @@ export default function ConfiguracionPage() {
 
             setUser(currentUser);
             setAccesoVerificado(true);
+            setAsistenteHabilitado(
+              empresaTieneFuncion(
+                empresa,
+                "asistente_ia",
+              ),
+            );
 
             setEmpresaNombre(
               empresa.nombre || "",
@@ -407,6 +425,13 @@ export default function ConfiguracionPage() {
       !empresaId ||
       !accesoVerificado
     ) {
+      return;
+    }
+
+    if (!asistenteHabilitado) {
+      setError(
+        "El Asistente IA está disponible únicamente con Business IA y una suscripción activa.",
+      );
       return;
     }
 
@@ -587,6 +612,42 @@ export default function ConfiguracionPage() {
 
   if (!accesoVerificado) {
     return null;
+  }
+
+  if (asistenteHabilitado === false) {
+    return (
+      <section className="mx-auto w-full max-w-4xl px-5 py-12 sm:px-8">
+        <Card className="border-violet-200 bg-violet-50 p-8 text-center sm:p-12 dark:border-violet-500/20 dark:bg-violet-500/5">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-100 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400">
+            <span className="text-2xl">✦</span>
+          </div>
+
+          <p className="mt-6 text-sm font-semibold uppercase tracking-[0.18em] text-violet-700 dark:text-violet-400">
+            Exclusivo de Business IA
+          </p>
+
+          <h1 className="mt-3 text-3xl font-bold text-slate-950 dark:text-white">
+            Asistente IA
+          </h1>
+
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
+            El asistente inteligente, su configuración y las respuestas automáticas con IA están disponibles únicamente con Business IA y una suscripción activa.
+          </p>
+
+          <Button
+            type="button"
+            className="mt-7"
+            onClick={() =>
+              router.push(
+                `/empresas/${empresaId}/planes`,
+              )
+            }
+          >
+            Ver Business IA
+          </Button>
+        </Card>
+      </section>
+    );
   }
 
   return (

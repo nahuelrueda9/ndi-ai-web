@@ -34,6 +34,9 @@ import {
 } from "lucide-react";
 
 import { db } from "@/lib/firebase";
+import {
+  empresaTieneFuncion,
+} from "@/lib/plans/planAccess";
 import Badge from "@/components/Ui/Badge";
 import Button from "@/components/Ui/Button";
 import Card from "@/components/Ui/Card";
@@ -88,11 +91,6 @@ type CatalogoServicio = {
 
 type FiltroEstado = "todos" | EstadoTurno;
 
-type PlanEmpresa =
-  | "free"
-  | "pro"
-  | "business";
-
 type ConfigDiaAgenda = {
   activo: boolean;
   apertura: string;
@@ -108,7 +106,8 @@ type AgendaConfig = {
 };
 
 type EmpresaPlan = {
-  plan?: PlanEmpresa;
+  plan?: "free" | "pro" | "business";
+  subscriptionStatus?: string;
   subscriptionEndsAt?: unknown;
   agendaConfig?: {
     activa?: boolean;
@@ -116,57 +115,6 @@ type EmpresaPlan = {
     dias?: Record<string, Partial<ConfigDiaAgenda>>;
   };
 };
-
-function convertirFechaPlan(valor: unknown) {
-  if (!valor) return null;
-
-  if (
-    typeof valor === "object" &&
-    valor !== null &&
-    "toDate" in valor &&
-    typeof (valor as { toDate?: unknown }).toDate === "function"
-  ) {
-    return (valor as { toDate: () => Date }).toDate();
-  }
-
-  if (valor instanceof Date) {
-    return valor;
-  }
-
-  if (
-    typeof valor === "string" ||
-    typeof valor === "number"
-  ) {
-    const fecha = new Date(valor);
-    return Number.isNaN(fecha.getTime())
-      ? null
-      : fecha;
-  }
-
-  return null;
-}
-
-function planPermiteAgenda(
-  empresa: EmpresaPlan
-) {
-  if (empresa.plan === "business") {
-    return true;
-  }
-
-  if (empresa.plan !== "pro") {
-    return false;
-  }
-
-  const vencimiento =
-    convertirFechaPlan(
-      empresa.subscriptionEndsAt
-    );
-
-  return Boolean(
-    vencimiento &&
-      vencimiento.getTime() > Date.now()
-  );
-}
 
 const DIAS_SEMANA = [
   "Lun",
@@ -379,8 +327,9 @@ export default function AgendaPage() {
           empresaSnapshot.data() as EmpresaPlan;
 
         const habilitada =
-          planPermiteAgenda(
-            empresaData
+          empresaTieneFuncion(
+            empresaData,
+            "turnos",
           );
 
         setAgendaHabilitada(
@@ -1049,7 +998,7 @@ export default function AgendaPage() {
           </div>
 
           <p className="mt-6 text-sm font-semibold uppercase tracking-[0.18em] text-cyan-700 dark:text-cyan-400">
-            Función Pro
+            Disponible desde Página Completa
           </p>
 
           <h1 className="mt-3 text-3xl font-bold text-slate-950 dark:text-white">
@@ -1057,7 +1006,7 @@ export default function AgendaPage() {
           </h1>
 
           <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
-            La gestión de citas y turnos está disponible en los planes Pro y Empresa.
+            La agenda, la gestión de turnos y las reservas online están disponibles con Página Completa o Business IA y una suscripción activa.
           </p>
 
           <Button
@@ -1069,7 +1018,7 @@ export default function AgendaPage() {
               )
             }
           >
-            Ver plan Pro
+            Ver planes
           </Button>
         </Card>
       </section>

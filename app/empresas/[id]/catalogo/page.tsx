@@ -20,6 +20,7 @@ import {
 import {
   Box,
   ImageIcon,
+  Lock,
   Package,
   Pencil,
   Plus,
@@ -30,6 +31,10 @@ import {
 } from "lucide-react";
 
 import { auth, db } from "@/lib/firebase";
+import {
+  empresaTieneFuncion,
+  type PlanId,
+} from "@/lib/plans/planAccess";
 import Badge from "@/components/Ui/Badge";
 import Button from "@/components/Ui/Button";
 import Card from "@/components/Ui/Card";
@@ -44,6 +49,9 @@ type RolEmpresa =
 
 interface Empresa {
   userId?: string;
+  plan?: PlanId;
+  subscriptionStatus?: string;
+  subscriptionEndsAt?: unknown;
 }
 
 interface Miembro {
@@ -75,6 +83,16 @@ export default function CatalogoPage() {
 
   const [loading, setLoading] = useState(true);
   const [autorizado, setAutorizado] = useState(false);
+
+  const [
+    puedeUsarCatalogo,
+    setPuedeUsarCatalogo,
+  ] = useState(false);
+
+  const [
+    puedeUsarProductos,
+    setPuedeUsarProductos,
+  ] = useState(false);
 
   const [items, setItems] = useState<CatalogoItem[]>([]);
 
@@ -131,10 +149,24 @@ export default function CatalogoPage() {
             return;
           }
 
-          const empresa =
+          const datosEmpresa =
             empresaSnap.data() as Empresa;
 
-          if (empresa.userId === currentUser.uid) {
+          setPuedeUsarCatalogo(
+            empresaTieneFuncion(
+              datosEmpresa,
+              "catalogo",
+            ),
+          );
+
+          setPuedeUsarProductos(
+            empresaTieneFuncion(
+              datosEmpresa,
+              "productos",
+            ),
+          );
+
+          if (datosEmpresa.userId === currentUser.uid) {
             setAutorizado(true);
             setLoading(false);
             return;
@@ -272,6 +304,23 @@ export default function CatalogoPage() {
   }
 
   function editarItem(item: CatalogoItem) {
+    if (!puedeUsarCatalogo) {
+      setError(
+        "Necesitás un plan activo para administrar el catálogo.",
+      );
+      return;
+    }
+
+    if (
+      item.tipo === "producto" &&
+      !puedeUsarProductos
+    ) {
+      setError(
+        "Los productos están disponibles desde Página Completa.",
+      );
+      return;
+    }
+
     setEditandoId(item.id);
     setTipo(item.tipo);
     setNombre(item.nombre);
@@ -313,11 +362,36 @@ export default function CatalogoPage() {
       return;
     }
 
+    if (!puedeUsarCatalogo) {
+      setError(
+        "Necesitás un plan activo para administrar el catálogo.",
+      );
+      return;
+    }
+
     if (
-      !archivo.type.startsWith("image/")
+      tipo === "producto" &&
+      !puedeUsarProductos
     ) {
       setError(
-        "Seleccioná una imagen válida.",
+        "Los productos están disponibles desde Página Completa.",
+      );
+      return;
+    }
+
+    const FORMATOS_PERMITIDOS = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+    ];
+
+    if (
+      !FORMATOS_PERMITIDOS.includes(
+        archivo.type,
+      )
+    ) {
+      setError(
+        "Usá una imagen JPG, PNG o WEBP.",
       );
       return;
     }
@@ -511,6 +585,23 @@ export default function CatalogoPage() {
       return;
     }
 
+    if (!puedeUsarCatalogo) {
+      setError(
+        "Necesitás un plan activo para administrar el catálogo.",
+      );
+      return;
+    }
+
+    if (
+      tipo === "producto" &&
+      !puedeUsarProductos
+    ) {
+      setError(
+        "Tu plan actual permite servicios, pero no productos. Los productos están disponibles desde Página Completa.",
+      );
+      return;
+    }
+
     if (!nombre.trim()) {
       setError("Ingresá un nombre.");
       return;
@@ -618,6 +709,23 @@ export default function CatalogoPage() {
   async function cambiarEstado(item: CatalogoItem) {
     if (!empresaId) return;
 
+    if (!puedeUsarCatalogo) {
+      setError(
+        "Necesitás un plan activo para administrar el catálogo.",
+      );
+      return;
+    }
+
+    if (
+      item.tipo === "producto" &&
+      !puedeUsarProductos
+    ) {
+      setError(
+        "Los productos están disponibles desde Página Completa.",
+      );
+      return;
+    }
+
     try {
       await updateDoc(
         doc(
@@ -646,6 +754,23 @@ export default function CatalogoPage() {
 
   async function eliminarItem(item: CatalogoItem) {
     if (!empresaId) return;
+
+    if (!puedeUsarCatalogo) {
+      setError(
+        "Necesitás un plan activo para administrar el catálogo.",
+      );
+      return;
+    }
+
+    if (
+      item.tipo === "producto" &&
+      !puedeUsarProductos
+    ) {
+      setError(
+        "Los productos están disponibles desde Página Completa.",
+      );
+      return;
+    }
 
     const confirmar = window.confirm(
       `¿Eliminar "${item.nombre}"?`,
@@ -725,6 +850,7 @@ export default function CatalogoPage() {
         </div>
 
         <Button
+          disabled={!puedeUsarCatalogo}
           onClick={() => {
             if (mostrarFormulario) {
               cerrarFormulario();
@@ -741,6 +867,67 @@ export default function CatalogoPage() {
             : "Agregar"}
         </Button>
       </header>
+
+      {!puedeUsarCatalogo && (
+        <Card className="mb-6 border-amber-500/20 bg-amber-500/10 p-5">
+          <div className="flex items-start gap-3">
+            <Lock className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
+
+            <div>
+              <p className="font-semibold text-slate-950 dark:text-white">
+                Necesitás un plan activo
+              </p>
+
+              <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-zinc-400">
+                Activá uno de los planes de NDI AI para cargar y administrar los servicios de tu negocio.
+              </p>
+
+              <Button
+                className="mt-4"
+                variant="secondary"
+                onClick={() =>
+                  router.push(
+                    `/empresas/${empresaId}/planes`,
+                  )
+                }
+              >
+                Ver planes
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {puedeUsarCatalogo &&
+        !puedeUsarProductos && (
+          <Card className="mb-6 border-blue-500/20 bg-blue-500/10 p-5">
+            <div className="flex items-start gap-3">
+              <Lock className="mt-0.5 h-5 w-5 shrink-0 text-blue-500" />
+
+              <div>
+                <p className="font-semibold text-slate-950 dark:text-white">
+                  Productos disponibles desde Página Completa
+                </p>
+
+                <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-zinc-400">
+                  Con Página Simple podés cargar y administrar servicios. Para agregar productos necesitás Página Completa o Business IA.
+                </p>
+
+                <Button
+                  className="mt-4"
+                  variant="secondary"
+                  onClick={() =>
+                    router.push(
+                      `/empresas/${empresaId}/planes`,
+                    )
+                  }
+                >
+                  Ver planes
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
         <ResumenCard
@@ -794,10 +981,18 @@ export default function CatalogoPage() {
                   Servicio
                 </option>
 
-                <option value="producto">
-                  Producto
-                </option>
+                {puedeUsarProductos && (
+                  <option value="producto">
+                    Producto
+                  </option>
+                )}
               </select>
+
+              {!puedeUsarProductos && (
+                <p className="text-xs leading-5 text-slate-500 dark:text-zinc-500">
+                  Los productos están disponibles desde Página Completa.
+                </p>
+              )}
             </div>
 
             <Input
@@ -849,7 +1044,7 @@ export default function CatalogoPage() {
                     Imagen
                   </p>
                   <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
-                    Opcional. Recomendado: imagen horizontal o cuadrada, hasta 5 MB.
+                    Opcional · Máximo 5 MB · Recomendado: 1200 × 1200 px (cuadrada) o 1600 × 1200 px (horizontal).
                   </p>
                 </div>
               </div>
@@ -869,7 +1064,7 @@ export default function CatalogoPage() {
 
                       <input
                         type="file"
-                        accept="image/*"
+                        accept="image/jpeg,image/png,image/webp"
                         className="hidden"
                         disabled={subiendoImagen}
                         onChange={(event) => {
@@ -933,14 +1128,18 @@ export default function CatalogoPage() {
                       </p>
 
                       <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
-                        JPG, PNG, WEBP u otro formato de imagen
+                        JPG, PNG o WEBP · Máximo 5 MB
+                      </p>
+
+                      <p className="mt-1 text-[11px] leading-5 text-slate-400 dark:text-zinc-600">
+                        Ideal: 1200 × 1200 px o 1600 × 1200 px. Evitá imágenes menores a 800 px.
                       </p>
                     </>
                   )}
 
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp"
                     className="hidden"
                     disabled={subiendoImagen}
                     onChange={(event) => {
@@ -993,6 +1192,7 @@ export default function CatalogoPage() {
               <Button
                 type="submit"
                 disabled={
+                  !puedeUsarCatalogo ||
                   guardando ||
                   subiendoImagen
                 }
@@ -1037,12 +1237,14 @@ export default function CatalogoPage() {
           </h2>
 
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500 dark:text-zinc-500">
-            Agregá el primer servicio o producto de
-            este negocio.
+            {puedeUsarProductos
+              ? "Agregá el primer servicio o producto de este negocio."
+              : "Agregá el primer servicio de este negocio."}
           </p>
 
           <Button
             className="mt-6"
+            disabled={!puedeUsarCatalogo}
             onClick={() => setMostrarFormulario(true)}
           >
             <Plus className="mr-2 h-4 w-4" />
@@ -1060,14 +1262,34 @@ export default function CatalogoPage() {
             onEliminar={eliminarItem}
           />
 
-          <SeccionCatalogo
-            titulo="Productos"
-            descripcion="Productos disponibles para mostrar a los clientes."
-            items={productos}
-            onEditar={editarItem}
-            onEstado={cambiarEstado}
-            onEliminar={eliminarItem}
-          />
+          {puedeUsarProductos ? (
+            <SeccionCatalogo
+              titulo="Productos"
+              descripcion="Productos disponibles para mostrar a los clientes."
+              items={productos}
+              onEditar={editarItem}
+              onEstado={cambiarEstado}
+              onEliminar={eliminarItem}
+            />
+          ) : (
+            <Card className="border-dashed p-7">
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500">
+                  <Lock className="h-5 w-5" />
+                </div>
+
+                <div>
+                  <h2 className="font-semibold text-slate-950 dark:text-white">
+                    Productos
+                  </h2>
+
+                  <p className="mt-1 text-sm leading-6 text-slate-500 dark:text-zinc-400">
+                    Esta sección se habilita con Página Completa o Business IA.
+                  </p>
+                </div>
+              </div>
+            </Card>
+          )}
         </div>
       )}
     </section>

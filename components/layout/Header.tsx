@@ -375,6 +375,69 @@ export default function Header() {
             combinarNotificaciones();
           },
           (error) => {
+            const codigo =
+              typeof error === "object" &&
+              error !== null &&
+              "code" in error
+                ? String(
+                    (
+                      error as {
+                        code?: unknown;
+                      }
+                    ).code || ""
+                  )
+                : "";
+
+            /*
+             * Si la empresa acaba de eliminarse (o el usuario perdió
+             * acceso), Firestore cierra primero el listener de
+             * notifications y puede devolver permission-denied antes
+             * de que llegue la actualización de la lista de empresas.
+             *
+             * Es un cierre esperado: limpiamos el estado local y no
+             * mostramos un error rojo en la consola.
+             */
+            if (
+              codigo ===
+                "permission-denied" ||
+              codigo === "not-found"
+            ) {
+              delete unsubscribesRef.current[
+                empresa.id
+              ];
+
+              delete notificacionesPorEmpresaRef
+                .current[empresa.id];
+
+              empresasInicializadasRef.current.delete(
+                empresa.id
+              );
+
+              Array.from(
+                notificacionesConocidasRef.current
+              ).forEach((clave) => {
+                if (
+                  clave.startsWith(
+                    `${empresa.id}-`
+                  )
+                ) {
+                  notificacionesConocidasRef.current.delete(
+                    clave
+                  );
+                }
+              });
+
+              setToast((toastActual) =>
+                toastActual?.empresaId ===
+                empresa.id
+                  ? null
+                  : toastActual
+              );
+
+              combinarNotificaciones();
+              return;
+            }
+
             console.error(
               `Error al escuchar notificaciones de ${empresa.nombre}:`,
               error

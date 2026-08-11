@@ -23,6 +23,7 @@ import {
   db,
 } from "@/lib/firebase";
 import {
+  empresaTieneSuscripcionActiva,
   obtenerLimitesPlan,
   obtenerNombrePlan,
   obtenerPlanEfectivo,
@@ -42,14 +43,9 @@ type EmpresaFacturacion = {
   aiResponsesThisMonth?: number;
   aiResponsesUsageMonth?: string;
   mercadopagoPaymentId?: string;
-
-  /**
-   * Campo preparado para guardar el valor mensual
-   * contratado por cada cliente.
-   *
-   * Cuando adaptemos el checkout, Business podrá conservar
-   * su precio de lanzamiento aunque el precio público suba.
-   */
+  subscriptionStartedAt?: unknown;
+  subscriptionInitialPrice?: number;
+  subscriptionPriceLockedAt?: unknown;
   subscriptionMonthlyPrice?: number;
 };
 
@@ -180,7 +176,7 @@ function textoEstado(
     default:
       return estado
         ? estado
-        : "Activo";
+        : "Sin plan activo";
   }
 }
 
@@ -445,6 +441,21 @@ export default function FacturacionPage() {
       empresa,
     );
 
+  const suscripcionActiva =
+    empresaTieneSuscripcionActiva(
+      empresa,
+    );
+
+  const tuvoSuscripcion =
+    Boolean(
+      empresa.subscriptionStartedAt ||
+      empresa.subscriptionPriceLockedAt ||
+      empresa.subscriptionInitialPrice ||
+      empresa.subscriptionMonthlyPrice ||
+      empresa.mercadopagoPaymentId ||
+      empresa.subscriptionEndsAt,
+    );
+
   const nombrePlan =
     obtenerNombrePlan(plan);
 
@@ -468,9 +479,29 @@ export default function FacturacionPage() {
       : precioPlan.mensual;
 
   const estado =
-    textoEstado(
-      empresa.subscriptionStatus,
-    );
+    suscripcionActiva
+      ? "Activo"
+      : tuvoSuscripcion
+        ? empresa.subscriptionStatus === "pending"
+          ? "Pendiente"
+          : "Vencido / sin renovar"
+        : textoEstado(
+            empresa.subscriptionStatus,
+          );
+
+  const nombrePlanVisible =
+    suscripcionActiva ||
+    tuvoSuscripcion
+      ? nombrePlan
+      : "Sin plan activo";
+
+  const mensualidadVisible =
+    suscripcionActiva ||
+    tuvoSuscripcion
+      ? `${formatearPrecio(
+          mensualContratado,
+        )}/mes`
+      : "—";
 
   const mesActual =
     obtenerMesActualArgentina();
@@ -550,20 +581,28 @@ export default function FacturacionPage() {
       <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
         <Card
           titulo="Plan actual"
-          valor={nombrePlan}
+          valor={nombrePlanVisible}
           descripcion={
-            plan === "business"
-              ? "Business IA · precio lanzamiento"
-              : "Plan activo de tu negocio"
+            suscripcionActiva
+              ? plan === "business"
+                ? "Business IA · precio contratado"
+                : "Plan activo de tu negocio"
+              : tuvoSuscripcion
+                ? "Último plan contratado"
+                : "Elegí un plan para activar tu negocio"
           }
         />
 
         <Card
           titulo="Mantenimiento"
-          valor={`${formatearPrecio(
-            mensualContratado,
-          )}/mes`}
-          descripcion="Servicio mensual de NDI AI"
+          valor={mensualidadVisible}
+          descripcion={
+            suscripcionActiva
+              ? "Servicio mensual de NDI AI"
+              : tuvoSuscripcion
+                ? "Valor mensual para renovar este plan"
+                : "Todavía no hay una mensualidad contratada"
+          }
         />
 
         <Card
@@ -571,12 +610,18 @@ export default function FacturacionPage() {
           valor={estado}
           descripcion="Estado de la suscripción"
           estado={
-            estado === "Activo"
+            suscripcionActiva
           }
         />
 
         <Card
-          titulo="Próximo vencimiento"
+          titulo={
+            suscripcionActiva
+              ? "Próximo vencimiento"
+              : tuvoSuscripcion
+                ? "Último vencimiento"
+                : "Vencimiento"
+          }
           valor={
             fechaVencimiento
               ? formatearFecha(
@@ -585,14 +630,17 @@ export default function FacturacionPage() {
               : "Sin fecha"
           }
           descripcion={
-            fechaVencimiento
-              ? "Fecha registrada de renovación"
-              : "Todavía no hay un vencimiento registrado"
+            suscripcionActiva
+              ? "Fecha hasta la que tu plan está activo"
+              : fechaVencimiento
+                ? "La suscripción necesita renovación"
+                : "Todavía no hay un vencimiento registrado"
           }
           compacto
         />
       </div>
 
+      {tuvoSuscripcion || suscripcionActiva ? (
       <section className="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <div className="border-b border-slate-200 p-6 dark:border-zinc-800">
           <div className="flex flex-wrap items-start justify-between gap-5">
@@ -611,7 +659,9 @@ export default function FacturacionPage() {
               </div>
 
               <p className="mt-2 text-sm text-slate-600 dark:text-zinc-400">
-                Tu plan actual dentro de NDI AI.
+                {suscripcionActiva
+                  ? "Tu plan actual dentro de NDI AI."
+                  : "Último plan contratado. Podés renovarlo desde Planes."}
               </p>
             </div>
 
@@ -622,7 +672,10 @@ export default function FacturacionPage() {
 
               <p className="mt-1 text-2xl font-bold text-slate-950 dark:text-white">
                 {formatearPrecio(
-                  precioPlan.inicial,
+                  typeof empresa.subscriptionInitialPrice === "number" &&
+                  empresa.subscriptionInitialPrice > 0
+                    ? empresa.subscriptionInitialPrice
+                    : precioPlan.inicial,
                 )}
               </p>
 
@@ -695,15 +748,34 @@ export default function FacturacionPage() {
                   <strong>
                     Precio lanzamiento:
                   </strong>{" "}
-                  los primeros clientes de Business IA pueden conservar el valor mensual contratado mientras mantengan activa su suscripción.
+                  conservás el valor mensual contratado mientras mantengas activa tu suscripción.
                 </p>
               )}
             </div>
           </div>
         </div>
       </section>
+      ) : (
+        <section className="mt-8 rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+          <h2 className="text-2xl font-bold text-slate-950 dark:text-white">
+            Todavía no tenés un plan activo
+          </h2>
 
-      {plan ===
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
+            Elegí Página Simple, Página Completa o Business IA para activar las funciones de tu negocio.
+          </p>
+
+          <Link
+            href={`/empresas/${empresaId}/planes`}
+            className="mt-6 inline-flex rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-500"
+          >
+            Elegir plan
+          </Link>
+        </section>
+      )}
+
+      {suscripcionActiva &&
+      plan ===
       "business" ? (
         <section className="mt-8">
           <div>
@@ -753,7 +825,9 @@ export default function FacturacionPage() {
               </h2>
 
               <p className="mt-2 max-w-2xl text-sm text-slate-500 dark:text-zinc-500">
-                El asistente inteligente y su consumo mensual forman parte de Business IA.
+                {plan === "business" && tuvoSuscripcion && !suscripcionActiva
+                  ? "Tu Business IA no está activo. Renovalo para volver a usar el asistente y su consumo mensual."
+                  : "El asistente inteligente y su consumo mensual forman parte de Business IA."}
               </p>
             </div>
 
@@ -761,7 +835,9 @@ export default function FacturacionPage() {
               href={`/empresas/${empresaId}/planes`}
               className="rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
-              Comparar planes
+              {plan === "business" && tuvoSuscripcion
+                ? "Renovar Business IA"
+                : "Comparar planes"}
             </Link>
           </div>
         </section>
@@ -804,7 +880,11 @@ export default function FacturacionPage() {
           href={`/empresas/${empresaId}/planes`}
           className="rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-500"
         >
-          Ver o cambiar plan
+          {suscripcionActiva
+            ? "Ver planes"
+            : tuvoSuscripcion
+              ? "Renovar plan"
+              : "Elegir plan"}
         </Link>
 
         <Link

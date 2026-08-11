@@ -45,9 +45,9 @@ const funciones = [
   {
     titulo: "Turnos y reservas",
     descripcion:
-      "Estamos preparando un sistema para organizar disponibilidad, servicios y reservas directamente desde NDI AI.",
+      "Organizá disponibilidad, servicios, horarios y reservas directamente desde NDI AI.",
     icono: CalendarDays,
-    estado: "preparacion",
+    estado: "principal",
   },
   {
     titulo: "Productos y servicios",
@@ -75,7 +75,7 @@ const funciones = [
     descripcion:
       "Compartí tu página desde redes, cartelería, tarjetas o tu propio local utilizando un acceso rápido mediante QR.",
     icono: QrCode,
-    estado: "preparacion",
+    estado: "principal",
   },
   {
     titulo: "Leads y clientes",
@@ -121,16 +121,16 @@ const pasos = [
     numero: "06",
     titulo: "Vos administrás todo",
     descripcion:
-      "Gestionás información, contactos y las próximas herramientas desde un solo panel.",
+      "Gestionás información, contactos, turnos, estadísticas y funciones de tu plan desde un solo panel.",
   },
 ];
 
 const ejemplos = [
   {
-    rubro: "Barberías y estética",
-    titulo: "Servicios, precios y futuras reservas",
+    rubro: "Barberías, estética y consultorios",
+    titulo: "Servicios, precios y reservas",
     descripcion:
-      "Una página donde tus clientes puedan conocer servicios, horarios, ubicación y contactarte sin buscar información entre publicaciones.",
+      "Mostrá servicios, profesionales, precios y horarios, y permití que tus clientes consulten o reserven turnos desde tu página.",
     icono: CalendarDays,
   },
   {
@@ -156,34 +156,43 @@ const ejemplos = [
   },
 ];
 
-const planExpress = [
-  "Página pública del negocio",
-  "Información general",
-  "Servicios",
-  "Horarios",
-  "Ubicación",
-  "Contacto",
-  "WhatsApp directo",
+const planSimple = [
+  "Página pública profesional",
+  "Logo, portada e identidad visual",
+  "Información del negocio",
+  "Servicios y precios",
+  "Horarios de atención",
+  "Ubicación y mapa",
+  "Redes sociales",
+  "Botón directo a WhatsApp",
+  "Formulario de contacto",
+  "Estadísticas básicas",
 ];
 
-const planNegocio = [
-  "Todo lo incluido en Express",
+const planCompleta = [
+  "Todo lo incluido en Página Simple",
   "Productos y catálogo",
-  "Más secciones para tu negocio",
-  "Solicitud de presupuesto",
-  "QR para compartir",
-  "Sistema de turnos cuando esté disponible",
+  "Galería ampliada",
+  "Código QR para compartir",
+  "Solicitud de presupuestos",
+  "Agenda propia de NDI AI",
+  "Reservas online",
+  "Gestión de turnos",
+  "Más secciones para el negocio",
+  "Estadísticas avanzadas",
 ];
 
-const planInteligente = [
-  "Todo lo incluido en Negocio",
-  "Asistente IA en la página",
-  "Respuestas con información del negocio",
-  "Base de conocimiento",
-  "Captura de leads",
-  "Automatización de turnos en una etapa posterior",
+const planBusinessIA = [
+  "Todo lo incluido en Página Completa",
+  "Asistente IA dentro de la página",
+  "Base de conocimiento del negocio",
+  "Respuestas basadas en información real",
+  "Consultas guardadas en el panel",
+  "Captura y seguimiento de potenciales clientes",
+  "Widget de IA para otras páginas web",
+  "Atención humana cuando sea necesaria",
+  "Sin marca comercial de NDI AI",
 ];
-
 const proximamente = [
   {
     titulo: "WhatsApp Business",
@@ -518,9 +527,9 @@ export default function HomePage() {
             </h2>
 
             <p className="mt-5 leading-8 text-zinc-400">
-              NDI AI está evolucionando para unir tu presencia digital con
-              herramientas inteligentes que ayuden a convertir consultas en
-              oportunidades reales.
+              NDI AI une tu presencia digital con herramientas para mostrar
+              tu negocio, recibir consultas, organizar reservas y sumar
+              inteligencia artificial cuando la necesitás.
             </p>
           </div>
 
@@ -680,9 +689,9 @@ export default function HomePage() {
       <section className="border-y border-zinc-800 bg-zinc-900/40">
         <div className="mx-auto grid max-w-7xl gap-14 px-5 py-20 sm:px-8 sm:py-24 lg:grid-cols-2 lg:items-center">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1.5 text-sm text-amber-300">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-sm text-emerald-300">
               <CalendarDays className="h-4 w-4" />
-              En preparación
+              Agenda y reservas
             </div>
 
             <h2 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl">
@@ -690,16 +699,16 @@ export default function HomePage() {
             </h2>
 
             <p className="mt-5 max-w-xl leading-8 text-zinc-400">
-              Una de las próximas grandes funciones de NDI AI será un sistema
-              propio de reservas para negocios y profesionales que trabajan
-              con horarios.
+              Configurá horarios, recibí reservas desde tu página y administrá
+              cada turno desde el panel de NDI AI. Disponible desde Página
+              Completa.
             </p>
 
             <div className="mt-7 space-y-3">
               {[
                 "Turnos del día",
                 "Próximas reservas",
-                "Calendario semanal y mensual",
+                "Calendario mensual",
                 "Servicios y duración",
                 "Horarios disponibles",
                 "Estados de cada turno",
@@ -720,7 +729,7 @@ export default function HomePage() {
               <div>
                 <p className="font-semibold">Agenda</p>
                 <p className="mt-1 text-xs text-zinc-500">
-                  Ejemplo de próxima función
+                  Reservas y disponibilidad del negocio
                 </p>
               </div>
 
@@ -877,29 +886,36 @@ export default function HomePage() {
             </h2>
 
             <p className="mt-5 leading-8 text-zinc-400">
-              Los precios finales todavía no están definidos. Estamos
-              preparando las primeras versiones de cada propuesta.
+              Elegí la versión que mejor se adapte a tu negocio. Todos los
+              planes incluyen puesta en marcha y mantenimiento mensual.
             </p>
           </div>
 
           <div className="mt-12 grid gap-6 lg:grid-cols-3">
             <PlanCard
-              nombre="Express"
-              descripcion="Para negocios que necesitan una presencia profesional, clara y fácil de compartir."
-              features={planExpress}
+              nombre="Página Simple"
+              descripcion="Para negocios que necesitan una presencia online profesional, clara y lista para recibir consultas."
+              inicial="$ 89.999"
+              mensual="$ 5.999/mes"
+              features={planSimple}
             />
 
             <PlanCard
-              nombre="Negocio"
-              descripcion="Para quienes necesitan mostrar más información y sumar herramientas para organizar consultas."
-              features={planNegocio}
+              nombre="Página Completa"
+              descripcion="Para negocios que además quieren mostrar productos, recibir presupuestos y organizar reservas desde NDI AI."
+              inicial="$ 159.999"
+              mensual="$ 9.999/mes"
+              features={planCompleta}
               destacado
             />
 
             <PlanCard
-              nombre="Inteligente"
-              descripcion="Para negocios que quieren sumar inteligencia artificial y aprovechar al máximo NDI AI."
-              features={planInteligente}
+              nombre="Business IA"
+              descripcion="La versión inteligente de NDI AI para negocios que quieren atender consultas y aprovechar inteligencia artificial."
+              inicial="$ 219.999"
+              mensual="$ 15.999/mes"
+              features={planBusinessIA}
+              lanzamiento
             />
           </div>
         </div>
@@ -969,8 +985,8 @@ export default function HomePage() {
               </h2>
 
               <p className="mx-auto mt-5 max-w-2xl leading-7 text-zinc-300">
-                Estamos preparando las primeras páginas inteligentes de NDI AI.
-                Creá tu cuenta y acompañá esta nueva etapa del proyecto.
+                Creá tu página, cargá la información de tu negocio y elegí
+                el plan que mejor se adapte a lo que necesitás.
               </p>
 
               <Link
@@ -1028,13 +1044,19 @@ export default function HomePage() {
 function PlanCard({
   nombre,
   descripcion,
+  inicial,
+  mensual,
   features,
   destacado = false,
+  lanzamiento = false,
 }: {
   nombre: string;
   descripcion: string;
+  inicial: string;
+  mensual: string;
   features: string[];
   destacado?: boolean;
+  lanzamiento?: boolean;
 }) {
   return (
     <article
@@ -1050,6 +1072,12 @@ function PlanCard({
         </span>
       )}
 
+      {lanzamiento && (
+        <span className="absolute right-6 top-6 rounded-full bg-violet-600 px-3 py-1 text-xs font-semibold text-white">
+          Precio lanzamiento
+        </span>
+      )}
+
       <p
         className={
           destacado
@@ -1061,12 +1089,28 @@ function PlanCard({
       </p>
 
       <div className="mt-4">
-        <span className="text-2xl font-bold">Consultar precio</span>
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
+          Puesta en marcha
+        </p>
+
+        <p className="mt-1 text-3xl font-bold text-white">
+          {inicial}
+        </p>
+
+        <p className="mt-1 text-sm font-semibold text-blue-400">
+          + {mensual}
+        </p>
       </div>
 
       <p className="mt-4 text-sm leading-6 text-zinc-400">
         {descripcion}
       </p>
+
+      {lanzamiento && (
+        <p className="mt-4 rounded-xl border border-violet-500/20 bg-violet-500/10 p-3 text-xs leading-5 text-violet-200">
+          Conservás este precio mensual mientras mantengas activa tu suscripción.
+        </p>
+      )}
 
       <div className="mt-7 space-y-3">
         {features.map((feature) => (

@@ -22,17 +22,24 @@ import {
 } from "lucide-react";
 
 import { db } from "@/lib/firebase";
+import {
+  empresaTieneFuncion,
+  empresaTieneSuscripcionActiva,
+  obtenerNombrePlan,
+  obtenerPlanEfectivo,
+  obtenerPrecioPlan,
+  type PlanId,
+} from "@/lib/plans/planAccess";
 import Card from "@/components/Ui/Card";
 import MetricCard from "../components/MetricCard";
 import QuickAccessCard from "../components/QuickAccessCard";
-import PlanUsageCard from "@/components/dashboard/PlanUsageCard";
-
-type PlanId = "free" | "pro" | "business";
 
 type EmpresaData = {
   nombre?: string;
   plan?: PlanId;
+  subscriptionStatus?: string;
   subscriptionEndsAt?: unknown;
+  subscriptionMonthlyPrice?: number;
   paginaPublica?: {
     slug?: string;
     publicada?: boolean;
@@ -127,6 +134,14 @@ function fechaISOHoy() {
   return `${year}-${month}-${day}`;
 }
 
+function formatearPrecio(valor: number) {
+  return new Intl.NumberFormat("es-AR", {
+    style: "currency",
+    currency: "ARS",
+    maximumFractionDigits: 0,
+  }).format(valor);
+}
+
 export default function DashboardEmpresaPage() {
   const params = useParams();
   const router = useRouter();
@@ -163,6 +178,7 @@ export default function DashboardEmpresaPage() {
       return;
     }
 
+    const empresaIdSeguro = empresaId;
     let activo = true;
 
     async function cargarDashboard() {
@@ -170,57 +186,13 @@ export default function DashboardEmpresaPage() {
         setLoading(true);
         setError("");
 
-        const [
-          empresaSnapshot,
-          catalogoSnapshot,
-          turnosSnapshot,
-          analyticsSnapshot,
-          conversacionesSnapshot,
-        ] = await Promise.all([
-          getDoc(
-            doc(
-              db,
-              "companies",
-              empresaId!,
-            ),
+        const empresaSnapshot = await getDoc(
+          doc(
+            db,
+            "companies",
+            empresaIdSeguro,
           ),
-          getDocs(
-            collection(
-              db,
-              "companies",
-              empresaId!,
-              "catalog",
-            ),
-          ),
-          getDocs(
-            collection(
-              db,
-              "companies",
-              empresaId!,
-              "appointments",
-            ),
-          ),
-          getDocs(
-            collection(
-              db,
-              "companies",
-              empresaId!,
-              "analyticsEvents",
-            ),
-          ),
-          getDocs(
-            query(
-              collection(
-                db,
-                "companies",
-                empresaId!,
-                "conversations",
-              ),
-              orderBy("updatedAt", "desc"),
-              limit(5),
-            ),
-          ),
-        ]);
+        );
 
         if (!activo) {
           return;
@@ -232,9 +204,74 @@ export default function DashboardEmpresaPage() {
           return;
         }
 
-        setEmpresa(
-          empresaSnapshot.data() as EmpresaData,
-        );
+        const datosEmpresa =
+          empresaSnapshot.data() as EmpresaData;
+
+        setEmpresa(datosEmpresa);
+
+        const puedeUsarTurnos =
+          empresaTieneFuncion(
+            datosEmpresa,
+            "turnos",
+          );
+
+        const puedeUsarAsistente =
+          empresaTieneFuncion(
+            datosEmpresa,
+            "asistente_ia",
+          );
+
+        const [
+          catalogoSnapshot,
+          analyticsSnapshot,
+          turnosSnapshot,
+          conversacionesSnapshot,
+        ] = await Promise.all([
+          getDocs(
+            collection(
+              db,
+              "companies",
+              empresaIdSeguro,
+              "catalog",
+            ),
+          ),
+          getDocs(
+            collection(
+              db,
+              "companies",
+              empresaIdSeguro,
+              "analyticsEvents",
+            ),
+          ),
+          puedeUsarTurnos
+            ? getDocs(
+                collection(
+                  db,
+                  "companies",
+                  empresaIdSeguro,
+                  "appointments",
+                ),
+              )
+            : Promise.resolve(null),
+          puedeUsarAsistente
+            ? getDocs(
+                query(
+                  collection(
+                    db,
+                    "companies",
+                    empresaIdSeguro,
+                    "conversations",
+                  ),
+                  orderBy("updatedAt", "desc"),
+                  limit(5),
+                ),
+              )
+            : Promise.resolve(null),
+        ]);
+
+        if (!activo) {
+          return;
+        }
 
         setCatalogo(
           catalogoSnapshot.docs.map(
@@ -248,18 +285,6 @@ export default function DashboardEmpresaPage() {
           ),
         );
 
-        setTurnos(
-          turnosSnapshot.docs.map(
-            (documento) => ({
-              id: documento.id,
-              ...(documento.data() as Omit<
-                Turno,
-                "id"
-              >),
-            }),
-          ),
-        );
-
         setEventosPagina(
           analyticsSnapshot.docs.map(
             (documento) =>
@@ -267,16 +292,32 @@ export default function DashboardEmpresaPage() {
           ),
         );
 
+        setTurnos(
+          turnosSnapshot
+            ? turnosSnapshot.docs.map(
+                (documento) => ({
+                  id: documento.id,
+                  ...(documento.data() as Omit<
+                    Turno,
+                    "id"
+                  >),
+                }),
+              )
+            : [],
+        );
+
         setConversaciones(
-          conversacionesSnapshot.docs.map(
-            (documento) => ({
-              id: documento.id,
-              ...(documento.data() as Omit<
-                Conversacion,
-                "id"
-              >),
-            }),
-          ),
+          conversacionesSnapshot
+            ? conversacionesSnapshot.docs.map(
+                (documento) => ({
+                  id: documento.id,
+                  ...(documento.data() as Omit<
+                    Conversacion,
+                    "id"
+                  >),
+                }),
+              )
+            : [],
         );
       } catch (firebaseError) {
         console.error(
@@ -303,31 +344,72 @@ export default function DashboardEmpresaPage() {
     };
   }, [empresaId]);
 
-  const planGuardado: PlanId =
-    empresa?.plan === "pro" ||
-    empresa?.plan === "business"
-      ? empresa.plan
-      : "free";
+  const planEfectivo =
+    obtenerPlanEfectivo(
+      empresa ?? {},
+    );
+
+  const suscripcionActiva =
+    empresa
+      ? empresaTieneSuscripcionActiva(
+          empresa,
+        )
+      : false;
+
+  const puedeUsarProductos =
+    empresa
+      ? empresaTieneFuncion(
+          empresa,
+          "productos",
+        )
+      : false;
+
+  const puedeUsarTurnos =
+    empresa
+      ? empresaTieneFuncion(
+          empresa,
+          "turnos",
+        )
+      : false;
+
+  const puedeUsarAsistenteIA =
+    empresa
+      ? empresaTieneFuncion(
+          empresa,
+          "asistente_ia",
+        )
+      : false;
+
+  const nombrePlan =
+    suscripcionActiva
+      ? obtenerNombrePlan(
+          planEfectivo,
+        )
+      : "Sin plan activo";
+
+  const precioPlan =
+    obtenerPrecioPlan(
+      planEfectivo,
+    );
+
+  const mensualidad =
+    typeof empresa?.subscriptionMonthlyPrice ===
+      "number" &&
+    empresa.subscriptionMonthlyPrice > 0
+      ? empresa.subscriptionMonthlyPrice
+      : precioPlan.mensual;
 
   const fechaVencimiento =
     convertirFecha(
       empresa?.subscriptionEndsAt,
     );
 
-  const planEfectivo: PlanId =
-    planGuardado === "business"
-      ? "business"
-      : planGuardado === "pro" &&
-          fechaVencimiento &&
-          fechaVencimiento.getTime() > Date.now()
-        ? "pro"
-        : "free";
-
-  const mostrarPublicidad =
-    planEfectivo === "free";
-
   const paginaPublicada =
     empresa?.paginaPublica?.publicada === true;
+
+  const paginaDisponible =
+    suscripcionActiva &&
+    paginaPublicada;
 
   const slug =
     empresa?.paginaPublica?.slug?.trim() || "";
@@ -390,7 +472,7 @@ export default function DashboardEmpresaPage() {
   }, [turnos]);
 
   function abrirPaginaPublica() {
-    if (!slug || !paginaPublicada) {
+    if (!slug || !paginaDisponible) {
       return;
     }
 
@@ -446,7 +528,7 @@ export default function DashboardEmpresaPage() {
 
           <button
             type="button"
-            disabled={!paginaPublicada || !slug}
+            disabled={!paginaDisponible || !slug}
             onClick={abrirPaginaPublica}
             className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
           >
@@ -517,14 +599,16 @@ export default function DashboardEmpresaPage() {
                       <span
                         className={[
                           "inline-flex rounded-full px-2.5 py-1 text-xs font-semibold",
-                          paginaPublicada
+                          paginaDisponible
                             ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
                             : "bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
                         ].join(" ")}
                       >
-                        {paginaPublicada
+                        {paginaDisponible
                           ? "Publicada"
-                          : "Sin publicar"}
+                          : suscripcionActiva
+                            ? "Sin publicar"
+                            : "Sin plan activo"}
                       </span>
                     </div>
 
@@ -553,11 +637,13 @@ export default function DashboardEmpresaPage() {
                 <EstadoPagina
                   titulo="Página pública"
                   texto={
-                    paginaPublicada
+                    paginaDisponible
                       ? "Visible para tus clientes"
-                      : "Falta publicarla"
+                      : suscripcionActiva
+                        ? "Falta publicarla"
+                        : "Necesitás un plan activo"
                   }
-                  listo={paginaPublicada}
+                  listo={paginaDisponible}
                 />
 
                 <EstadoPagina
@@ -607,20 +693,34 @@ export default function DashboardEmpresaPage() {
                     ruta: "",
                   },
                   {
-                    titulo: "2. Cargá servicios y productos",
-                    texto: "Mostrá qué ofrecés, precios e imágenes.",
+                    titulo: puedeUsarProductos
+                      ? "2. Cargá servicios y productos"
+                      : "2. Cargá tus servicios",
+                    texto: puedeUsarProductos
+                      ? "Mostrá qué ofrecés, precios e imágenes."
+                      : "Mostrá tus servicios, precios e imágenes.",
                     ruta: "catalogo",
                   },
-                  {
-                    titulo: "3. Configurá la agenda",
-                    texto: "Definí días y horarios disponibles.",
-                    ruta: "agenda",
-                  },
-                  {
-                    titulo: "4. Probá el asistente web",
-                    texto: "Verificá cómo responde la IA a tus clientes.",
-                    ruta: "probar",
-                  },
+                  ...(puedeUsarTurnos
+                    ? [
+                        {
+                          titulo: "3. Configurá la agenda",
+                          texto: "Definí días y horarios disponibles.",
+                          ruta: "agenda",
+                        },
+                      ]
+                    : []),
+                  ...(puedeUsarAsistenteIA
+                    ? [
+                        {
+                          titulo: puedeUsarTurnos
+                            ? "4. Probá el asistente web"
+                            : "3. Probá el asistente web",
+                          texto: "Verificá cómo responde la IA a tus clientes.",
+                          ruta: "probar",
+                        },
+                      ]
+                    : []),
                 ].map((paso) => (
                   <button
                     key={paso.titulo}
@@ -731,7 +831,19 @@ export default function DashboardEmpresaPage() {
                 </button>
               </div>
 
-              {proximosTurnos.length === 0 ? (
+              {!puedeUsarTurnos ? (
+                <div className="p-10 text-center">
+                  <CalendarDays className="mx-auto h-9 w-9 text-slate-300 dark:text-zinc-700" />
+
+                  <p className="mt-4 font-medium text-slate-950 dark:text-white">
+                    Agenda disponible desde Página Completa
+                  </p>
+
+                  <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
+                    Activá Página Completa o Business IA para administrar reservas y turnos.
+                  </p>
+                </div>
+              ) : proximosTurnos.length === 0 ? (
                 <div className="p-10 text-center">
                   <CalendarDays className="mx-auto h-9 w-9 text-slate-300 dark:text-zinc-700" />
 
@@ -810,7 +922,19 @@ export default function DashboardEmpresaPage() {
                 </button>
               </div>
 
-              {conversaciones.length === 0 ? (
+              {!puedeUsarAsistenteIA ? (
+                <div className="p-10 text-center">
+                  <MessageSquare className="mx-auto h-9 w-9 text-slate-300 dark:text-zinc-700" />
+
+                  <p className="mt-4 font-medium text-slate-950 dark:text-white">
+                    Consultas con IA disponibles en Business IA
+                  </p>
+
+                  <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
+                    Con Business IA vas a poder ver acá la actividad del asistente y las consultas de tus clientes.
+                  </p>
+                </div>
+              ) : conversaciones.length === 0 ? (
                 <div className="p-10 text-center">
                   <MessageSquare className="mx-auto h-9 w-9 text-slate-300 dark:text-zinc-700" />
 
@@ -873,56 +997,88 @@ export default function DashboardEmpresaPage() {
           </div>
 
           <Card className="p-6">
-            <div className="mb-5 flex items-center gap-3">
-              <Package className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex items-start gap-3">
+                <Package className="mt-0.5 h-5 w-5 text-blue-600 dark:text-blue-400" />
 
-              <div>
-                <h2 className="font-semibold text-slate-950 dark:text-white">
-                  Plan y uso
-                </h2>
-
-                <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
-                  Consumo actual de tu cuenta NDI AI.
-                </p>
-              </div>
-            </div>
-
-            <PlanUsageCard />
-          </Card>
-
-          {mostrarPublicidad && (
-            <Card className="overflow-hidden border-blue-200 bg-gradient-to-r from-blue-50 via-white to-violet-50 dark:border-blue-500/20 dark:from-blue-500/10 dark:via-zinc-900 dark:to-violet-500/10">
-              <div className="flex flex-col justify-between gap-5 p-6 md:flex-row md:items-center">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-500">
-                    Publicidad
-                  </p>
-
-                  <h2 className="mt-2 text-lg font-semibold text-slate-950 dark:text-white">
-                    Usás NDI AI Free
+                  <h2 className="font-semibold text-slate-950 dark:text-white">
+                    Plan
                   </h2>
 
-                  <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
-                    El plan gratuito puede mostrar promociones de NDI AI
-                    o patrocinadores directos. Pasate a Pro para usar
-                    el panel sin publicidad.
+                  <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
+                    Estado actual de tu suscripción NDI AI.
                   </p>
-                </div>
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    router.push(
-                      `/empresas/${empresaId}/planes`,
-                    )
-                  }
-                  className="shrink-0 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500"
-                >
-                  Pasar a Pro sin publicidad
-                </button>
+                  <div className="mt-4 flex flex-wrap items-center gap-x-8 gap-y-3 text-sm">
+                    <p className="text-slate-500 dark:text-zinc-500">
+                      Plan actual:{" "}
+                      <span className="font-semibold text-slate-950 dark:text-white">
+                        {nombrePlan}
+                      </span>
+                    </p>
+
+                    <p className="text-slate-500 dark:text-zinc-500">
+                      Estado:{" "}
+                      <span
+                        className={
+                          suscripcionActiva
+                            ? "font-semibold text-emerald-600 dark:text-emerald-400"
+                            : "font-semibold text-amber-600 dark:text-amber-400"
+                        }
+                      >
+                        {suscripcionActiva
+                          ? "Activo"
+                          : "Sin plan activo"}
+                      </span>
+                    </p>
+
+                    {suscripcionActiva && (
+                      <p className="text-slate-500 dark:text-zinc-500">
+                        Mensualidad:{" "}
+                        <span className="font-semibold text-slate-950 dark:text-white">
+                          {formatearPrecio(mensualidad)}/mes
+                        </span>
+                      </p>
+                    )}
+
+                    {fechaVencimiento && (
+                      <p className="text-slate-500 dark:text-zinc-500">
+                        Vence:{" "}
+                        <span className="font-semibold text-slate-950 dark:text-white">
+                          {new Intl.DateTimeFormat("es-AR", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          }).format(fechaVencimiento)}
+                        </span>
+                      </p>
+                    )}
+                  </div>
+
+                  {puedeUsarAsistenteIA && (
+                    <p className="mt-4 text-xs leading-5 text-slate-500 dark:text-zinc-500">
+                      El consumo detallado del asistente IA se consulta desde Facturación.
+                    </p>
+                  )}
+                </div>
               </div>
-            </Card>
-          )}
+
+              <button
+                type="button"
+                onClick={() =>
+                  router.push(
+                    `/empresas/${empresaId}/facturacion`,
+                  )
+                }
+                className="shrink-0 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500"
+              >
+                {suscripcionActiva
+                  ? "Ver facturación"
+                  : "Elegir plan"}
+              </button>
+            </div>
+          </Card>
         </>
       )}
     </section>

@@ -16,7 +16,10 @@ import { notFound } from "next/navigation";
 import Script from "next/script";
 
 import { adminDb } from "@/lib/firebaseAdmin";
-import { empresaTieneFuncion } from "@/lib/plans/planAccess";
+import {
+  empresaTieneFuncion,
+  empresaTieneSuscripcionActiva,
+} from "@/lib/plans/planAccess";
 import ReservaForm from "./ReservaForm";
 import ContactoForm from "./ContactForm";
 import PublicAnalytics from "./PublicAnalytics";
@@ -39,6 +42,7 @@ interface PreguntaFrecuentePagina {
 interface Empresa {
   nombre?: string;
   plan?: "free" | "pro" | "business";
+  subscriptionStatus?: string;
   subscriptionEndsAt?: unknown;
   rubro?: string;
   email?: string;
@@ -166,7 +170,12 @@ export async function generateMetadata({
   const pagina =
     empresa.paginaPublica;
 
-  if (!pagina?.publicada) {
+  if (
+    !pagina?.publicada ||
+    !empresaTieneSuscripcionActiva(
+      empresa,
+    )
+  ) {
     return {
       title: "Página no disponible | NDI AI",
       robots: {
@@ -257,7 +266,12 @@ export default async function NegocioPage({
 
   const pagina = empresa.paginaPublica;
 
-  if (!pagina?.publicada) {
+  if (
+    !pagina?.publicada ||
+    !empresaTieneSuscripcionActiva(
+      empresa,
+    )
+  ) {
     notFound();
   }
 
@@ -280,13 +294,28 @@ export default async function NegocioPage({
         (item) => item.activo !== false,
       );
 
+  const puedeUsarProductos =
+    empresaTieneFuncion(
+      empresa,
+      "productos",
+    );
+
   const servicios = catalogo.filter(
     (item) => item.tipo === "servicio",
   );
 
-  const productos = catalogo.filter(
-    (item) => item.tipo === "producto",
-  );
+  const productos =
+    puedeUsarProductos
+      ? catalogo.filter(
+          (item) =>
+            item.tipo === "producto",
+        )
+      : [];
+
+  const catalogoPermitido =
+    puedeUsarProductos
+      ? catalogo
+      : servicios;
 
   const nombre =
     pagina.titulo ||
@@ -350,6 +379,7 @@ export default async function NegocioPage({
     pagina.mostrarServicios !== false;
 
   const mostrarProductos =
+    puedeUsarProductos &&
     pagina.mostrarProductos !== false;
 
   const mostrarGaleria =
@@ -1134,7 +1164,7 @@ export default async function NegocioPage({
           <div className="mx-auto max-w-4xl px-5 py-20 sm:px-8">
             <PresupuestoFormulario
               slug={slug}
-              items={catalogo.map(
+              items={catalogoPermitido.map(
                 (item) => ({
                   id: item.id,
                   nombre: item.nombre,

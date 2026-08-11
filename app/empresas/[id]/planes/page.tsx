@@ -503,10 +503,11 @@ export default function PlanesPage() {
     );
 
   const tuvoSuscripcion =
-    typeof empresa.subscriptionMonthlyPrice ===
-      "number" &&
-    empresa.subscriptionMonthlyPrice >
-      0;
+    Boolean(
+      empresa.subscriptionStatus ||
+      empresa.subscriptionEndsAt ||
+      empresa.subscriptionMonthlyPrice,
+    );
 
   const precioRenovacion =
     typeof empresa.subscriptionMonthlyPrice ===
@@ -616,7 +617,8 @@ export default function PlanesPage() {
     }
 
     const esRenovacion =
-      tuvoSuscripcion &&
+      (suscripcionActiva ||
+        tuvoSuscripcion) &&
       planId ===
         planActual;
 
@@ -656,6 +658,7 @@ export default function PlanesPage() {
     setMensaje("");
 
     if (
+      !suscripcionActiva &&
       !tuvoSuscripcion
     ) {
       setError(
@@ -739,11 +742,6 @@ export default function PlanesPage() {
               !suscripcionActiva &&
               tuvoSuscripcion &&
               plan.id ===
-                planActual;
-
-            const cambioBloqueado =
-              suscripcionActiva &&
-              plan.id !==
                 planActual;
 
             const precios =
@@ -861,7 +859,6 @@ export default function PlanesPage() {
                   type="button"
                   disabled={
                     esActual ||
-                    cambioBloqueado ||
                     procesandoPlan !==
                       null ||
                     procesandoRenovacion
@@ -884,18 +881,16 @@ export default function PlanesPage() {
                 >
                   {esActual
                     ? "Plan actual"
-                    : cambioBloqueado
-                      ? "Cambio de plan próximamente"
-                      : procesandoPlan ===
-                          plan.id
-                        ? esUltimoPlan
-                          ? "Abriendo renovación..."
-                          : "Abriendo Mercado Pago..."
-                        : esUltimoPlan
-                          ? `Renovar por ${formatearPrecio(
-                              precioRenovacion,
-                            )}`
-                          : "Elegir plan"}
+                    : procesandoPlan ===
+                        plan.id
+                      ? esUltimoPlan
+                        ? "Abriendo renovación..."
+                        : "Abriendo Mercado Pago..."
+                      : esUltimoPlan
+                        ? `Renovar por ${formatearPrecio(
+                            precioRenovacion,
+                          )}`
+                        : "Elegir plan"}
                 </button>
               </article>
             );
@@ -969,7 +964,8 @@ export default function PlanesPage() {
               </div>
             </div>
 
-            {tuvoSuscripcion && (
+            {(suscripcionActiva ||
+              tuvoSuscripcion) && (
               <div className="shrink-0 sm:text-right">
                 <button
                   type="button"
