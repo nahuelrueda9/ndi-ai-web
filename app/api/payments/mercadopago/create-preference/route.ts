@@ -8,6 +8,7 @@ import {
   adminDb,
 } from "@/lib/firebaseAdmin";
 import {
+  empresaTieneSuscripcionActiva,
   obtenerNombrePlan,
   obtenerPrecioPlan,
   type PlanId,
@@ -16,10 +17,12 @@ import {
 export const runtime = "nodejs";
 
 type PlanPago = PlanId;
+type TipoPago = "alta" | "renovacion";
 
 type BodyRequest = {
   empresaId?: string;
   plan?: PlanPago;
+  tipoPago?: TipoPago;
 };
 
 type RespuestaMercadoPago = {
@@ -31,10 +34,7 @@ type RespuestaMercadoPago = {
   cause?: unknown;
 };
 
-const DESCRIPCIONES: Record<
-  PlanPago,
-  string
-> = {
+const DESCRIPCIONES: Record<PlanPago, string> = {
   free:
     "Página Simple de NDI AI para tener una presencia digital profesional.",
   pro:
@@ -125,6 +125,52 @@ function esPlanPago(
     valor === "free" ||
     valor === "pro" ||
     valor === "business"
+  );
+}
+
+function esTipoPago(
+  valor: unknown,
+): valor is TipoPago {
+  return (
+    valor === "alta" ||
+    valor === "renovacion"
+  );
+}
+
+function obtenerPrecioMensualContratado(
+  empresa:
+    | Record<string, unknown>
+    | undefined,
+) {
+  const valor =
+    empresa?.subscriptionMonthlyPrice;
+
+  if (
+    typeof valor === "number" &&
+    Number.isFinite(valor) &&
+    valor > 0
+  ) {
+    return valor;
+  }
+
+  return null;
+}
+
+function empresaTuvoSuscripcion(
+  empresa:
+    | Record<string, unknown>
+    | undefined,
+) {
+  if (!empresa) {
+    return false;
+  }
+
+  return Boolean(
+    empresa.subscriptionStartedAt ||
+      empresa.subscriptionPriceLockedAt ||
+      empresa.subscriptionInitialPrice ||
+      empresa.subscriptionMonthlyPrice ||
+      empresa.mercadoPagoPaymentId,
   );
 }
 
@@ -225,6 +271,24 @@ export async function POST(
       );
     }
 
+    if (
+      body.tipoPago !==
+        undefined &&
+      !esTipoPago(
+        body.tipoPago,
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "El tipo de pago no es válido.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
     const empresaReferencia =
       adminDb
         .collection(
@@ -261,10 +325,85 @@ export async function POST(
       return NextResponse.json(
         {
           error:
-            "Solo el Propietario puede cambiar el plan de esta empresa.",
+            "Solo el Propietario puede gestionar el plan de esta empresa.",
         },
         {
           status: 403,
+        },
+      );
+    }
+
+    const planGuardado =
+      esPlanPago(
+        empresa?.plan,
+      )
+        ? empresa.plan
+        : null;
+
+    const suscripcionActiva =
+      empresaTieneSuscripcionActiva(
+        empresa,
+      );
+
+    const tuvoSuscripcion =
+      empresaTuvoSuscripcion(
+        empresa,
+      );
+
+    const tipoPago: TipoPago =
+      body.tipoPago ??
+      (
+        tuvoSuscripcion &&
+        planGuardado === plan
+          ? "renovacion"
+          : "alta"
+      );
+
+    if (
+      suscripcionActiva &&
+      planGuardado !== plan
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Tu empresa ya tiene un plan activo. El cambio de plan todavía no está habilitado desde el checkout.",
+        },
+        {
+          status: 409,
+        },
+      );
+    }
+
+    if (
+      tipoPago ===
+        "renovacion" &&
+      (
+        !tuvoSuscripcion ||
+        planGuardado !== plan
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "No se puede renovar este plan porque la empresa todavía no tuvo una suscripción de ese plan.",
+        },
+        {
+          status: 409,
+        },
+      );
+    }
+
+    if (
+      tipoPago === "alta" &&
+      suscripcionActiva
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "La empresa ya tiene una suscripción activa. Para extenderla usá la renovación mensual.",
+        },
+        {
+          status: 409,
         },
       );
     }
@@ -282,7 +421,7 @@ export async function POST(
     const precioInicial =
       precios.inicial;
 
-    const precioMensual =
+    const precioMensualActual =
       precios.mensual;
 
     if (
@@ -291,9 +430,9 @@ export async function POST(
       ) ||
       precioInicial <= 0 ||
       !Number.isFinite(
-        precioMensual,
+        precioMensualActual,
       ) ||
-      precioMensual <= 0
+      precioMensualActual <= 0
     ) {
       return NextResponse.json(
         {
@@ -305,6 +444,14 @@ export async function POST(
         },
       );
     }
+
+    const precioMensual =
+      tipoPago === "renovacion"
+        ? obtenerPrecioMensualContratado(
+            empresa,
+          ) ??
+          precioMensualActual
+        : precioMensualActual;
 
     const urlBase =
       obtenerUrlBase(
@@ -321,51 +468,67 @@ export async function POST(
       empresaId,
       usuario.uid,
       plan,
-      "alta",
+      tipoPago,
       Date.now(),
     ].join(":");
 
-    /*
-     * La primera compra cobra:
-     *
-     * 1. Puesta en marcha / alta.
-     * 2. Primer mes de mantenimiento.
-     *
-     * Los meses siguientes se cobrarán como renovaciones
-     * mensuales cuando adaptemos el flujo de renovación.
-     */
+    const paymentType =
+      tipoPago === "alta"
+        ? "setup_and_first_month"
+        : "renewal";
+
+    const items:
+      Array<Record<string, unknown>> =
+      tipoPago === "alta"
+        ? [
+            {
+              id:
+                `ndi-ai-${plan}-alta`,
+              title:
+                `${nombrePlan} · Puesta en marcha`,
+              description:
+                DESCRIPCIONES[
+                  plan
+                ],
+              quantity: 1,
+              currency_id:
+                "ARS",
+              unit_price:
+                precioInicial,
+            },
+            {
+              id:
+                `ndi-ai-${plan}-mensualidad`,
+              title:
+                `${nombrePlan} · Primer mes`,
+              description:
+                "Primer mes de mantenimiento y acceso a las funciones incluidas en el plan.",
+              quantity: 1,
+              currency_id:
+                "ARS",
+              unit_price:
+                precioMensual,
+            },
+          ]
+        : [
+            {
+              id:
+                `ndi-ai-${plan}-renovacion`,
+              title:
+                `${nombrePlan} · Renovación mensual`,
+              description:
+                "Renovación por 30 días del acceso a las funciones incluidas en el plan.",
+              quantity: 1,
+              currency_id:
+                "ARS",
+              unit_price:
+                precioMensual,
+            },
+          ];
+
     const preferenceBody:
       Record<string, unknown> = {
-      items: [
-        {
-          id:
-            `ndi-ai-${plan}-alta`,
-          title:
-            `${nombrePlan} · Puesta en marcha`,
-          description:
-            DESCRIPCIONES[
-              plan
-            ],
-          quantity: 1,
-          currency_id:
-            "ARS",
-          unit_price:
-            precioInicial,
-        },
-        {
-          id:
-            `ndi-ai-${plan}-mensualidad`,
-          title:
-            `${nombrePlan} · Primer mes`,
-          description:
-            "Primer mes de mantenimiento y acceso a las funciones incluidas en el plan.",
-          quantity: 1,
-          currency_id:
-            "ARS",
-          unit_price:
-            precioMensual,
-        },
-      ],
+      items,
 
       external_reference:
         externalReference,
@@ -377,9 +540,12 @@ export async function POST(
           usuario.uid,
         plan,
         payment_type:
-          "setup_and_first_month",
+          paymentType,
         initial_price:
-          precioInicial,
+          tipoPago ===
+          "alta"
+            ? precioInicial
+            : 0,
         monthly_price:
           precioMensual,
       },
@@ -401,26 +567,22 @@ export async function POST(
       };
     }
 
-    /*
-     * Mercado Pago no admite localhost
-     * en back_urls ni notification_url.
-     */
     if (urlPublica) {
       preferenceBody.back_urls = {
         success:
           `${urlBase}/empresas/${encodeURIComponent(
             empresaId,
-          )}/planes?payment=success`,
+          )}/planes?payment=success&type=${tipoPago}`,
 
         pending:
           `${urlBase}/empresas/${encodeURIComponent(
             empresaId,
-          )}/planes?payment=pending`,
+          )}/planes?payment=pending&type=${tipoPago}`,
 
         failure:
           `${urlBase}/empresas/${encodeURIComponent(
             empresaId,
-          )}/planes?payment=failure`,
+          )}/planes?payment=failure&type=${tipoPago}`,
       };
 
       preferenceBody.auto_return =
@@ -535,10 +697,13 @@ export async function POST(
           nombrePlan,
 
         pendingPaymentType:
-          "setup_and_first_month",
+          paymentType,
 
         pendingInitialPrice:
-          precioInicial,
+          tipoPago ===
+          "alta"
+            ? precioInicial
+            : null,
 
         pendingMonthlyPrice:
           precioMensual,
@@ -560,9 +725,19 @@ export async function POST(
       },
     );
 
+    const total =
+      tipoPago === "alta"
+        ? precioInicial +
+          precioMensual
+        : precioMensual;
+
     return NextResponse.json({
       success:
         true,
+
+      tipoPago,
+
+      paymentType,
 
       preferenceId:
         data.id,
@@ -581,13 +756,15 @@ export async function POST(
 
       nombrePlan,
 
-      precioInicial,
+      precioInicial:
+        tipoPago ===
+        "alta"
+          ? precioInicial
+          : 0,
 
       precioMensual,
 
-      totalPrimeraCompra:
-        precioInicial +
-        precioMensual,
+      total,
     });
   } catch (error) {
     console.error(

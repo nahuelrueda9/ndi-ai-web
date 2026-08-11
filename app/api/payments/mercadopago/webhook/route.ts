@@ -24,6 +24,7 @@ import {
 export const runtime = "nodejs";
 
 type PlanPago = PlanId;
+type TipoPago = "alta" | "renovacion";
 
 type NotificacionMercadoPago = {
   type?: string;
@@ -211,6 +212,15 @@ function esPlanPago(
   );
 }
 
+function esTipoPago(
+  valor: unknown,
+): valor is TipoPago {
+  return (
+    valor === "alta" ||
+    valor === "renovacion"
+  );
+}
+
 function parsearReferencia(
   referencia: string,
 ) {
@@ -218,11 +228,12 @@ function parsearReferencia(
     referencia.split(":");
 
   /*
-   * Formato nuevo creado por create-preference:
+   * Formatos creados por create-preference:
    *
    * ndi-ai:{empresaId}:{propietarioUid}:{plan}:alta:{timestamp}
+   * ndi-ai:{empresaId}:{propietarioUid}:{plan}:renovacion:{timestamp}
    *
-   * Los IDs internos se mantienen por compatibilidad:
+   * IDs internos conservados por compatibilidad:
    *
    * free     = Página Simple
    * pro      = Página Completa
@@ -254,7 +265,7 @@ function parsearReferencia(
     !empresaId ||
     !propietarioUid ||
     !esPlanPago(plan) ||
-    tipoPago !== "alta" ||
+    !esTipoPago(tipoPago) ||
     !timestamp
   ) {
     return null;
@@ -309,6 +320,102 @@ function numeroMetadata(
   }
 
   return null;
+}
+
+function convertirFechaDocumento(
+  valor: unknown,
+): Date | null {
+  if (!valor) {
+    return null;
+  }
+
+  if (
+    valor instanceof Date
+  ) {
+    return Number.isNaN(
+      valor.getTime(),
+    )
+      ? null
+      : valor;
+  }
+
+  if (
+    typeof valor === "object" &&
+    valor !== null &&
+    "toDate" in valor &&
+    typeof (
+      valor as {
+        toDate?: unknown;
+      }
+    ).toDate === "function"
+  ) {
+    try {
+      const fecha =
+        (
+          valor as {
+            toDate: () => Date;
+          }
+        ).toDate();
+
+      return Number.isNaN(
+        fecha.getTime(),
+      )
+        ? null
+        : fecha;
+    } catch {
+      return null;
+    }
+  }
+
+  if (
+    typeof valor === "string" ||
+    typeof valor === "number"
+  ) {
+    const fecha =
+      new Date(valor);
+
+    return Number.isNaN(
+      fecha.getTime(),
+    )
+      ? null
+      : fecha;
+  }
+
+  return null;
+}
+
+function obtenerPrecioMensualContratado(
+  empresa:
+    | Record<string, unknown>
+    | undefined,
+) {
+  const valor =
+    empresa?.subscriptionMonthlyPrice;
+
+  if (
+    typeof valor === "number" &&
+    Number.isFinite(valor) &&
+    valor > 0
+  ) {
+    return valor;
+  }
+
+  return null;
+}
+
+function sumarDias(
+  fecha: Date,
+  dias: number,
+) {
+  const resultado =
+    new Date(fecha);
+
+  resultado.setDate(
+    resultado.getDate() +
+      dias,
+  );
+
+  return resultado;
 }
 
 function obtenerMesActualArgentina(
@@ -593,25 +700,200 @@ export async function POST(
         plan,
       );
 
-    const precioInicial =
+    const precioInicialActual =
       precios.inicial;
 
-    const precioMensual =
+    const precioMensualActual =
       precios.mensual;
-
-    const importeEsperado =
-      precioInicial +
-      precioMensual;
 
     if (
       !Number.isFinite(
-        precioInicial,
+        precioInicialActual,
       ) ||
-      precioInicial <= 0 ||
+      precioInicialActual <= 0 ||
       !Number.isFinite(
-        precioMensual,
+        precioMensualActual,
       ) ||
-      precioMensual <= 0 ||
+      precioMensualActual <= 0
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "El precio del plan no es válido.",
+        },
+        {
+          status: 500,
+        },
+      );
+    }
+
+    const paymentType =
+      tipoPago === "alta"
+        ? "setup_and_first_month"
+        : "renewal";
+
+    const fechaPago =
+      payment.date_approved
+        ? new Date(
+            payment.date_approved,
+          )
+        : new Date();
+
+    if (
+      Number.isNaN(
+        fechaPago.getTime(),
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "La fecha de aprobación del pago no es válida.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    const mesUso =
+      obtenerMesActualArgentina(
+        fechaPago,
+      );
+
+    const empresaReferencia =
+      adminDb
+        .collection(
+          "companies",
+        )
+        .doc(
+          empresaId,
+        );
+
+    const pagoReferencia =
+      empresaReferencia
+        .collection(
+          "payments",
+        )
+        .doc(
+          paymentId,
+        );
+
+    /*
+     * Si Mercado Pago reintenta un webhook ya procesado,
+     * respondemos 200 sin volver a extender la suscripción.
+     */
+    const pagoProcesadoSnapshot =
+      await pagoReferencia.get();
+
+    if (
+      pagoProcesadoSnapshot.exists &&
+      pagoProcesadoSnapshot.data()
+        ?.processed === true
+    ) {
+      const empresaProcesadaSnapshot =
+        await empresaReferencia.get();
+
+      const vencimientoProcesado =
+        convertirFechaDocumento(
+          empresaProcesadaSnapshot.data()
+            ?.subscriptionEndsAt,
+        );
+
+      return NextResponse.json({
+        success: true,
+        alreadyProcessed: true,
+        empresaId,
+        plan,
+        planName:
+          nombrePlan,
+        paymentType,
+        subscriptionEndsAt:
+          vencimientoProcesado
+            ?.toISOString() ??
+          null,
+      });
+    }
+
+    /*
+     * Necesitamos leer la empresa antes de validar el importe porque
+     * una renovación debe respetar el precio mensual contratado,
+     * aunque el precio público del plan cambie más adelante.
+     */
+    const empresaActualSnapshot =
+      await empresaReferencia.get();
+
+    if (
+      !empresaActualSnapshot.exists
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "La empresa no existe.",
+        },
+        {
+          status: 404,
+        },
+      );
+    }
+
+    const empresaActual =
+      empresaActualSnapshot.data();
+
+    if (
+      empresaActual?.userId !==
+      propietarioUid
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "El propietario de la empresa no coincide con el pago.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    if (
+      tipoPago ===
+        "renovacion" &&
+      empresaActual?.plan !==
+        plan
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "El plan de la renovación no coincide con el plan contratado.",
+        },
+        {
+          status: 409,
+        },
+      );
+    }
+
+    const precioMensualContratado =
+      obtenerPrecioMensualContratado(
+        empresaActual,
+      );
+
+    const precioInicialEsperado =
+      tipoPago === "alta"
+        ? precioInicialActual
+        : 0;
+
+    const precioMensualEsperado =
+      tipoPago === "renovacion"
+        ? precioMensualContratado ??
+          precioMensualActual
+        : precioMensualActual;
+
+    const importeEsperado =
+      tipoPago === "alta"
+        ? precioInicialEsperado +
+          precioMensualEsperado
+        : precioMensualEsperado;
+
+    if (
       !Number.isFinite(
         importeEsperado,
       ) ||
@@ -620,7 +902,7 @@ export async function POST(
       return NextResponse.json(
         {
           error:
-            "El precio del plan no es válido.",
+            "El importe esperado del pago no es válido.",
         },
         {
           status: 500,
@@ -655,7 +937,10 @@ export async function POST(
       return NextResponse.json(
         {
           error:
-            "El importe del pago no coincide con el plan.",
+            tipoPago ===
+            "renovacion"
+              ? "El importe de la renovación no coincide con la mensualidad contratada."
+              : "El importe del pago no coincide con el plan.",
         },
         {
           status: 400,
@@ -668,7 +953,6 @@ export async function POST(
       {};
 
     if (
-      metadata.empresa_id &&
       metadata.empresa_id !==
         empresaId
     ) {
@@ -684,7 +968,6 @@ export async function POST(
     }
 
     if (
-      metadata.propietario_uid &&
       metadata.propietario_uid !==
         propietarioUid
     ) {
@@ -700,7 +983,6 @@ export async function POST(
     }
 
     if (
-      metadata.plan &&
       metadata.plan !==
         plan
     ) {
@@ -716,9 +998,8 @@ export async function POST(
     }
 
     if (
-      metadata.payment_type &&
       metadata.payment_type !==
-        "setup_and_first_month"
+        paymentType
     ) {
       return NextResponse.json(
         {
@@ -737,11 +1018,11 @@ export async function POST(
       );
 
     if (
-      metadataPrecioInicial !==
-        null &&
+      metadataPrecioInicial ===
+        null ||
       !numerosCoinciden(
         metadataPrecioInicial,
-        precioInicial,
+        precioInicialEsperado,
       )
     ) {
       return NextResponse.json(
@@ -761,11 +1042,11 @@ export async function POST(
       );
 
     if (
-      metadataPrecioMensual !==
-        null &&
+      metadataPrecioMensual ===
+        null ||
       !numerosCoinciden(
         metadataPrecioMensual,
-        precioMensual,
+        precioMensualEsperado,
       )
     ) {
       return NextResponse.json(
@@ -778,62 +1059,6 @@ export async function POST(
         },
       );
     }
-
-    const fechaInicio =
-      payment.date_approved
-        ? new Date(
-            payment.date_approved,
-          )
-        : new Date();
-
-    if (
-      Number.isNaN(
-        fechaInicio.getTime(),
-      )
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "La fecha de aprobación del pago no es válida.",
-        },
-        {
-          status: 400,
-        },
-      );
-    }
-
-    const fechaVencimiento =
-      new Date(
-        fechaInicio,
-      );
-
-    fechaVencimiento.setDate(
-      fechaVencimiento.getDate() +
-        30,
-    );
-
-    const mesUso =
-      obtenerMesActualArgentina(
-        fechaInicio,
-      );
-
-    const empresaReferencia =
-      adminDb
-        .collection(
-          "companies",
-        )
-        .doc(
-          empresaId,
-        );
-
-    const pagoReferencia =
-      empresaReferencia
-        .collection(
-          "payments",
-        )
-        .doc(
-          paymentId,
-        );
 
     const resultado =
       await adminDb.runTransaction(
@@ -883,8 +1108,96 @@ export async function POST(
             return {
               alreadyProcessed:
                 true,
+
+              fechaVencimiento:
+                convertirFechaDocumento(
+                  empresa
+                    ?.subscriptionEndsAt,
+                ),
             };
           }
+
+          if (
+            tipoPago ===
+              "renovacion" &&
+            empresa?.plan !==
+              plan
+          ) {
+            throw new Error(
+              "El plan de la renovación no coincide con el plan contratado.",
+            );
+          }
+
+          const precioMensualTransaccion =
+            tipoPago ===
+            "renovacion"
+              ? obtenerPrecioMensualContratado(
+                  empresa,
+                ) ??
+                precioMensualActual
+              : precioMensualActual;
+
+          const importeTransaccion =
+            tipoPago ===
+            "alta"
+              ? precioInicialActual +
+                precioMensualTransaccion
+              : precioMensualTransaccion;
+
+          if (
+            typeof payment
+              .transaction_amount !==
+              "number" ||
+            !numerosCoinciden(
+              payment.transaction_amount,
+              importeTransaccion,
+            )
+          ) {
+            throw new Error(
+              "El importe cambió mientras se procesaba el pago.",
+            );
+          }
+
+          const vencimientoAnterior =
+            convertirFechaDocumento(
+              empresa
+                ?.subscriptionEndsAt,
+            );
+
+          /*
+           * Alta:
+           *   30 días desde la aprobación.
+           *
+           * Renovación vencida:
+           *   30 días desde la aprobación.
+           *
+           * Renovación anticipada:
+           *   suma 30 días al vencimiento que ya tenía,
+           *   para que el cliente no pierda días pagados.
+           */
+          const baseVencimiento =
+            tipoPago ===
+              "renovacion" &&
+            vencimientoAnterior &&
+            vencimientoAnterior.getTime() >
+              fechaPago.getTime()
+              ? vencimientoAnterior
+              : fechaPago;
+
+          const fechaVencimiento =
+            sumarDias(
+              baseVencimiento,
+              30,
+            );
+
+          const renovacionReiniciaUso =
+            tipoPago ===
+              "renovacion" &&
+            (
+              !vencimientoAnterior ||
+              vencimientoAnterior.getTime() <=
+                fechaPago.getTime()
+            );
 
           transaction.set(
             pagoReferencia,
@@ -899,14 +1212,16 @@ export async function POST(
               planName:
                 nombrePlan,
 
-              paymentType:
-                "setup_and_first_month",
+              paymentType,
 
               initialPrice:
-                precioInicial,
+                tipoPago ===
+                "alta"
+                  ? precioInicialActual
+                  : 0,
 
               monthlyPrice:
-                precioMensual,
+                precioMensualTransaccion,
 
               amount:
                 payment
@@ -939,9 +1254,8 @@ export async function POST(
             },
           );
 
-          transaction.set(
-            empresaReferencia,
-            {
+          const actualizacionEmpresa:
+            Record<string, unknown> = {
               /*
                * IDs internos conservados:
                *
@@ -954,51 +1268,15 @@ export async function POST(
               subscriptionStatus:
                 "active",
 
-              subscriptionStartedAt:
-                fechaInicio,
-
               subscriptionEndsAt:
                 fechaVencimiento,
 
               /*
-               * Guardamos el precio mensual exacto con el que
-               * contrató el cliente.
-               *
-               * Esto permite que un cliente Business de lanzamiento
-               * conserve $15.999/mes aunque el precio público suba
-               * más adelante.
+               * En renovación se conserva el precio mensual
+               * contratado por el cliente.
                */
               subscriptionMonthlyPrice:
-                precioMensual,
-
-              subscriptionInitialPrice:
-                precioInicial,
-
-              subscriptionPriceLockedAt:
-                fechaInicio,
-
-              subscriptionPricingVersion:
-                "launch-2026-08",
-
-              subscriptionIsLaunchPrice:
-                plan ===
-                "business",
-
-              /*
-               * El período mensual de uso empieza desde cero
-               * al activar el nuevo plan.
-               */
-              conversationsThisMonth:
-                0,
-
-              conversationsUsageMonth:
-                mesUso,
-
-              aiResponsesThisMonth:
-                0,
-
-              aiResponsesUsageMonth:
-                mesUso,
+                precioMensualTransaccion,
 
               pendingPlan:
                 FieldValue.delete(),
@@ -1048,7 +1326,64 @@ export async function POST(
 
               updatedAt:
                 FieldValue.serverTimestamp(),
-            },
+            };
+
+          if (
+            tipoPago === "alta"
+          ) {
+            actualizacionEmpresa.subscriptionStartedAt =
+              fechaPago;
+
+            actualizacionEmpresa.subscriptionInitialPrice =
+              precioInicialActual;
+
+            actualizacionEmpresa.subscriptionPriceLockedAt =
+              fechaPago;
+
+            actualizacionEmpresa.subscriptionPricingVersion =
+              "launch-2026-08";
+
+            actualizacionEmpresa.subscriptionIsLaunchPrice =
+              plan ===
+              "business";
+
+            actualizacionEmpresa.conversationsThisMonth =
+              0;
+
+            actualizacionEmpresa.conversationsUsageMonth =
+              mesUso;
+
+            actualizacionEmpresa.aiResponsesThisMonth =
+              0;
+
+            actualizacionEmpresa.aiResponsesUsageMonth =
+              mesUso;
+          } else if (
+            renovacionReiniciaUso
+          ) {
+            /*
+             * Si la suscripción ya había vencido, la renovación
+             * abre un período nuevo y reiniciamos el consumo.
+             *
+             * Si renovó antes de vencer, no regalamos un segundo
+             * cupo de uso en el mismo período: solo extendemos días.
+             */
+            actualizacionEmpresa.conversationsThisMonth =
+              0;
+
+            actualizacionEmpresa.conversationsUsageMonth =
+              mesUso;
+
+            actualizacionEmpresa.aiResponsesThisMonth =
+              0;
+
+            actualizacionEmpresa.aiResponsesUsageMonth =
+              mesUso;
+          }
+
+          transaction.set(
+            empresaReferencia,
+            actualizacionEmpresa,
             {
               merge: true,
             },
@@ -1057,6 +1392,8 @@ export async function POST(
           return {
             alreadyProcessed:
               false,
+
+            fechaVencimiento,
           };
         },
       );
@@ -1074,14 +1411,15 @@ export async function POST(
       planName:
         nombrePlan,
 
-      paymentType:
-        tipoPago,
+      paymentType,
 
       monthlyPrice:
-        precioMensual,
+        precioMensualEsperado,
 
       subscriptionEndsAt:
-        fechaVencimiento.toISOString(),
+        resultado.fechaVencimiento
+          ?.toISOString() ??
+        null,
     });
   } catch (error) {
     console.error(
