@@ -84,6 +84,7 @@ interface Empresa {
 
     titulo?: string;
     subtitulo?: string;
+    textoSecundario?: string;
 
     colorPrincipal?: string;
     tema?: TemaPagina;
@@ -194,6 +195,11 @@ export default function ConfigurarAgentePage() {
   const [
     paginaSubtitulo,
     setPaginaSubtitulo,
+  ] = useState("");
+
+  const [
+    paginaTextoSecundario,
+    setPaginaTextoSecundario,
   ] = useState("");
 
   const [
@@ -510,12 +516,43 @@ export default function ConfigurarAgentePage() {
                 "",
             );
 
-            setPaginaSubtitulo(
+            const textoPrincipalGuardado =
               empresa.paginaPublica
                 ?.subtitulo ||
-                empresa.descripcion ||
-                "",
-            );
+              empresa.descripcion ||
+              "";
+
+            const textoSecundarioGuardado =
+              empresa.paginaPublica
+                ?.textoSecundario ||
+              "";
+
+            if (
+              !textoSecundarioGuardado &&
+              textoPrincipalGuardado.includes("\n")
+            ) {
+              const lineas =
+                textoPrincipalGuardado
+                  .split("\n")
+                  .map((linea) => linea.trim())
+                  .filter(Boolean);
+
+              setPaginaSubtitulo(
+                lineas[0] || "",
+              );
+
+              setPaginaTextoSecundario(
+                lineas.slice(1).join(" "),
+              );
+            } else {
+              setPaginaSubtitulo(
+                textoPrincipalGuardado,
+              );
+
+              setPaginaTextoSecundario(
+                textoSecundarioGuardado,
+              );
+            }
 
             setPaginaColorPrincipal(
               empresa.paginaPublica
@@ -1313,6 +1350,9 @@ export default function ConfigurarAgentePage() {
             subtitulo:
               paginaSubtitulo.trim(),
 
+            textoSecundario:
+              paginaTextoSecundario.trim(),
+
             colorPrincipal:
               paginaColorPrincipal,
 
@@ -1781,7 +1821,23 @@ export default function ConfigurarAgentePage() {
                       e.target.value,
                     )
                   }
-                  placeholder="Ejemplo: Cortes, barba y atención personalizada en el centro de Jujuy."
+                  placeholder="Ejemplo: Descansá en Tilcara y disfrutá la Quebrada con total comodidad."
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <TextArea
+                  id="paginaTextoSecundario"
+                  label="Texto secundario"
+                  value={
+                    paginaTextoSecundario
+                  }
+                  onChange={(e) =>
+                    setPaginaTextoSecundario(
+                      e.target.value,
+                    )
+                  }
+                  placeholder="Ejemplo: Habitaciones cómodas, excelente ubicación y atención personalizada."
                 />
               </div>
 
@@ -2480,11 +2536,17 @@ export default function ConfigurarAgentePage() {
                 </div>
 
                 <div className="p-5">
-                  <p className="text-sm leading-6 text-slate-600 dark:text-zinc-400">
+                  <p className="text-base font-semibold leading-6 text-slate-900 dark:text-white">
                     {paginaSubtitulo ||
                       descripcion ||
-                      "Agregá una descripción para mostrar qué ofrece tu negocio."}
+                      "Agregá un texto principal para presentar tu negocio."}
                   </p>
+
+                  {paginaTextoSecundario && (
+                    <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-zinc-400">
+                      {paginaTextoSecundario}
+                    </p>
+                  )}
 
                   <div className="mt-5 grid gap-2">
                     {paginaMostrarHorarios &&

@@ -61,6 +61,7 @@ interface Empresa {
     publicada?: boolean;
     titulo?: string;
     subtitulo?: string;
+    textoSecundario?: string;
     colorPrincipal?: string;
     tema?: "oscuro" | "claro";
     logoUrl?: string;
@@ -194,6 +195,7 @@ export async function generateMetadata({
     "Negocio";
 
   const descripcion =
+    pagina.textoSecundario?.trim() ||
     pagina.subtitulo?.trim() ||
     empresa.descripcion?.trim() ||
     `Conocé ${nombre}, sus servicios, horarios y formas de contacto.`;
@@ -344,10 +346,33 @@ export default async function NegocioPage({
     empresa.nombre ||
     "Negocio";
 
-  const subtitulo =
+  const textoHeroGuardado =
     pagina.subtitulo ||
     empresa.descripcion ||
     "";
+
+  const textoSecundarioGuardado =
+    pagina.textoSecundario || "";
+
+  const lineasHero =
+    !textoSecundarioGuardado &&
+    textoHeroGuardado.includes("\n")
+      ? textoHeroGuardado
+          .split("\n")
+          .map((linea) => linea.trim())
+          .filter(Boolean)
+      : [];
+
+  const textoPrincipal =
+    lineasHero.length > 0
+      ? lineasHero[0]
+      : textoHeroGuardado;
+
+  const textoSecundario =
+    textoSecundarioGuardado ||
+    (lineasHero.length > 1
+      ? lineasHero.slice(1).join(" ")
+      : "");
 
   const colorPrincipal =
     pagina.colorPrincipal ||
@@ -790,17 +815,31 @@ export default async function NegocioPage({
               {nombre}
             </h1>
 
-            {subtitulo && (
+            {textoPrincipal && (
               <p
-                className={`mt-6 max-w-2xl text-base leading-8 sm:text-lg ${
+                className={`mt-6 max-w-2xl text-lg font-semibold leading-7 sm:text-xl sm:leading-8 ${
                   portadaUrl
-                    ? "text-zinc-200"
+                    ? "text-white"
+                    : esClaro
+                      ? "text-slate-900"
+                      : "text-zinc-100"
+                }`}
+              >
+                {textoPrincipal}
+              </p>
+            )}
+
+            {textoSecundario && (
+              <p
+                className={`mt-2 max-w-2xl text-sm leading-6 sm:text-base sm:leading-7 ${
+                  portadaUrl
+                    ? "text-zinc-300"
                     : esClaro
                       ? "text-slate-600"
                       : "text-zinc-400"
                 }`}
               >
-                {subtitulo}
+                {textoSecundario}
               </p>
             )}
 
