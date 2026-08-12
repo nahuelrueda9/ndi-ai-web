@@ -260,6 +260,9 @@ export default function WidgetPublicoPage() {
     useState("");
 
   const [chatAbierto, setChatAbierto] =
+    useState(false);
+
+  const [mostrarSaludo, setMostrarSaludo] =
     useState(true);
 
   const [
@@ -567,22 +570,52 @@ export default function WidgetPublicoPage() {
   }, [empresa]);
 
   useEffect(() => {
+    if (chatAbierto || !mostrarSaludo) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setMostrarSaludo(false);
+    }, 6500);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [chatAbierto, mostrarSaludo]);
+
+  useEffect(() => {
     enviarMensajeAlContenedor(
       "widget:resize",
       {
-        width: chatAbierto ? 430 : 72,
-        height: chatAbierto ? 700 : 72,
+        width: chatAbierto
+          ? 430
+          : mostrarSaludo
+            ? 320
+            : 72,
+        height: chatAbierto
+          ? 700
+          : mostrarSaludo
+            ? 118
+            : 72,
       }
     );
-  }, [chatAbierto]);
+  }, [chatAbierto, mostrarSaludo]);
 
   useEffect(() => {
     const avisarAlContenedor = () => {
       enviarMensajeAlContenedor(
         "widget:resize",
         {
-          width: chatAbierto ? 430 : 72,
-          height: chatAbierto ? 700 : 72,
+          width: chatAbierto
+            ? 430
+            : mostrarSaludo
+              ? 320
+              : 72,
+          height: chatAbierto
+            ? 700
+            : mostrarSaludo
+              ? 118
+              : 72,
         }
       );
     };
@@ -603,7 +636,7 @@ export default function WidgetPublicoPage() {
         avisarAlContenedor
       );
     };
-  }, [chatAbierto]);
+  }, [chatAbierto, mostrarSaludo]);
 
   useEffect(() => {
     finalChatRef.current?.scrollIntoView({
@@ -850,30 +883,69 @@ export default function WidgetPublicoPage() {
   if (!chatAbierto) {
     return (
       <main
-        className={`flex min-h-screen items-end overflow-hidden bg-transparent p-3 ${
+        className={`flex min-h-screen items-end overflow-hidden bg-transparent p-2 ${
           posicion === "izquierda"
             ? "justify-start"
             : "justify-end"
         }`}
       >
-        <button
-          type="button"
-          onClick={() =>
-            setChatAbierto(true)
-          }
-          aria-label="Abrir chat"
-          className={`flex h-12 w-12 items-center justify-center text-lg text-white shadow-xl transition hover:scale-105 active:scale-95 ${
-            formaBoton === "redondo"
-              ? "rounded-full"
-              : "rounded-2xl"
+        <div
+          className={`flex items-end gap-2 ${
+            posicion === "izquierda"
+              ? "flex-row-reverse"
+              : "flex-row"
           }`}
-          style={{
-            backgroundColor:
-              colorPrincipal,
-          }}
         >
-          💬
-        </button>
+          {mostrarSaludo && (
+            <button
+              type="button"
+              onClick={() => {
+                setMostrarSaludo(false);
+                setChatAbierto(true);
+              }}
+              className={[
+                "max-w-[238px] rounded-2xl border px-4 py-3 text-left text-sm leading-5 shadow-xl transition hover:-translate-y-0.5",
+                temaOscuro
+                  ? "border-zinc-700 bg-zinc-950 text-zinc-100"
+                  : "border-slate-200 bg-white text-slate-800",
+              ].join(" ")}
+              aria-label="Abrir chat"
+            >
+              <span className="block font-semibold">
+                {nombreBot}
+              </span>
+              <span
+                className={
+                  temaOscuro
+                    ? "text-zinc-300"
+                    : "text-slate-600"
+                }
+              >
+                {mensajeBienvenida}
+              </span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => {
+              setMostrarSaludo(false);
+              setChatAbierto(true);
+            }}
+            aria-label="Abrir chat"
+            className={`flex h-12 w-12 shrink-0 items-center justify-center text-lg text-white shadow-xl transition hover:scale-105 active:scale-95 ${
+              formaBoton === "redondo"
+                ? "rounded-full"
+                : "rounded-2xl"
+            }`}
+            style={{
+              backgroundColor:
+                colorPrincipal,
+            }}
+          >
+            💬
+          </button>
+        </div>
       </main>
     );
   }

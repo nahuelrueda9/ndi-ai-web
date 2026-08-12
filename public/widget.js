@@ -1,11 +1,11 @@
 (function () {
   "use strict";
 
-  if (window.__NDI_AI_WIDGET_LOADED__) {
+  if (window.NDI_AI_WIDGET_LOADED) {
     return;
   }
 
-  window.__NDI_AI_WIDGET_LOADED__ = true;
+  window.NDI_AI_WIDGET_LOADED = true;
 
   var script = document.currentScript;
 
@@ -36,9 +36,8 @@
 
   var iframe = document.createElement("iframe");
 
-  var widgetAbierto = true;
-  var anchoSolicitado = 430;
-  var altoSolicitado = 700;
+  var anchoSolicitado = 320;
+  var altoSolicitado = 118;
 
   iframe.src = widgetUrl;
   iframe.title = "Asistente virtual NDI AI";
@@ -55,8 +54,8 @@
     position: "fixed",
     right: "0",
     bottom: "0",
-    width: "430px",
-    height: "700px",
+    width: "320px",
+    height: "118px",
     maxWidth: "100vw",
     maxHeight: "100dvh",
     border: "0",
@@ -66,28 +65,30 @@
   });
 
   function aplicarTamano() {
-    if (!widgetAbierto) {
-      iframe.style.width = "88px";
-      iframe.style.height = "88px";
-      iframe.style.maxWidth = "88px";
-      iframe.style.maxHeight = "88px";
-      return;
-    }
+    var esChatCompleto =
+      anchoSolicitado > 350 &&
+      altoSolicitado > 300;
 
     iframe.style.maxWidth = "100vw";
     iframe.style.maxHeight = "100dvh";
 
-    if (window.innerWidth <= 520) {
+    if (esChatCompleto && window.innerWidth <= 520) {
       iframe.style.width = "100vw";
       iframe.style.height = "100dvh";
       return;
     }
 
     iframe.style.width =
-      Math.min(Math.max(anchoSolicitado, 80), 520) + "px";
+      Math.min(
+        Math.max(anchoSolicitado, 64),
+        Math.max(window.innerWidth, 64)
+      ) + "px";
 
     iframe.style.height =
-      Math.min(Math.max(altoSolicitado, 80), 760) + "px";
+      Math.min(
+        Math.max(altoSolicitado, 64),
+        Math.max(window.innerHeight, 64)
+      ) + "px";
   }
 
   aplicarTamano();
@@ -132,10 +133,6 @@
       if (Number.isFinite(height)) {
         altoSolicitado = height;
       }
-
-      widgetAbierto =
-        anchoSolicitado > 100 &&
-        altoSolicitado > 100;
 
       aplicarTamano();
     }
