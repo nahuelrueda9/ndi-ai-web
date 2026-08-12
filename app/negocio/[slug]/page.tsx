@@ -991,7 +991,7 @@ export default async function NegocioPage({
             id="reservar"
             className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}
           >
-            <div className="mx-auto max-w-4xl px-5 py-20 sm:px-8">
+            <div className="mx-auto max-w-4xl px-4 py-10 sm:px-8 sm:py-20">
               <ReservaForm
                 slug={slug}
                 servicios={servicios.map(
@@ -1069,7 +1069,7 @@ export default async function NegocioPage({
             id="presupuesto"
             className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}
           >
-          <div className="mx-auto max-w-4xl px-5 py-20 sm:px-8">
+          <div className="mx-auto max-w-4xl px-4 py-10 sm:px-8 sm:py-20">
             <PresupuestoFormulario
               slug={slug}
               items={catalogoPermitido.map(
@@ -1498,9 +1498,9 @@ export default async function NegocioPage({
 
       {/* CONTACTO */}
       {mostrarContacto && (
-      <section id="contacto" className="mx-auto max-w-6xl scroll-mt-24 px-5 py-20 sm:px-8">
+      <section id="contacto" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-10 sm:px-8 sm:py-20">
         <div
-          className="relative overflow-hidden rounded-3xl border p-8 sm:p-12"
+          className="relative overflow-hidden rounded-2xl border p-4 sm:rounded-3xl sm:p-12"
           style={{
             borderColor: `${colorPrincipal}44`,
             background: esClaro
@@ -1508,10 +1508,10 @@ export default async function NegocioPage({
               : `linear-gradient(135deg, ${colorPrincipal}18, rgba(24,24,27,0.8))`,
           }}
         >
-          <div className="relative grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+          <div className="relative grid gap-5 sm:gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
             <div>
               <p
-                className="text-sm font-medium"
+                className="text-xs font-medium sm:text-sm"
                 style={{
                   color: colorPrincipal,
                 }}
@@ -1519,24 +1519,24 @@ export default async function NegocioPage({
                 Contacto
               </p>
 
-              <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+              <h2 className="mt-2 text-2xl font-bold tracking-tight sm:mt-3 sm:text-4xl">
                 ¿Querés consultar algo?
               </h2>
 
-              <p className={`mt-4 max-w-xl leading-7 ${claseTextoSecundario}`}>
+              <p className={`mt-2 max-w-xl text-sm leading-6 sm:mt-4 sm:text-base sm:leading-7 ${claseTextoSecundario}`}>
                 Dejanos tus datos y tu consulta.{" "}
                 {empresa.nombre || nombre} podrá responderte usando
                 el teléfono o email que indiques.
               </p>
 
-              <div className="mt-7 flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
+              <div className="mt-4 flex flex-row gap-2 sm:mt-7 sm:gap-3 lg:flex-col xl:flex-row">
                 {mostrarWhatsApp && (
                   <a
                     href={whatsappUrl}
                     data-analytics-event="whatsapp_click"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3.5 font-semibold text-white transition hover:bg-emerald-500"
+                    className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500 sm:flex-none sm:gap-2 sm:px-6 sm:py-3.5 sm:text-base"
                   >
                     <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     WhatsApp
@@ -1546,13 +1546,13 @@ export default async function NegocioPage({
                 {mostrarEmail && (
                   <a
                     href={`mailto:${empresa.email}`}
-                    className={`inline-flex items-center justify-center gap-2 rounded-xl border px-6 py-3.5 font-semibold transition ${
+                    className={`inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl border px-3 py-2.5 text-sm font-semibold transition sm:flex-none sm:gap-2 sm:px-6 sm:py-3.5 sm:text-base ${
                       esClaro
                         ? "border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
                         : "border-zinc-700 bg-zinc-950/50 text-white hover:bg-zinc-900"
                     }`}
                   >
-                    <Mail className="h-5 w-5" />
+                    <Mail className="h-4 w-4 sm:h-5 sm:w-5" />
                     Correo
                   </a>
                 )}
@@ -1560,7 +1560,7 @@ export default async function NegocioPage({
             </div>
 
             <div
-              className={`rounded-3xl border p-5 sm:p-7 ${
+              className={`rounded-2xl border p-2 sm:rounded-3xl sm:p-7 ${
                 esClaro
                   ? "border-slate-200 bg-white shadow-sm"
                   : "border-zinc-800 bg-zinc-950/60"

@@ -119,7 +119,7 @@ export default function PresupuestoFormulario({
     );
 
   const campoClass = [
-    "w-full rounded-xl border px-4 py-3 text-sm outline-none transition",
+    "w-full rounded-xl border px-3 py-2.5 text-xs outline-none transition sm:px-4 sm:py-3 sm:text-sm",
     esClaro
       ? "border-slate-300 bg-white text-slate-950 placeholder:text-slate-400 focus:border-slate-500"
       : "border-zinc-700 bg-zinc-950 text-white placeholder:text-zinc-600 focus:border-zinc-500",
@@ -225,14 +225,14 @@ export default function PresupuestoFormulario({
   if (enviado) {
     return (
       <div
-        className={`rounded-3xl border p-6 sm:p-8 ${
+        className={`rounded-2xl border p-4 sm:rounded-3xl sm:p-8 ${
           esClaro
             ? "border-emerald-200 bg-emerald-50"
             : "border-emerald-500/20 bg-emerald-500/10"
         }`}
       >
         <CheckCircle2
-          className={`h-10 w-10 ${
+          className={`h-8 w-8 sm:h-10 sm:w-10 ${
             esClaro
               ? "text-emerald-700"
               : "text-emerald-400"
@@ -240,7 +240,7 @@ export default function PresupuestoFormulario({
         />
 
         <h3
-          className={`mt-4 text-xl font-bold ${
+          className={`mt-3 text-lg font-bold sm:mt-4 sm:text-xl ${
             esClaro
               ? "text-slate-950"
               : "text-white"
@@ -250,7 +250,7 @@ export default function PresupuestoFormulario({
         </h3>
 
         <p
-          className={`mt-2 text-sm leading-6 ${
+          className={`mt-1.5 text-xs leading-5 sm:mt-2 sm:text-sm sm:leading-6 ${
             esClaro
               ? "text-slate-600"
               : "text-zinc-300"
@@ -267,7 +267,7 @@ export default function PresupuestoFormulario({
           onClick={() =>
             setEnviado(false)
           }
-          className={`mt-5 rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${
+          className={`mt-4 rounded-xl border px-3 py-2 text-xs font-semibold transition sm:mt-5 sm:px-4 sm:py-2.5 sm:text-sm ${
             esClaro
               ? "border-slate-300 bg-white text-slate-800 hover:bg-slate-100"
               : "border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800"
@@ -282,26 +282,26 @@ export default function PresupuestoFormulario({
   return (
     <form
       onSubmit={enviar}
-      className={`rounded-3xl border p-6 sm:p-8 ${
+      className={`rounded-2xl border p-4 sm:rounded-3xl sm:p-8 ${
         esClaro
           ? "border-slate-200 bg-white shadow-sm"
           : "border-zinc-800 bg-zinc-900/70"
       }`}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-2.5 sm:gap-3">
         <div
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl sm:h-11 sm:w-11 sm:rounded-2xl ${
             esClaro
               ? "bg-slate-100 text-slate-900"
               : "bg-zinc-800 text-white"
           }`}
         >
-          <FileText className="h-5 w-5" />
+          <FileText className="h-4 w-4 sm:h-5 sm:w-5" />
         </div>
 
         <div>
           <p
-            className={`text-sm font-medium ${
+            className={`text-xs font-medium sm:text-sm ${
               esClaro
                 ? "text-slate-500"
                 : "text-zinc-400"
@@ -311,7 +311,7 @@ export default function PresupuestoFormulario({
           </p>
 
           <h2
-            className={`mt-1 text-2xl font-bold ${
+            className={`mt-1 text-xl font-bold sm:text-2xl ${
               esClaro
                 ? "text-slate-950"
                 : "text-white"
@@ -321,7 +321,7 @@ export default function PresupuestoFormulario({
           </h2>
 
           <p
-            className={`mt-1 text-sm leading-6 ${
+            className={`mt-1 text-xs leading-5 sm:text-sm sm:leading-6 ${
               esClaro
                 ? "text-slate-600"
                 : "text-zinc-400"
@@ -333,9 +333,9 @@ export default function PresupuestoFormulario({
         </div>
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+      <div className="mt-4 grid gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4">
         <label className="block">
-          <span className={`mb-2 block text-sm font-medium ${labelClass}`}>
+          <span className={`mb-1.5 block text-xs font-medium sm:mb-2 sm:text-sm ${labelClass}`}>
             Nombre *
           </span>
 
@@ -353,7 +353,7 @@ export default function PresupuestoFormulario({
         </label>
 
         <label className="block">
-          <span className={`mb-2 block text-sm font-medium ${labelClass}`}>
+          <span className={`mb-1.5 block text-xs font-medium sm:mb-2 sm:text-sm ${labelClass}`}>
             Teléfono
           </span>
 
@@ -371,7 +371,7 @@ export default function PresupuestoFormulario({
         </label>
 
         <label className="block sm:col-span-2">
-          <span className={`mb-2 block text-sm font-medium ${labelClass}`}>
+          <span className={`mb-1.5 block text-xs font-medium sm:mb-2 sm:text-sm ${labelClass}`}>
             Email
           </span>
 
@@ -391,7 +391,7 @@ export default function PresupuestoFormulario({
 
         {items.length > 0 && (
           <label className="block sm:col-span-2">
-            <span className={`mb-2 block text-sm font-medium ${labelClass}`}>
+            <span className={`mb-1.5 block text-xs font-medium sm:mb-2 sm:text-sm ${labelClass}`}>
               Producto o servicio
             </span>
 
@@ -423,7 +423,7 @@ export default function PresupuestoFormulario({
         )}
 
         <label className="block sm:col-span-2">
-          <span className={`mb-2 block text-sm font-medium ${labelClass}`}>
+          <span className={`mb-1.5 block text-xs font-medium sm:mb-2 sm:text-sm ${labelClass}`}>
             ¿Qué necesitás? *
           </span>
 
@@ -436,7 +436,7 @@ export default function PresupuestoFormulario({
             }
             rows={5}
             maxLength={1500}
-            className={`${campoClass} resize-none`}
+            className={`${campoClass} h-24 resize-none sm:h-auto`}
             placeholder="Ej: necesito 20 unidades, quiero consultar por un servicio personalizado, medidas, fechas, etc."
           />
         </label>
@@ -444,7 +444,7 @@ export default function PresupuestoFormulario({
 
       {error && (
         <p
-          className={`mt-4 rounded-xl border px-4 py-3 text-sm ${
+          className={`mt-3 rounded-xl border px-3 py-2.5 text-xs sm:mt-4 sm:px-4 sm:py-3 sm:text-sm ${
             esClaro
               ? "border-red-200 bg-red-50 text-red-700"
               : "border-red-500/20 bg-red-500/10 text-red-300"
@@ -457,7 +457,7 @@ export default function PresupuestoFormulario({
       <button
         type="submit"
         disabled={enviando}
-        className={`mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 font-bold transition disabled:cursor-not-allowed disabled:opacity-60 ${
+        className={`mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-60 sm:mt-5 sm:px-5 sm:py-3 sm:text-base ${
           esClaro
             ? "bg-slate-950 text-white hover:bg-slate-800"
             : "bg-white text-zinc-950 hover:bg-zinc-200"
