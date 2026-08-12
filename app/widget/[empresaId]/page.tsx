@@ -570,8 +570,8 @@ export default function WidgetPublicoPage() {
     enviarMensajeAlContenedor(
       "widget:resize",
       {
-        width: chatAbierto ? 430 : 88,
-        height: chatAbierto ? 700 : 88,
+        width: chatAbierto ? 430 : 72,
+        height: chatAbierto ? 700 : 72,
       }
     );
   }, [chatAbierto]);
@@ -581,8 +581,8 @@ export default function WidgetPublicoPage() {
       enviarMensajeAlContenedor(
         "widget:resize",
         {
-          width: chatAbierto ? 430 : 88,
-          height: chatAbierto ? 700 : 88,
+          width: chatAbierto ? 430 : 72,
+          height: chatAbierto ? 700 : 72,
         }
       );
     };
@@ -862,7 +862,7 @@ export default function WidgetPublicoPage() {
             setChatAbierto(true)
           }
           aria-label="Abrir chat"
-          className={`flex h-14 w-14 items-center justify-center text-xl text-white shadow-2xl transition hover:scale-105 active:scale-95 ${
+          className={`flex h-12 w-12 items-center justify-center text-lg text-white shadow-xl transition hover:scale-105 active:scale-95 ${
             formaBoton === "redondo"
               ? "rounded-full"
               : "rounded-2xl"
