@@ -1064,7 +1064,10 @@ export default async function NegocioPage({
       )}
 
       {/* PRESUPUESTO */}
-      {puedeUsarPresupuestos && (
+      {puedeUsarPresupuestos &&
+  !["hostal", "hotel"].includes(
+    (empresa.rubro || "").trim().toLowerCase()
+  ) && (
         <section
             id="presupuesto"
             className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}
