@@ -75,6 +75,7 @@ interface Empresa {
     mostrarProductos?: boolean;
     mostrarGaleria?: boolean;
     mostrarMapa?: boolean;
+    mostrarPresupuesto?: boolean;
     mostrarContacto?: boolean;
 
     testimonios?: TestimonioPagina[];
@@ -409,6 +410,9 @@ export default async function NegocioPage({
 
   const mostrarMapa =
     pagina.mostrarMapa !== false;
+
+  const mostrarPresupuesto =
+    pagina.mostrarPresupuesto !== false;
 
   const mostrarContacto =
     pagina.mostrarContacto !== false;
@@ -1065,9 +1069,7 @@ export default async function NegocioPage({
 
       {/* PRESUPUESTO */}
       {puedeUsarPresupuestos &&
-  !["hostal", "hotel"].includes(
-    (empresa.rubro || "").trim().toLowerCase()
-  ) && (
+        mostrarPresupuesto && (
         <section
             id="presupuesto"
             className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}

@@ -101,6 +101,7 @@ interface Empresa {
     mostrarProductos?: boolean;
     mostrarGaleria?: boolean;
     mostrarMapa?: boolean;
+    mostrarPresupuesto?: boolean;
     mostrarContacto?: boolean;
 
     testimonios?: TestimonioPagina[];
@@ -265,6 +266,11 @@ export default function ConfigurarAgentePage() {
   const [
     paginaMostrarMapa,
     setPaginaMostrarMapa,
+  ] = useState(true);
+
+  const [
+    paginaMostrarPresupuesto,
+    setPaginaMostrarPresupuesto,
   ] = useState(true);
 
   const [
@@ -594,6 +600,12 @@ export default function ConfigurarAgentePage() {
             setPaginaMostrarMapa(
               empresa.paginaPublica
                 ?.mostrarMapa ??
+                true,
+            );
+
+            setPaginaMostrarPresupuesto(
+              empresa.paginaPublica
+                ?.mostrarPresupuesto ??
                 true,
             );
 
@@ -1339,6 +1351,9 @@ export default function ConfigurarAgentePage() {
 
             mostrarMapa:
               paginaMostrarMapa,
+
+            mostrarPresupuesto:
+              paginaMostrarPresupuesto,
 
             mostrarContacto:
               paginaMostrarContacto,
@@ -2147,6 +2162,17 @@ export default function ConfigurarAgentePage() {
                     }
                     onChange={
                       setPaginaMostrarMapa
+                    }
+                  />
+
+                  <ToggleOpcion
+                    titulo="Presupuesto"
+                    descripcion="Mostrar el formulario de cotización."
+                    checked={
+                      paginaMostrarPresupuesto
+                    }
+                    onChange={
+                      setPaginaMostrarPresupuesto
                     }
                   />
 
