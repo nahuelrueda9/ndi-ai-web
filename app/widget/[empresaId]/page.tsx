@@ -278,37 +278,37 @@ export default function WidgetPublicoPage() {
     useRef(false);
 
   useLayoutEffect(() => {
-    const html =
-      document.documentElement;
-    const body =
-      document.body;
+    const html = document.documentElement;
+    const body = document.body;
 
-    const htmlBackgroundAnterior =
-      html.style.background;
-    const bodyBackgroundAnterior =
-      body.style.background;
-    const bodyMarginAnterior =
-      body.style.margin;
-    const bodyOverflowAnterior =
-      body.style.overflow;
+    const estiloAislado = document.createElement("style");
+    estiloAislado.setAttribute("data-ndi-widget-isolation", "true");
+    estiloAislado.textContent = `
+      html,
+      body {
+        background: transparent !important;
+        background-color: transparent !important;
+        color-scheme: normal !important;
+      }
 
-    html.style.background =
-      "transparent";
-    body.style.background =
-      "transparent";
-    body.style.margin = "0";
-    body.style.overflow =
-      "hidden";
+      body {
+        margin: 0 !important;
+        overflow: hidden !important;
+      }
+    `;
+
+    document.head.appendChild(estiloAislado);
+
+    const htmlColorSchemeAnterior = html.style.colorScheme;
+    const bodyColorSchemeAnterior = body.style.colorScheme;
+
+    html.style.colorScheme = "normal";
+    body.style.colorScheme = "normal";
 
     return () => {
-      html.style.background =
-        htmlBackgroundAnterior;
-      body.style.background =
-        bodyBackgroundAnterior;
-      body.style.margin =
-        bodyMarginAnterior;
-      body.style.overflow =
-        bodyOverflowAnterior;
+      estiloAislado.remove();
+      html.style.colorScheme = htmlColorSchemeAnterior;
+      body.style.colorScheme = bodyColorSchemeAnterior;
     };
   }, []);
 

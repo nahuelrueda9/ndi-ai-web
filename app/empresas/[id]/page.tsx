@@ -17,6 +17,7 @@ import {
   getDoc,
   serverTimestamp,
   setDoc,
+  updateDoc,
 } from "firebase/firestore";
 import {
   useParams,
@@ -64,7 +65,6 @@ interface Empresa {
   descripcion?: string;
   direccion?: string;
   horarios?: string;
-  sitioWeb?: string;
 
   redesSociales?: {
     instagram?: string;
@@ -164,8 +164,6 @@ export default function ConfigurarAgentePage() {
   const [horarios, setHorarios] =
     useState("");
 
-  const [sitioWeb, setSitioWeb] =
-    useState("");
 
   const [instagram, setInstagram] =
     useState("");
@@ -458,9 +456,6 @@ export default function ConfigurarAgentePage() {
               empresa.horarios || "",
             );
 
-            setSitioWeb(
-              empresa.sitioWeb || "",
-            );
 
             setInstagram(
               empresa.redesSociales
@@ -1124,6 +1119,50 @@ export default function ConfigurarAgentePage() {
     );
   };
 
+  const cambiarPublicacionPagina = async (
+    publicada: boolean,
+  ) => {
+    if (!empresaId) {
+      return;
+    }
+
+    setPaginaPublicada(publicada);
+    setError("");
+    setMensaje("");
+
+    try {
+      await updateDoc(
+        doc(
+          db,
+          "companies",
+          empresaId,
+        ),
+        {
+          "paginaPublica.publicada":
+            publicada,
+          updatedAt:
+            serverTimestamp(),
+        },
+      );
+
+      setMensaje(
+        publicada
+          ? "Página publicada correctamente."
+          : "Página despublicada.",
+      );
+    } catch (publicacionError) {
+      console.error(
+        "Error cambiando publicación de la página:",
+        publicacionError,
+      );
+
+      setPaginaPublicada(!publicada);
+      setError(
+        "No se pudo cambiar el estado de la página.",
+      );
+    }
+  };
+
   const handleGuardar = async (
     event: FormEvent<HTMLFormElement>,
   ) => {
@@ -1238,8 +1277,6 @@ export default function ConfigurarAgentePage() {
           horarios:
             horarios.trim(),
 
-          sitioWeb:
-            sitioWeb.trim(),
 
           redesSociales: {
             instagram:
@@ -1576,18 +1613,6 @@ export default function ConfigurarAgentePage() {
               placeholder="Dirección del negocio"
             />
 
-            <Input
-              id="sitioWeb"
-              label="Sitio web"
-              type="url"
-              value={sitioWeb}
-              onChange={(e) =>
-                setSitioWeb(
-                  e.target.value,
-                )
-              }
-              placeholder="https://..."
-            />
 
             <Input
               id="instagram"
@@ -2022,12 +2047,11 @@ export default function ConfigurarAgentePage() {
                   checked={
                     paginaPublicada
                   }
-                  onChange={(e) =>
-                    setPaginaPublicada(
-                      e.target
-                        .checked,
-                    )
-                  }
+                  onChange={(e) => {
+                    void cambiarPublicacionPagina(
+                      e.target.checked,
+                    );
+                  }}
                   className="h-5 w-5 accent-blue-500"
                 />
               </label>

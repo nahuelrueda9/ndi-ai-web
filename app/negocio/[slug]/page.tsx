@@ -1,5 +1,4 @@
 import {
-  Box,
   Clock3,
   ExternalLink,
   Globe2,
@@ -50,7 +49,6 @@ interface Empresa {
   descripcion?: string;
   direccion?: string;
   horarios?: string;
-  sitioWeb?: string;
 
   redesSociales?: {
     instagram?: string;
@@ -895,15 +893,21 @@ export default async function NegocioPage({
           )}
 
           {mostrarDireccion && (
-            <InfoCard
-              icono={
-                <MapPin className="h-5 w-5" />
-              }
-              titulo="Ubicación"
-              valor={empresa.direccion || ""}
-              color={colorPrincipal}
-              claro={esClaro}
-            />
+            <a
+              href="#ubicacion"
+              className="block rounded-2xl transition hover:-translate-y-0.5"
+              aria-label="Ir al mapa y ver cómo llegar"
+            >
+              <InfoCard
+                icono={
+                  <MapPin className="h-5 w-5" />
+                }
+                titulo="Cómo llegar"
+                valor={empresa.direccion || ""}
+                color={colorPrincipal}
+                claro={esClaro}
+              />
+            </a>
           )}
 
           {mostrarWhatsApp && (
@@ -931,124 +935,6 @@ export default async function NegocioPage({
           )}
         </div>
       </section>
-
-      {/* REDES SOCIALES */}
-      {redesSociales.length > 0 && (
-        <section className="mx-auto max-w-6xl px-5 pt-10 sm:px-8">
-          <div
-            className={`rounded-3xl border p-6 sm:p-8 ${
-              esClaro
-                ? "border-slate-200 bg-slate-50"
-                : "border-zinc-800 bg-zinc-900/70"
-            }`}
-          >
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p
-                  className="text-sm font-medium"
-                  style={{
-                    color: colorPrincipal,
-                  }}
-                >
-                  Redes sociales
-                </p>
-
-                <h2 className="mt-2 text-2xl font-bold tracking-tight">
-                  Seguinos también acá
-                </h2>
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                {redesSociales.map(
-                  (red) => (
-                    <a
-                      key={red.nombre}
-                      href={red.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`inline-flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition ${
-                        esClaro
-                          ? "border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50"
-                          : "border-zinc-700 bg-zinc-950 text-zinc-100 hover:border-zinc-600 hover:bg-zinc-900"
-                      }`}
-                    >
-                      <Globe2 className="h-4 w-4" />
-                      {red.nombre}
-                      <ExternalLink className="h-3.5 w-3.5 text-zinc-500" />
-                    </a>
-                  ),
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* MAPA */}
-      {mostrarMapa &&
-        mostrarDireccion &&
-        mapaEmbedUrl && (
-          <section className="mx-auto max-w-6xl px-5 py-10 sm:px-8">
-            <div
-              className={`overflow-hidden rounded-3xl border ${
-                esClaro
-                  ? "border-slate-200 bg-white shadow-sm"
-                  : "border-zinc-800 bg-zinc-900"
-              }`}
-            >
-              <div
-                className={`flex flex-col gap-3 border-b p-5 sm:flex-row sm:items-center sm:justify-between ${
-                  esClaro
-                    ? "border-slate-200"
-                    : "border-zinc-800"
-                }`}
-              >
-                <div>
-                  <p
-                    className={`text-xs font-semibold uppercase tracking-[0.18em] ${
-                      esClaro
-                        ? "text-slate-500"
-                        : "text-zinc-500"
-                    }`}
-                  >
-                    Ubicación
-                  </p>
-
-                  <h2 className="mt-1 text-xl font-bold">
-                    Cómo llegar
-                  </h2>
-
-                  <p className={`mt-1 text-sm ${claseTextoSecundario}`}>
-                    {direccionMapa}
-                  </p>
-                </div>
-
-                <a
-                  href={mapaAbrirUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${
-                    esClaro
-                      ? "border-slate-200 bg-slate-100 text-slate-900 hover:bg-slate-200"
-                      : "border-zinc-700 bg-zinc-800 text-white hover:bg-zinc-700"
-                  }`}
-                >
-                  <MapPin className="h-4 w-4" />
-                  Abrir en Google Maps
-                </a>
-              </div>
-
-              <iframe
-                src={mapaEmbedUrl}
-                title={`Mapa de ${nombre}`}
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                className="h-[320px] w-full border-0"
-                allowFullScreen
-              />
-            </div>
-          </section>
-        )}
 
       {/* SERVICIOS */}
       {mostrarServicios &&
@@ -1091,9 +977,6 @@ export default async function NegocioPage({
                 }
                 mostrarContacto={
                   mostrarContacto
-                }
-                icono={
-                  <Package className="h-5 w-5" />
                 }
               />
             ))}
@@ -1173,9 +1056,6 @@ export default async function NegocioPage({
                 }
                 mostrarContacto={
                   mostrarContacto
-                }
-                icono={
-                  <Box className="h-5 w-5" />
                 }
               />
             ))}
@@ -1497,6 +1377,125 @@ export default async function NegocioPage({
         </section>
       )}
 
+      {/* REDES SOCIALES */}
+      {redesSociales.length > 0 && (
+        <section className="mx-auto max-w-6xl px-5 pt-10 sm:px-8">
+          <div
+            className={`rounded-3xl border p-6 sm:p-8 ${
+              esClaro
+                ? "border-slate-200 bg-slate-50"
+                : "border-zinc-800 bg-zinc-900/70"
+            }`}
+          >
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p
+                  className="text-sm font-medium"
+                  style={{
+                    color: colorPrincipal,
+                  }}
+                >
+                  Redes sociales
+                </p>
+
+                <h2 className="mt-2 text-2xl font-bold tracking-tight">
+                  Seguinos también acá
+                </h2>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                {redesSociales.map(
+                  (red) => (
+                    <a
+                      key={red.nombre}
+                      href={red.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`inline-flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition ${
+                        esClaro
+                          ? "border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50"
+                          : "border-zinc-700 bg-zinc-950 text-zinc-100 hover:border-zinc-600 hover:bg-zinc-900"
+                      }`}
+                    >
+                      <Globe2 className="h-4 w-4" />
+                      {red.nombre}
+                      <ExternalLink className="h-3.5 w-3.5 text-zinc-500" />
+                    </a>
+                  ),
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* MAPA */}
+      {mostrarMapa &&
+        mostrarDireccion &&
+        mapaEmbedUrl && (
+          <section id="ubicacion" className="mx-auto max-w-6xl scroll-mt-24 px-5 py-10 sm:px-8">
+            <div
+              className={`overflow-hidden rounded-3xl border ${
+                esClaro
+                  ? "border-slate-200 bg-white shadow-sm"
+                  : "border-zinc-800 bg-zinc-900"
+              }`}
+            >
+              <div
+                className={`flex flex-col gap-3 border-b p-5 sm:flex-row sm:items-center sm:justify-between ${
+                  esClaro
+                    ? "border-slate-200"
+                    : "border-zinc-800"
+                }`}
+              >
+                <div>
+                  <p
+                    className={`text-xs font-semibold uppercase tracking-[0.18em] ${
+                      esClaro
+                        ? "text-slate-500"
+                        : "text-zinc-500"
+                    }`}
+                  >
+                    Ubicación
+                  </p>
+
+                  <h2 className="mt-1 text-lg font-bold">
+                    Cómo llegar
+                  </h2>
+
+                  <p className={`mt-1 text-sm ${claseTextoSecundario}`}>
+                    {direccionMapa}
+                  </p>
+                </div>
+
+                <a
+                  href={mapaAbrirUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${
+                    esClaro
+                      ? "border-slate-200 bg-slate-100 text-slate-900 hover:bg-slate-200"
+                      : "border-zinc-700 bg-zinc-800 text-white hover:bg-zinc-700"
+                  }`}
+                >
+                  <MapPin className="h-4 w-4" />
+                  Abrir en Google Maps
+                </a>
+              </div>
+
+              <iframe
+                src={mapaEmbedUrl}
+                title={`Mapa de ${nombre}`}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="h-[320px] w-full border-0"
+                allowFullScreen
+              />
+            </div>
+          </section>
+        )}
+
+
       {/* CONTACTO */}
       {mostrarContacto && (
       <section id="contacto" className="mx-auto max-w-6xl scroll-mt-24 px-5 py-20 sm:px-8">
@@ -1555,22 +1554,6 @@ export default async function NegocioPage({
                   >
                     <Mail className="h-5 w-5" />
                     Correo
-                  </a>
-                )}
-
-                {empresa.sitioWeb && (
-                  <a
-                    href={empresa.sitioWeb}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`inline-flex items-center justify-center gap-2 rounded-xl border px-6 py-3.5 font-semibold transition ${
-                      esClaro
-                        ? "border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
-                        : "border-zinc-700 bg-zinc-950/50 text-white hover:bg-zinc-900"
-                    }`}
-                  >
-                    <ExternalLink className="h-5 w-5" />
-                    Sitio web
                   </a>
                 )}
               </div>
@@ -1744,7 +1727,6 @@ function CatalogoCard({
   mostrarWhatsApp,
   whatsappUrl,
   mostrarContacto,
-  icono,
 }: {
   item: CatalogoItem;
   color: string;
@@ -1753,7 +1735,6 @@ function CatalogoCard({
   mostrarWhatsApp: boolean;
   whatsappUrl: string;
   mostrarContacto: boolean;
-  icono: React.ReactNode;
 }) {
   const mensajeWhatsApp =
     `Hola, quiero consultar por ${item.tipo === "servicio" ? "el servicio" : "el producto"} "${item.nombre}".`;
@@ -1767,7 +1748,7 @@ function CatalogoCard({
       : "";
   return (
     <article
-      className={`group flex h-full flex-col overflow-hidden rounded-3xl border shadow-[0_18px_50px_rgba(0,0,0,0.10)] transition duration-300 hover:-translate-y-1 ${
+      className={`group flex h-full flex-col overflow-hidden rounded-2xl border shadow-[0_14px_40px_rgba(0,0,0,0.08)] transition duration-300 hover:-translate-y-1 ${
         claro
           ? "border-slate-200 bg-white hover:border-slate-300 hover:shadow-xl"
           : "border-zinc-800 bg-zinc-900 hover:border-zinc-700 hover:bg-zinc-900/90"
@@ -1775,7 +1756,7 @@ function CatalogoCard({
     >
       {item.imagenUrl && (
         <div
-          className={`aspect-[16/10] overflow-hidden border-b ${
+          className={`aspect-[16/9] overflow-hidden border-b ${
             claro
               ? "border-slate-200 bg-slate-100"
               : "border-zinc-800 bg-zinc-950"
@@ -1790,25 +1771,14 @@ function CatalogoCard({
         </div>
       )}
 
-      <div className="flex flex-1 flex-col p-6">
-        <div
-          className="flex h-11 w-11 items-center justify-center rounded-2xl"
-          style={{
-            backgroundColor:
-              `${color}18`,
-            color,
-          }}
-        >
-          {icono}
-        </div>
-
-        <h3 className="mt-5 text-xl font-semibold">
+      <div className="flex flex-1 flex-col p-5">
+        <h3 className="text-lg font-semibold">
           {item.nombre}
         </h3>
 
         {item.descripcion && (
           <p
-            className={`mt-3 flex-1 leading-7 ${
+            className={`mt-2 flex-1 text-sm leading-6 ${
               claro
                 ? "text-slate-600"
                 : "text-zinc-400"
@@ -1819,7 +1789,7 @@ function CatalogoCard({
         )}
 
         <div
-          className={`mt-6 flex flex-wrap items-end justify-between gap-3 border-t pt-5 ${
+          className={`mt-4 flex flex-wrap items-end justify-between gap-3 border-t pt-4 ${
             claro
               ? "border-slate-200"
               : "border-zinc-800"
@@ -1886,13 +1856,13 @@ function CatalogoCard({
         {(puedeReservar ||
           whatsappItemUrl ||
           mostrarContacto) && (
-          <div className="mt-5 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-2">
             {puedeReservar && (
               <a
                 href={`#reservar-servicio-${encodeURIComponent(
                   item.id,
                 )}`}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
                 style={{
                   backgroundColor:
                     color,
@@ -1912,7 +1882,7 @@ function CatalogoCard({
                   data-analytics-event="whatsapp_click"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-500"
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500"
                 >
                   <MessageCircle className="h-4 w-4" />
                   Consultar
@@ -1924,7 +1894,7 @@ function CatalogoCard({
               mostrarContacto && (
                 <a
                   href="#contacto"
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
                   style={{
                     backgroundColor:
                       color,
