@@ -174,6 +174,10 @@ export async function generateMetadata({
     !pagina?.publicada ||
     !empresaTieneSuscripcionActiva(
       empresa,
+    ) ||
+    !empresaTieneFuncion(
+      empresa,
+      "pagina_publica",
     )
   ) {
     return {
@@ -270,6 +274,10 @@ export default async function NegocioPage({
     !pagina?.publicada ||
     !empresaTieneSuscripcionActiva(
       empresa,
+    ) ||
+    !empresaTieneFuncion(
+      empresa,
+      "pagina_publica",
     )
   ) {
     notFound();
@@ -299,6 +307,21 @@ export default async function NegocioPage({
       empresa,
       "productos",
     );
+
+  const puedeUsarQr =
+    empresaTieneFuncion(
+      empresa,
+      "qr",
+    );
+
+  /*
+   * Página Completa y Business IA son los planes que incluyen
+   * catálogo ampliado / más secciones. "productos" funciona acá
+   * como capacidad del nivel Completa o superior, sin depender
+   * directamente del id técnico del plan.
+   */
+  const puedeUsarSeccionesAmpliadas =
+    puedeUsarProductos;
 
   const servicios = catalogo.filter(
     (item) => item.tipo === "servicio",
@@ -383,6 +406,7 @@ export default async function NegocioPage({
     pagina.mostrarProductos !== false;
 
   const mostrarGaleria =
+    puedeUsarSeccionesAmpliadas &&
     pagina.mostrarGaleria !== false;
 
   const mostrarMapa =
@@ -437,6 +461,7 @@ export default async function NegocioPage({
   );
 
   const testimonios =
+    puedeUsarSeccionesAmpliadas &&
     Array.isArray(pagina.testimonios)
       ? pagina.testimonios
           .filter(
@@ -465,6 +490,7 @@ export default async function NegocioPage({
       : [];
 
   const preguntasFrecuentes =
+    puedeUsarSeccionesAmpliadas &&
     Array.isArray(
       pagina.preguntasFrecuentes,
     )
@@ -837,16 +863,18 @@ export default async function NegocioPage({
                 )}
             </div>
 
-            <div className="mt-4">
-              <CompartirPagina
-                nombre={nombre}
-                tema={
-                  esClaro
-                    ? "claro"
-                    : "oscuro"
-                }
-              />
-            </div>
+            {puedeUsarQr && (
+              <div className="mt-4">
+                <CompartirPagina
+                  nombre={nombre}
+                  tema={
+                    esClaro
+                      ? "claro"
+                      : "oscuro"
+                  }
+                />
+              </div>
+            )}
           </div>
         </div>
       </section>

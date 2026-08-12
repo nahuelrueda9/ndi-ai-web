@@ -11,6 +11,10 @@ import {
   adminAuth,
   adminDb,
 } from "@/lib/firebaseAdmin";
+import {
+  empresaTieneFuncion,
+  empresaTieneSuscripcionActiva,
+} from "@/lib/plans/planAccess";
 
 import { extraerMemoriaConIA } from "@/lib/ai/memoryExtractor";
 import {
@@ -38,6 +42,10 @@ type MensajeHistorial = {
 
 type Empresa = {
   userId?: string;
+  plan?: "free" | "pro" | "business";
+  subscriptionStatus?: string;
+  subscriptionEndsAt?: unknown;
+  subscriptionMonthlyPrice?: number;
   nombre?: string;
   descripcion?: string;
   personalidad?: string;
@@ -1588,6 +1596,37 @@ export async function POST(request: NextRequest) {
     const empresa =
       accesoEmpresa.empresa;
 
+    /*
+     * /api/gemini ejecuta IA real y herramientas del negocio.
+     * El bloqueo visual del panel no alcanza: la API también
+     * debe validar la suscripción en el servidor.
+     */
+    if (
+      !empresaTieneSuscripcionActiva(
+        empresa,
+      ) ||
+      !empresaTieneFuncion(
+        empresa,
+        "asistente_ia",
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "El Asistente IA requiere un plan Business IA activo.",
+        },
+        {
+          status: 403,
+        },
+      );
+    }
+
+    const puedeUsarTurnos =
+      empresaTieneFuncion(
+        empresa,
+        "turnos",
+      );
+
     const intencion =
       detectarIntencion(mensaje);
 
@@ -1765,14 +1804,16 @@ const {
         construirBloqueCatalogo(catalogo);
 
       const respuestaTurno =
-        await manejarFlujoTurnoDeterministico({
-          mensaje,
-          historial,
-          catalogo,
-          empresaId,
-          chatId,
-          memoria,
-        });
+        puedeUsarTurnos
+          ? await manejarFlujoTurnoDeterministico({
+              mensaje,
+              historial,
+              catalogo,
+              empresaId,
+              chatId,
+              memoria,
+            })
+          : null;
 
       if (respuestaTurno) {
         return NextResponse.json({
