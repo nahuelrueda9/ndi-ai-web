@@ -34,9 +34,6 @@ import {
 } from "lucide-react";
 
 import { db } from "@/lib/firebase";
-import {
-  empresaTieneFuncion,
-} from "@/lib/plans/planAccess";
 import Badge from "@/components/Ui/Badge";
 import Button from "@/components/Ui/Button";
 import Card from "@/components/Ui/Card";
@@ -63,6 +60,10 @@ type Turno = {
   estado: EstadoTurno;
   notas?: string;
   origen?: "manual" | "web" | "whatsapp" | "instagram";
+  tipoReserva?: "alojamiento";
+  fechaEntrada?: string;
+  fechaSalida?: string;
+  huespedes?: number;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
 };
@@ -91,6 +92,11 @@ type CatalogoServicio = {
 
 type FiltroEstado = "todos" | EstadoTurno;
 
+type PlanEmpresa =
+  | "free"
+  | "pro"
+  | "business";
+
 type ConfigDiaAgenda = {
   activo: boolean;
   apertura: string;
@@ -106,8 +112,7 @@ type AgendaConfig = {
 };
 
 type EmpresaPlan = {
-  plan?: "free" | "pro" | "business";
-  subscriptionStatus?: string;
+  plan?: PlanEmpresa;
   subscriptionEndsAt?: unknown;
   agendaConfig?: {
     activa?: boolean;
@@ -115,6 +120,57 @@ type EmpresaPlan = {
     dias?: Record<string, Partial<ConfigDiaAgenda>>;
   };
 };
+
+function convertirFechaPlan(valor: unknown) {
+  if (!valor) return null;
+
+  if (
+    typeof valor === "object" &&
+    valor !== null &&
+    "toDate" in valor &&
+    typeof (valor as { toDate?: unknown }).toDate === "function"
+  ) {
+    return (valor as { toDate: () => Date }).toDate();
+  }
+
+  if (valor instanceof Date) {
+    return valor;
+  }
+
+  if (
+    typeof valor === "string" ||
+    typeof valor === "number"
+  ) {
+    const fecha = new Date(valor);
+    return Number.isNaN(fecha.getTime())
+      ? null
+      : fecha;
+  }
+
+  return null;
+}
+
+function planPermiteAgenda(
+  empresa: EmpresaPlan
+) {
+  if (empresa.plan === "business") {
+    return true;
+  }
+
+  if (empresa.plan !== "pro") {
+    return false;
+  }
+
+  const vencimiento =
+    convertirFechaPlan(
+      empresa.subscriptionEndsAt
+    );
+
+  return Boolean(
+    vencimiento &&
+      vencimiento.getTime() > Date.now()
+  );
+}
 
 const DIAS_SEMANA = [
   "Lun",
@@ -327,9 +383,8 @@ export default function AgendaPage() {
           empresaSnapshot.data() as EmpresaPlan;
 
         const habilitada =
-          empresaTieneFuncion(
-            empresaData,
-            "turnos",
+          planPermiteAgenda(
+            empresaData
           );
 
         setAgendaHabilitada(
@@ -460,7 +515,18 @@ export default function AgendaPage() {
   const turnosFiltrados = useMemo(() => {
     return turnos
       .filter((turno) => {
-        if (turno.fecha !== fechaSeleccionada) {
+        const coincideFecha =
+          turno.tipoReserva === "alojamiento" &&
+          turno.fechaEntrada &&
+          turno.fechaSalida
+            ? fechaSeleccionada >=
+                turno.fechaEntrada &&
+              fechaSeleccionada <
+                turno.fechaSalida
+            : turno.fecha ===
+              fechaSeleccionada;
+
+        if (!coincideFecha) {
           return false;
         }
 
@@ -471,7 +537,9 @@ export default function AgendaPage() {
         return turno.estado === filtroEstado;
       })
       .sort((a, b) =>
-        a.hora.localeCompare(b.hora)
+        (a.hora || "").localeCompare(
+          b.hora || ""
+        )
       );
   }, [
     turnos,
@@ -500,8 +568,25 @@ export default function AgendaPage() {
     const mapa = new Map<string, Turno[]>();
 
     turnos.forEach((turno) => {
-      const existentes = mapa.get(turno.fecha) ?? [];
-      mapa.set(turno.fecha, [...existentes, turno]);
+      const fechas =
+        turno.tipoReserva === "alojamiento" &&
+        turno.fechaEntrada &&
+        turno.fechaSalida
+          ? obtenerFechasEstadia(
+              turno.fechaEntrada,
+              turno.fechaSalida
+            )
+          : [turno.fecha];
+
+      fechas.forEach((fecha) => {
+        const existentes =
+          mapa.get(fecha) ?? [];
+
+        mapa.set(
+          fecha,
+          [...existentes, turno]
+        );
+      });
     });
 
     return mapa;
@@ -998,7 +1083,7 @@ export default function AgendaPage() {
           </div>
 
           <p className="mt-6 text-sm font-semibold uppercase tracking-[0.18em] text-cyan-700 dark:text-cyan-400">
-            Disponible desde Página Completa
+            Función Pro
           </p>
 
           <h1 className="mt-3 text-3xl font-bold text-slate-950 dark:text-white">
@@ -1006,7 +1091,7 @@ export default function AgendaPage() {
           </h1>
 
           <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
-            La agenda, la gestión de turnos y las reservas online están disponibles con Página Completa o Business IA y una suscripción activa.
+            La gestión de citas y turnos está disponible en los planes Pro y Empresa.
           </p>
 
           <Button
@@ -1018,7 +1103,7 @@ export default function AgendaPage() {
               )
             }
           >
-            Ver planes
+            Ver plan Pro
           </Button>
         </Card>
       </section>
@@ -1617,7 +1702,10 @@ export default function AgendaPage() {
                             key={turno.id}
                             className="truncate rounded-md border border-blue-100 bg-blue-50 px-2 py-1 text-[10px] font-medium text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300 sm:text-xs"
                           >
-                            {turno.hora}{" "}
+                            {turno.tipoReserva ===
+                            "alojamiento"
+                              ? "Estadía"
+                              : turno.hora}{" "}
                             {turno.nombreCliente}
                           </div>
                         ))}
@@ -1782,7 +1870,10 @@ function TurnoCard({
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <p className="font-semibold text-slate-950 dark:text-white">
-              {turno.hora}
+              {turno.tipoReserva ===
+              "alojamiento"
+                ? "Estadía"
+                : turno.hora}
             </p>
 
             <Badge
@@ -1804,15 +1895,18 @@ function TurnoCard({
         </div>
 
         <div className="flex shrink-0 items-center gap-1">
-          <button
-            type="button"
-            disabled={procesando}
-            onClick={() => onEditar(turno)}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-blue-50 hover:text-blue-600 disabled:opacity-50 dark:text-zinc-600 dark:hover:bg-blue-500/10 dark:hover:text-blue-400"
-            title="Editar turno"
-          >
-            <Pencil className="h-4 w-4" />
-          </button>
+          {turno.tipoReserva !==
+            "alojamiento" && (
+            <button
+              type="button"
+              disabled={procesando}
+              onClick={() => onEditar(turno)}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-blue-50 hover:text-blue-600 disabled:opacity-50 dark:text-zinc-600 dark:hover:bg-blue-500/10 dark:hover:text-blue-400"
+              title="Editar turno"
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+          )}
 
           <button
             type="button"
@@ -1827,9 +1921,33 @@ function TurnoCard({
       </div>
 
       <div className="mt-4 grid gap-2 text-xs text-slate-500 dark:text-zinc-500">
-        <p>
-          Duración: {turno.duracionMinutos} minutos
-        </p>
+        {turno.tipoReserva ===
+        "alojamiento" ? (
+          <>
+            {turno.fechaEntrada && (
+              <p>
+                Entrada: {turno.fechaEntrada}
+              </p>
+            )}
+
+            {turno.fechaSalida && (
+              <p>
+                Salida: {turno.fechaSalida}
+              </p>
+            )}
+
+            {typeof turno.huespedes ===
+              "number" && (
+              <p>
+                Huéspedes: {turno.huespedes}
+              </p>
+            )}
+          </>
+        ) : (
+          <p>
+            Duración: {turno.duracionMinutos} minutos
+          </p>
+        )}
 
         {turno.telefono && (
           <p>Teléfono: {turno.telefono}</p>
@@ -2044,6 +2162,45 @@ function normalizarAgendaConfig(
 
 function horaAgendaValida(valor: string) {
   return /^([01]\d|2[0-3]):[0-5]\d$/.test(valor);
+}
+
+function obtenerFechasEstadia(
+  fechaEntrada: string,
+  fechaSalida: string
+) {
+  const fechas: string[] = [];
+
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(
+      fechaEntrada
+    ) ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(
+      fechaSalida
+    ) ||
+    fechaSalida <= fechaEntrada
+  ) {
+    return [fechaEntrada];
+  }
+
+  const cursor = new Date(
+    `${fechaEntrada}T12:00:00`
+  );
+
+  const salida = new Date(
+    `${fechaSalida}T12:00:00`
+  );
+
+  while (cursor < salida) {
+    fechas.push(
+      obtenerFechaISO(cursor)
+    );
+
+    cursor.setDate(
+      cursor.getDate() + 1
+    );
+  }
+
+  return fechas;
 }
 
 function construirDiasCalendario(
