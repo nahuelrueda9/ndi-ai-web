@@ -14,8 +14,6 @@ import {
   doc,
   getDoc,
   onSnapshot,
-  orderBy,
-  query,
   serverTimestamp,
   Timestamp,
   updateDoc,
@@ -442,28 +440,50 @@ export default function AgendaPage() {
           }
         );
 
-        const turnosQuery = query(
-          collection(
-            db,
-            "companies",
-            empresaIdSeguro,
-            "appointments"
-          ),
-          orderBy("fecha", "asc")
+        const turnosRef = collection(
+          db,
+          "companies",
+          empresaIdSeguro,
+          "appointments"
         );
 
         cancelarTurnos = onSnapshot(
-          turnosQuery,
+          turnosRef,
           (snapshot) => {
             const lista =
               snapshot.docs.map(
-                (documento) => ({
-                  id: documento.id,
-                  ...(documento.data() as Omit<
-                    Turno,
-                    "id"
-                  >),
-                })
+                (documento) => {
+                  const datos =
+                    documento.data() as Omit<
+                      Turno,
+                      "id"
+                    >;
+
+                  const fechaNormalizada =
+                    datos.fecha ||
+                    datos.fechaEntrada ||
+                    "";
+
+                  return {
+                    id: documento.id,
+                    ...datos,
+                    fecha:
+                      fechaNormalizada,
+                    hora:
+                      datos.hora ||
+                      (datos.tipoReserva ===
+                      "alojamiento"
+                        ? "14:00"
+                        : ""),
+                    duracionMinutos:
+                      Number(
+                        datos.duracionMinutos
+                      ) || 0,
+                    estado:
+                      datos.estado ||
+                      "pendiente",
+                  };
+                }
               );
 
             setTurnos(lista);
@@ -1924,11 +1944,14 @@ function TurnoCard({
         {turno.tipoReserva ===
         "alojamiento" ? (
           <>
-            {turno.fechaEntrada && (
-              <p>
-                Entrada: {turno.fechaEntrada}
-              </p>
-            )}
+            <p>
+              Entrada:{" "}
+              {turno.fechaEntrada ||
+                turno.fecha}
+              {turno.hora
+                ? ` · ${turno.hora}`
+                : ""}
+            </p>
 
             {turno.fechaSalida && (
               <p>
@@ -1944,9 +1967,18 @@ function TurnoCard({
             )}
           </>
         ) : (
-          <p>
-            Duración: {turno.duracionMinutos} minutos
-          </p>
+          <>
+            <p>
+              Fecha: {turno.fecha}
+            </p>
+            <p>
+              Horario: {turno.hora}
+            </p>
+            <p>
+              Duración:{" "}
+              {turno.duracionMinutos} minutos
+            </p>
+          </>
         )}
 
         {turno.telefono && (
