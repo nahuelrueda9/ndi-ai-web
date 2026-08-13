@@ -2,6 +2,7 @@
 
 import {
   useEffect,
+  useRef,
   useState,
   type FormEvent,
 } from "react";
@@ -96,6 +97,71 @@ export default function ReservaForm({
     setRefrescarDisponibilidad,
   ] = useState(0);
 
+  const horaPreseleccionadaRef =
+    useRef("");
+
+  useEffect(() => {
+    function seleccionarTurnoRapido(
+      event: Event,
+    ) {
+      const detalle =
+        (
+          event as CustomEvent<{
+            servicioId?: string;
+            fecha?: string;
+            hora?: string;
+          }>
+        ).detail;
+
+      const servicioDesdeCard =
+        detalle?.servicioId ||
+        "";
+
+      const existe =
+        servicios.some(
+          (servicio) =>
+            servicio.id ===
+            servicioDesdeCard,
+        );
+
+      if (!existe) {
+        return;
+      }
+
+      horaPreseleccionadaRef.current =
+        detalle?.hora ||
+        "";
+
+      setServicioId(
+        servicioDesdeCard,
+      );
+
+      if (
+        detalle?.fecha
+      ) {
+        setFecha(
+          detalle.fecha,
+        );
+      }
+
+      setHora("");
+      setExito("");
+      setError("");
+    }
+
+    window.addEventListener(
+      "ndi:seleccionar-turno",
+      seleccionarTurnoRapido,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "ndi:seleccionar-turno",
+        seleccionarTurnoRapido,
+      );
+    };
+  }, [servicios]);
+
   useEffect(() => {
     function seleccionarServicioDesdeHash() {
       const hash =
@@ -123,6 +189,9 @@ export default function ReservaForm({
       if (!existe) {
         return;
       }
+
+      horaPreseleccionadaRef.current =
+        "";
 
       setServicioId(
         servicioDesdeHash,
@@ -213,6 +282,23 @@ export default function ReservaForm({
             : [];
 
         setHorarios(nuevosHorarios);
+
+        const horaPreseleccionada =
+          horaPreseleccionadaRef.current;
+
+        if (
+          horaPreseleccionada &&
+          nuevosHorarios.includes(
+            horaPreseleccionada,
+          )
+        ) {
+          setHora(
+            horaPreseleccionada,
+          );
+        }
+
+        horaPreseleccionadaRef.current =
+          "";
 
         setConfiguracionPendiente(
           resultado.configuracionPendiente ===
@@ -437,27 +523,27 @@ export default function ReservaForm({
 
   return (
     <div
-      className={`rounded-2xl border p-4 sm:rounded-3xl sm:p-8 ${
+      className={`rounded-3xl border p-6 sm:p-8 ${
         esClaro
           ? "border-slate-200 bg-white shadow-sm"
           : "border-zinc-800 bg-zinc-900"
       }`}
     >
-      <div className="flex items-start gap-3 sm:gap-4">
+      <div className="flex items-start gap-4">
         <div
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl sm:h-12 sm:w-12 sm:rounded-2xl"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
           style={{
             backgroundColor:
               `${colorPrincipal}20`,
             color: colorPrincipal,
           }}
         >
-          <CalendarDays className="h-4 w-4 sm:h-6 sm:w-6" />
+          <CalendarDays className="h-6 w-6" />
         </div>
 
         <div>
           <p
-            className="text-xs font-medium sm:text-sm"
+            className="text-sm font-medium"
             style={{
               color: colorPrincipal,
             }}
@@ -465,12 +551,12 @@ export default function ReservaForm({
             Reserva online
           </p>
 
-          <h2 className="mt-1 text-xl font-bold sm:text-2xl">
+          <h2 className="mt-1 text-2xl font-bold">
             Pedí tu turno
           </h2>
 
           <p
-            className={`mt-1 text-xs leading-5 sm:mt-2 sm:text-sm sm:leading-6 ${
+            className={`mt-2 text-sm leading-6 ${
               esClaro
                 ? "text-slate-600"
                 : "text-zinc-400"
@@ -484,12 +570,12 @@ export default function ReservaForm({
 
       <form
         onSubmit={reservar}
-        className="mt-5 grid gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-5"
+        className="mt-8 grid gap-5 sm:grid-cols-2"
       >
         {/* SERVICIO */}
         <div className="sm:col-span-2">
           <label
-            className={`mb-1.5 block text-xs font-medium sm:mb-2 sm:text-sm ${
+            className={`mb-2 block text-sm font-medium ${
               esClaro
                 ? "text-slate-700"
                 : "text-zinc-300"
@@ -509,7 +595,7 @@ export default function ReservaForm({
               setError("");
             }}
             required
-            className={`w-full rounded-xl border px-3 py-2.5 text-xs outline-none transition focus:border-blue-500 sm:px-4 sm:py-3 sm:text-sm ${
+            className={`w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:border-blue-500 ${
               esClaro
                 ? "border-slate-300 bg-white text-slate-950"
                 : "border-zinc-700 bg-zinc-950 text-white"
@@ -567,7 +653,7 @@ export default function ReservaForm({
         {/* FECHA */}
         <div>
           <label
-            className={`mb-1.5 block text-xs font-medium sm:mb-2 sm:text-sm ${
+            className={`mb-2 block text-sm font-medium ${
               esClaro
                 ? "text-slate-700"
                 : "text-zinc-300"
@@ -589,7 +675,7 @@ export default function ReservaForm({
               setError("");
             }}
             required
-            className={`w-full rounded-xl border px-3 py-2.5 text-xs outline-none transition focus:border-blue-500 sm:px-4 sm:py-3 sm:text-sm ${
+            className={`w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:border-blue-500 ${
               esClaro
                 ? "border-slate-300 bg-white text-slate-950"
                 : "border-zinc-700 bg-zinc-950 text-white"
@@ -599,7 +685,7 @@ export default function ReservaForm({
 
         {/* HORARIOS */}
         <div className="sm:col-span-2">
-          <div className="mb-2 flex items-center gap-2 sm:mb-3">
+          <div className="mb-3 flex items-center gap-2">
             <Clock3
               className={`h-4 w-4 ${
                 esClaro
@@ -609,7 +695,7 @@ export default function ReservaForm({
             />
 
             <label
-              className={`text-xs font-medium sm:text-sm ${
+              className={`text-sm font-medium ${
                 esClaro
                   ? "text-slate-700"
                   : "text-zinc-300"
@@ -621,7 +707,7 @@ export default function ReservaForm({
 
           {!fecha ? (
             <div
-              className={`rounded-xl border p-3 text-xs sm:p-5 sm:text-sm ${
+              className={`rounded-xl border p-5 text-sm ${
                 esClaro
                   ? "border-slate-200 bg-slate-50 text-slate-500"
                   : "border-zinc-800 bg-zinc-950 text-zinc-500"
@@ -632,7 +718,7 @@ export default function ReservaForm({
             </div>
           ) : cargandoHorarios ? (
             <div
-              className={`flex items-center justify-center gap-2 rounded-xl border p-4 text-xs sm:gap-3 sm:p-6 sm:text-sm ${
+              className={`flex items-center justify-center gap-3 rounded-xl border p-6 text-sm ${
                 esClaro
                   ? "border-slate-200 bg-slate-50 text-slate-600"
                   : "border-zinc-800 bg-zinc-950 text-zinc-400"
@@ -670,7 +756,7 @@ export default function ReservaForm({
                           : undefined
                       }
                       className={[
-                        "rounded-xl border px-2 py-2 text-xs font-semibold transition sm:px-3 sm:py-3 sm:text-sm",
+                        "rounded-xl border px-3 py-3 text-sm font-semibold transition",
                         seleccionado
                           ? "text-white"
                           : esClaro
@@ -703,12 +789,12 @@ export default function ReservaForm({
 
         {/* TURNO ELEGIDO */}
         {hora && (
-          <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 sm:col-span-2 sm:p-4">
+          <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 sm:col-span-2">
             <p className="text-xs font-medium uppercase tracking-wide text-emerald-500">
               Horario seleccionado
             </p>
 
-            <p className="mt-1 text-base font-semibold text-emerald-300 sm:text-lg">
+            <p className="mt-1 text-lg font-semibold text-emerald-300">
               {fecha} · {hora}
             </p>
           </div>
@@ -717,7 +803,7 @@ export default function ReservaForm({
         {/* NOTAS */}
         <div className="sm:col-span-2">
           <label
-            className={`mb-1.5 block text-xs font-medium sm:mb-2 sm:text-sm ${
+            className={`mb-2 block text-sm font-medium ${
               esClaro
                 ? "text-slate-700"
                 : "text-zinc-300"
@@ -736,7 +822,7 @@ export default function ReservaForm({
               )
             }
             placeholder="Algo que quieras aclarar..."
-            className={`h-20 w-full resize-none rounded-xl border px-3 py-2.5 text-xs outline-none focus:border-blue-500 sm:h-auto sm:px-4 sm:py-3 sm:text-sm ${
+            className={`w-full resize-none rounded-xl border px-4 py-3 text-sm outline-none focus:border-blue-500 ${
               esClaro
                 ? "border-slate-300 bg-white text-slate-950 placeholder:text-slate-400"
                 : "border-zinc-700 bg-zinc-950 text-white placeholder:text-zinc-600"
@@ -746,14 +832,14 @@ export default function ReservaForm({
 
         {/* ERROR */}
         {error && (
-          <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-400 sm:col-span-2 sm:p-4 sm:text-sm">
+          <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400 sm:col-span-2">
             {error}
           </div>
         )}
 
         {/* ÉXITO */}
         {exito && (
-          <div className="flex items-start gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-300 sm:col-span-2 sm:gap-3 sm:p-4 sm:text-sm">
+          <div className="flex items-start gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-300 sm:col-span-2">
             <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
 
             <div>
@@ -785,7 +871,7 @@ export default function ReservaForm({
             backgroundColor:
               colorPrincipal,
           }}
-          className="rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:col-span-2 sm:px-6 sm:py-3.5 sm:text-base"
+          className="rounded-xl px-6 py-3.5 font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:col-span-2"
         >
           {enviando
             ? "Reservando..."
@@ -795,7 +881,7 @@ export default function ReservaForm({
         </button>
 
         <p
-          className={`text-center text-[11px] sm:col-span-2 sm:text-xs ${
+          className={`text-center text-xs sm:col-span-2 ${
             esClaro
               ? "text-slate-500"
               : "text-zinc-600"
@@ -831,7 +917,7 @@ function Campo({
   return (
     <div>
       <label
-        className={`mb-1.5 block text-xs font-medium sm:mb-2 sm:text-sm ${
+        className={`mb-2 block text-sm font-medium ${
           claro
             ? "text-slate-700"
             : "text-zinc-300"
@@ -850,7 +936,7 @@ function Campo({
         }
         placeholder={placeholder}
         required={required}
-        className={`w-full rounded-xl border px-3 py-2.5 text-xs outline-none focus:border-blue-500 sm:px-4 sm:py-3 sm:text-sm ${
+        className={`w-full rounded-xl border px-4 py-3 text-sm outline-none focus:border-blue-500 ${
           claro
             ? "border-slate-300 bg-white text-slate-950 placeholder:text-slate-400"
             : "border-zinc-700 bg-zinc-950 text-white placeholder:text-zinc-600"

@@ -1,10 +1,12 @@
 import {
+  ChevronDown,
   Clock3,
   ExternalLink,
   Globe2,
   Mail,
   MapPin,
   MessageCircle,
+  Music2,
   Package,
   Phone,
   Quote,
@@ -20,6 +22,10 @@ import {
   empresaTieneSuscripcionActiva,
 } from "@/lib/plans/planAccess";
 import ReservaForm from "./ReservaForm";
+import ReservaAlojamientoForm from "./ReservaAlojamientoForm";
+import ReservaMesaForm from "./ReservaMesaForm";
+import ProximosHorarios from "./ProximosHorarios";
+import RestauranteCartaPedidos from "./RestauranteCartaPedidos";
 import ContactoForm from "./ContactForm";
 import PublicAnalytics from "./PublicAnalytics";
 import CompartirPagina from "./CompartirPagina";
@@ -77,6 +83,8 @@ interface Empresa {
     mostrarGaleria?: boolean;
     mostrarMapa?: boolean;
     mostrarPresupuesto?: boolean;
+    mostrarReservasMesa?: boolean;
+    mostrarPedidosOnline?: boolean;
     mostrarContacto?: boolean;
 
     testimonios?: TestimonioPagina[];
@@ -98,6 +106,8 @@ interface CatalogoItem {
   precio?: number;
   duracionMinutos?: number;
   imagenUrl?: string;
+  imagenes?: string[];
+  categoria?: string;
   activo?: boolean;
 }
 
@@ -336,6 +346,42 @@ export default async function NegocioPage({
         )
       : [];
 
+  /*
+   * RestauranteCartaPedidos es un Client Component.
+   * No le pasamos objetos crudos de Firestore porque
+   * pueden incluir Timestamp (createdAt / updatedAt),
+   * que Next.js no puede serializar hacia el cliente.
+   */
+  const productosRestaurante =
+    productos.map(
+      (producto) => ({
+        id: producto.id,
+        nombre:
+          producto.nombre || "",
+        descripcion:
+          producto.descripcion || "",
+        precio:
+          typeof producto.precio ===
+          "number"
+            ? producto.precio
+            : 0,
+        imagenUrl:
+          producto.imagenUrl || "",
+        imagenes:
+          Array.isArray(
+            producto.imagenes,
+          )
+            ? producto.imagenes.filter(
+                (url): url is string =>
+                  typeof url ===
+                    "string",
+              )
+            : [],
+        categoria:
+          producto.categoria || "",
+      }),
+    );
+
   const catalogoPermitido =
     puedeUsarProductos
       ? catalogo
@@ -345,6 +391,30 @@ export default async function NegocioPage({
     pagina.titulo ||
     empresa.nombre ||
     "Negocio";
+
+  const rubroNormalizado =
+    (empresa.rubro || "")
+      .trim()
+      .toLowerCase();
+
+  const esAlojamiento =
+    rubroNormalizado === "hotel" ||
+    rubroNormalizado === "hostal";
+
+  const esRestaurante =
+    rubroNormalizado === "restaurante" ||
+    rubroNormalizado === "restaurant";
+
+  const mostrarHorariosRapidos =
+    [
+      "barberia",
+      "barbería",
+      "peluqueria",
+      "peluquería",
+      "consultorio",
+    ].includes(
+      rubroNormalizado,
+    );
 
   const textoHeroGuardado =
     pagina.subtitulo ||
@@ -551,6 +621,31 @@ export default async function NegocioPage({
       "turnos",
     );
 
+  /*
+   * Restaurante tendrá su propio flujo
+   * de "Reservar mesa". Hasta implementarlo,
+   * evitamos mostrar el formulario genérico
+   * de "Reservar turno".
+   */
+  const puedeMostrarReservaGenerica =
+    puedeUsarTurnos &&
+    servicios.length > 0 &&
+    !esRestaurante;
+
+  const mostrarReservaMesa =
+    esRestaurante &&
+    puedeUsarTurnos &&
+    pagina.mostrarReservasMesa === true;
+
+  const mostrarPedidosOnline =
+    esRestaurante &&
+    puedeUsarProductos &&
+    pagina.mostrarPedidosOnline === true;
+
+  const puedeMostrarReserva =
+    puedeMostrarReservaGenerica ||
+    mostrarReservaMesa;
+
   const puedeUsarPresupuestos =
     empresaTieneFuncion(
       empresa,
@@ -650,7 +745,9 @@ export default async function NegocioPage({
                     : "text-zinc-400 hover:bg-white/5 hover:text-white"
                 }`}
               >
-                Servicios
+                {esAlojamiento
+                  ? "Habitaciones"
+                  : "Servicios"}
               </a>
             )}
 
@@ -663,7 +760,9 @@ export default async function NegocioPage({
                     : "text-zinc-400 hover:bg-white/5 hover:text-white"
                 }`}
               >
-                Productos
+                {esRestaurante
+                  ? "Carta"
+                  : "Productos"}
               </a>
             )}
 
@@ -721,20 +820,21 @@ export default async function NegocioPage({
           </nav>
 
           <div className="flex shrink-0 items-center gap-2">
-            {puedeUsarTurnos &&
-              servicios.length > 0 && (
-                <a
-                  href="#reservar"
-                  className="hidden items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:brightness-110 md:inline-flex"
-                  style={{
-                    backgroundColor:
-                      colorPrincipal,
-                  }}
-                >
-                  <Clock3 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  Reservar
-                </a>
-              )}
+            {puedeMostrarReserva && (
+              <a
+                href="#reservar"
+                className="hidden items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:brightness-110 md:inline-flex"
+                style={{
+                  backgroundColor:
+                    colorPrincipal,
+                }}
+              >
+                <Clock3 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                {mostrarReservaMesa
+                  ? "Reservar mesa"
+                  : "Reservar"}
+              </a>
+            )}
 
             {mostrarWhatsApp && (
               <a
@@ -844,32 +944,69 @@ export default async function NegocioPage({
             )}
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              {puedeUsarTurnos &&
-                servicios.length > 0 && (
-                  <a
-                    href="#reservar"
-                    className="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 font-semibold text-white shadow-xl transition hover:-translate-y-0.5 hover:brightness-110"
-                    style={{
-                      backgroundColor:
-                        colorPrincipal,
-                    }}
-                  >
-                    <Clock3 className="h-5 w-5" />
-                    Reservar turno
-                  </a>
-                )}
-
-              {mostrarWhatsApp && (
+              {puedeMostrarReserva && (
                 <a
-                  href={whatsappUrl}
-                  data-analytics-event="whatsapp_click"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3.5 font-semibold text-white shadow-xl transition hover:-translate-y-0.5 hover:bg-emerald-500"
+                  href="#reservar"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 font-semibold text-white shadow-xl transition hover:-translate-y-0.5 hover:brightness-110"
+                  style={{
+                    backgroundColor:
+                      colorPrincipal,
+                  }}
                 >
-                  <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  Hablar por WhatsApp
+                  <Clock3 className="h-5 w-5" />
+                  {mostrarReservaMesa
+                    ? "Reservar mesa"
+                    : esAlojamiento
+                      ? "Reservar estadía"
+                      : "Reservar turno"}
                 </a>
+              )}
+
+              {(mostrarWhatsApp ||
+                redesSociales.length > 0) && (
+                <div className="flex flex-wrap items-center gap-2">
+                  {mostrarWhatsApp && (
+                    <a
+                      href={whatsappUrl}
+                      data-analytics-event="whatsapp_click"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3.5 font-semibold text-white shadow-xl transition hover:-translate-y-0.5 hover:bg-emerald-500"
+                    >
+                      <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      Hablar por WhatsApp
+                    </a>
+                  )}
+
+                  {redesSociales.map((red) => (
+                    <a
+                      key={`hero-${red.nombre}`}
+                      href={red.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Abrir ${red.nombre}`}
+                      title={red.nombre}
+                      className={`inline-flex h-[52px] w-[52px] items-center justify-center rounded-xl border shadow-lg backdrop-blur transition hover:-translate-y-0.5 ${
+                        portadaUrl || !esClaro
+                          ? "border-white/20 bg-white/10 text-white hover:bg-white/20"
+                          : "border-slate-200 bg-white text-slate-800 hover:bg-slate-100"
+                      }`}
+                    >
+                      {red.nombre === "Instagram" ? (
+                        <span className="relative block h-[19px] w-[19px] rounded-[6px] border-2 border-current">
+                          <span className="absolute left-1/2 top-1/2 h-[7px] w-[7px] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-current" />
+                          <span className="absolute right-[2px] top-[2px] h-[3px] w-[3px] rounded-full bg-current" />
+                        </span>
+                      ) : red.nombre === "Facebook" ? (
+                        <span className="text-[22px] font-bold leading-none">
+                          f
+                        </span>
+                      ) : (
+                        <Music2 className="h-5 w-5" />
+                      )}
+                    </a>
+                  ))}
+                </div>
               )}
 
               {!puedeUsarTurnos &&
@@ -884,7 +1021,9 @@ export default async function NegocioPage({
                     }`}
                   >
                     <Package className="h-5 w-5" />
-                    Ver servicios
+                    {esAlojamiento
+                      ? "Ver habitaciones"
+                      : "Ver servicios"}
                   </a>
                 )}
 
@@ -994,11 +1133,15 @@ export default async function NegocioPage({
             </p>
 
             <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-              Servicios
+              {esAlojamiento
+                ? "Habitaciones"
+                : "Servicios"}
             </h2>
 
             <p className={`mt-4 leading-7 ${claseTextoSecundario}`}>
-              Conocé los servicios disponibles.
+              {esAlojamiento
+                ? "Elegí la habitación que mejor se adapte a tu estadía."
+                : "Conocé los servicios disponibles."}
             </p>
           </div>
 
@@ -1010,7 +1153,8 @@ export default async function NegocioPage({
                 color={colorPrincipal}
                 claro={esClaro}
                 puedeReservar={
-                  puedeUsarTurnos
+                  puedeUsarTurnos &&
+                  !esRestaurante
                 }
                 mostrarWhatsApp={
                   mostrarWhatsApp
@@ -1021,34 +1165,9 @@ export default async function NegocioPage({
                 mostrarContacto={
                   mostrarContacto
                 }
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* RESERVA ONLINE */}
-      {puedeUsarTurnos &&
-        servicios.length > 0 && (
-          <section
-            id="reservar"
-            className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}
-          >
-            <div className="mx-auto max-w-4xl px-4 py-10 sm:px-8 sm:py-20">
-              <ReservaForm
                 slug={slug}
-                servicios={servicios.map(
-                  (servicio) => ({
-                    id: servicio.id,
-                    nombre: servicio.nombre,
-                    precio:
-                      servicio.precio,
-                    duracionMinutos:
-                      servicio.duracionMinutos,
-                  }),
-                )}
-                colorPrincipal={
-                  colorPrincipal
+                mostrarHorariosRapidos={
+                  mostrarHorariosRapidos
                 }
                 tema={
                   esClaro
@@ -1056,82 +1175,181 @@ export default async function NegocioPage({
                     : "oscuro"
                 }
               />
-            </div>
-          </section>
-        )}
+            ))}
+          </div>
+        </section>
+      )}
 
-      {/* PRODUCTOS */}
+      {/* PRODUCTOS / CARTA */}
       {mostrarProductos &&
         productos.length > 0 && (
-        <section id="productos" className="mx-auto max-w-6xl scroll-mt-24 px-5 py-20 sm:px-8">
+        <section
+          id="productos"
+          className="mx-auto max-w-6xl scroll-mt-24 px-5 py-20 sm:px-8"
+        >
           <div className="max-w-2xl">
             <p
               className="text-sm font-medium"
               style={{
-                color: colorPrincipal,
+                color:
+                  colorPrincipal,
               }}
             >
-              Catálogo
+              {esRestaurante
+                ? "Menú"
+                : "Catálogo"}
             </p>
 
             <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-              Productos
+              {esRestaurante
+                ? "Carta"
+                : "Productos"}
             </h2>
 
-            <p className={`mt-4 leading-7 ${claseTextoSecundario}`}>
-              Productos disponibles en este negocio.
+            <p
+              className={`mt-4 leading-7 ${claseTextoSecundario}`}
+            >
+              {esRestaurante
+                ? "Explorá nuestras entradas, platos principales, bebidas y postres."
+                : "Productos disponibles en este negocio."}
             </p>
           </div>
 
-          <div className="mt-8 grid grid-cols-2 gap-3 sm:mt-10 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {productos.map((producto) => (
-              <CatalogoCard
-                key={producto.id}
-                item={producto}
-                color={colorPrincipal}
-                claro={esClaro}
-                puedeReservar={false}
-                mostrarWhatsApp={
-                  mostrarWhatsApp
-                }
-                whatsappUrl={
-                  whatsappUrl
-                }
-                mostrarContacto={
-                  mostrarContacto
-                }
-              />
-            ))}
-          </div>
+          {esRestaurante ? (
+            <RestauranteCartaPedidos
+              slug={slug}
+              productos={
+                productosRestaurante
+              }
+              colorPrincipal={
+                colorPrincipal
+              }
+              tema={
+                esClaro
+                  ? "claro"
+                  : "oscuro"
+              }
+              pedidosHabilitados={
+                mostrarPedidosOnline
+              }
+              whatsappUrl={
+                whatsappUrl
+              }
+              mostrarWhatsApp={
+                mostrarWhatsApp
+              }
+            />
+          ) : (
+            <div className="mt-8 grid grid-cols-2 gap-3 sm:mt-10 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {productos.map(
+                (producto) => (
+                  <CatalogoCard
+                    key={
+                      producto.id
+                    }
+                    item={
+                      producto
+                    }
+                    color={
+                      colorPrincipal
+                    }
+                    claro={
+                      esClaro
+                    }
+                    puedeReservar={
+                      false
+                    }
+                    mostrarWhatsApp={
+                      mostrarWhatsApp
+                    }
+                    whatsappUrl={
+                      whatsappUrl
+                    }
+                    mostrarContacto={
+                      mostrarContacto
+                    }
+                  />
+                ),
+              )}
+            </div>
+          )}
         </section>
       )}
 
       {/* PRESUPUESTO */}
       {puedeUsarPresupuestos &&
         mostrarPresupuesto && (
-        <section
+          <section
             id="presupuesto"
             className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}
           >
-          <div className="mx-auto max-w-4xl px-4 py-10 sm:px-8 sm:py-20">
-            <PresupuestoFormulario
-              slug={slug}
-              items={catalogoPermitido.map(
-                (item) => ({
-                  id: item.id,
-                  nombre: item.nombre,
-                  tipo: item.tipo,
-                }),
-              )}
-              tema={
-                esClaro
-                  ? "claro"
-                  : "oscuro"
-              }
-            />
-          </div>
-        </section>
-      )}
+            <div className="mx-auto max-w-4xl px-4 py-8 sm:px-8 sm:py-12">
+              <details className="group">
+                <summary
+                  className={`flex cursor-pointer list-none flex-col gap-4 rounded-2xl border p-5 transition sm:flex-row sm:items-center sm:justify-between sm:p-6 ${
+                    esClaro
+                      ? "border-slate-200 bg-white shadow-sm hover:border-slate-300"
+                      : "border-zinc-800 bg-zinc-900 hover:border-zinc-700"
+                  }`}
+                >
+                  <div>
+                    <p
+                      className="text-xs font-semibold uppercase tracking-[0.16em]"
+                      style={{
+                        color: colorPrincipal,
+                      }}
+                    >
+                      Presupuesto
+                    </p>
+
+                    <h2 className="mt-1 text-xl font-bold tracking-tight sm:text-2xl">
+                      ¿Necesitás un presupuesto?
+                    </h2>
+
+                    <p
+                      className={`mt-1 text-sm ${
+                        esClaro
+                          ? "text-slate-600"
+                          : "text-zinc-400"
+                      }`}
+                    >
+                      Contanos qué estás buscando y te preparamos una cotización.
+                    </p>
+                  </div>
+
+                  <span
+                    className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm"
+                    style={{
+                      backgroundColor:
+                        colorPrincipal,
+                    }}
+                  >
+                    Solicitar presupuesto
+                    <ChevronDown className="h-4 w-4 transition-transform duration-200 group-open:rotate-180" />
+                  </span>
+                </summary>
+
+                <div className="pt-4 sm:pt-6">
+                  <PresupuestoFormulario
+                    slug={slug}
+                    items={catalogoPermitido.map(
+                      (item) => ({
+                        id: item.id,
+                        nombre: item.nombre,
+                        tipo: item.tipo,
+                      }),
+                    )}
+                    tema={
+                      esClaro
+                        ? "claro"
+                        : "oscuro"
+                    }
+                  />
+                </div>
+              </details>
+            </div>
+          </section>
+        )}
 
       {/* GALERÍA */}
       {mostrarGaleria &&
@@ -1540,6 +1758,74 @@ export default async function NegocioPage({
         )}
 
 
+      {/* RESERVA ONLINE */}
+      {puedeMostrarReserva && (
+        <section
+          id="reservar"
+          className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}
+        >
+          <div className="mx-auto max-w-4xl px-4 py-10 sm:px-8 sm:py-20">
+            {mostrarReservaMesa ? (
+              <ReservaMesaForm
+                slug={slug}
+                colorPrincipal={
+                  colorPrincipal
+                }
+                tema={
+                  esClaro
+                    ? "claro"
+                    : "oscuro"
+                }
+              />
+            ) : esAlojamiento ? (
+                <ReservaAlojamientoForm
+                  slug={slug}
+                  habitaciones={servicios.map(
+                    (servicio) => ({
+                      id: servicio.id,
+                      nombre:
+                        servicio.nombre,
+                      precio:
+                        servicio.precio,
+                    }),
+                  )}
+                  colorPrincipal={
+                    colorPrincipal
+                  }
+                  tema={
+                    esClaro
+                      ? "claro"
+                      : "oscuro"
+                  }
+                />
+              ) : (
+                <ReservaForm
+                  slug={slug}
+                  servicios={servicios.map(
+                    (servicio) => ({
+                      id: servicio.id,
+                      nombre:
+                        servicio.nombre,
+                      precio:
+                        servicio.precio,
+                      duracionMinutos:
+                        servicio.duracionMinutos,
+                    }),
+                  )}
+                  colorPrincipal={
+                    colorPrincipal
+                  }
+                  tema={
+                    esClaro
+                      ? "claro"
+                      : "oscuro"
+                  }
+                />
+              )}
+            </div>
+          </section>
+        )}
+
       {/* CONTACTO */}
       {mostrarContacto && (
       <section id="contacto" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-10 sm:px-8 sm:py-20">
@@ -1626,8 +1912,7 @@ export default async function NegocioPage({
       )}
 
       {/* CTA MÓVIL FIJO */}
-      {(puedeUsarTurnos &&
-        servicios.length > 0) ||
+      {puedeMostrarReserva ||
       mostrarContacto ||
       mostrarWhatsApp ? (
         <div
@@ -1638,13 +1923,11 @@ export default async function NegocioPage({
           }`}
         >
           <div className="mx-auto flex max-w-md gap-1.5">
-            {(puedeUsarTurnos &&
-              servicios.length > 0) ||
+            {puedeMostrarReserva ||
             mostrarContacto ? (
               <a
                 href={
-                  puedeUsarTurnos &&
-                  servicios.length > 0
+                  puedeMostrarReserva
                     ? "#reservar"
                     : "#contacto"
                 }
@@ -1654,11 +1937,12 @@ export default async function NegocioPage({
                     colorPrincipal,
                 }}
               >
-                {puedeUsarTurnos &&
-                servicios.length > 0 ? (
+                {puedeMostrarReserva ? (
                   <>
                     <Clock3 className="h-3.5 w-3.5" />
-                    Reservar
+                    {mostrarReservaMesa
+                      ? "Reservar mesa"
+                      : "Reservar"}
                   </>
                 ) : (
                   <>
@@ -1677,8 +1961,7 @@ export default async function NegocioPage({
                 rel="noopener noreferrer"
                 aria-label="Abrir WhatsApp"
                 className={`inline-flex h-10 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-lg transition hover:bg-emerald-500 ${
-                  (puedeUsarTurnos &&
-                    servicios.length > 0) ||
+                  puedeMostrarReserva ||
                   mostrarContacto
                     ? "w-10 shrink-0"
                     : "flex-1 gap-2 px-4"
@@ -1686,8 +1969,7 @@ export default async function NegocioPage({
               >
                 <MessageCircle className="h-4 w-4" />
                 {!(
-                  (puedeUsarTurnos &&
-                    servicios.length > 0) ||
+                  puedeMostrarReserva ||
                   mostrarContacto
                 ) && (
                   <span className="text-xs font-semibold">
@@ -1771,6 +2053,10 @@ function CatalogoCard({
   mostrarWhatsApp,
   whatsappUrl,
   mostrarContacto,
+  slug,
+  mostrarHorariosRapidos = false,
+  tema = "oscuro",
+  esRestaurante = false,
 }: {
   item: CatalogoItem;
   color: string;
@@ -1779,9 +2065,16 @@ function CatalogoCard({
   mostrarWhatsApp: boolean;
   whatsappUrl: string;
   mostrarContacto: boolean;
+  slug?: string;
+  mostrarHorariosRapidos?: boolean;
+  tema?: "oscuro" | "claro";
+  esRestaurante?: boolean;
 }) {
   const mensajeWhatsApp =
-    `Hola, quiero consultar por ${item.tipo === "servicio" ? "el servicio" : "el producto"} "${item.nombre}".`;
+    esRestaurante &&
+    item.tipo === "producto"
+      ? `Hola, quiero consultar por "${item.nombre}" de la carta.`
+      : `Hola, quiero consultar por ${item.tipo === "servicio" ? "el servicio" : "el producto"} "${item.nombre}".`;
 
   const whatsappItemUrl =
     mostrarWhatsApp &&
@@ -1790,6 +2083,28 @@ function CatalogoCard({
           mensajeWhatsApp,
         )}`
       : "";
+
+  const imagenesItem = (
+    Array.isArray(item.imagenes)
+      ? item.imagenes.filter(
+          (url): url is string =>
+            typeof url === "string" &&
+            url.trim().length > 0,
+        )
+      : []
+  )
+    .map((url) => url.trim())
+    .slice(0, 3);
+
+  if (
+    imagenesItem.length === 0 &&
+    item.imagenUrl?.trim()
+  ) {
+    imagenesItem.push(
+      item.imagenUrl.trim(),
+    );
+  }
+
   return (
     <article
       className={`group flex h-full flex-col overflow-hidden rounded-2xl border shadow-[0_14px_40px_rgba(0,0,0,0.08)] transition duration-300 hover:-translate-y-1 ${
@@ -1798,20 +2113,33 @@ function CatalogoCard({
           : "border-zinc-800 bg-zinc-900 hover:border-zinc-700 hover:bg-zinc-900/90"
       }`}
     >
-      {item.imagenUrl && (
+      {imagenesItem.length > 0 && (
         <div
-          className={`aspect-[4/3] overflow-hidden border-b sm:aspect-[16/9] ${
+          className={`relative aspect-[4/3] overflow-hidden border-b sm:aspect-[16/9] ${
             claro
               ? "border-slate-200 bg-slate-100"
               : "border-zinc-800 bg-zinc-950"
           }`}
         >
-          <img
-            src={item.imagenUrl}
-            alt={item.nombre}
-            loading="lazy"
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
-          />
+          <div className="flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {imagenesItem.map(
+              (url, indice) => (
+                <img
+                  key={`${url}-${indice}`}
+                  src={url}
+                  alt={`${item.nombre} - foto ${indice + 1}`}
+                  loading="lazy"
+                  className="h-full w-full shrink-0 snap-center object-cover"
+                />
+              ),
+            )}
+          </div>
+
+          {imagenesItem.length > 1 && (
+            <div className="pointer-events-none absolute bottom-2 right-2 rounded-lg bg-black/65 px-2 py-1 text-[10px] font-semibold text-white backdrop-blur sm:bottom-3 sm:right-3 sm:text-xs">
+              Deslizá · {imagenesItem.length} fotos
+            </div>
+          )}
         </div>
       )}
 
@@ -1896,6 +2224,17 @@ function CatalogoCard({
               </div>
             )}
         </div>
+
+        {puedeReservar &&
+          mostrarHorariosRapidos &&
+          slug && (
+            <ProximosHorarios
+              slug={slug}
+              servicioId={item.id}
+              colorPrincipal={color}
+              tema={tema}
+            />
+          )}
 
         {(puedeReservar ||
           whatsappItemUrl ||

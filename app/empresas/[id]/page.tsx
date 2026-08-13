@@ -103,6 +103,8 @@ interface Empresa {
     mostrarGaleria?: boolean;
     mostrarMapa?: boolean;
     mostrarPresupuesto?: boolean;
+    mostrarReservasMesa?: boolean;
+    mostrarPedidosOnline?: boolean;
     mostrarContacto?: boolean;
 
     testimonios?: TestimonioPagina[];
@@ -278,6 +280,16 @@ export default function ConfigurarAgentePage() {
     paginaMostrarPresupuesto,
     setPaginaMostrarPresupuesto,
   ] = useState(true);
+
+  const [
+    paginaMostrarReservasMesa,
+    setPaginaMostrarReservasMesa,
+  ] = useState(false);
+
+  const [
+    paginaMostrarPedidosOnline,
+    setPaginaMostrarPedidosOnline,
+  ] = useState(false);
 
   const [
     paginaMostrarContacto,
@@ -516,43 +528,17 @@ export default function ConfigurarAgentePage() {
                 "",
             );
 
-            const textoPrincipalGuardado =
+            setPaginaSubtitulo(
               empresa.paginaPublica
                 ?.subtitulo ||
-              empresa.descripcion ||
-              "";
+                "",
+            );
 
-            const textoSecundarioGuardado =
+            setPaginaTextoSecundario(
               empresa.paginaPublica
                 ?.textoSecundario ||
-              "";
-
-            if (
-              !textoSecundarioGuardado &&
-              textoPrincipalGuardado.includes("\n")
-            ) {
-              const lineas =
-                textoPrincipalGuardado
-                  .split("\n")
-                  .map((linea) => linea.trim())
-                  .filter(Boolean);
-
-              setPaginaSubtitulo(
-                lineas[0] || "",
-              );
-
-              setPaginaTextoSecundario(
-                lineas.slice(1).join(" "),
-              );
-            } else {
-              setPaginaSubtitulo(
-                textoPrincipalGuardado,
-              );
-
-              setPaginaTextoSecundario(
-                textoSecundarioGuardado,
-              );
-            }
+                "",
+            );
 
             setPaginaColorPrincipal(
               empresa.paginaPublica
@@ -644,6 +630,18 @@ export default function ConfigurarAgentePage() {
               empresa.paginaPublica
                 ?.mostrarPresupuesto ??
                 true,
+            );
+
+            setPaginaMostrarReservasMesa(
+              empresa.paginaPublica
+                ?.mostrarReservasMesa ??
+                false,
+            );
+
+            setPaginaMostrarPedidosOnline(
+              empresa.paginaPublica
+                ?.mostrarPedidosOnline ??
+                false,
             );
 
             setPaginaMostrarContacto(
@@ -1395,6 +1393,12 @@ export default function ConfigurarAgentePage() {
             mostrarPresupuesto:
               paginaMostrarPresupuesto,
 
+            mostrarReservasMesa:
+              paginaMostrarReservasMesa,
+
+            mostrarPedidosOnline:
+              paginaMostrarPedidosOnline,
+
             mostrarContacto:
               paginaMostrarContacto,
 
@@ -1526,6 +1530,13 @@ export default function ConfigurarAgentePage() {
       </section>
     );
   }
+
+  const rubroNormalizado =
+    rubro.trim().toLowerCase();
+
+  const esRestaurante =
+    rubroNormalizado === "restaurante" ||
+    rubroNormalizado === "restaurant";
 
   return (
     <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
@@ -1821,7 +1832,7 @@ export default function ConfigurarAgentePage() {
                       e.target.value,
                     )
                   }
-                  placeholder="Ejemplo: Descansá en Tilcara y disfrutá la Quebrada con total comodidad."
+                  placeholder="Ejemplo: Tu estilo, en manos de profesionales."
                 />
               </div>
 
@@ -1837,7 +1848,7 @@ export default function ConfigurarAgentePage() {
                       e.target.value,
                     )
                   }
-                  placeholder="Ejemplo: Habitaciones cómodas, excelente ubicación y atención personalizada."
+                  placeholder="Ejemplo: Cortes clásicos, fades y barba con atención personalizada y reserva online."
                 />
               </div>
 
@@ -2189,8 +2200,16 @@ export default function ConfigurarAgentePage() {
                   />
 
                   <ToggleOpcion
-                    titulo="Productos"
-                    descripcion="Mostrar la sección de productos."
+                    titulo={
+                      esRestaurante
+                        ? "Carta"
+                        : "Productos"
+                    }
+                    descripcion={
+                      esRestaurante
+                        ? "Mostrar la carta del restaurante."
+                        : "Mostrar la sección de productos."
+                    }
                     checked={
                       paginaMostrarProductos
                     }
@@ -2231,6 +2250,32 @@ export default function ConfigurarAgentePage() {
                       setPaginaMostrarPresupuesto
                     }
                   />
+
+                  {esRestaurante && (
+                    <>
+                      <ToggleOpcion
+                        titulo="Reservas de mesa"
+                        descripcion="Permitir que los clientes soliciten una mesa desde la página."
+                        checked={
+                          paginaMostrarReservasMesa
+                        }
+                        onChange={
+                          setPaginaMostrarReservasMesa
+                        }
+                      />
+
+                      <ToggleOpcion
+                        titulo="Pedidos online"
+                        descripcion="Permitir armar un pedido desde la carta para retirar en el local."
+                        checked={
+                          paginaMostrarPedidosOnline
+                        }
+                        onChange={
+                          setPaginaMostrarPedidosOnline
+                        }
+                      />
+                    </>
+                  )}
 
                   <ToggleOpcion
                     titulo="Formulario de contacto"
@@ -2538,8 +2583,7 @@ export default function ConfigurarAgentePage() {
                 <div className="p-5">
                   <p className="text-base font-semibold leading-6 text-slate-900 dark:text-white">
                     {paginaSubtitulo ||
-                      descripcion ||
-                      "Agregá un texto principal para presentar tu negocio."}
+                      "Agregá un texto principal para destacar tu negocio."}
                   </p>
 
                   {paginaTextoSecundario && (

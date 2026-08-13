@@ -32,19 +32,12 @@ import {
   Globe2,
   MessageSquare,
   Package,
+  ShoppingBag,
   Plug,
-  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 
 import { auth, db } from "@/lib/firebase";
-import {
-  empresaTieneFuncion,
-  empresaTieneSuscripcionActiva,
-  obtenerNombrePlan,
-  obtenerPlanEfectivo,
-  type PlanFeature,
-} from "@/lib/plans/planAccess";
 import NavItem from "./NavItem";
 
 type RolEmpresa =
@@ -58,16 +51,11 @@ type ItemMenu = {
   ruta: string;
   icon: LucideIcon;
   roles: RolEmpresa[];
-  funcion?: PlanFeature;
-  siempreDisponible?: boolean;
 };
 
 type EmpresaData = {
   userId?: string;
-  plan?: "free" | "pro" | "business";
-  subscriptionStatus?: string;
-  subscriptionEndsAt?: unknown;
-  subscriptionMonthlyPrice?: number;
+  rubro?: string;
 };
 
 type MiembroData = {
@@ -156,8 +144,10 @@ export default function Sidebar() {
   const [rol, setRol] =
     useState<RolEmpresa | null>(null);
 
-  const [empresa, setEmpresa] =
-    useState<EmpresaData | null>(null);
+  const [
+    restaurante,
+    setRestaurante,
+  ] = useState(false);
 
   const [
     cargandoRol,
@@ -173,7 +163,7 @@ export default function Sidebar() {
 
           if (!currentUser) {
             setRol(null);
-            setEmpresa(null);
+            setRestaurante(false);
             setCargandoRol(false);
           }
         },
@@ -216,7 +206,6 @@ export default function Sidebar() {
         ) {
           if (activo) {
             setRol(null);
-            setEmpresa(null);
             router.replace(
               "/empresas",
             );
@@ -225,15 +214,26 @@ export default function Sidebar() {
           return;
         }
 
-        const empresaData =
+        const empresa =
           empresaSnapshot.data() as EmpresaData;
 
         if (activo) {
-          setEmpresa(empresaData);
+          const rubro =
+            empresa.rubro
+              ?.trim()
+              .toLowerCase() ||
+            "";
+
+          setRestaurante(
+            rubro ===
+              "restaurante" ||
+            rubro ===
+              "restaurant",
+          );
         }
 
         if (
-          empresaData.userId ===
+          empresa.userId ===
           usuarioSeguro.uid
         ) {
           if (activo) {
@@ -264,7 +264,6 @@ export default function Sidebar() {
         ) {
           if (activo) {
             setRol(null);
-            setEmpresa(null);
             router.replace(
               "/empresas",
             );
@@ -283,7 +282,6 @@ export default function Sidebar() {
         ) {
           if (activo) {
             setRol(null);
-            setEmpresa(null);
             router.replace(
               "/empresas",
             );
@@ -338,84 +336,77 @@ export default function Sidebar() {
             ruta: "dashboard",
             icon: Home,
             roles: TODOS_LOS_ROLES,
-            siempreDisponible: true,
           },
           {
             label: "Mi página",
             ruta: "",
             icon: Globe2,
             roles: ROLES_ADMINISTRACION,
-            funcion: "pagina_publica",
           },
           {
             label: "Servicios y productos",
             ruta: "catalogo",
             icon: Package,
             roles: ROLES_SUPERVISION,
-            funcion: "pagina_publica",
           },
           {
             label: "Agenda",
             ruta: "agenda",
             icon: CalendarDays,
             roles: TODOS_LOS_ROLES,
-            funcion: "turnos",
           },
+          ...(restaurante
+            ? [
+                {
+                  label: "Pedidos",
+                  ruta: "pedidos",
+                  icon: ShoppingBag,
+                  roles:
+                    TODOS_LOS_ROLES,
+                },
+              ]
+            : []),
           {
             label: "Consultas",
             ruta: "conversaciones",
             icon: MessageSquare,
             roles: TODOS_LOS_ROLES,
-            funcion: "asistente_ia",
           },
           {
             label: "Estadísticas",
             ruta: "estadisticas",
             icon: BarChart3,
             roles: TODOS_LOS_ROLES,
-            funcion: "estadisticas_basicas",
           },
           {
             label: "Base de conocimiento",
             ruta: "conocimiento",
             icon: BookOpen,
             roles: ROLES_SUPERVISION,
-            funcion: "asistente_ia",
           },
           {
             label: "Asistente IA",
             ruta: "configuracion",
             icon: Bot,
             roles: ROLES_ADMINISTRACION,
-            funcion: "asistente_ia",
           },
           {
             label: "Widget web",
             ruta: "widget",
             icon: Code2,
             roles: ROLES_ADMINISTRACION,
-            funcion: "asistente_ia",
-          },
-          {
-            label: "Planes",
-            ruta: "planes",
-            icon: Sparkles,
-            roles: SOLO_PROPIETARIO,
-            siempreDisponible: true,
           },
           {
             label: "Facturación",
             ruta: "facturacion",
             icon: CreditCard,
             roles: SOLO_PROPIETARIO,
-            siempreDisponible: true,
           },
           {
             label: "Ayuda",
             ruta: "ayuda",
             icon: HelpCircle,
             roles: TODOS_LOS_ROLES,
-            siempreDisponible: true,
           },
           {
             label: "Próximamente",
@@ -425,75 +416,24 @@ export default function Sidebar() {
           },
         ];
       },
-      [empresaId],
+      [
+        empresaId,
+        restaurante,
+      ],
     );
-
-  const suscripcionActiva =
-    empresa
-      ? empresaTieneSuscripcionActiva(
-          empresa,
-        )
-      : false;
-
-  const planEfectivo =
-    empresa
-      ? obtenerPlanEfectivo(
-          empresa,
-        )
-      : "free";
-
-  const nombrePlan =
-    suscripcionActiva
-      ? obtenerNombrePlan(
-          planEfectivo,
-        )
-      : "Sin plan activo";
 
   const itemsPermitidos =
     useMemo(
-      () => {
-        if (!rol) {
-          return [];
-        }
-
-        return items.filter(
-          (item) => {
-            if (
-              !item.roles.includes(rol)
-            ) {
-              return false;
-            }
-
-            if (
-              item.siempreDisponible
-            ) {
-              return true;
-            }
-
-            if (
-              !suscripcionActiva ||
-              !empresa
-            ) {
-              return false;
-            }
-
-            if (!item.funcion) {
-              return true;
-            }
-
-            return empresaTieneFuncion(
-              empresa,
-              item.funcion,
-            );
-          },
-        );
-      },
-      [
-        empresa,
-        items,
-        rol,
-        suscripcionActiva,
-      ],
+      () =>
+        rol
+          ? items.filter(
+              (item) =>
+                item.roles.includes(
+                  rol,
+                ),
+            )
+          : [],
+      [items, rol],
     );
 
   useEffect(() => {
@@ -526,7 +466,7 @@ export default function Sidebar() {
       )
     ) {
       router.replace(
-        `/empresas/${empresaId}/dashboard`,
+        `/empresas/${empresaId}/conversaciones`,
       );
     }
   }, [
@@ -597,23 +537,15 @@ export default function Sidebar() {
       <div className="border-t border-slate-200 p-4 dark:border-zinc-800">
         <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
           <div className="flex items-center gap-3">
-            <div
-              className={`h-3 w-3 rounded-full ${
-                suscripcionActiva
-                  ? "bg-emerald-500"
-                  : "bg-amber-500"
-              }`}
-            />
+            <div className="h-3 w-3 rounded-full bg-emerald-500" />
 
             <span className="text-sm text-slate-900 dark:text-white">
-              {nombrePlan}
+              Panel del negocio
             </span>
           </div>
 
           <p className="mt-2 text-xs text-slate-500 dark:text-zinc-500">
-            {suscripcionActiva
-              ? `Plan activo · ${NOMBRE_ROL[rol]}`
-              : `Activación pendiente · ${NOMBRE_ROL[rol]}`}
+            {NOMBRE_ROL[rol]}
           </p>
         </div>
 

@@ -58,10 +58,11 @@ type Turno = {
   estado: EstadoTurno;
   notas?: string;
   origen?: "manual" | "web" | "whatsapp" | "instagram";
-  tipoReserva?: "alojamiento";
+  tipoReserva?: "alojamiento" | "mesa";
   fechaEntrada?: string;
   fechaSalida?: string;
   huespedes?: number;
+  personas?: number;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
 };
@@ -533,20 +534,28 @@ export default function AgendaPage() {
   );
 
   const turnosFiltrados = useMemo(() => {
+    const hoy = obtenerFechaISO(
+      new Date()
+    );
+
     return turnos
       .filter((turno) => {
-        const coincideFecha =
-          turno.tipoReserva === "alojamiento" &&
-          turno.fechaEntrada &&
-          turno.fechaSalida
-            ? fechaSeleccionada >=
-                turno.fechaEntrada &&
-              fechaSeleccionada <
-                turno.fechaSalida
-            : turno.fecha ===
-              fechaSeleccionada;
+        const fechaInicio =
+          turno.fechaEntrada ||
+          turno.fecha ||
+          "";
 
-        if (!coincideFecha) {
+        const fechaFin =
+          turno.fechaSalida ||
+          fechaInicio;
+
+        const sigueVigente =
+          turno.tipoReserva ===
+            "alojamiento"
+            ? fechaFin >= hoy
+            : fechaInicio >= hoy;
+
+        if (!sigueVigente) {
           return false;
         }
 
@@ -556,14 +565,30 @@ export default function AgendaPage() {
 
         return turno.estado === filtroEstado;
       })
-      .sort((a, b) =>
-        (a.hora || "").localeCompare(
+      .sort((a, b) => {
+        const fechaA =
+          a.fechaEntrada ||
+          a.fecha ||
+          "";
+
+        const fechaB =
+          b.fechaEntrada ||
+          b.fecha ||
+          "";
+
+        const porFecha =
+          fechaA.localeCompare(fechaB);
+
+        if (porFecha !== 0) {
+          return porFecha;
+        }
+
+        return (a.hora || "").localeCompare(
           b.hora || ""
-        )
-      );
+        );
+      });
   }, [
     turnos,
-    fechaSeleccionada,
     filtroEstado,
   ]);
 
@@ -1725,7 +1750,10 @@ export default function AgendaPage() {
                             {turno.tipoReserva ===
                             "alojamiento"
                               ? "Estadía"
-                              : turno.hora}{" "}
+                              : turno.tipoReserva ===
+                                  "mesa"
+                                ? `Mesa ${turno.hora}`
+                                : turno.hora}{" "}
                             {turno.nombreCliente}
                           </div>
                         ))}
@@ -1748,16 +1776,15 @@ export default function AgendaPage() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 className="font-semibold text-slate-950 dark:text-white">
-                  {formatearFechaSeleccionada(
-                    fechaSeleccionada
-                  )}
+                  Próximos turnos
                 </h2>
 
                 <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
                   {turnosFiltrados.length}{" "}
                   {turnosFiltrados.length === 1
-                    ? "turno"
-                    : "turnos"}
+                    ? "turno programado"
+                    : "turnos programados"}{" "}
+                  · ordenados por fecha
                 </p>
               </div>
 
@@ -1823,11 +1850,11 @@ export default function AgendaPage() {
                 <CalendarDays className="mx-auto h-10 w-10 text-slate-300 dark:text-zinc-700" />
 
                 <h3 className="mt-4 font-semibold text-slate-950 dark:text-white">
-                  No hay turnos
+                  No hay turnos próximos
                 </h3>
 
                 <p className="mt-2 text-sm text-slate-500 dark:text-zinc-500">
-                  Creá el primer turno para esta fecha.
+                  Las próximas reservas aparecerán acá ordenadas por fecha.
                 </p>
 
                 <Button
@@ -1893,7 +1920,10 @@ function TurnoCard({
               {turno.tipoReserva ===
               "alojamiento"
                 ? "Estadía"
-                : turno.hora}
+                : turno.tipoReserva ===
+                    "mesa"
+                  ? `Mesa · ${turno.hora}`
+                  : turno.hora}
             </p>
 
             <Badge
@@ -1915,8 +1945,7 @@ function TurnoCard({
         </div>
 
         <div className="flex shrink-0 items-center gap-1">
-          {turno.tipoReserva !==
-            "alojamiento" && (
+          {!turno.tipoReserva && (
             <button
               type="button"
               disabled={procesando}
@@ -1963,6 +1992,22 @@ function TurnoCard({
               "number" && (
               <p>
                 Huéspedes: {turno.huespedes}
+              </p>
+            )}
+          </>
+        ) : turno.tipoReserva ===
+          "mesa" ? (
+          <>
+            <p>
+              Fecha: {turno.fecha}
+            </p>
+            <p>
+              Horario: {turno.hora}
+            </p>
+            {typeof turno.personas ===
+              "number" && (
+              <p>
+                Personas: {turno.personas}
               </p>
             )}
           </>

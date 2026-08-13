@@ -49,6 +49,7 @@ type RolEmpresa =
 
 interface Empresa {
   userId?: string;
+  rubro?: string;
   plan?: PlanId;
   subscriptionStatus?: string;
   subscriptionEndsAt?: unknown;
@@ -67,6 +68,8 @@ interface CatalogoItem {
   precio: number;
   duracionMinutos?: number;
   imagenUrl?: string;
+  imagenes?: string[];
+  categoria?: string;
   activo: boolean;
   createdAt?: Timestamp;
 }
@@ -95,6 +98,8 @@ export default function CatalogoPage() {
   ] = useState(false);
 
   const [items, setItems] = useState<CatalogoItem[]>([]);
+  const [rubroEmpresa, setRubroEmpresa] =
+    useState("");
 
   const [mostrarFormulario, setMostrarFormulario] =
     useState(false);
@@ -109,7 +114,10 @@ export default function CatalogoPage() {
   const [descripcion, setDescripcion] = useState("");
   const [precio, setPrecio] = useState("");
   const [duracion, setDuracion] = useState("");
-  const [imagenUrl, setImagenUrl] = useState("");
+  const [categoria, setCategoria] =
+    useState("principal");
+  const [imagenes, setImagenes] =
+    useState<string[]>([]);
   const [subiendoImagen, setSubiendoImagen] =
     useState(false);
 
@@ -151,6 +159,10 @@ export default function CatalogoPage() {
 
           const datosEmpresa =
             empresaSnap.data() as Empresa;
+
+          setRubroEmpresa(
+            datosEmpresa.rubro?.trim() || "",
+          );
 
           setPuedeUsarCatalogo(
             empresaTieneFuncion(
@@ -286,6 +298,15 @@ export default function CatalogoPage() {
     [items],
   );
 
+  const rubroNormalizado =
+    rubroEmpresa
+      .trim()
+      .toLowerCase();
+
+  const esRestaurante =
+    rubroNormalizado === "restaurante" ||
+    rubroNormalizado === "restaurant";
+
   function limpiarFormulario() {
     setEditandoId(null);
     setTipo("servicio");
@@ -293,7 +314,8 @@ export default function CatalogoPage() {
     setDescripcion("");
     setPrecio("");
     setDuracion("");
-    setImagenUrl("");
+    setCategoria("principal");
+    setImagenes([]);
     setSubiendoImagen(false);
     setError("");
   }
@@ -337,8 +359,29 @@ export default function CatalogoPage() {
         : "",
     );
 
-    setImagenUrl(
-      item.imagenUrl?.trim() || "",
+    setCategoria(
+      item.categoria?.trim() ||
+        "principal",
+    );
+
+    const imagenesGuardadas =
+      Array.isArray(item.imagenes)
+        ? item.imagenes
+            .filter(
+              (url): url is string =>
+                typeof url === "string" &&
+                url.trim().length > 0,
+            )
+            .map((url) => url.trim())
+            .slice(0, 3)
+        : [];
+
+    setImagenes(
+      imagenesGuardadas.length > 0
+        ? imagenesGuardadas
+        : item.imagenUrl?.trim()
+          ? [item.imagenUrl.trim()]
+          : [],
     );
 
     setMensaje("");
@@ -359,6 +402,13 @@ export default function CatalogoPage() {
       !empresaId ||
       subiendoImagen
     ) {
+      return;
+    }
+
+    if (imagenes.length >= 3) {
+      setError(
+        "Podés cargar hasta 3 imágenes por elemento.",
+      );
       return;
     }
 
@@ -552,7 +602,9 @@ export default function CatalogoPage() {
         );
       }
 
-      setImagenUrl(url);
+      setImagenes((actual) =>
+        [...actual, url].slice(0, 3),
+      );
       setMensaje(
         "Imagen cargada correctamente.",
       );
@@ -649,8 +701,18 @@ export default function CatalogoPage() {
           tipo === "servicio"
             ? duracionNumero || 0
             : 0,
+        categoria:
+          esRestaurante &&
+          tipo === "producto"
+            ? categoria
+            : "",
+        imagenes:
+          imagenes
+            .filter(Boolean)
+            .slice(0, 3),
+        // Compatibilidad con datos/código anterior:
         imagenUrl:
-          imagenUrl.trim(),
+          imagenes[0]?.trim() || "",
         updatedAt: serverTimestamp(),
       };
 
@@ -687,7 +749,9 @@ export default function CatalogoPage() {
         setMensaje(
           tipo === "servicio"
             ? "Servicio creado correctamente."
-            : "Producto creado correctamente.",
+            : esRestaurante
+              ? "Elemento de la carta creado correctamente."
+              : "Producto creado correctamente.",
         );
       }
 
@@ -839,7 +903,9 @@ export default function CatalogoPage() {
           </p>
 
           <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">
-            Servicios y productos
+            {esRestaurante
+              ? "Servicios y carta"
+              : "Servicios y productos"}
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 dark:text-zinc-400">
@@ -906,11 +972,15 @@ export default function CatalogoPage() {
 
               <div>
                 <p className="font-semibold text-slate-950 dark:text-white">
-                  Productos disponibles desde Página Completa
+                  {esRestaurante
+                    ? "Carta disponible desde Página Completa"
+                    : "Productos disponibles desde Página Completa"}
                 </p>
 
                 <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-zinc-400">
-                  Con Página Simple podés cargar y administrar servicios. Para agregar productos necesitás Página Completa o Business IA.
+                  {esRestaurante
+                    ? "Con Página Simple podés cargar y administrar servicios. Para cargar la carta necesitás Página Completa o Business IA."
+                    : "Con Página Simple podés cargar y administrar servicios. Para agregar productos necesitás Página Completa o Business IA."}
                 </p>
 
                 <Button
@@ -943,7 +1013,11 @@ export default function CatalogoPage() {
         />
 
         <ResumenCard
-          titulo="Productos"
+          titulo={
+            esRestaurante
+              ? "Carta"
+              : "Productos"
+          }
           valor={productos.length}
           icono={<Box className="h-5 w-5" />}
         />
@@ -983,14 +1057,18 @@ export default function CatalogoPage() {
 
                 {puedeUsarProductos && (
                   <option value="producto">
-                    Producto
+                    {esRestaurante
+                      ? "Plato / bebida"
+                      : "Producto"}
                   </option>
                 )}
               </select>
 
               {!puedeUsarProductos && (
                 <p className="text-xs leading-5 text-slate-500 dark:text-zinc-500">
-                  Los productos están disponibles desde Página Completa.
+                  {esRestaurante
+                    ? "La carta está disponible desde Página Completa."
+                    : "Los productos están disponibles desde Página Completa."}
                 </p>
               )}
             </div>
@@ -1005,7 +1083,9 @@ export default function CatalogoPage() {
               placeholder={
                 tipo === "servicio"
                   ? "Ejemplo: Corte de cabello"
-                  : "Ejemplo: Shampoo profesional"
+                  : esRestaurante
+                    ? "Ejemplo: Milanesa napolitana"
+                    : "Ejemplo: Shampoo profesional"
               }
               required
             />
@@ -1023,6 +1103,42 @@ export default function CatalogoPage() {
               placeholder="15000"
             />
 
+            {esRestaurante &&
+              tipo === "producto" && (
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium">
+                    Categoría de la carta
+                  </label>
+
+                  <select
+                    value={categoria}
+                    onChange={(event) =>
+                      setCategoria(
+                        event.target.value,
+                      )
+                    }
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+                  >
+                    <option value="entrada">
+                      Entradas
+                    </option>
+                    <option value="principal">
+                      Platos principales
+                    </option>
+                    <option value="bebida">
+                      Bebidas
+                    </option>
+                    <option value="postre">
+                      Postres
+                    </option>
+                  </select>
+
+                  <p className="text-xs leading-5 text-slate-500 dark:text-zinc-500">
+                    Se usará para ordenar automáticamente la carta pública.
+                  </p>
+                </div>
+              )}
+
             {tipo === "servicio" && (
               <Input
                 id="duracion"
@@ -1038,126 +1154,118 @@ export default function CatalogoPage() {
             )}
 
             <div className="md:col-span-2">
-              <div className="mb-2 flex items-center justify-between gap-3">
+              <div className="mb-3 flex items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-medium">
-                    Imagen
+                    Imágenes
                   </p>
                   <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
-                    Opcional · Máximo 5 MB · Recomendado: 1200 × 1200 px (cuadrada) o 1600 × 1200 px (horizontal).
+                    Opcional · Hasta 3 imágenes · JPG, PNG o WEBP · Máximo 5 MB por imagen.
                   </p>
                 </div>
+
+                <span className="text-xs font-medium text-slate-500 dark:text-zinc-500">
+                  {imagenes.length}/3
+                </span>
               </div>
 
-              {imagenUrl ? (
-                <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 dark:border-zinc-800 dark:bg-zinc-950">
-                  <img
-                    src={imagenUrl}
-                    alt="Vista previa"
-                    className="h-56 w-full object-cover sm:h-64"
-                  />
-
-                  <div className="absolute right-3 top-3 flex gap-2">
-                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-black/70 px-3 py-2 text-xs font-medium text-white backdrop-blur transition hover:bg-black/80">
-                      <Upload className="h-4 w-4" />
-                      Cambiar
-
-                      <input
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp"
-                        className="hidden"
-                        disabled={subiendoImagen}
-                        onChange={(event) => {
-                          const archivo =
-                            event.target.files?.[0];
-
-                          if (archivo) {
-                            void subirImagenCatalogo(
-                              archivo,
-                            );
-                          }
-
-                          event.currentTarget.value =
-                            "";
-                        }}
-                      />
-                    </label>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {imagenes.map((url, indice) => (
+                  <div
+                    key={`${url}-${indice}`}
+                    className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 dark:border-zinc-800 dark:bg-zinc-950"
+                  >
+                    <img
+                      src={url}
+                      alt={`Imagen ${indice + 1}`}
+                      className="h-full w-full object-cover"
+                    />
 
                     <button
                       type="button"
                       onClick={() =>
-                        setImagenUrl("")
+                        setImagenes((actual) =>
+                          actual.filter(
+                            (_, index) =>
+                              index !== indice,
+                          ),
+                        )
                       }
                       disabled={subiendoImagen}
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-black/70 text-white backdrop-blur transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
-                      aria-label="Quitar imagen"
+                      className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-xl bg-black/70 text-white backdrop-blur transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+                      aria-label={`Quitar imagen ${indice + 1}`}
                     >
                       <X className="h-4 w-4" />
                     </button>
+
+                    {indice === 0 && (
+                      <span className="absolute bottom-2 left-2 rounded-lg bg-black/70 px-2 py-1 text-[10px] font-semibold text-white backdrop-blur">
+                        Principal
+                      </span>
+                    )}
                   </div>
+                ))}
 
-                  {subiendoImagen && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/55 text-sm font-medium text-white backdrop-blur-sm">
-                      Subiendo imagen...
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <label
-                  className={`flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed px-6 py-8 text-center transition ${
-                    subiendoImagen
-                      ? "cursor-wait border-blue-400 bg-blue-50 dark:border-blue-500/50 dark:bg-blue-500/10"
-                      : "border-slate-300 bg-slate-50 hover:border-blue-400 hover:bg-blue-50 dark:border-zinc-700 dark:bg-zinc-950 dark:hover:border-blue-500/50 dark:hover:bg-blue-500/10"
-                  }`}
-                >
-                  {subiendoImagen ? (
-                    <>
-                      <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
-                      <p className="mt-3 text-sm font-medium">
-                        Subiendo imagen...
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-500">
-                        <ImageIcon className="h-5 w-5" />
-                      </div>
+                {imagenes.length < 3 && (
+                  <label
+                    className={`flex aspect-[4/3] cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed px-4 text-center transition ${
+                      subiendoImagen
+                        ? "cursor-wait border-blue-400 bg-blue-50 dark:border-blue-500/50 dark:bg-blue-500/10"
+                        : "border-slate-300 bg-slate-50 hover:border-blue-400 hover:bg-blue-50 dark:border-zinc-700 dark:bg-zinc-950 dark:hover:border-blue-500/50 dark:hover:bg-blue-500/10"
+                    }`}
+                  >
+                    {subiendoImagen ? (
+                      <>
+                        <div className="h-7 w-7 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
+                        <p className="mt-2 text-xs font-medium">
+                          Subiendo...
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-500">
+                          <ImageIcon className="h-5 w-5" />
+                        </div>
 
-                      <p className="mt-3 text-sm font-medium">
-                        Subir imagen
-                      </p>
+                        <p className="mt-2 text-xs font-medium">
+                          Agregar imagen
+                        </p>
 
-                      <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
-                        JPG, PNG o WEBP · Máximo 5 MB
-                      </p>
+                        <p className="mt-1 text-[10px] text-slate-500 dark:text-zinc-500">
+                          {imagenes.length + 1} de 3
+                        </p>
+                      </>
+                    )}
 
-                      <p className="mt-1 text-[11px] leading-5 text-slate-400 dark:text-zinc-600">
-                        Ideal: 1200 × 1200 px o 1600 × 1200 px. Evitá imágenes menores a 800 px.
-                      </p>
-                    </>
-                  )}
-
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    className="hidden"
-                    disabled={subiendoImagen}
-                    onChange={(event) => {
-                      const archivo =
-                        event.target.files?.[0];
-
-                      if (archivo) {
-                        void subirImagenCatalogo(
-                          archivo,
-                        );
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      disabled={
+                        subiendoImagen ||
+                        imagenes.length >= 3
                       }
+                      onChange={(event) => {
+                        const archivo =
+                          event.target.files?.[0];
 
-                      event.currentTarget.value =
-                        "";
-                    }}
-                  />
-                </label>
-              )}
+                        if (archivo) {
+                          void subirImagenCatalogo(
+                            archivo,
+                          );
+                        }
+
+                        event.currentTarget.value =
+                          "";
+                      }}
+                    />
+                  </label>
+                )}
+              </div>
+
+              <p className="mt-2 text-[11px] leading-5 text-slate-400 dark:text-zinc-600">
+                La primera imagen será la portada. En la página pública el cliente podrá deslizar entre las fotos.
+              </p>
             </div>
 
             <div className="md:col-span-2">
@@ -1238,7 +1346,9 @@ export default function CatalogoPage() {
 
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500 dark:text-zinc-500">
             {puedeUsarProductos
-              ? "Agregá el primer servicio o producto de este negocio."
+              ? esRestaurante
+                ? "Agregá el primer servicio o elemento de la carta."
+                : "Agregá el primer servicio o producto de este negocio."
               : "Agregá el primer servicio de este negocio."}
           </p>
 
@@ -1264,9 +1374,20 @@ export default function CatalogoPage() {
 
           {puedeUsarProductos ? (
             <SeccionCatalogo
-              titulo="Productos"
-              descripcion="Productos disponibles para mostrar a los clientes."
+              titulo={
+                esRestaurante
+                  ? "Carta"
+                  : "Productos"
+              }
+              descripcion={
+                esRestaurante
+                  ? "Entradas, platos principales, bebidas y postres."
+                  : "Productos disponibles para mostrar a los clientes."
+              }
               items={productos}
+              mostrarCategoria={
+                esRestaurante
+              }
               onEditar={editarItem}
               onEstado={cambiarEstado}
               onEliminar={eliminarItem}
@@ -1280,7 +1401,9 @@ export default function CatalogoPage() {
 
                 <div>
                   <h2 className="font-semibold text-slate-950 dark:text-white">
-                    Productos
+                    {esRestaurante
+                      ? "Carta"
+                      : "Productos"}
                   </h2>
 
                   <p className="mt-1 text-sm leading-6 text-slate-500 dark:text-zinc-400">
@@ -1326,10 +1449,33 @@ function ResumenCard({
   );
 }
 
+function etiquetaCategoriaCarta(
+  categoria?: string,
+) {
+  switch (
+    categoria
+      ?.trim()
+      .toLowerCase()
+  ) {
+    case "entrada":
+    case "entradas":
+      return "Entrada";
+    case "bebida":
+    case "bebidas":
+      return "Bebida";
+    case "postre":
+    case "postres":
+      return "Postre";
+    default:
+      return "Plato principal";
+  }
+}
+
 function SeccionCatalogo({
   titulo,
   descripcion,
   items,
+  mostrarCategoria = false,
   onEditar,
   onEstado,
   onEliminar,
@@ -1337,6 +1483,7 @@ function SeccionCatalogo({
   titulo: string;
   descripcion: string;
   items: CatalogoItem[];
+  mostrarCategoria?: boolean;
   onEditar: (item: CatalogoItem) => void;
   onEstado: (item: CatalogoItem) => void;
   onEliminar: (item: CatalogoItem) => void;
@@ -1363,13 +1510,32 @@ function SeccionCatalogo({
             key={item.id}
             className="overflow-hidden"
           >
-            {item.imagenUrl && (
-              <div className="aspect-[16/9] overflow-hidden border-b border-slate-200 bg-slate-100 dark:border-zinc-800 dark:bg-zinc-950">
+            {(
+              (Array.isArray(item.imagenes) &&
+                item.imagenes[0]) ||
+              item.imagenUrl
+            ) && (
+              <div className="relative aspect-[16/9] overflow-hidden border-b border-slate-200 bg-slate-100 dark:border-zinc-800 dark:bg-zinc-950">
                 <img
-                  src={item.imagenUrl}
+                  src={
+                    (Array.isArray(item.imagenes) &&
+                      item.imagenes[0]) ||
+                    item.imagenUrl ||
+                    ""
+                  }
                   alt={item.nombre}
                   className="h-full w-full object-cover transition duration-300 hover:scale-[1.02]"
                 />
+
+                {Array.isArray(item.imagenes) &&
+                  item.imagenes.length > 1 && (
+                    <span className="absolute bottom-3 right-3 rounded-lg bg-black/70 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur">
+                      {Math.min(
+                        item.imagenes.length,
+                        3,
+                      )} fotos
+                    </span>
+                  )}
               </div>
             )}
 
@@ -1392,6 +1558,16 @@ function SeccionCatalogo({
                         ? "Activo"
                         : "Oculto"}
                     </Badge>
+
+                    {mostrarCategoria &&
+                      item.tipo ===
+                        "producto" && (
+                        <Badge variant="info">
+                          {etiquetaCategoriaCarta(
+                            item.categoria,
+                          )}
+                        </Badge>
+                      )}
                   </div>
 
                   {item.descripcion && (
