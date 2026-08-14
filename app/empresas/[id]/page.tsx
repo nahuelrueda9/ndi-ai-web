@@ -33,6 +33,12 @@ import {
 } from "lucide-react";
 
 import { auth, db } from "@/lib/firebase";
+import {
+  empresaTieneFuncion,
+  obtenerNombrePlan,
+  obtenerPlanEfectivo,
+  type PlanId,
+} from "@/lib/plans/planAccess";
 import Avatar from "@/components/Ui/Avatar";
 import Badge from "@/components/Ui/Badge";
 import Button from "@/components/Ui/Button";
@@ -61,6 +67,9 @@ interface Empresa {
   email?: string;
   telefono?: string;
   userId: string;
+  plan?: PlanId;
+  subscriptionStatus?: string;
+  subscriptionEndsAt?: unknown;
 
   descripcion?: string;
   direccion?: string;
@@ -145,6 +154,26 @@ export default function ConfigurarAgentePage() {
 
   const [error, setError] =
     useState("");
+
+  const [
+    puedeUsarTurnos,
+    setPuedeUsarTurnos,
+  ] = useState(false);
+
+  const [
+    puedeUsarPresupuestos,
+    setPuedeUsarPresupuestos,
+  ] = useState(false);
+
+  const [
+    puedeUsarProductosAvanzados,
+    setPuedeUsarProductosAvanzados,
+  ] = useState(false);
+
+  const [
+    nombrePlanActual,
+    setNombrePlanActual,
+  ] = useState("");
 
   // INFORMACIÓN DEL NEGOCIO
   const [nombre, setNombre] =
@@ -442,6 +471,44 @@ export default function ConfigurarAgentePage() {
             const empresa =
               empresaSnapshot.data() as Empresa;
 
+            const accesoTurnos =
+              empresaTieneFuncion(
+                empresa,
+                "turnos",
+              );
+
+            const accesoPresupuestos =
+              empresaTieneFuncion(
+                empresa,
+                "presupuestos",
+              );
+
+            const accesoProductosAvanzados =
+              empresaTieneFuncion(
+                empresa,
+                "productos",
+              );
+
+            setPuedeUsarTurnos(
+              accesoTurnos,
+            );
+
+            setPuedeUsarPresupuestos(
+              accesoPresupuestos,
+            );
+
+            setPuedeUsarProductosAvanzados(
+              accesoProductosAvanzados,
+            );
+
+            setNombrePlanActual(
+              obtenerNombrePlan(
+                obtenerPlanEfectivo(
+                  empresa,
+                ),
+              ),
+            );
+
             if (
               empresa.userId !==
               currentUser.uid
@@ -627,21 +694,27 @@ export default function ConfigurarAgentePage() {
             );
 
             setPaginaMostrarPresupuesto(
-              empresa.paginaPublica
-                ?.mostrarPresupuesto ??
-                true,
+              accesoPresupuestos
+                ? empresa.paginaPublica
+                    ?.mostrarPresupuesto ??
+                  true
+                : false,
             );
 
             setPaginaMostrarReservasMesa(
-              empresa.paginaPublica
-                ?.mostrarReservasMesa ??
-                false,
+              accesoTurnos
+                ? empresa.paginaPublica
+                    ?.mostrarReservasMesa ??
+                  false
+                : false,
             );
 
             setPaginaMostrarPedidosOnline(
-              empresa.paginaPublica
-                ?.mostrarPedidosOnline ??
-                false,
+              accesoProductosAvanzados
+                ? empresa.paginaPublica
+                    ?.mostrarPedidosOnline ??
+                  false
+                : false,
             );
 
             setPaginaMostrarContacto(
@@ -1391,13 +1464,19 @@ export default function ConfigurarAgentePage() {
               paginaMostrarMapa,
 
             mostrarPresupuesto:
-              paginaMostrarPresupuesto,
+              puedeUsarPresupuestos
+                ? paginaMostrarPresupuesto
+                : false,
 
             mostrarReservasMesa:
-              paginaMostrarReservasMesa,
+              puedeUsarTurnos
+                ? paginaMostrarReservasMesa
+                : false,
 
             mostrarPedidosOnline:
-              paginaMostrarPedidosOnline,
+              puedeUsarProductosAvanzados
+                ? paginaMostrarPedidosOnline
+                : false,
 
             mostrarContacto:
               paginaMostrarContacto,
@@ -1562,6 +1641,12 @@ export default function ConfigurarAgentePage() {
             <Badge variant="success">
               Activo
             </Badge>
+
+            {nombrePlanActual && (
+              <Badge variant="info">
+                {nombrePlanActual}
+              </Badge>
+            )}
           </div>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
@@ -2242,37 +2327,61 @@ export default function ConfigurarAgentePage() {
 
                   <ToggleOpcion
                     titulo="Presupuesto"
-                    descripcion="Mostrar el formulario de cotización."
+                    descripcion={
+                      puedeUsarPresupuestos
+                        ? "Mostrar el formulario de cotización."
+                        : "Disponible desde Página Completa."
+                    }
                     checked={
                       paginaMostrarPresupuesto
                     }
                     onChange={
                       setPaginaMostrarPresupuesto
                     }
+                    disabled={
+                      !puedeUsarPresupuestos
+                    }
+                    bloqueoTexto="Página Completa"
                   />
 
                   {esRestaurante && (
                     <>
                       <ToggleOpcion
                         titulo="Reservas de mesa"
-                        descripcion="Permitir que los clientes soliciten una mesa desde la página."
+                        descripcion={
+                          puedeUsarTurnos
+                            ? "Permitir que los clientes soliciten una mesa desde la página."
+                            : "Disponible desde Página Completa."
+                        }
                         checked={
                           paginaMostrarReservasMesa
                         }
                         onChange={
                           setPaginaMostrarReservasMesa
                         }
+                        disabled={
+                          !puedeUsarTurnos
+                        }
+                        bloqueoTexto="Página Completa"
                       />
 
                       <ToggleOpcion
                         titulo="Pedidos online"
-                        descripcion="Permitir armar un pedido desde la carta para retirar en el local."
+                        descripcion={
+                          puedeUsarProductosAvanzados
+                            ? "Permitir armar un pedido desde la carta para retirar en el local."
+                            : "Disponible desde Página Completa."
+                        }
                         checked={
                           paginaMostrarPedidosOnline
                         }
                         onChange={
                           setPaginaMostrarPedidosOnline
                         }
+                        disabled={
+                          !puedeUsarProductosAvanzados
+                        }
+                        bloqueoTexto="Página Completa"
                       />
                     </>
                   )}
@@ -2887,6 +2996,8 @@ function ToggleOpcion({
   descripcion,
   checked,
   onChange,
+  disabled = false,
+  bloqueoTexto,
 }: {
   titulo: string;
   descripcion: string;
@@ -2894,13 +3005,30 @@ function ToggleOpcion({
   onChange: (
     value: boolean,
   ) => void;
+  disabled?: boolean;
+  bloqueoTexto?: string;
 }) {
   return (
-    <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-zinc-800 dark:bg-zinc-950/50">
-      <div>
-        <p className="text-sm font-medium text-slate-950 dark:text-white">
-          {titulo}
-        </p>
+    <label
+      className={`flex items-center justify-between gap-4 rounded-xl border p-4 ${
+        disabled
+          ? "cursor-not-allowed border-slate-200 bg-slate-100/70 opacity-70 dark:border-zinc-800 dark:bg-zinc-950/30"
+          : "cursor-pointer border-slate-200 bg-slate-50 dark:border-zinc-800 dark:bg-zinc-950/50"
+      }`}
+    >
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-sm font-medium text-slate-950 dark:text-white">
+            {titulo}
+          </p>
+
+          {disabled &&
+            bloqueoTexto && (
+              <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300">
+                {bloqueoTexto}
+              </span>
+            )}
+        </div>
 
         <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
           {descripcion}
@@ -2910,12 +3038,13 @@ function ToggleOpcion({
       <input
         type="checkbox"
         checked={checked}
+        disabled={disabled}
         onChange={(e) =>
           onChange(
             e.target.checked,
           )
         }
-        className="h-5 w-5 accent-blue-500"
+        className="h-5 w-5 shrink-0 accent-blue-500 disabled:cursor-not-allowed"
       />
     </label>
   );
