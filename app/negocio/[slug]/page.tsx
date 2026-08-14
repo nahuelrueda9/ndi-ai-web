@@ -1591,7 +1591,7 @@ export default async function NegocioPage({
           }`}
         >
           <div className="mx-auto max-w-4xl px-4 sm:px-8">
-            <div className="text-center">
+            <div className="mx-auto max-w-xl text-center">
               <p
                 className="text-xs font-medium sm:text-sm"
                 style={{
@@ -1601,18 +1601,18 @@ export default async function NegocioPage({
                 Preguntas frecuentes
               </p>
 
-              <h2 className="mt-1.5 text-xl font-bold tracking-tight sm:mt-3 sm:text-4xl">
+              <h2 className="mt-1 text-lg font-bold leading-tight tracking-tight sm:mt-3 sm:text-4xl">
                 Resolvemos las dudas más comunes
               </h2>
 
               <p
-                className={`mx-auto mt-4 max-w-2xl leading-7 ${claseTextoSecundario}`}
+                className={`mx-auto mt-2 max-w-lg text-xs leading-5 sm:mt-4 sm:max-w-2xl sm:text-base sm:leading-7 ${claseTextoSecundario}`}
               >
                 Encontrá rápidamente información útil antes de contactarnos.
               </p>
             </div>
 
-            <div className="mt-10 space-y-3">
+            <div className="mx-auto mt-5 max-w-2xl space-y-2 sm:mt-10 sm:space-y-3">
               {preguntasFrecuentes.map(
                 (
                   item,
@@ -1620,14 +1620,14 @@ export default async function NegocioPage({
                 ) => (
                   <details
                     key={`${item.pregunta}-${index}`}
-                    className={`group overflow-hidden rounded-2xl border transition ${
+                    className={`group overflow-hidden rounded-xl border transition sm:rounded-2xl ${
                       esClaro
                         ? "border-slate-200 bg-white"
                         : "border-zinc-800 bg-zinc-950/70"
                     }`}
                   >
                     <summary
-                      className={`flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-5 font-semibold ${
+                      className={`flex cursor-pointer list-none items-center justify-between gap-3 px-3.5 py-3 text-[13px] font-semibold sm:gap-4 sm:px-5 sm:py-5 sm:text-base ${
                         esClaro
                           ? "text-slate-900"
                           : "text-white"
@@ -1638,7 +1638,7 @@ export default async function NegocioPage({
                       </span>
 
                       <span
-                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-lg leading-none transition group-open:rotate-45 ${
+                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-sm leading-none transition group-open:rotate-45 sm:h-8 sm:w-8 sm:text-lg ${
                           esClaro
                             ? "border-slate-200 bg-slate-50 text-slate-600"
                             : "border-zinc-700 bg-zinc-900 text-zinc-300"
@@ -1650,14 +1650,14 @@ export default async function NegocioPage({
                     </summary>
 
                     <div
-                      className={`border-t px-5 py-5 ${
+                      className={`border-t px-3.5 py-3 sm:px-5 sm:py-5 ${
                         esClaro
                           ? "border-slate-200"
                           : "border-zinc-800"
                       }`}
                     >
                       <p
-                        className={`whitespace-pre-line leading-7 ${
+                        className={`whitespace-pre-line text-xs leading-5 sm:text-base sm:leading-7 ${
                           esClaro
                             ? "text-slate-600"
                             : "text-zinc-400"
@@ -1676,15 +1676,15 @@ export default async function NegocioPage({
 
       {/* REDES SOCIALES */}
       {redesSociales.length > 0 && (
-        <section className="mx-auto max-w-6xl px-5 pt-10 sm:px-8">
+        <section className="mx-auto max-w-6xl px-4 pt-6 sm:px-8 sm:pt-10">
           <div
-            className={`rounded-2xl border p-4 sm:rounded-3xl sm:p-6 sm:p-8 ${
+            className={`rounded-xl border p-3.5 sm:rounded-3xl sm:p-8 ${
               esClaro
                 ? "border-slate-200 bg-slate-50"
                 : "border-zinc-800 bg-zinc-900/70"
             }`}
           >
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
               <div>
                 <p
                   className="text-xs font-medium sm:text-sm"
@@ -1692,15 +1692,15 @@ export default async function NegocioPage({
                     color: colorPrincipal,
                   }}
                 >
-                  Redes sociales
+                  Nuestras redes
                 </p>
 
-                <h2 className="mt-2 text-2xl font-bold tracking-tight">
-                  Seguinos también acá
+                <h2 className="mt-1 text-lg font-bold tracking-tight sm:mt-2 sm:text-2xl">
+                  ¡Seguinos!
                 </h2>
               </div>
 
-              <div className="flex flex-wrap gap-3">
+              <div className="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:gap-3">
                 {redesSociales.map(
                   (red) => (
                     <a
@@ -1708,15 +1708,31 @@ export default async function NegocioPage({
                       href={red.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`inline-flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition ${
+                      aria-label={`Abrir ${red.nombre}`}
+                      className={`flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-2.5 text-[10px] font-semibold transition sm:inline-flex sm:flex-row sm:gap-2 sm:px-4 sm:py-3 sm:text-sm ${
                         esClaro
                           ? "border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50"
                           : "border-zinc-700 bg-zinc-950 text-zinc-100 hover:border-zinc-600 hover:bg-zinc-900"
                       }`}
                     >
-                      <Globe2 className="h-4 w-4" />
-                      {red.nombre}
-                      <ExternalLink className="h-3.5 w-3.5 text-zinc-500" />
+                      {red.nombre === "Instagram" ? (
+                        <span className="relative block h-4 w-4 rounded-[5px] border-2 border-current sm:h-[18px] sm:w-[18px]">
+                          <span className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-current" />
+                          <span className="absolute right-[2px] top-[2px] h-[2px] w-[2px] rounded-full bg-current" />
+                        </span>
+                      ) : red.nombre === "Facebook" ? (
+                        <span className="text-lg font-bold leading-none sm:text-xl">
+                          f
+                        </span>
+                      ) : (
+                        <Music2 className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
+                      )}
+
+                      <span className="truncate">
+                        {red.nombre}
+                      </span>
+
+                      <ExternalLink className="hidden h-3.5 w-3.5 text-zinc-500 sm:block" />
                     </a>
                   ),
                 )}
