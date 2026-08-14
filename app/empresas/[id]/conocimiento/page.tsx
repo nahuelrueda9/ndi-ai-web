@@ -17,7 +17,6 @@ import {
   doc,
   getDoc,
   onSnapshot,
-  orderBy,
   query,
   serverTimestamp,
   Timestamp,
@@ -140,18 +139,22 @@ export default function ConocimientoPage() {
 
     const conocimientoQuery = query(
       collection(db, "knowledge"),
-      where("empresaId", "==", empresaId),
-      where("userId", "==", user.uid),
-      orderBy("createdAt", "desc")
+      where("empresaId", "==", empresaId)
     );
 
     const unsubscribeConocimiento = onSnapshot(
       conocimientoQuery,
       (snapshot) => {
-        const datos = snapshot.docs.map((documento) => ({
-          id: documento.id,
-          ...(documento.data() as Omit<Conocimiento, "id">),
-        }));
+        const datos = snapshot.docs
+          .map((documento) => ({
+            id: documento.id,
+            ...(documento.data() as Omit<Conocimiento, "id">),
+          }))
+          .sort((a, b) => {
+            const fechaA = a.createdAt?.toMillis?.() ?? 0;
+            const fechaB = b.createdAt?.toMillis?.() ?? 0;
+            return fechaB - fechaA;
+          });
 
         setConocimientos(datos);
         setCargandoLista(false);
