@@ -314,6 +314,12 @@ export default async function NegocioPage({
         (item) => item.activo !== false,
       );
 
+  const puedeUsarCatalogo =
+    empresaTieneFuncion(
+      empresa,
+      "catalogo",
+    );
+
   const puedeUsarProductos =
     empresaTieneFuncion(
       empresa,
@@ -340,7 +346,7 @@ export default async function NegocioPage({
   );
 
   const productos =
-    puedeUsarProductos
+    puedeUsarCatalogo
       ? catalogo.filter(
           (item) =>
             item.tipo === "producto",
@@ -372,11 +378,18 @@ export default async function NegocioPage({
           Array.isArray(
             producto.imagenes,
           )
-            ? producto.imagenes.filter(
-                (url): url is string =>
-                  typeof url ===
-                    "string",
-              )
+            ? producto.imagenes
+                .filter(
+                  (url): url is string =>
+                    typeof url ===
+                      "string",
+                )
+                .slice(
+                  0,
+                  puedeUsarProductos
+                    ? 3
+                    : 1,
+                )
             : [],
         categoria:
           producto.categoria || "",
@@ -1188,6 +1201,9 @@ export default async function NegocioPage({
                 esAlojamiento={
                   esAlojamiento
                 }
+                imagenesMultiples={
+                  puedeUsarProductos
+                }
               />
             ))}
           </div>
@@ -1283,7 +1299,11 @@ export default async function NegocioPage({
                       mostrarContacto
                     }
                     esTienda={
-                      esTienda
+                      esTienda &&
+                      puedeUsarProductos
+                    }
+                    imagenesMultiples={
+                      puedeUsarProductos
                     }
                     tema={
                       esClaro
@@ -2109,6 +2129,7 @@ function CatalogoCard({
   esRestaurante = false,
   esAlojamiento = false,
   esTienda = false,
+  imagenesMultiples = false,
 }: {
   item: CatalogoItem;
   color: string;
@@ -2123,6 +2144,7 @@ function CatalogoCard({
   esRestaurante?: boolean;
   esAlojamiento?: boolean;
   esTienda?: boolean;
+  imagenesMultiples?: boolean;
 }) {
   const mensajeWhatsApp =
     esRestaurante &&
@@ -2148,7 +2170,12 @@ function CatalogoCard({
       : []
   )
     .map((url) => url.trim())
-    .slice(0, 3);
+    .slice(
+      0,
+      imagenesMultiples
+        ? 3
+        : 1,
+    );
 
   if (
     imagenesItem.length === 0 &&
@@ -2204,7 +2231,7 @@ function CatalogoCard({
 
         {item.descripcion && (
           <p
-            className={`mt-2 hidden flex-1 text-sm leading-6 sm:block ${
+            className={`mt-2 flex-1 text-[11px] leading-4 sm:text-sm sm:leading-6 ${
               claro
                 ? "text-slate-600"
                 : "text-zinc-400"
