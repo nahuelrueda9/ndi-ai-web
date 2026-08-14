@@ -158,36 +158,40 @@ const ejemplos = [
 
 const planSimple = [
   "Página pública profesional",
-  "Logo, portada e identidad visual",
-  "Información del negocio",
-  "Servicios y precios",
+  "Logo, portada, colores e identidad visual",
+  "Información completa del negocio",
+  "Servicios con descripción y precios",
   "Horarios de atención",
   "Ubicación y mapa",
   "Redes sociales",
   "Botón directo a WhatsApp",
-  "Formulario de contacto",
+  "Teléfono, correo y formulario de contacto",
+  "Galería de imágenes",
   "Estadísticas básicas",
 ];
 
 const planCompleta = [
   "Todo lo incluido en Página Simple",
-  "Productos y catálogo",
-  "Galería ampliada",
+  "Productos, catálogo o carta",
+  "Hasta 3 imágenes por producto o servicio",
+  "Detalle completo de productos",
   "Código QR para compartir",
   "Solicitud de presupuestos",
   "Agenda propia de NDI AI",
-  "Reservas online",
-  "Gestión de turnos",
-  "Más secciones para el negocio",
+  "Turnos y reservas online",
+  "Reservas de alojamiento para hoteles y hostales",
+  "Reservas de mesa para restaurantes",
+  "Pedidos online para restaurantes",
   "Estadísticas avanzadas",
 ];
 
 const planBusinessIA = [
   "Todo lo incluido en Página Completa",
   "Asistente IA dentro de la página",
+  "Asistente configurable para cada negocio",
   "Base de conocimiento del negocio",
   "Respuestas basadas en información real",
-  "Consultas guardadas en el panel",
+  "Conversaciones guardadas en el panel",
   "Captura y seguimiento de potenciales clientes",
   "Widget de IA para otras páginas web",
   "Atención humana cuando sea necesaria",
@@ -894,7 +898,7 @@ export default function HomePage() {
           <div className="mt-12 grid gap-6 lg:grid-cols-3">
             <PlanCard
               nombre="Página Simple"
-              descripcion="Para negocios que necesitan una presencia online profesional, clara y lista para recibir consultas."
+              descripcion="Para negocios que quieren tener toda su información ordenada en una página profesional y facilitar el contacto con sus clientes."
               inicial="$ 89.999"
               mensual="$ 5.999/mes"
               features={planSimple}
@@ -902,7 +906,7 @@ export default function HomePage() {
 
             <PlanCard
               nombre="Página Completa"
-              descripcion="Para negocios que además quieren mostrar productos, recibir presupuestos y organizar reservas desde NDI AI."
+              descripcion="Para negocios que además necesitan catálogo, productos, presupuestos, turnos, reservas o pedidos según su actividad."
               inicial="$ 159.999"
               mensual="$ 9.999/mes"
               features={planCompleta}
@@ -911,7 +915,7 @@ export default function HomePage() {
 
             <PlanCard
               nombre="Business IA"
-              descripcion="La versión inteligente de NDI AI para negocios que quieren atender consultas y aprovechar inteligencia artificial."
+              descripcion="La versión más completa, con todas las herramientas de gestión más un asistente inteligente entrenado con la información real del negocio."
               inicial="$ 219.999"
               mensual="$ 15.999/mes"
               features={planBusinessIA}
