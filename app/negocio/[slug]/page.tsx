@@ -26,6 +26,7 @@ import ReservaAlojamientoForm from "./ReservaAlojamientoForm";
 import ReservaMesaForm from "./ReservaMesaForm";
 import ProximosHorarios from "./ProximosHorarios";
 import RestauranteCartaPedidos from "./RestauranteCartaPedidos";
+import ProductoDetalleTienda from "./ProductoDetalleTienda";
 import ContactoForm from "./ContactForm";
 import PublicAnalytics from "./PublicAnalytics";
 import CompartirPagina from "./CompartirPagina";
@@ -404,6 +405,16 @@ export default async function NegocioPage({
   const esRestaurante =
     rubroNormalizado === "restaurante" ||
     rubroNormalizado === "restaurant";
+
+  const esTienda =
+    [
+      "tienda",
+      "tienda de ropa",
+      "indumentaria",
+      "ropa",
+    ].includes(
+      rubroNormalizado,
+    );
 
   const mostrarHorariosRapidos =
     [
@@ -1271,6 +1282,14 @@ export default async function NegocioPage({
                     mostrarContacto={
                       mostrarContacto
                     }
+                    esTienda={
+                      esTienda
+                    }
+                    tema={
+                      esClaro
+                        ? "claro"
+                        : "oscuro"
+                    }
                   />
                 ),
               )}
@@ -2089,6 +2108,7 @@ function CatalogoCard({
   tema = "oscuro",
   esRestaurante = false,
   esAlojamiento = false,
+  esTienda = false,
 }: {
   item: CatalogoItem;
   color: string;
@@ -2102,6 +2122,7 @@ function CatalogoCard({
   tema?: "oscuro" | "claro";
   esRestaurante?: boolean;
   esAlojamiento?: boolean;
+  esTienda?: boolean;
 }) {
   const mensajeWhatsApp =
     esRestaurante &&
@@ -2288,6 +2309,54 @@ function CatalogoCard({
           whatsappItemUrl ||
           mostrarContacto) && (
           <div className="mt-3 flex flex-wrap gap-1.5 sm:mt-4 sm:gap-2">
+            {esTienda &&
+              item.tipo ===
+                "producto" && (
+                <ProductoDetalleTienda
+                  producto={{
+                    id: item.id,
+                    nombre:
+                      item.nombre,
+                    descripcion:
+                      item.descripcion ||
+                      "",
+                    precio:
+                      typeof item.precio ===
+                      "number"
+                        ? item.precio
+                        : 0,
+                    imagenUrl:
+                      item.imagenUrl ||
+                      "",
+                    imagenes:
+                      Array.isArray(
+                        item.imagenes,
+                      )
+                        ? item.imagenes.filter(
+                            (
+                              url,
+                            ): url is string =>
+                              typeof url ===
+                                "string",
+                          )
+                        : [],
+                  }}
+                  colorPrincipal={
+                    color
+                  }
+                  tema={tema}
+                  mostrarWhatsApp={
+                    mostrarWhatsApp
+                  }
+                  whatsappUrl={
+                    whatsappUrl
+                  }
+                  mostrarContacto={
+                    mostrarContacto
+                  }
+                />
+              )}
+
             {puedeReservar && (
               <a
                 href={`#reservar-servicio-${encodeURIComponent(
@@ -2307,6 +2376,7 @@ function CatalogoCard({
             )}
 
             {!puedeReservar &&
+              !esTienda &&
               whatsappItemUrl && (
                 <a
                   href={
@@ -2323,6 +2393,7 @@ function CatalogoCard({
               )}
 
             {!puedeReservar &&
+              !esTienda &&
               !whatsappItemUrl &&
               mostrarContacto && (
                 <a
