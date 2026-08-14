@@ -292,13 +292,13 @@ export default function ReservaAlojamientoForm({
     return null;
   }
 
-  const inputClass = `w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition sm:px-4 sm:py-3 ${
+  const inputClass = `h-10 w-full rounded-lg border px-3 text-[13px] outline-none transition sm:h-auto sm:rounded-xl sm:px-4 sm:py-3 sm:text-sm ${
     esClaro
       ? "border-slate-300 bg-white text-slate-950 placeholder:text-slate-400 focus:border-blue-500"
       : "border-zinc-700 bg-zinc-950 text-white placeholder:text-zinc-600 focus:border-blue-500"
   }`;
 
-  const labelClass = `mb-1.5 block text-xs font-medium sm:mb-2 sm:text-sm ${
+  const labelClass = `mb-1 block text-[11px] font-medium sm:mb-2 sm:text-sm ${
     esClaro
       ? "text-slate-700"
       : "text-zinc-300"
@@ -306,7 +306,7 @@ export default function ReservaAlojamientoForm({
 
   return (
     <div
-      className={`rounded-2xl border p-4 sm:rounded-3xl sm:p-8 ${
+      className={`rounded-xl border p-3 sm:rounded-3xl sm:p-8 ${
         esClaro
           ? "border-slate-200 bg-white shadow-sm"
           : "border-zinc-800 bg-zinc-900"
@@ -314,7 +314,7 @@ export default function ReservaAlojamientoForm({
     >
       <div className="flex items-start gap-3 sm:gap-4">
         <div
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl sm:h-12 sm:w-12 sm:rounded-2xl"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-12 sm:w-12 sm:rounded-2xl"
           style={{
             backgroundColor:
               `${colorPrincipal}20`,
@@ -331,7 +331,7 @@ export default function ReservaAlojamientoForm({
           >
             Reserva de alojamiento
           </p>
-          <h2 className="mt-0.5 text-xl font-bold sm:mt-1 sm:text-2xl">
+          <h2 className="mt-0.5 text-lg font-bold sm:mt-1 sm:text-2xl">
             Reservá tu estadía
           </h2>
           <p
@@ -349,7 +349,7 @@ export default function ReservaAlojamientoForm({
 
       <form
         onSubmit={reservar}
-        className="mt-5 grid gap-3.5 sm:mt-8 sm:grid-cols-2 sm:gap-5"
+        className="mt-4 grid gap-2.5 sm:mt-8 sm:grid-cols-2 sm:gap-5"
       >
         <div className="sm:col-span-2">
           <label className={labelClass}>
@@ -606,7 +606,7 @@ export default function ReservaAlojamientoForm({
             backgroundColor:
               colorPrincipal,
           }}
-          className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:col-span-2 sm:py-3.5"
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg px-4 text-[13px] font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:col-span-2 sm:h-auto sm:rounded-xl sm:px-5 sm:py-3.5 sm:text-sm"
         >
           {enviando ? (
             <>

@@ -230,7 +230,7 @@ export default function ReservaMesaForm({
 
   return (
     <div
-      className={`rounded-2xl border p-4 sm:rounded-3xl sm:p-8 ${
+      className={`rounded-xl border p-3 sm:rounded-3xl sm:p-8 ${
         esClaro
           ? "border-slate-200 bg-white shadow-sm"
           : "border-zinc-800 bg-zinc-900"
@@ -238,7 +238,7 @@ export default function ReservaMesaForm({
     >
       <div className="flex items-start gap-3 sm:gap-4">
         <div
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl sm:h-12 sm:w-12 sm:rounded-2xl"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-12 sm:w-12 sm:rounded-2xl"
           style={{
             backgroundColor:
               `${colorPrincipal}20`,
@@ -260,7 +260,7 @@ export default function ReservaMesaForm({
             Reserva de mesa
           </p>
 
-          <h2 className="mt-1 text-xl font-bold sm:text-2xl">
+          <h2 className="mt-0.5 text-lg font-bold sm:mt-1 sm:text-2xl">
             Reservá tu mesa
           </h2>
 
@@ -288,12 +288,12 @@ export default function ReservaMesaForm({
 
       <form
         onSubmit={enviarReserva}
-        className="mt-5 grid gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4"
+        className="mt-4 grid gap-2.5 sm:mt-6 sm:grid-cols-2 sm:gap-4"
       >
         <div className="sm:col-span-2">
           <label
             htmlFor="reservaMesaNombre"
-            className="mb-1.5 block text-xs font-medium sm:text-sm"
+            className="mb-1 block text-[11px] font-medium sm:mb-1.5 sm:text-sm"
           >
             Nombre
           </label>
@@ -309,14 +309,14 @@ export default function ReservaMesaForm({
             maxLength={120}
             autoComplete="name"
             placeholder="Tu nombre"
-            className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition ${claseInput}`}
+            className={`h-10 w-full rounded-lg border px-3 text-[13px] outline-none transition sm:h-auto sm:rounded-xl sm:py-2.5 sm:text-sm ${claseInput}`}
           />
         </div>
 
         <div>
           <label
             htmlFor="reservaMesaFecha"
-            className="mb-1.5 block text-xs font-medium sm:text-sm"
+            className="mb-1 block text-[11px] font-medium sm:mb-1.5 sm:text-sm"
           >
             Fecha
           </label>
@@ -333,7 +333,7 @@ export default function ReservaMesaForm({
                   event.target.value,
                 )
               }
-              className={`w-full rounded-xl border py-2.5 pl-9 pr-3 text-sm outline-none transition ${claseInput}`}
+              className={`h-10 w-full rounded-lg border pl-9 pr-3 text-[13px] outline-none transition sm:h-auto sm:rounded-xl sm:py-2.5 sm:text-sm ${claseInput}`}
             />
           </div>
         </div>
@@ -341,7 +341,7 @@ export default function ReservaMesaForm({
         <div>
           <label
             htmlFor="reservaMesaHora"
-            className="mb-1.5 block text-xs font-medium sm:text-sm"
+            className="mb-1 block text-[11px] font-medium sm:mb-1.5 sm:text-sm"
           >
             Horario
           </label>
@@ -358,7 +358,7 @@ export default function ReservaMesaForm({
                   event.target.value,
                 )
               }
-              className={`w-full rounded-xl border py-2.5 pl-9 pr-3 text-sm outline-none transition ${claseInput}`}
+              className={`h-10 w-full rounded-lg border pl-9 pr-3 text-[13px] outline-none transition sm:h-auto sm:rounded-xl sm:py-2.5 sm:text-sm ${claseInput}`}
             />
           </div>
         </div>
@@ -366,7 +366,7 @@ export default function ReservaMesaForm({
         <div>
           <label
             htmlFor="reservaMesaPersonas"
-            className="mb-1.5 block text-xs font-medium sm:text-sm"
+            className="mb-1 block text-[11px] font-medium sm:mb-1.5 sm:text-sm"
           >
             Personas
           </label>
@@ -384,7 +384,7 @@ export default function ReservaMesaForm({
                   event.target.value,
                 )
               }
-              className={`w-full rounded-xl border py-2.5 pl-9 pr-3 text-sm outline-none transition ${claseInput}`}
+              className={`h-10 w-full rounded-lg border pl-9 pr-3 text-[13px] outline-none transition sm:h-auto sm:rounded-xl sm:py-2.5 sm:text-sm ${claseInput}`}
             />
           </div>
         </div>
@@ -392,7 +392,7 @@ export default function ReservaMesaForm({
         <div>
           <label
             htmlFor="reservaMesaTelefono"
-            className="mb-1.5 block text-xs font-medium sm:text-sm"
+            className="mb-1 block text-[11px] font-medium sm:mb-1.5 sm:text-sm"
           >
             Teléfono
           </label>
@@ -409,14 +409,14 @@ export default function ReservaMesaForm({
             maxLength={60}
             autoComplete="tel"
             placeholder="+54..."
-            className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition ${claseInput}`}
+            className={`h-10 w-full rounded-lg border px-3 text-[13px] outline-none transition sm:h-auto sm:rounded-xl sm:py-2.5 sm:text-sm ${claseInput}`}
           />
         </div>
 
         <div className="sm:col-span-2">
           <label
             htmlFor="reservaMesaEmail"
-            className="mb-1.5 block text-xs font-medium sm:text-sm"
+            className="mb-1 block text-[11px] font-medium sm:mb-1.5 sm:text-sm"
           >
             Correo
             <span
@@ -442,14 +442,14 @@ export default function ReservaMesaForm({
             maxLength={180}
             autoComplete="email"
             placeholder="tu@email.com"
-            className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition ${claseInput}`}
+            className={`h-10 w-full rounded-lg border px-3 text-[13px] outline-none transition sm:h-auto sm:rounded-xl sm:py-2.5 sm:text-sm ${claseInput}`}
           />
         </div>
 
         <div className="sm:col-span-2">
           <label
             htmlFor="reservaMesaNotas"
-            className="mb-1.5 block text-xs font-medium sm:text-sm"
+            className="mb-1 block text-[11px] font-medium sm:mb-1.5 sm:text-sm"
           >
             Nota
             <span
@@ -474,7 +474,7 @@ export default function ReservaMesaForm({
             maxLength={1000}
             rows={3}
             placeholder="Ej.: mesa cerca de la ventana, cumpleaños, silla para bebé..."
-            className={`w-full resize-none rounded-xl border px-3 py-2.5 text-sm outline-none transition ${claseInput}`}
+            className={`w-full resize-none rounded-lg border px-3 py-2 text-[13px] outline-none transition sm:rounded-xl sm:py-2.5 sm:text-sm ${claseInput}`}
           />
         </div>
 
@@ -509,7 +509,7 @@ export default function ReservaMesaForm({
           <button
             type="submit"
             disabled={enviando}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:px-6"
+            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg px-4 text-[13px] font-semibold text-white shadow-lg transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 sm:h-auto sm:w-auto sm:rounded-xl sm:px-6 sm:py-3 sm:text-sm"
             style={{
               backgroundColor:
                 colorPrincipal,

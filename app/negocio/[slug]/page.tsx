@@ -679,7 +679,7 @@ export default async function NegocioPage({
 
   return (
     <main
-      className={`min-h-screen scroll-smooth pb-20 sm:pb-0 ${
+      className={`min-h-screen scroll-smooth pb-16 sm:pb-0 ${
         esClaro
           ? "bg-white text-slate-950"
           : "bg-zinc-950 text-white"
@@ -694,20 +694,20 @@ export default async function NegocioPage({
             : "border-white/10 bg-zinc-950/80"
         }`}
       >
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-5 px-5 py-3.5 sm:px-8">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2.5 sm:gap-5 sm:px-8 sm:py-3.5">
           <a
             href="#inicio"
-            className="flex min-w-0 items-center gap-3"
+            className="flex min-w-0 items-center gap-2.5 sm:gap-3"
           >
             {logoUrl ? (
               <img
                 src={logoUrl}
                 alt={`Logo de ${nombre}`}
-                className="h-11 w-11 shrink-0 rounded-2xl border border-white/10 bg-white object-cover shadow-lg"
+                className="h-9 w-9 shrink-0 rounded-xl border border-white/10 bg-white object-cover shadow-lg sm:h-11 sm:w-11 sm:rounded-2xl"
               />
             ) : (
               <div
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-white shadow-lg"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white shadow-lg sm:h-11 sm:w-11 sm:rounded-2xl"
                 style={{
                   backgroundColor:
                     colorPrincipal,
@@ -719,7 +719,7 @@ export default async function NegocioPage({
 
             <div className="min-w-0">
               <p
-                className={`truncate text-[11px] uppercase tracking-[0.18em] ${
+                className={`truncate text-[9px] uppercase tracking-[0.16em] sm:text-[11px] sm:tracking-[0.18em] ${
                   esClaro
                     ? "text-slate-500"
                     : "text-zinc-500"
@@ -729,7 +729,7 @@ export default async function NegocioPage({
                   "Negocio"}
               </p>
 
-              <p className="truncate font-semibold">
+              <p className="truncate text-sm font-semibold sm:text-base">
                 {nombre}
               </p>
             </div>
@@ -855,7 +855,7 @@ export default async function NegocioPage({
       {/* HERO */}
       <section
         id="inicio"
-        className={`relative flex min-h-[68vh] scroll-mt-24 items-center overflow-hidden ${
+        className={`relative flex min-h-[520px] scroll-mt-20 items-center overflow-hidden sm:min-h-[68vh] sm:scroll-mt-24 ${
           portadaUrl ? "text-white" : ""
         }`}
       >
@@ -883,20 +883,20 @@ export default async function NegocioPage({
           />
         )}
 
-        <div className="relative mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 sm:py-28 lg:py-32">
+        <div className="relative mx-auto w-full max-w-6xl px-4 py-10 sm:px-8 sm:py-28 lg:py-32">
           <div className="max-w-3xl">
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4">
               {logoUrl && (
                 <img
                   src={logoUrl}
                   alt={`Logo de ${nombre}`}
-                  className="h-20 w-20 rounded-3xl border border-white/15 bg-white object-cover shadow-2xl"
+                  className="h-14 w-14 rounded-2xl border border-white/15 bg-white object-cover shadow-2xl sm:h-20 sm:w-20 sm:rounded-3xl"
                 />
               )}
 
               {empresa.rubro && (
                 <div
-                  className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm backdrop-blur"
+                  className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs backdrop-blur sm:gap-2 sm:px-3 sm:py-1.5 sm:text-sm"
                   style={{
                     borderColor: `${colorPrincipal}77`,
                     backgroundColor: `${colorPrincipal}25`,
@@ -905,19 +905,19 @@ export default async function NegocioPage({
                       : colorPrincipal,
                   }}
                 >
-                  <Sparkles className="h-4 w-4" />
+                  <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   {empresa.rubro}
                 </div>
               )}
             </div>
 
-            <h1 className="mt-6 text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+            <h1 className="mt-4 text-3xl font-bold leading-[1.08] tracking-tight sm:mt-6 sm:text-5xl lg:text-6xl">
               {nombre}
             </h1>
 
             {textoPrincipal && (
               <p
-                className={`mt-6 max-w-2xl text-lg font-semibold leading-7 sm:text-xl sm:leading-8 ${
+                className={`mt-4 max-w-2xl text-base font-semibold leading-6 sm:mt-6 sm:text-xl sm:leading-8 ${
                   portadaUrl
                     ? "text-white"
                     : esClaro
@@ -931,7 +931,7 @@ export default async function NegocioPage({
 
             {textoSecundario && (
               <p
-                className={`mt-2 max-w-2xl text-sm leading-6 sm:text-base sm:leading-7 ${
+                className={`mt-1.5 max-w-2xl text-[13px] leading-5 sm:mt-2 sm:text-base sm:leading-7 ${
                   portadaUrl
                     ? "text-zinc-300"
                     : esClaro
@@ -943,11 +943,11 @@ export default async function NegocioPage({
               </p>
             )}
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <div className="mt-5 flex flex-col gap-2.5 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-3">
               {puedeMostrarReserva && (
                 <a
                   href="#reservar"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 font-semibold text-white shadow-xl transition hover:-translate-y-0.5 hover:brightness-110"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-xl transition hover:-translate-y-0.5 hover:brightness-110 sm:px-6 sm:py-3.5 sm:text-base"
                   style={{
                     backgroundColor:
                       colorPrincipal,
@@ -964,14 +964,14 @@ export default async function NegocioPage({
 
               {(mostrarWhatsApp ||
                 redesSociales.length > 0) && (
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex w-full flex-nowrap items-center gap-1.5 sm:w-auto sm:gap-2">
                   {mostrarWhatsApp && (
                     <a
                       href={whatsappUrl}
                       data-analytics-event="whatsapp_click"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3.5 font-semibold text-white shadow-xl transition hover:-translate-y-0.5 hover:bg-emerald-500"
+                      className="inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2.5 text-sm font-semibold text-white shadow-xl transition hover:-translate-y-0.5 hover:bg-emerald-500 sm:flex-none sm:gap-2 sm:px-6 sm:py-3.5 sm:text-base"
                     >
                       <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       Hablar por WhatsApp
@@ -986,7 +986,7 @@ export default async function NegocioPage({
                       rel="noopener noreferrer"
                       aria-label={`Abrir ${red.nombre}`}
                       title={red.nombre}
-                      className={`inline-flex h-[52px] w-[52px] items-center justify-center rounded-xl border shadow-lg backdrop-blur transition hover:-translate-y-0.5 ${
+                      className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border shadow-lg backdrop-blur transition hover:-translate-y-0.5 sm:h-[52px] sm:w-[52px] ${
                         portadaUrl || !esClaro
                           ? "border-white/20 bg-white/10 text-white hover:bg-white/20"
                           : "border-slate-200 bg-white text-slate-800 hover:bg-slate-100"
@@ -1014,7 +1014,7 @@ export default async function NegocioPage({
                 servicios.length > 0 && (
                   <a
                     href="#servicios"
-                    className={`inline-flex items-center justify-center gap-2 rounded-xl border px-6 py-3.5 font-semibold backdrop-blur transition ${
+                    className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold backdrop-blur transition sm:px-6 sm:py-3.5 sm:text-base ${
                       portadaUrl || !esClaro
                         ? "border-white/15 bg-white/10 text-white hover:bg-white/15"
                         : "border-slate-300 bg-white text-slate-900 shadow-sm hover:bg-slate-50"
@@ -1031,7 +1031,7 @@ export default async function NegocioPage({
                 mostrarEmail && (
                   <a
                     href={`mailto:${empresa.email}`}
-                    className={`inline-flex items-center justify-center gap-2 rounded-xl border px-6 py-3.5 font-semibold backdrop-blur transition ${
+                    className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold backdrop-blur transition sm:px-6 sm:py-3.5 sm:text-base ${
                       portadaUrl || !esClaro
                         ? "border-white/15 bg-white/10 text-white hover:bg-white/15"
                         : "border-slate-300 bg-white text-slate-900 shadow-sm hover:bg-slate-50"
@@ -1044,7 +1044,7 @@ export default async function NegocioPage({
             </div>
 
             {puedeUsarQr && (
-              <div className="mt-4">
+              <div className="mt-3 sm:mt-4">
                 <CompartirPagina
                   nombre={nombre}
                   tema={
@@ -1060,8 +1060,8 @@ export default async function NegocioPage({
       </section>
 
       {/* INFORMACIÓN */}
-      <section className="relative z-10 -mt-7">
-        <div className="mx-auto grid max-w-6xl gap-4 px-5 pb-10 sm:px-8 md:grid-cols-2 lg:grid-cols-4">
+      <section className="relative z-10 -mt-4 sm:-mt-7">
+        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-2 px-4 pb-6 sm:gap-4 sm:px-8 sm:pb-10 md:grid-cols-2 lg:grid-cols-4">
           {mostrarHorarios && (
             <InfoCard
               icono={
@@ -1121,7 +1121,7 @@ export default async function NegocioPage({
       {/* SERVICIOS */}
       {mostrarServicios &&
         servicios.length > 0 && (
-        <section id="servicios" className="mx-auto max-w-6xl scroll-mt-24 px-5 py-20 sm:px-8">
+        <section id="servicios" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-10 sm:px-8 sm:py-20">
           <div className="max-w-2xl">
             <p
               className="text-sm font-medium"
@@ -1132,13 +1132,13 @@ export default async function NegocioPage({
               Lo que ofrecemos
             </p>
 
-            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+            <h2 className="mt-2 text-2xl font-bold tracking-tight sm:mt-3 sm:text-4xl">
               {esAlojamiento
                 ? "Habitaciones"
                 : "Servicios"}
             </h2>
 
-            <p className={`mt-4 leading-7 ${claseTextoSecundario}`}>
+            <p className={`mt-2 text-sm leading-6 sm:mt-4 sm:text-base sm:leading-7 ${claseTextoSecundario}`}>
               {esAlojamiento
                 ? "Elegí la habitación que mejor se adapte a tu estadía."
                 : "Conocé los servicios disponibles."}
@@ -1188,7 +1188,7 @@ export default async function NegocioPage({
         productos.length > 0 && (
         <section
           id="productos"
-          className="mx-auto max-w-6xl scroll-mt-24 px-5 py-20 sm:px-8"
+          className="mx-auto max-w-6xl scroll-mt-24 px-4 py-10 sm:px-8 sm:py-20"
         >
           <div className="max-w-2xl">
             <p
@@ -1203,14 +1203,14 @@ export default async function NegocioPage({
                 : "Catálogo"}
             </p>
 
-            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+            <h2 className="mt-2 text-2xl font-bold tracking-tight sm:mt-3 sm:text-4xl">
               {esRestaurante
                 ? "Carta"
                 : "Productos"}
             </h2>
 
             <p
-              className={`mt-4 leading-7 ${claseTextoSecundario}`}
+              className={`mt-2 text-sm leading-6 sm:mt-4 sm:text-base sm:leading-7 ${claseTextoSecundario}`}
             >
               {esRestaurante
                 ? "Explorá nuestras entradas, platos principales, bebidas y postres."
@@ -1361,7 +1361,7 @@ export default async function NegocioPage({
             id="galeria"
             className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}
           >
-          <div className="mx-auto max-w-6xl px-5 py-20 sm:px-8">
+          <div className="mx-auto max-w-6xl px-4 py-10 sm:px-8 sm:py-20">
             <div className="max-w-2xl">
               <p
                 className="text-sm font-medium"
@@ -1372,11 +1372,11 @@ export default async function NegocioPage({
                 Imágenes
               </p>
 
-              <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+              <h2 className="mt-2 text-2xl font-bold tracking-tight sm:mt-3 sm:text-4xl">
                 Galería
               </h2>
 
-              <p className={`mt-4 leading-7 ${claseTextoSecundario}`}>
+              <p className={`mt-2 text-sm leading-6 sm:mt-4 sm:text-base sm:leading-7 ${claseTextoSecundario}`}>
                 Conocé un poco más sobre {empresa.nombre || nombre}.
               </p>
             </div>
@@ -1411,7 +1411,7 @@ export default async function NegocioPage({
             id="reservar"
             className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}
           >
-            <div className="mx-auto max-w-4xl px-4 py-10 sm:px-8 sm:py-20">
+            <div className="mx-auto max-w-4xl px-3 py-7 sm:px-8 sm:py-20">
               <ReservaAlojamientoForm
                 slug={slug}
                 habitaciones={servicios.map(
@@ -1442,7 +1442,7 @@ export default async function NegocioPage({
             id="nosotros"
             className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}
           >
-          <div className="mx-auto max-w-6xl px-5 py-20 sm:px-8">
+          <div className="mx-auto max-w-6xl px-4 py-10 sm:px-8 sm:py-20">
             <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
               <div>
                 <p
@@ -1488,7 +1488,7 @@ export default async function NegocioPage({
       {testimonios.length > 0 && (
         <section
           id="testimonios"
-          className="mx-auto max-w-6xl scroll-mt-24 px-5 py-20 sm:px-8"
+          className="mx-auto max-w-6xl scroll-mt-24 px-4 py-10 sm:px-8 sm:py-20"
         >
           <div className="mx-auto max-w-2xl text-center">
             <p
@@ -1500,12 +1500,12 @@ export default async function NegocioPage({
               Opiniones
             </p>
 
-            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+            <h2 className="mt-2 text-2xl font-bold tracking-tight sm:mt-3 sm:text-4xl">
               Lo que dicen nuestros clientes
             </h2>
 
             <p
-              className={`mt-4 leading-7 ${claseTextoSecundario}`}
+              className={`mt-2 text-sm leading-6 sm:mt-4 sm:text-base sm:leading-7 ${claseTextoSecundario}`}
             >
               Experiencias compartidas por personas que ya eligieron{" "}
               {empresa.nombre || nombre}.
@@ -1601,7 +1601,7 @@ export default async function NegocioPage({
                 Preguntas frecuentes
               </p>
 
-              <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+              <h2 className="mt-2 text-2xl font-bold tracking-tight sm:mt-3 sm:text-4xl">
                 Resolvemos las dudas más comunes
               </h2>
 
@@ -1800,7 +1800,7 @@ export default async function NegocioPage({
           id="reservar"
           className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}
         >
-          <div className="mx-auto max-w-4xl px-4 py-10 sm:px-8 sm:py-20">
+          <div className="mx-auto max-w-4xl px-3 py-7 sm:px-8 sm:py-20">
             {mostrarReservaMesa ? (
               <ReservaMesaForm
                 slug={slug}
@@ -1931,7 +1931,7 @@ export default async function NegocioPage({
       mostrarContacto ||
       mostrarWhatsApp ? (
         <div
-          className={`fixed inset-x-0 bottom-0 z-50 border-t p-2 backdrop-blur-xl sm:hidden ${
+          className={`fixed inset-x-0 bottom-0 z-50 border-t px-2 py-1.5 backdrop-blur-xl sm:hidden ${
             esClaro
               ? "border-slate-200 bg-white/95"
               : "border-white/10 bg-zinc-950/90"
@@ -1946,7 +1946,7 @@ export default async function NegocioPage({
                     ? "#reservar"
                     : "#contacto"
                 }
-                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-xs font-semibold text-white shadow-lg"
+                className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg px-3 text-[11px] font-semibold text-white shadow-lg"
                 style={{
                   backgroundColor:
                     colorPrincipal,
@@ -1975,10 +1975,10 @@ export default async function NegocioPage({
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Abrir WhatsApp"
-                className={`inline-flex h-10 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-lg transition hover:bg-emerald-500 ${
+                className={`inline-flex h-9 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-lg transition hover:bg-emerald-500 ${
                   puedeMostrarReserva ||
                   mostrarContacto
-                    ? "w-10 shrink-0"
+                    ? "w-9 shrink-0"
                     : "flex-1 gap-2 px-4"
                 }`}
               >
@@ -2160,8 +2160,8 @@ function CatalogoCard({
         </div>
       )}
 
-      <div className="flex flex-1 flex-col p-3 sm:p-5">
-        <h3 className="line-clamp-2 text-sm font-semibold leading-5 sm:text-lg">
+      <div className="flex flex-1 flex-col p-2.5 sm:p-5">
+        <h3 className="line-clamp-2 text-[13px] font-semibold leading-4 sm:text-lg sm:leading-6">
           {item.nombre}
         </h3>
 
@@ -2201,7 +2201,7 @@ function CatalogoCard({
                 </p>
 
                 <p
-                  className="mt-1 text-base font-bold sm:text-xl"
+                  className="mt-0.5 text-sm font-bold sm:mt-1 sm:text-xl"
                   style={{
                     color,
                   }}
@@ -2343,14 +2343,14 @@ function InfoCard({
 }) {
   return (
     <div
-      className={`rounded-2xl border p-5 shadow-[0_14px_35px_rgba(0,0,0,0.12)] backdrop-blur ${
+      className={`h-full rounded-xl border p-3 shadow-[0_8px_22px_rgba(0,0,0,0.08)] backdrop-blur sm:rounded-2xl sm:p-5 sm:shadow-[0_14px_35px_rgba(0,0,0,0.12)] ${
         claro
           ? "border-slate-200 bg-white/95"
           : "border-white/10 bg-zinc-950/90"
       }`}
     >
       <div
-        className="flex h-10 w-10 items-center justify-center rounded-xl"
+        className="flex h-8 w-8 items-center justify-center rounded-lg sm:h-10 sm:w-10 sm:rounded-xl"
         style={{
           backgroundColor:
             `${color}18`,
@@ -2361,7 +2361,7 @@ function InfoCard({
       </div>
 
       <p
-        className={`mt-4 text-xs font-medium uppercase tracking-[0.14em] ${
+        className={`mt-2 text-[9px] font-medium uppercase tracking-[0.12em] sm:mt-4 sm:text-xs sm:tracking-[0.14em] ${
           claro
             ? "text-slate-400"
             : "text-zinc-600"
@@ -2371,7 +2371,7 @@ function InfoCard({
       </p>
 
       <p
-        className={`mt-2 whitespace-pre-line break-words text-sm leading-6 ${
+        className={`mt-1.5 whitespace-pre-line break-words text-[11px] leading-4 sm:mt-2 sm:text-sm sm:leading-6 ${
           claro
             ? "text-slate-700"
             : "text-zinc-200"
