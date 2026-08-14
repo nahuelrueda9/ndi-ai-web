@@ -649,30 +649,30 @@ setEmpresasCompartidas(
 
   return (
     <DashboardLayout>
-      <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
-        <div className="mb-8 overflow-hidden rounded-3xl border border-blue-200 bg-gradient-to-br from-blue-600 via-blue-600 to-indigo-700 shadow-xl shadow-blue-600/10 dark:border-blue-500/20 dark:from-blue-700 dark:via-blue-800 dark:to-indigo-950">
-          <div className="relative px-6 py-7 sm:px-8 sm:py-9">
+      <section className="mx-auto w-full max-w-[1600px] px-4 py-5 sm:px-6 lg:px-7">
+        <div className="mb-5 overflow-hidden rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-600 via-blue-600 to-indigo-700 shadow-lg shadow-blue-600/10 dark:border-blue-500/20 dark:from-blue-700 dark:via-blue-800 dark:to-indigo-950">
+          <div className="relative px-5 py-5 sm:px-6 sm:py-6">
             <div className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
             <div className="pointer-events-none absolute bottom-0 right-32 h-40 w-40 rounded-full bg-cyan-300/10 blur-3xl" />
 
-            <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
+            <div className="relative flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
               <div className="max-w-2xl">
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-blue-50">
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-blue-50">
                   <Sparkles className="h-3.5 w-3.5" />
                   Tus espacios en NDI AI
                 </div>
 
-                <h1 className="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                <h1 className="mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl">
                   Administrá tus negocios
                 </h1>
 
-                <p className="mt-3 max-w-xl text-sm leading-6 text-blue-100 sm:text-base">
+                <p className="mt-2 max-w-xl text-sm leading-5 text-blue-100">
                   Entrá al negocio que quieras administrar, revisá su plan o creá un nuevo espacio de trabajo.
                 </p>
               </div>
 
-              <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-stretch">
-                <div className="flex min-w-0 items-center gap-3 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur-sm">
+              <div className="flex flex-col gap-2 sm:flex-row lg:flex-row lg:items-center">
+                <div className="flex min-w-0 items-center gap-2.5 rounded-xl border border-white/15 bg-white/10 px-3 py-2 backdrop-blur-sm">
                   <Avatar
                     name={
                       user?.displayName ||
@@ -707,7 +707,7 @@ setEmpresasCompartidas(
 
                     setErrorFormulario("");
                   }}
-                  className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold transition ${
+                  className={`inline-flex min-h-9 items-center justify-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition ${
                     mostrarFormulario
                       ? "border border-white/20 bg-white/10 text-white hover:bg-white/15"
                       : "bg-white text-blue-700 shadow-lg shadow-blue-950/10 hover:bg-blue-50"
@@ -727,62 +727,62 @@ setEmpresasCompartidas(
           </div>
         </div>
 
-        <div className="mb-8 grid gap-4 sm:grid-cols-3">
-          <Card className="p-5">
+        <div className="mb-5 grid gap-3 sm:grid-cols-3">
+          <Card className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-500 dark:text-zinc-400">
                   Empresas
                 </p>
-                <p className="mt-2 text-3xl font-bold text-slate-950 dark:text-white">
+                <p className="mt-1 text-2xl font-bold text-slate-950 dark:text-white">
                   {empresas.length}
                 </p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
                 <Building2 className="h-5 w-5" />
               </div>
             </div>
           </Card>
 
-          <Card className="p-5">
+          <Card className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-500 dark:text-zinc-400">
                   Propias
                 </p>
-                <p className="mt-2 text-3xl font-bold text-slate-950 dark:text-white">
+                <p className="mt-1 text-2xl font-bold text-slate-950 dark:text-white">
                   {empresasPropias.length}
                 </p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
                 <Building2 className="h-5 w-5" />
               </div>
             </div>
           </Card>
 
-          <Card className="p-5">
+          <Card className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-500 dark:text-zinc-400">
                   Compartidas
                 </p>
-                <p className="mt-2 text-3xl font-bold text-slate-950 dark:text-white">
+                <p className="mt-1 text-2xl font-bold text-slate-950 dark:text-white">
                   {empresasCompartidas.length}
                 </p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400">
                 <UsersRound className="h-5 w-5" />
               </div>
             </div>
           </Card>
         </div>
 
-        <div className="mb-5 flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+        <div className="mb-3 flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
           <div>
             <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
               Tus espacios
             </p>
-            <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-950 dark:text-white">
+            <h2 className="mt-0.5 text-xl font-bold tracking-tight text-slate-950 dark:text-white">
               Empresas
             </h2>
           </div>
@@ -793,8 +793,8 @@ setEmpresasCompartidas(
         </div>
 
         {mostrarFormulario && (
-          <Card className="mb-6 overflow-hidden">
-            <div className="border-b border-slate-200 px-6 py-5 dark:border-zinc-800">
+          <Card className="mb-5 overflow-hidden">
+            <div className="border-b border-slate-200 px-5 py-4 dark:border-zinc-800">
               <h2 className="text-lg font-semibold text-slate-950 dark:text-white">
                 Crear una nueva empresa
               </h2>
@@ -810,7 +810,7 @@ setEmpresasCompartidas(
               onSubmit={
                 handleCrearEmpresa
               }
-              className="grid gap-5 p-6 md:grid-cols-2"
+              className="grid gap-4 p-5 md:grid-cols-2"
             >
               <Input
                 id="nombre"
@@ -928,7 +928,7 @@ setEmpresasCompartidas(
             </Button>
           </Card>
         ) : (
-          <div className="grid gap-5 lg:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {empresas.map((empresa) => {
               const esPropietario =
                 empresa.acceso ===
@@ -964,22 +964,22 @@ setEmpresasCompartidas(
                   key={empresa.id}
                   className="group flex h-full flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-xl dark:hover:border-zinc-700"
                 >
-                  <div className="flex flex-1 flex-col p-6">
-                    <div className="flex items-start justify-between gap-4">
+                  <div className="flex flex-1 flex-col p-4">
+                    <div className="flex items-start justify-between gap-2">
                       <div className="flex min-w-0 items-center gap-3">
                         <Avatar
                           name={
                             empresa.nombre
                           }
-                          size="md"
+                          size="sm"
                         />
 
                         <div className="min-w-0">
-                          <h2 className="truncate text-lg font-semibold text-slate-950 dark:text-white">
+                          <h2 className="truncate text-sm font-semibold text-slate-950 dark:text-white">
                             {empresa.nombre}
                           </h2>
 
-                          <p className="mt-1 truncate text-sm text-slate-600 dark:text-zinc-500">
+                          <p className="mt-0.5 truncate text-xs text-slate-600 dark:text-zinc-500">
                             {empresa.rubro ||
                               "Sin rubro"}
                           </p>
@@ -999,7 +999,7 @@ setEmpresasCompartidas(
                       </Badge>
                     </div>
 
-                    <div className="mt-6 space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-zinc-800 dark:bg-zinc-950/50">
+                    <div className="mt-3 space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/50">
                       <InfoRow
                         label="Correo"
                         value={
@@ -1017,7 +1017,7 @@ setEmpresasCompartidas(
                       />
                     </div>
 
-                    <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                    <div className="mt-3 grid grid-cols-3 gap-2">
                       <MiniMetric
                         label="Acceso"
                         value={
@@ -1040,7 +1040,7 @@ setEmpresasCompartidas(
 
                     {esPropietario &&
                       !suscripcionActiva && (
-                        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-500/20 dark:bg-amber-500/10">
+                        <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-500/20 dark:bg-amber-500/10">
                           <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
                             Todavía no hay un plan activo.
                           </p>
@@ -1052,7 +1052,7 @@ setEmpresasCompartidas(
                       )}
                   </div>
 
-                  <div className="grid gap-3 border-t border-slate-200 p-4 dark:border-zinc-800 sm:grid-cols-[1fr_auto_auto]">
+                  <div className="grid grid-cols-[1fr_auto_auto] gap-2 border-t border-slate-200 p-3 dark:border-zinc-800">
                     <button
                       type="button"
                       onClick={() => {
@@ -1062,7 +1062,7 @@ setEmpresasCompartidas(
                             ? `/empresas/${empresa.id}/planes`
                             : `/empresas/${empresa.id}/dashboard`;
                       }}
-                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500"
+                      className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-2.5 py-2 text-xs font-semibold text-white transition hover:bg-blue-500"
                     >
                       {esPropietario &&
                       !suscripcionActiva ? (
@@ -1087,7 +1087,7 @@ setEmpresasCompartidas(
                             ? `/empresas/${empresa.id}`
                             : `/empresas/${empresa.id}/dashboard`;
                       }}
-                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
+                      className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
                     >
                       <Settings2 className="h-4 w-4" />
                       {esPropietario
@@ -1103,7 +1103,7 @@ setEmpresasCompartidas(
                             empresa,
                           )
                         }
-                        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 dark:border-red-500/30 dark:bg-zinc-800 dark:text-red-400 dark:hover:bg-red-500/10"
+                        className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg border border-red-200 bg-white px-2.5 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50 dark:border-red-500/30 dark:bg-zinc-800 dark:text-red-400 dark:hover:bg-red-500/10"
                         aria-label={`Eliminar ${empresa.nombre}`}
                         title="Eliminar empresa"
                       >
@@ -1251,12 +1251,12 @@ function InfoRow({
   value: string;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 text-sm">
+    <div className="flex items-center justify-between gap-2 text-xs">
       <span className="text-slate-500 dark:text-zinc-500">
         {label}
       </span>
 
-      <span className="max-w-[65%] break-words text-right text-slate-800 dark:text-zinc-300">
+      <span title={value} className="max-w-[68%] truncate text-right text-slate-800 dark:text-zinc-300">
         {value}
       </span>
     </div>
@@ -1271,12 +1271,12 @@ function MiniMetric({
   value: string;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/50">
-      <p className="text-xs text-slate-500 dark:text-zinc-500">
+    <div className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 p-2 dark:border-zinc-800 dark:bg-zinc-950/50">
+      <p className="truncate text-[10px] text-slate-500 dark:text-zinc-500">
         {label}
       </p>
 
-      <p className="mt-1 text-sm font-medium text-slate-950 dark:text-white">
+      <p title={value} className="mt-0.5 truncate text-[11px] font-medium text-slate-950 dark:text-white">
         {value}
       </p>
     </div>
