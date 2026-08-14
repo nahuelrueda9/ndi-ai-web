@@ -570,7 +570,7 @@ export default function ConfiguracionPage() {
 
   if (loading) {
     return (
-      <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
+      <section className="mx-auto w-full max-w-[1500px] px-4 py-4 sm:px-6">
         <Card className="p-10 text-center">
           <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
 
@@ -593,7 +593,7 @@ export default function ConfiguracionPage() {
             {error}
           </p>
 
-          <div className="mt-5">
+          <div className="mt-3">
             <Button
               variant="secondary"
               onClick={() =>
@@ -652,15 +652,15 @@ export default function ConfiguracionPage() {
 
   return (
     <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
-      <header className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
+      <header className="mb-4 flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
         <div>
           <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
             {empresaNombre ||
               "Empresa"}
           </p>
 
-          <div className="mt-2 flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight text-slate-950 dark:text-white">
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-950 dark:text-white">
               Asistente IA
             </h1>
 
@@ -677,13 +677,13 @@ export default function ConfiguracionPage() {
             </Badge>
           </div>
 
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
+          <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-600 dark:text-zinc-400">
             Definí cómo se presenta, cómo responde y qué reglas debe respetar
             el asistente inteligente de tu negocio.
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2">
           <Button
             variant="secondary"
             onClick={() =>
@@ -710,11 +710,11 @@ export default function ConfiguracionPage() {
 
       <form
         onSubmit={handleGuardar}
-        className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]"
+        className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_300px]"
       >
-        <div className="space-y-6">
+        <div className="space-y-4">
           {error && (
-            <Card className="border-red-200 bg-red-50 p-4 dark:border-red-500/20 dark:bg-red-500/10">
+            <Card className="border-red-200 bg-red-50 p-3 dark:border-red-500/20 dark:bg-red-500/10">
               <p className="text-sm text-red-700 dark:text-red-300">
                 {error}
               </p>
@@ -722,29 +722,29 @@ export default function ConfiguracionPage() {
           )}
 
           {mensaje && (
-            <Card className="border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/10">
+            <Card className="border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/10">
               <p className="text-sm text-emerald-700 dark:text-emerald-300">
                 {mensaje}
               </p>
             </Card>
           )}
 
-          <Card className="p-6">
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold text-slate-950 dark:text-white">
+          <Card className="p-4">
+            <div className="mb-4">
+              <h2 className="text-base font-semibold text-slate-950 dark:text-white">
                 Identidad
               </h2>
 
-              <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-zinc-500">
+              <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-zinc-500">
                 Estos datos definen quién es el asistente frente a tus clientes.
               </p>
             </div>
 
-            <div className="grid gap-5 md:grid-cols-2">
+            <div className="grid gap-3 md:grid-cols-2">
               <div>
                 <label
                   htmlFor="nombreAgente"
-                  className="mb-2 block text-sm font-medium text-slate-700 dark:text-zinc-300"
+                  className="mb-1 block text-xs font-medium text-slate-700 dark:text-zinc-300"
                 >
                   Nombre del asistente
                 </label>
@@ -763,7 +763,7 @@ export default function ConfiguracionPage() {
                   required
                 />
 
-                <p className="mt-2 text-xs text-slate-500 dark:text-zinc-600">
+                <p className="mt-1 text-[10px] text-slate-500 dark:text-zinc-600">
                   Nombre con el que se presentará durante la atención.
                 </p>
               </div>
@@ -771,7 +771,7 @@ export default function ConfiguracionPage() {
               <div>
                 <label
                   htmlFor="rolAgente"
-                  className="mb-2 block text-sm font-medium text-slate-700 dark:text-zinc-300"
+                  className="mb-1 block text-xs font-medium text-slate-700 dark:text-zinc-300"
                 >
                   Rol
                 </label>
@@ -790,7 +790,7 @@ export default function ConfiguracionPage() {
                   required
                 />
 
-                <p className="mt-2 text-xs text-slate-500 dark:text-zinc-600">
+                <p className="mt-1 text-[10px] text-slate-500 dark:text-zinc-600">
                   Define qué función cumple dentro del negocio.
                 </p>
               </div>
@@ -798,7 +798,7 @@ export default function ConfiguracionPage() {
               <div>
                 <label
                   htmlFor="personalidadAgente"
-                  className="mb-2 block text-sm font-medium text-slate-700 dark:text-zinc-300"
+                  className="mb-1 block text-xs font-medium text-slate-700 dark:text-zinc-300"
                 >
                   Personalidad
                 </label>
@@ -822,7 +822,7 @@ export default function ConfiguracionPage() {
               <div>
                 <label
                   htmlFor="idiomaAgente"
-                  className="mb-2 block text-sm font-medium text-slate-700 dark:text-zinc-300"
+                  className="mb-1 block text-xs font-medium text-slate-700 dark:text-zinc-300"
                 >
                   Idioma principal
                 </label>
@@ -836,7 +836,7 @@ export default function ConfiguracionPage() {
                     );
                     setMensaje("");
                   }}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white"
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white"
                 >
                   <option value="Español">
                     Español
@@ -854,13 +854,13 @@ export default function ConfiguracionPage() {
             </div>
           </Card>
 
-          <Card className="p-6">
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold text-slate-950 dark:text-white">
+          <Card className="p-4">
+            <div className="mb-4">
+              <h2 className="text-base font-semibold text-slate-950 dark:text-white">
                 Objetivo y comportamiento
               </h2>
 
-              <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-zinc-500">
+              <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-zinc-500">
                 Marcá qué debe intentar conseguir en cada consulta y cómo debe
                 comportarse.
               </p>
@@ -869,14 +869,14 @@ export default function ConfiguracionPage() {
             <div>
               <label
                 htmlFor="objetivoAgente"
-                className="mb-2 block text-sm font-medium text-slate-700 dark:text-zinc-300"
+                className="mb-1 block text-xs font-medium text-slate-700 dark:text-zinc-300"
               >
                 Objetivo principal
               </label>
 
               <textarea
                 id="objetivoAgente"
-                rows={4}
+                rows={2}
                 value={objetivoAgente}
                 onChange={(event) => {
                   setObjetivoAgente(
@@ -885,27 +885,27 @@ export default function ConfiguracionPage() {
                   setMensaje("");
                 }}
                 placeholder="Ejemplo: responder consultas, orientar al cliente y ayudarlo a reservar un turno cuando corresponda."
-                className="w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white dark:placeholder:text-zinc-700"
+                className="w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs leading-5 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white dark:placeholder:text-zinc-700"
               />
             </div>
 
-            <div className="mt-5">
-              <div className="mb-2 flex items-center justify-between gap-4">
+            <div className="mt-3">
+              <div className="mb-1 flex items-center justify-between gap-3">
                 <label
                   htmlFor="instruccionesAgente"
-                  className="block text-sm font-medium text-slate-700 dark:text-zinc-300"
+                  className="block text-xs font-medium text-slate-700 dark:text-zinc-300"
                 >
                   Instrucciones especiales
                 </label>
 
-                <span className="text-xs text-slate-500 dark:text-zinc-600">
+                <span className="text-[10px] text-slate-500 dark:text-zinc-600">
                   {instruccionesAgente.length} caracteres
                 </span>
               </div>
 
               <textarea
                 id="instruccionesAgente"
-                rows={8}
+                rows={4}
                 value={
                   instruccionesAgente
                 }
@@ -916,27 +916,27 @@ export default function ConfiguracionPage() {
                   setMensaje("");
                 }}
                 placeholder="Ejemplo: antes de confirmar una reserva, verificá servicio, fecha, horario y datos del cliente."
-                className="w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white dark:placeholder:text-zinc-700"
+                className="w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs leading-5 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white dark:placeholder:text-zinc-700"
               />
             </div>
 
             <div className="mt-5">
-              <div className="mb-2 flex items-center justify-between gap-4">
+              <div className="mb-1 flex items-center justify-between gap-3">
                 <label
                   htmlFor="restriccionesAgente"
-                  className="block text-sm font-medium text-slate-700 dark:text-zinc-300"
+                  className="block text-xs font-medium text-slate-700 dark:text-zinc-300"
                 >
                   Qué no debe hacer
                 </label>
 
-                <span className="text-xs text-slate-500 dark:text-zinc-600">
+                <span className="text-[10px] text-slate-500 dark:text-zinc-600">
                   {restriccionesAgente.length} caracteres
                 </span>
               </div>
 
               <textarea
                 id="restriccionesAgente"
-                rows={6}
+                rows={3}
                 value={
                   restriccionesAgente
                 }
@@ -947,17 +947,17 @@ export default function ConfiguracionPage() {
                   setMensaje("");
                 }}
                 placeholder="Ejemplo: no inventar precios, promociones, horarios ni disponibilidad."
-                className="w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white dark:placeholder:text-zinc-700"
+                className="w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs leading-5 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white dark:placeholder:text-zinc-700"
               />
 
-              <p className="mt-2 text-xs leading-5 text-slate-500 dark:text-zinc-600">
+              <p className="mt-1 text-[10px] leading-4 text-slate-500 dark:text-zinc-600">
                 La base de conocimiento y los datos del negocio aportan la
                 información real. Estas reglas indican cómo debe utilizarla.
               </p>
             </div>
           </Card>
 
-          <Card className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <Card className="flex flex-col gap-3 p-3.5 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-medium text-slate-950 dark:text-white">
                 {hayCambios
@@ -965,7 +965,7 @@ export default function ConfiguracionPage() {
                   : "Todo está actualizado"}
               </p>
 
-              <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-zinc-500">
                 {hayCambios
                   ? "Guardá los cambios para que el asistente use la nueva configuración."
                   : "El asistente ya está usando la configuración guardada."}
@@ -988,8 +988,8 @@ export default function ConfiguracionPage() {
           </Card>
         </div>
 
-        <aside className="space-y-6">
-          <Card className="p-6">
+        <aside className="space-y-3">
+          <Card className="p-4">
             <p className="text-sm font-semibold text-slate-950 dark:text-white">
               Vista previa
             </p>
@@ -998,14 +998,14 @@ export default function ConfiguracionPage() {
               Así se presentará el asistente durante una consulta.
             </p>
 
-            <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-zinc-800 dark:bg-zinc-950/70">
+            <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/70">
               <div className="flex items-center gap-3">
                 <Avatar
                   name={
                     nombreAgente ||
                     "Asistente IA"
                   }
-                  size="md"
+                  size="sm"
                 />
 
                 <div className="min-w-0">
@@ -1021,8 +1021,8 @@ export default function ConfiguracionPage() {
                 </div>
               </div>
 
-              <div className="mt-5 rounded-2xl rounded-bl-md border border-slate-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-                <p className="text-sm leading-6 text-slate-700 dark:text-zinc-200">
+              <div className="mt-3 rounded-xl rounded-bl-md border border-slate-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                <p className="text-xs leading-5 text-slate-700 dark:text-zinc-200">
                   Hola, soy{" "}
                   {nombreAgente ||
                     "tu asistente virtual"}
@@ -1032,12 +1032,12 @@ export default function ConfiguracionPage() {
             </div>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-4">
             <p className="text-sm font-semibold text-slate-950 dark:text-white">
               Qué usa para responder
             </p>
 
-            <div className="mt-4 space-y-3 text-sm leading-6 text-slate-600 dark:text-zinc-500">
+            <div className="mt-2 space-y-1.5 text-xs leading-5 text-slate-600 dark:text-zinc-500">
               <p>
                 • Información del negocio y de tu página.
               </p>
@@ -1060,24 +1060,24 @@ export default function ConfiguracionPage() {
             </div>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-4">
             <p className="text-sm font-semibold text-slate-950 dark:text-white">
               Recomendación
             </p>
 
-            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-zinc-500">
+            <p className="mt-2 text-xs leading-5 text-slate-600 dark:text-zinc-500">
               No cargues acá precios, horarios ni políticas que ya estén en
               Servicios y productos o en la Base de conocimiento. Acá definís
               el comportamiento del asistente.
             </p>
           </Card>
 
-          <Card className="p-5">
+          <Card className="p-3.5">
             <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-zinc-600">
               ID de empresa
             </p>
 
-            <p className="mt-2 break-all text-sm text-slate-700 dark:text-zinc-300">
+            <p className="mt-1 break-all text-[10px] text-slate-700 dark:text-zinc-300">
               {empresaId}
             </p>
           </Card>
