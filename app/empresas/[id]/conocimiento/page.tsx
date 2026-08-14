@@ -139,7 +139,8 @@ export default function ConocimientoPage() {
 
     const conocimientoQuery = query(
       collection(db, "knowledge"),
-      where("empresaId", "==", empresaId)
+      where("empresaId", "==", empresaId),
+      where("userId", "==", user.uid)
     );
 
     const unsubscribeConocimiento = onSnapshot(
@@ -166,7 +167,11 @@ export default function ConocimientoPage() {
         );
 
         setError(
-          "No se pudo cargar la base de conocimiento. Puede faltar un índice en Firestore."
+          firebaseError.code === "permission-denied"
+            ? "No hay permisos para leer la base de conocimiento."
+            : firebaseError.code === "failed-precondition"
+              ? "Firestore requiere un índice para esta consulta."
+              : `No se pudo cargar la base de conocimiento (${firebaseError.code}).`
         );
         setCargandoLista(false);
       }
