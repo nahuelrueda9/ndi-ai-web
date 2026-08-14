@@ -22,6 +22,7 @@ import {
   serverTimestamp,
   Timestamp,
   updateDoc,
+  where,
 } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { useParams, useRouter } from "next/navigation";
@@ -29,26 +30,14 @@ import * as mammoth from "mammoth";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 
 import { auth, db, storage } from "@/lib/firebase";
-import Avatar from "@/components/Ui/Avatar";
 import Badge from "@/components/Ui/Badge";
 import Button from "@/components/Ui/Button";
 import Card from "@/components/Ui/Card";
 import Input from "@/components/Ui/Input";
 
-type RolEmpresa =
-  | "propietario"
-  | "administrador"
-  | "supervisor"
-  | "operador";
-
 interface Empresa {
   nombre: string;
   userId: string;
-}
-
-interface MiembroEmpresa {
-  rol?: Exclude<RolEmpresa, "propietario">;
-  estado?: "activo" | "inactivo";
 }
 
 interface Conocimiento {
@@ -103,95 +92,35 @@ export default function ConocimientoPage() {
         }
 
         if (!empresaId) {
-          setError(
-            "No se encontró el ID de la empresa."
-          );
+          setError("No se encontró el ID de la empresa.");
           setLoading(false);
           return;
         }
 
-        const empresaIdSeguro = empresaId;
-        const usuarioSeguro = currentUser;
-
+        setUser(currentUser);
         setError("");
         setLoading(true);
 
         try {
-          const empresaReferencia = doc(
-            db,
-            "companies",
-            empresaIdSeguro
-          );
-
-          const empresaSnapshot = await getDoc(
-            empresaReferencia
-          );
+          const empresaReferencia = doc(db, "companies", empresaId);
+          const empresaSnapshot = await getDoc(empresaReferencia);
 
           if (!empresaSnapshot.exists()) {
             setError("La empresa no existe.");
             return;
           }
 
-          const empresa =
-            empresaSnapshot.data() as Empresa;
+          const empresa = empresaSnapshot.data() as Empresa;
 
-          let rol: RolEmpresa | null = null;
-
-          if (
-            empresa.userId === usuarioSeguro.uid
-          ) {
-            rol = "propietario";
-          } else {
-            const miembroReferencia = doc(
-              db,
-              "companies",
-              empresaIdSeguro,
-              "members",
-              usuarioSeguro.uid
-            );
-
-            const miembroSnapshot = await getDoc(
-              miembroReferencia
-            );
-
-            if (miembroSnapshot.exists()) {
-              const miembro =
-                miembroSnapshot.data() as MiembroEmpresa;
-
-              if (
-                miembro.estado === "activo" &&
-                miembro.rol
-              ) {
-                rol = miembro.rol;
-              }
-            }
-          }
-
-          if (!rol) {
-            router.replace("/empresas");
+          if (empresa.userId !== currentUser.uid) {
+            setError("No tenés permiso para acceder a esta empresa.");
             return;
           }
 
-          if (rol === "operador") {
-            router.replace(
-              `/empresas/${empresaIdSeguro}/conversaciones`
-            );
-            return;
-          }
-
-          setUser(usuarioSeguro);
-          setEmpresaNombre(
-            empresa.nombre || "Empresa"
-          );
+          setEmpresaNombre(empresa.nombre);
         } catch (firebaseError) {
-          console.error(
-            "Error al verificar acceso a la base de conocimiento:",
-            firebaseError
-          );
-
-          setError(
-            "No se pudo verificar el acceso a la empresa."
-          );
+          console.error("Error al cargar la empresa:", firebaseError);
+          setError("No se pudo cargar la empresa.");
         } finally {
           setLoading(false);
         }
@@ -210,12 +139,9 @@ export default function ConocimientoPage() {
     setCargandoLista(true);
 
     const conocimientoQuery = query(
-      collection(
-        db,
-        "companies",
-        empresaId,
-        "knowledge"
-      ),
+      collection(db, "knowledge"),
+      where("empresaId", "==", empresaId),
+      where("userId", "==", user.uid),
       orderBy("createdAt", "desc")
     );
 
@@ -432,15 +358,7 @@ export default function ConocimientoPage() {
       }
 
       if (editandoId) {
-        await updateDoc(
-          doc(
-            db,
-            "companies",
-            empresaId,
-            "knowledge",
-            editandoId
-          ),
-          {
+        await updateDoc(doc(db, "knowledge", editandoId), {
           titulo: titulo.trim(),
           contenido: contenidoFinal,
           ...(archivoUrl && {
@@ -448,18 +366,10 @@ export default function ConocimientoPage() {
             archivoNombre,
             archivoTipo,
           }),
-            updatedAt: serverTimestamp(),
-          }
-        );
+          updatedAt: serverTimestamp(),
+        });
       } else {
-        await addDoc(
-          collection(
-            db,
-            "companies",
-            empresaId,
-            "knowledge"
-          ),
-          {
+        await addDoc(collection(db, "knowledge"), {
           titulo: titulo.trim(),
           contenido: contenidoFinal,
           empresaId,
@@ -469,10 +379,9 @@ export default function ConocimientoPage() {
             archivoNombre,
             archivoTipo,
           }),
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-          }
-        );
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
       }
 
       const estabaEditando = Boolean(editandoId);
@@ -520,15 +429,7 @@ export default function ConocimientoPage() {
     setMensaje("");
 
     try {
-      await deleteDoc(
-        doc(
-          db,
-          "companies",
-          empresaId,
-          "knowledge",
-          conocimientoId
-        )
-      );
+      await deleteDoc(doc(db, "knowledge", conocimientoId));
 
       if (editandoId === conocimientoId) {
         limpiarFormulario();
@@ -547,10 +448,10 @@ export default function ConocimientoPage() {
 
   if (loading) {
     return (
-      <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
+      <section className="mx-auto w-full max-w-[1500px] px-4 py-4 sm:px-6">
         <Card className="p-10 text-center">
-          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
-          <p className="font-medium text-slate-950 dark:text-white">
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-t-blue-500" />
+          <p className="font-medium text-white">
             Cargando base de conocimiento...
           </p>
         </Card>
@@ -561,10 +462,10 @@ export default function ConocimientoPage() {
   if (error && !empresaNombre) {
     return (
       <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
-        <Card className="border-red-200 bg-red-50 p-8 text-center dark:border-red-500/20 dark:bg-red-500/10">
-          <p className="font-medium text-red-700 dark:text-red-300">{error}</p>
+        <Card className="border-red-500/20 bg-red-500/10 p-8 text-center">
+          <p className="font-medium text-red-300">{error}</p>
 
-          <div className="mt-5">
+          <div className="mt-3">
             <Button
               variant="secondary"
               onClick={() => router.push("/empresas")}
@@ -579,14 +480,14 @@ export default function ConocimientoPage() {
 
   return (
     <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
-      <header className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
+      <header className="mb-4 flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
         <div>
-          <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
+          <p className="text-sm font-medium text-blue-400">
             {empresaNombre}
           </p>
 
-          <div className="mt-2 flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight text-slate-950 dark:text-white">
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight text-white">
               Base de conocimiento
             </h1>
 
@@ -596,7 +497,7 @@ export default function ConocimientoPage() {
             </Badge>
           </div>
 
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
+          <p className="mt-1 max-w-2xl text-xs leading-5 text-zinc-400">
             Cargá servicios, precios, preguntas frecuentes, políticas y
             documentos para que el agente responda con información real.
           </p>
@@ -604,63 +505,59 @@ export default function ConocimientoPage() {
 
         <Button
           variant="secondary"
-          onClick={() =>
-            router.push(
-              `/empresas/${empresaId}/dashboard`
-            )
-          }
+          onClick={() => router.push(`/empresas/${empresaId}`)}
         >
           Volver a la empresa
         </Button>
       </header>
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <Card className="p-5">
-          <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-zinc-600">
+      <div className="mb-4 grid gap-3 sm:grid-cols-3">
+        <Card className="p-3.5">
+          <p className="text-[10px] uppercase tracking-wide text-zinc-600">
             Entradas cargadas
           </p>
-          <p className="mt-2 text-2xl font-bold text-slate-950 dark:text-white">
+          <p className="mt-1 text-xl font-bold text-white">
             {conocimientos.length}
           </p>
         </Card>
 
-        <Card className="p-5">
-          <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-zinc-600">
+        <Card className="p-3.5">
+          <p className="text-[10px] uppercase tracking-wide text-zinc-600">
             Con archivo
           </p>
-          <p className="mt-2 text-2xl font-bold text-slate-950 dark:text-white">
+          <p className="mt-1 text-xl font-bold text-white">
             {documentosConArchivo}
           </p>
         </Card>
 
-        <Card className="p-5">
-          <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-zinc-600">
+        <Card className="p-3.5">
+          <p className="text-[10px] uppercase tracking-wide text-zinc-600">
             Caracteres disponibles
           </p>
-          <p className="mt-2 text-2xl font-bold text-slate-950 dark:text-white">
+          <p className="mt-1 text-xl font-bold text-white">
             {totalCaracteres.toLocaleString("es-AR")}
           </p>
         </Card>
       </div>
 
       {error && (
-        <Card className="mb-6 border-red-200 bg-red-50 p-4 dark:border-red-500/20 dark:bg-red-500/10">
-          <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+        <Card className="mb-4 border-red-500/20 bg-red-500/10 p-3">
+          <p className="text-sm text-red-300">{error}</p>
         </Card>
       )}
 
       {mensaje && (
-        <Card className="mb-6 border-emerald-200 bg-emerald-50 p-4 dark:border-green-500/20 dark:bg-green-500/10">
-          <p className="text-sm text-emerald-700 dark:text-green-300">{mensaje}</p>
+        <Card className="mb-4 border-green-500/20 bg-green-500/10 p-3">
+          <p className="text-sm text-green-300">{mensaje}</p>
         </Card>
       )}
 
-      <div className="grid gap-6 xl:grid-cols-[420px_minmax(0,1fr)]">
+      <div className="grid items-start gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
         <form onSubmit={handleAgregar} className="h-fit">
-          <Card className="p-6">
-            <div className="mb-6">
+          <Card className="p-4">
+            <div className="mb-4">
               <div className="flex flex-wrap items-center gap-3">
-                <h2 className="text-lg font-semibold text-slate-950 dark:text-white">
+                <h2 className="text-base font-semibold text-white">
                   {editandoId
                     ? "Editar información"
                     : "Agregar información"}
@@ -671,7 +568,7 @@ export default function ConocimientoPage() {
                 )}
               </div>
 
-              <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-zinc-500">
+              <p className="mt-1 text-xs leading-5 text-zinc-500">
                 Podés escribir el contenido manualmente, subir un documento o
                 combinar las dos opciones.
               </p>
@@ -680,7 +577,7 @@ export default function ConocimientoPage() {
             <div>
               <label
                 htmlFor="titulo"
-                className="mb-2 block text-sm font-medium text-slate-700 dark:text-zinc-300"
+                className="mb-1 block text-xs font-medium text-zinc-300"
               >
                 Título
               </label>
@@ -698,16 +595,16 @@ export default function ConocimientoPage() {
               />
             </div>
 
-            <div className="mt-5">
-              <div className="mb-2 flex items-center justify-between gap-4">
+            <div className="mt-3">
+              <div className="mb-1 flex items-center justify-between gap-3">
                 <label
                   htmlFor="contenido"
-                  className="block text-sm font-medium text-slate-700 dark:text-zinc-300"
+                  className="block text-sm font-medium text-zinc-300"
                 >
                   Contenido
                 </label>
 
-                <span className="text-xs text-slate-500 dark:text-zinc-600">
+                <span className="text-xs text-zinc-600">
                   {contenido.length} caracteres
                 </span>
               </div>
@@ -720,13 +617,13 @@ export default function ConocimientoPage() {
                   setMensaje("");
                 }}
                 placeholder="Escribí toda la información que la IA debe conocer."
-                rows={10}
-                className="w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white dark:placeholder:text-zinc-700"
+                rows={5}
+                className="w-full resize-y rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs leading-5 text-white outline-none transition placeholder:text-zinc-700 focus:border-blue-500"
               />
             </div>
 
             <div className="mt-5">
-              <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-zinc-300">
+              <label className="mb-1 block text-xs font-medium text-zinc-300">
                 Archivo
               </label>
 
@@ -738,21 +635,21 @@ export default function ConocimientoPage() {
                 onDragOver={(event) => event.preventDefault()}
                 onDragLeave={() => setArrastrando(false)}
                 onDrop={handleDrop}
-                className={`rounded-2xl border border-dashed p-6 text-center transition ${
+                className={`rounded-xl border border-dashed px-4 py-3 text-center transition ${
                   arrastrando
-                    ? "border-blue-500 bg-blue-50 dark:bg-blue-500/10"
-                    : "border-slate-300 bg-slate-50 hover:border-slate-400 dark:border-zinc-800 dark:bg-zinc-950/50 dark:hover:border-zinc-700"
+                    ? "border-blue-500 bg-blue-500/10"
+                    : "border-zinc-800 bg-zinc-950/50 hover:border-zinc-700"
                 }`}
               >
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 text-xl">
+                <div className="mx-auto flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 text-sm">
                   📄
                 </div>
 
-                <p className="mt-4 text-sm font-medium text-slate-950 dark:text-white">
+                <p className="mt-2 text-xs font-medium text-white">
                   Arrastrá un archivo o seleccionalo
                 </p>
 
-                <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-zinc-600">
+                <p className="mt-0.5 text-[10px] leading-4 text-zinc-600">
                   PDF, DOCX o TXT. Máximo 10 MB.
                 </p>
 
@@ -764,7 +661,7 @@ export default function ConocimientoPage() {
                   className="hidden"
                 />
 
-                <div className="mt-4">
+                <div className="mt-2">
                   <Button
                     type="button"
                     size="sm"
@@ -777,9 +674,9 @@ export default function ConocimientoPage() {
               </div>
 
               {archivo && (
-                <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950">
+                <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-slate-950 dark:text-white">
+                    <p className="truncate text-sm font-medium text-white">
                       {archivo.name}
                     </p>
                     <p className="mt-1 text-xs text-zinc-600">
@@ -790,7 +687,7 @@ export default function ConocimientoPage() {
                   <button
                     type="button"
                     onClick={() => seleccionarArchivo(null)}
-                    className="text-xs font-medium text-red-600 transition hover:text-red-500 dark:text-red-400 dark:hover:text-red-300"
+                    className="text-xs font-medium text-red-400 transition hover:text-red-300"
                   >
                     Quitar
                   </button>
@@ -798,14 +695,14 @@ export default function ConocimientoPage() {
               )}
 
               {editandoId && (
-                <p className="mt-3 text-xs leading-5 text-slate-500 dark:text-zinc-600">
+                <p className="mt-3 text-xs leading-5 text-zinc-600">
                   Si no seleccionás un archivo nuevo, se conservará la
                   información actual.
                 </p>
               )}
             </div>
 
-            <div className="mt-6 flex gap-3">
+            <div className="mt-3 flex gap-2">
               <Button
                 type="submit"
                 disabled={guardando}
@@ -837,20 +734,20 @@ export default function ConocimientoPage() {
           </Card>
         </form>
 
-        <Card className="overflow-hidden">
-          <div className="border-b border-slate-200 p-5 dark:border-zinc-800 sm:p-6">
-            <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+        <Card className="h-fit overflow-hidden">
+          <div className="border-b border-zinc-800 p-4">
+            <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
               <div>
-                <h2 className="text-lg font-semibold text-slate-950 dark:text-white">
+                <h2 className="text-base font-semibold text-white">
                   Información cargada
                 </h2>
 
-                <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
+                <p className="mt-0.5 text-xs text-zinc-500">
                   Todo lo que aparece acá podrá ser utilizado por el agente.
                 </p>
               </div>
 
-              <div className="w-full lg:max-w-xs">
+              <div className="w-full lg:max-w-[260px]">
                 <Input
                   id="buscarConocimiento"
                   value={busqueda}
@@ -862,38 +759,38 @@ export default function ConocimientoPage() {
           </div>
 
           {cargandoLista ? (
-            <div className="p-10 text-center">
-              <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
-              <p className="text-sm text-slate-600 dark:text-zinc-400">
+            <div className="p-6 text-center">
+              <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-t-blue-500" />
+              <p className="text-sm text-zinc-400">
                 Cargando información...
               </p>
             </div>
           ) : conocimientosFiltrados.length === 0 ? (
-            <div className="p-10 text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-500/10 text-2xl">
+            <div className="p-8 text-center">
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-lg">
                 📚
               </div>
 
-              <h3 className="mt-5 text-lg font-semibold text-slate-950 dark:text-white">
+              <h3 className="mt-3 text-base font-semibold text-white">
                 {conocimientos.length === 0
                   ? "Todavía no cargaste información"
                   : "No encontramos resultados"}
               </h3>
 
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500 dark:text-zinc-500">
+              <p className="mx-auto mt-1 max-w-md text-xs leading-5 text-zinc-500">
                 {conocimientos.length === 0
                   ? "Agregá el primer contenido para que el agente empiece a responder con información de la empresa."
                   : "Probá con otro término de búsqueda."}
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-slate-200 dark:divide-zinc-800">
+            <div className="divide-y divide-zinc-800">
               {conocimientosFiltrados.map((item) => (
-                <article key={item.id} className="p-5 sm:p-6">
+                <article key={item.id} className="p-4">
                   <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-3">
-                        <h3 className="text-lg font-semibold text-slate-950 dark:text-white">
+                        <h3 className="text-base font-semibold text-white">
                           {item.titulo}
                         </h3>
 
@@ -904,11 +801,11 @@ export default function ConocimientoPage() {
                         )}
                       </div>
 
-                      <p className="mt-3 line-clamp-5 whitespace-pre-wrap break-words text-sm leading-6 text-slate-600 dark:text-zinc-400">
+                      <p className="mt-2 line-clamp-3 whitespace-pre-wrap break-words text-xs leading-5 text-zinc-400">
                         {item.contenido}
                       </p>
 
-                      <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-slate-500 dark:text-zinc-600">
+                      <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-zinc-600">
                         <span>
                           {item.contenido.length.toLocaleString("es-AR")}{" "}
                           caracteres
@@ -930,7 +827,7 @@ export default function ConocimientoPage() {
                           href={item.archivoUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="mt-4 inline-flex text-sm font-medium text-blue-600 transition hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+                          className="mt-4 inline-flex text-sm font-medium text-blue-400 transition hover:text-blue-300"
                         >
                           Ver archivo original
                         </a>
