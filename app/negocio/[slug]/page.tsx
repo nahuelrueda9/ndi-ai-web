@@ -1124,7 +1124,7 @@ export default async function NegocioPage({
         <section id="servicios" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-10 sm:px-8 sm:py-20">
           <div className="max-w-2xl">
             <p
-              className="text-sm font-medium"
+              className="text-xs font-medium sm:text-sm"
               style={{
                 color: colorPrincipal,
               }}
@@ -1132,7 +1132,7 @@ export default async function NegocioPage({
               Lo que ofrecemos
             </p>
 
-            <h2 className="mt-2 text-2xl font-bold tracking-tight sm:mt-3 sm:text-4xl">
+            <h2 className="mt-1.5 text-xl font-bold tracking-tight sm:mt-3 sm:text-4xl">
               {esAlojamiento
                 ? "Habitaciones"
                 : "Servicios"}
@@ -1145,7 +1145,7 @@ export default async function NegocioPage({
             </p>
           </div>
 
-          <div className="mt-8 grid grid-cols-2 gap-3 sm:mt-10 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-5 grid sm:mt-8 grid-cols-2 gap-3 sm:mt-10 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
             {servicios.map((servicio) => (
               <CatalogoCard
                 key={servicio.id}
@@ -1192,7 +1192,7 @@ export default async function NegocioPage({
         >
           <div className="max-w-2xl">
             <p
-              className="text-sm font-medium"
+              className="text-xs font-medium sm:text-sm"
               style={{
                 color:
                   colorPrincipal,
@@ -1203,14 +1203,14 @@ export default async function NegocioPage({
                 : "Catálogo"}
             </p>
 
-            <h2 className="mt-2 text-2xl font-bold tracking-tight sm:mt-3 sm:text-4xl">
+            <h2 className="mt-1.5 text-xl font-bold tracking-tight sm:mt-3 sm:text-4xl">
               {esRestaurante
                 ? "Carta"
                 : "Productos"}
             </h2>
 
             <p
-              className={`mt-2 text-sm leading-6 sm:mt-4 sm:text-base sm:leading-7 ${claseTextoSecundario}`}
+              className={`mt-1.5 text-xs leading-5 sm:mt-4 sm:text-base sm:leading-7 ${claseTextoSecundario}`}
             >
               {esRestaurante
                 ? "Explorá nuestras entradas, platos principales, bebidas y postres."
@@ -1243,7 +1243,7 @@ export default async function NegocioPage({
               }
             />
           ) : (
-            <div className="mt-8 grid grid-cols-2 gap-3 sm:mt-10 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-5 grid sm:mt-8 grid-cols-2 gap-3 sm:mt-10 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
               {productos.map(
                 (producto) => (
                   <CatalogoCard
@@ -1364,7 +1364,7 @@ export default async function NegocioPage({
           <div className="mx-auto max-w-6xl px-4 py-10 sm:px-8 sm:py-20">
             <div className="max-w-2xl">
               <p
-                className="text-sm font-medium"
+                className="text-xs font-medium sm:text-sm"
                 style={{
                   color: colorPrincipal,
                 }}
@@ -1372,7 +1372,7 @@ export default async function NegocioPage({
                 Imágenes
               </p>
 
-              <h2 className="mt-2 text-2xl font-bold tracking-tight sm:mt-3 sm:text-4xl">
+              <h2 className="mt-1.5 text-xl font-bold tracking-tight sm:mt-3 sm:text-4xl">
                 Galería
               </h2>
 
@@ -1381,7 +1381,7 @@ export default async function NegocioPage({
               </p>
             </div>
 
-            <div className="mt-8 grid grid-cols-2 gap-3 sm:mt-10 sm:gap-4 lg:grid-cols-3">
+            <div className="mt-5 grid sm:mt-8 grid-cols-2 gap-3 sm:mt-10 sm:gap-4 lg:grid-cols-3">
               {galeria.map((url, indice) => (
                 <div
                   key={`${url}-${indice}`}
@@ -1442,11 +1442,11 @@ export default async function NegocioPage({
             id="nosotros"
             className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}
           >
-          <div className="mx-auto max-w-6xl px-4 py-10 sm:px-8 sm:py-20">
-            <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
+          <div className="mx-auto max-w-6xl px-4 py-7 sm:px-8 sm:py-20">
+            <div className="grid gap-5 sm:gap-10 lg:grid-cols-[0.8fr_1.2fr]">
               <div>
                 <p
-                  className="text-sm font-medium"
+                  className="text-xs font-medium sm:text-sm"
                   style={{
                     color:
                       colorPrincipal,
@@ -1455,7 +1455,7 @@ export default async function NegocioPage({
                   Sobre nosotros
                 </p>
 
-                <h2 className="mt-3 text-3xl font-bold tracking-tight">
+                <h2 className="mt-1.5 text-xl font-bold leading-tight tracking-tight sm:mt-3 sm:text-3xl">
                   Conocé más sobre{" "}
                   {empresa.nombre ||
                     nombre}
@@ -1463,14 +1463,14 @@ export default async function NegocioPage({
               </div>
 
               <div
-                className={`rounded-3xl border p-7 ${
+                className={`rounded-2xl border p-4 sm:rounded-3xl sm:p-7 ${
                   esClaro
                     ? "border-slate-200 bg-white shadow-sm"
                     : "border-zinc-800 bg-zinc-900"
                 }`}
               >
                 <p
-                  className={`whitespace-pre-line leading-8 ${
+                  className={`whitespace-pre-line text-sm leading-6 sm:text-base sm:leading-8 ${
                     esClaro
                       ? "text-slate-700"
                       : "text-zinc-300"
@@ -1492,7 +1492,7 @@ export default async function NegocioPage({
         >
           <div className="mx-auto max-w-2xl text-center">
             <p
-              className="text-sm font-medium"
+              className="text-xs font-medium sm:text-sm"
               style={{
                 color: colorPrincipal,
               }}
@@ -1500,7 +1500,7 @@ export default async function NegocioPage({
               Opiniones
             </p>
 
-            <h2 className="mt-2 text-2xl font-bold tracking-tight sm:mt-3 sm:text-4xl">
+            <h2 className="mt-1.5 text-xl font-bold tracking-tight sm:mt-3 sm:text-4xl">
               Lo que dicen nuestros clientes
             </h2>
 
@@ -1513,12 +1513,12 @@ export default async function NegocioPage({
           </div>
 
           <div
-            className={`mt-10 grid gap-5 ${
+            className={`mt-5 grid gap-2.5 sm:mt-10 sm:gap-5 ${
               testimonios.length === 1
                 ? "mx-auto max-w-2xl"
                 : testimonios.length === 2
-                  ? "mx-auto max-w-4xl md:grid-cols-2"
-                  : "md:grid-cols-2 lg:grid-cols-3"
+                  ? "mx-auto grid-cols-2 max-w-4xl"
+                  : "grid-cols-2 lg:grid-cols-3"
             }`}
           >
             {testimonios.map(
@@ -1528,24 +1528,24 @@ export default async function NegocioPage({
               ) => (
                 <article
                   key={`${testimonio.nombre}-${index}`}
-                  className={`relative flex h-full flex-col rounded-3xl border p-6 shadow-[0_18px_45px_rgba(0,0,0,0.08)] ${
+                  className={`relative flex h-full flex-col rounded-2xl border p-3 shadow-[0_10px_28px_rgba(0,0,0,0.06)] sm:rounded-3xl sm:p-6 sm:shadow-[0_18px_45px_rgba(0,0,0,0.08)] ${
                     esClaro
                       ? "border-slate-200 bg-white"
                       : "border-zinc-800 bg-zinc-900"
                   }`}
                 >
                   <div
-                    className="flex h-11 w-11 items-center justify-center rounded-2xl text-white"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg text-white sm:h-11 sm:w-11 sm:rounded-2xl"
                     style={{
                       backgroundColor:
                         colorPrincipal,
                     }}
                   >
-                    <Quote className="h-5 w-5" />
+                    <Quote className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
                   </div>
 
                   <p
-                    className={`mt-6 flex-1 whitespace-pre-line leading-7 ${
+                    className={`mt-3 flex-1 whitespace-pre-line text-[11px] leading-[1.45] sm:mt-6 sm:text-base sm:leading-7 ${
                       esClaro
                         ? "text-slate-700"
                         : "text-zinc-300"
@@ -1555,19 +1555,19 @@ export default async function NegocioPage({
                   </p>
 
                   <div
-                    className={`mt-6 border-t pt-5 ${
+                    className={`mt-3 border-t pt-3 sm:mt-6 sm:pt-5 ${
                       esClaro
                         ? "border-slate-200"
                         : "border-zinc-800"
                     }`}
                   >
-                    <p className="font-semibold">
+                    <p className="text-xs font-semibold sm:text-base">
                       {testimonio.nombre}
                     </p>
 
                     {testimonio.cargo && (
                       <p
-                        className={`mt-1 text-sm ${claseTextoSecundario}`}
+                        className={`mt-0.5 text-[10px] sm:mt-1 sm:text-sm ${claseTextoSecundario}`}
                       >
                         {testimonio.cargo}
                       </p>
@@ -1584,16 +1584,16 @@ export default async function NegocioPage({
       {preguntasFrecuentes.length > 0 && (
         <section
           id="preguntas"
-          className={`scroll-mt-24 border-y py-20 ${
+          className={`scroll-mt-24 border-y py-8 sm:py-20 ${
             esClaro
               ? "border-slate-200 bg-slate-50"
               : "border-zinc-800 bg-zinc-900/40"
           }`}
         >
-          <div className="mx-auto max-w-4xl px-5 sm:px-8">
+          <div className="mx-auto max-w-4xl px-4 sm:px-8">
             <div className="text-center">
               <p
-                className="text-sm font-medium"
+                className="text-xs font-medium sm:text-sm"
                 style={{
                   color: colorPrincipal,
                 }}
@@ -1601,7 +1601,7 @@ export default async function NegocioPage({
                 Preguntas frecuentes
               </p>
 
-              <h2 className="mt-2 text-2xl font-bold tracking-tight sm:mt-3 sm:text-4xl">
+              <h2 className="mt-1.5 text-xl font-bold tracking-tight sm:mt-3 sm:text-4xl">
                 Resolvemos las dudas más comunes
               </h2>
 
@@ -1678,7 +1678,7 @@ export default async function NegocioPage({
       {redesSociales.length > 0 && (
         <section className="mx-auto max-w-6xl px-5 pt-10 sm:px-8">
           <div
-            className={`rounded-3xl border p-6 sm:p-8 ${
+            className={`rounded-2xl border p-4 sm:rounded-3xl sm:p-6 sm:p-8 ${
               esClaro
                 ? "border-slate-200 bg-slate-50"
                 : "border-zinc-800 bg-zinc-900/70"
@@ -1687,7 +1687,7 @@ export default async function NegocioPage({
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p
-                  className="text-sm font-medium"
+                  className="text-xs font-medium sm:text-sm"
                   style={{
                     color: colorPrincipal,
                   }}
@@ -1864,7 +1864,7 @@ export default async function NegocioPage({
                 Contacto
               </p>
 
-              <h2 className="mt-2 text-2xl font-bold tracking-tight sm:mt-3 sm:text-4xl">
+              <h2 className="mt-1.5 text-xl font-bold tracking-tight sm:mt-3 sm:text-4xl">
                 ¿Querés consultar algo?
               </h2>
 
