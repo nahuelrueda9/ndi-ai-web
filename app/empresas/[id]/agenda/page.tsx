@@ -112,6 +112,7 @@ type AgendaConfig = {
 
 type EmpresaPlan = {
   plan?: PlanEmpresa;
+  rubro?: string;
   subscriptionEndsAt?: unknown;
   agendaConfig?: {
     activa?: boolean;
@@ -335,6 +336,9 @@ export default function AgendaPage() {
     setAgendaHabilitada,
   ] = useState<boolean | null>(null);
 
+  const [rubroEmpresa, setRubroEmpresa] =
+    useState("");
+
   const [agendaConfig, setAgendaConfig] =
     useState<AgendaConfig>(AGENDA_CONFIG_INICIAL);
 
@@ -388,6 +392,12 @@ export default function AgendaPage() {
 
         setAgendaHabilitada(
           habilitada
+        );
+
+        setRubroEmpresa(
+          typeof empresaData.rubro === "string"
+            ? empresaData.rubro
+            : ""
         );
 
         setAgendaConfig(
@@ -1119,6 +1129,34 @@ export default function AgendaPage() {
     );
   }
 
+  const rubroNormalizado =
+    rubroEmpresa.trim().toLowerCase();
+
+  const usaReservas = [
+    "restaurante",
+    "restaurant",
+    "hotel",
+    "hostal",
+    "alojamiento",
+    "cabaña",
+    "cabana",
+    "cabañas",
+    "cabanas",
+  ].some((rubro) =>
+    rubroNormalizado.includes(rubro)
+  );
+
+  const singularAgenda =
+    usaReservas ? "reserva" : "turno";
+
+  const pluralAgenda =
+    usaReservas ? "reservas" : "turnos";
+
+  const tituloAgenda =
+    usaReservas
+      ? "Agenda y reservas"
+      : "Agenda y turnos";
+
   if (agendaHabilitada === false) {
     return (
       <section className="mx-auto w-full max-w-4xl px-5 py-12 sm:px-8">
@@ -1132,11 +1170,11 @@ export default function AgendaPage() {
           </p>
 
           <h1 className="mt-3 text-3xl font-bold text-slate-950 dark:text-white">
-            Agenda y turnos
+            {tituloAgenda}
           </h1>
 
           <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
-            La gestión de citas y turnos está disponible en los planes Pro y Empresa.
+            La gestión de {pluralAgenda} está disponible en los planes que incluyen agenda.
           </p>
 
           <Button
@@ -1164,12 +1202,13 @@ export default function AgendaPage() {
           </p>
 
           <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">
-            Agenda y turnos
+            {tituloAgenda}
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
-            Administrá citas, confirmaciones y
-            seguimientos desde un solo lugar.
+            {usaReservas
+              ? "Administrá reservas, confirmaciones y seguimiento desde un solo lugar."
+              : "Administrá citas, confirmaciones y seguimientos desde un solo lugar."}
           </p>
         </div>
 
@@ -1178,13 +1217,13 @@ export default function AgendaPage() {
           onClick={() => abrirNuevoTurno()}
         >
           <Plus className="mr-2 h-4 w-4" />
-          Nuevo turno
+          {usaReservas ? "Nueva reserva" : "Nuevo turno"}
         </Button>
       </header>
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <ResumenCard
-          titulo="Turnos totales"
+          titulo={usaReservas ? "Reservas totales" : "Turnos totales"}
           valor={resumen.total}
           icono={
             <CalendarDays className="h-5 w-5" />
@@ -1380,7 +1419,9 @@ export default function AgendaPage() {
 
           <div className="mt-5 flex flex-col justify-between gap-3 border-t border-slate-200 pt-5 dark:border-zinc-800 sm:flex-row sm:items-center">
             <p className="text-xs leading-5 text-slate-500 dark:text-zinc-500">
-              Los turnos ya ocupados y los horarios de descanso se eliminan automáticamente de la disponibilidad pública.
+              {usaReservas
+                ? "Las reservas ya ocupadas y los horarios de descanso se eliminan automáticamente de la disponibilidad pública."
+                : "Los turnos ya ocupados y los horarios de descanso se eliminan automáticamente de la disponibilidad pública."}
             </p>
 
             <Button
@@ -1416,7 +1457,11 @@ export default function AgendaPage() {
         <Card className="mb-6 p-6">
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-slate-950 dark:text-white">
-              {editandoId ? "Editar turno" : "Nuevo turno"}
+              {editandoId
+                ? `Editar ${singularAgenda}`
+                : usaReservas
+                  ? "Nueva reserva"
+                  : "Nuevo turno"}
             </h2>
 
             <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
@@ -1588,7 +1633,11 @@ export default function AgendaPage() {
                     evento.target.value
                   )
                 }
-                placeholder="Información adicional sobre el turno..."
+                placeholder={
+                  usaReservas
+                    ? "Información adicional sobre la reserva..."
+                    : "Información adicional sobre el turno..."
+                }
                 className="w-full resize-none rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white dark:placeholder:text-zinc-600"
               />
             </div>
@@ -1617,7 +1666,7 @@ export default function AgendaPage() {
                   ? "Guardando..."
                   : editandoId
                   ? "Guardar cambios"
-                  : "Crear turno"}
+                  : `Crear ${singularAgenda}`}
               </Button>
             </div>
           </form>
@@ -1776,30 +1825,20 @@ export default function AgendaPage() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 className="font-semibold text-slate-950 dark:text-white">
-                  Próximos turnos
+                  {usaReservas
+                    ? "Próximas reservas"
+                    : "Próximos turnos"}
                 </h2>
 
                 <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
                   {turnosFiltrados.length}{" "}
                   {turnosFiltrados.length === 1
-                    ? "turno programado"
-                    : "turnos programados"}{" "}
+                    ? `${singularAgenda} programada`
+                    : `${pluralAgenda} programadas`}{" "}
                   · ordenados por fecha
                 </p>
               </div>
 
-              <button
-                type="button"
-                onClick={() =>
-                  abrirNuevoTurno(
-                    fechaSeleccionada
-                  )
-                }
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white transition hover:bg-blue-500"
-                title="Crear turno"
-              >
-                <Plus className="h-4 w-4" />
-              </button>
             </div>
 
             <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-1">
@@ -1850,11 +1889,15 @@ export default function AgendaPage() {
                 <CalendarDays className="mx-auto h-10 w-10 text-slate-300 dark:text-zinc-700" />
 
                 <h3 className="mt-4 font-semibold text-slate-950 dark:text-white">
-                  No hay turnos próximos
+                  {usaReservas
+                    ? "No hay reservas próximas"
+                    : "No hay turnos próximos"}
                 </h3>
 
                 <p className="mt-2 text-sm text-slate-500 dark:text-zinc-500">
-                  Las próximas reservas aparecerán acá ordenadas por fecha.
+                  {usaReservas
+                    ? "Las próximas reservas aparecerán acá ordenadas por fecha."
+                    : "Los próximos turnos aparecerán acá ordenados por fecha."}
                 </p>
 
                 <Button
@@ -1867,7 +1910,7 @@ export default function AgendaPage() {
                   }
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  Crear turno
+                  {usaReservas ? "Crear reserva" : "Crear turno"}
                 </Button>
               </div>
             ) : (
