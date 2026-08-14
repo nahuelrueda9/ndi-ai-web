@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import {
   collection,
+  doc,
+  getDoc,
   getDocs,
   Timestamp,
 } from "firebase/firestore";
@@ -20,6 +22,12 @@ import {
 } from "recharts";
 
 import { db } from "@/lib/firebase";
+import {
+  empresaTieneFuncion,
+  obtenerNombrePlan,
+  obtenerPlanEfectivo,
+  type PlanId,
+} from "@/lib/plans/planAccess";
 import StatCard from "@/components/dashboard/StatCard";
 
 type ChatData = {
@@ -44,6 +52,12 @@ type EventoPaginaData = {
     | "appointment_created";
   visitanteId?: string;
   createdAt?: Timestamp;
+};
+
+type EmpresaData = {
+  plan?: PlanId;
+  subscriptionStatus?: string;
+  subscriptionEndsAt?: unknown;
 };
 
 type ActividadDia = {
@@ -210,6 +224,26 @@ export default function EstadisticasPage() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
 
+  const [
+    puedeVerBasicas,
+    setPuedeVerBasicas,
+  ] = useState(false);
+
+  const [
+    puedeVerAvanzadas,
+    setPuedeVerAvanzadas,
+  ] = useState(false);
+
+  const [
+    puedeVerIA,
+    setPuedeVerIA,
+  ] = useState(false);
+
+  const [
+    nombrePlan,
+    setNombrePlan,
+  ] = useState("");
+
   const [estadisticas, setEstadisticas] =
     useState<EstadisticasCalculadas>(
       ESTADISTICAS_INICIALES,
@@ -229,27 +263,88 @@ export default function EstadisticasPage() {
         setCargando(true);
         setError("");
 
-        const [
-          chatsSnapshot,
-          eventosPaginaSnapshot,
-        ] = await Promise.all([
-          getDocs(
-            collection(
+        const empresaSnapshot =
+          await getDoc(
+            doc(
               db,
               "companies",
               empresaId!,
-              "conversations",
             ),
-          ),
-          getDocs(
+          );
+
+        if (!empresaSnapshot.exists()) {
+          throw new Error(
+            "La empresa no existe.",
+          );
+        }
+
+        const empresa =
+          empresaSnapshot.data() as EmpresaData;
+
+        const accesoBasicas =
+          empresaTieneFuncion(
+            empresa,
+            "estadisticas_basicas",
+          );
+
+        const accesoAvanzadas =
+          empresaTieneFuncion(
+            empresa,
+            "estadisticas_avanzadas",
+          );
+
+        const accesoIA =
+          empresaTieneFuncion(
+            empresa,
+            "asistente_ia",
+          );
+
+        if (!accesoBasicas) {
+          throw new Error(
+            "Tu plan actual no incluye estadísticas.",
+          );
+        }
+
+        if (activo) {
+          setPuedeVerBasicas(
+            accesoBasicas,
+          );
+          setPuedeVerAvanzadas(
+            accesoAvanzadas,
+          );
+          setPuedeVerIA(
+            accesoIA,
+          );
+          setNombrePlan(
+            obtenerNombrePlan(
+              obtenerPlanEfectivo(
+                empresa,
+              ),
+            ),
+          );
+        }
+
+        const eventosPaginaSnapshot =
+          await getDocs(
             collection(
               db,
               "companies",
               empresaId!,
               "analyticsEvents",
             ),
-          ),
-        ]);
+          );
+
+        const chatsSnapshot =
+          accesoIA
+            ? await getDocs(
+                collection(
+                  db,
+                  "companies",
+                  empresaId!,
+                  "conversations",
+                ),
+              )
+            : null;
 
         const hoy =
           obtenerInicioDelDia(new Date());
@@ -381,7 +476,7 @@ export default function EstadisticasPage() {
 
         const resultadosMensajes =
           await Promise.all(
-            chatsSnapshot.docs.map(
+            (chatsSnapshot?.docs ?? []).map(
               async (chatDocumento) => {
                 const chat =
                   chatDocumento.data() as ChatData;
@@ -492,7 +587,7 @@ export default function EstadisticasPage() {
           tasaReservaPagina,
 
           totalConsultas:
-            chatsSnapshot.size,
+            chatsSnapshot?.size ?? 0,
           consultasSemana,
           abiertas,
           cerradas,
@@ -616,69 +711,87 @@ export default function EstadisticasPage() {
             Estadísticas
           </h1>
 
-          <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-zinc-400 sm:text-base">
-            Medí cuántas personas visitan tu página,
-            cuántas dejan una consulta y cuántas terminan reservando.
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300">
+              {puedeVerIA
+                ? "Métricas Business IA"
+                : puedeVerAvanzadas
+                  ? "Estadísticas avanzadas"
+                  : "Estadísticas básicas"}
+            </span>
+
+            {nombrePlan && (
+              <span className="text-xs text-slate-500 dark:text-zinc-500">
+                {nombrePlan}
+              </span>
+            )}
+          </div>
+
+          <p className="mt-3 max-w-2xl text-sm text-slate-600 dark:text-zinc-400 sm:text-base">
+            {puedeVerIA
+              ? "Analizá el rendimiento de tu página, las conversiones y la actividad del asistente."
+              : puedeVerAvanzadas
+                ? "Analizá visitas, contactos, reservas, conversiones y evolución de la actividad."
+                : "Consultá las métricas esenciales de tu página: visitas, personas alcanzadas, contactos y clics en WhatsApp."}
           </p>
         </div>
 
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard
-            titulo="Visitas"
-            valor={estadisticas.visitasPagina}
-            descripcion="A la página pública"
-          />
+        {puedeVerBasicas && (
+          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <StatCard
+              titulo="Visitas"
+              valor={estadisticas.visitasPagina}
+              descripcion="A la página pública"
+            />
 
-          <StatCard
-            titulo="Visitantes únicos"
-            valor={estadisticas.visitantesPagina}
-            descripcion="Personas registradas"
-          />
+            <StatCard
+              titulo="Visitantes únicos"
+              valor={estadisticas.visitantesPagina}
+              descripcion="Personas diferentes"
+            />
 
-          <StatCard
-            titulo="Contactos"
-            valor={estadisticas.contactosPagina}
-            descripcion="Formularios enviados"
-          />
+            <StatCard
+              titulo="Contactos"
+              valor={estadisticas.contactosPagina}
+              descripcion="Formularios enviados"
+            />
 
-          <StatCard
-            titulo="Reservas"
-            valor={estadisticas.reservasPagina}
-            descripcion="Turnos generados online"
-          />
-        </section>
+            <StatCard
+              titulo="Clics en WhatsApp"
+              valor={estadisticas.clicsWhatsApp}
+              descripcion="Desde tu página pública"
+            />
+          </section>
+        )}
 
-        <section className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard
-            titulo="Tasa de contacto"
-            valor={`${estadisticas.tasaContactoPagina.toFixed(
-              1,
-            )}%`}
-            descripcion="Contactos sobre visitas"
-          />
+        {puedeVerAvanzadas && (
+          <section className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <StatCard
+              titulo="Reservas"
+              valor={estadisticas.reservasPagina}
+              descripcion="Generadas desde la página"
+            />
 
-          <StatCard
-            titulo="Tasa de reserva"
-            valor={`${estadisticas.tasaReservaPagina.toFixed(
-              1,
-            )}%`}
-            descripcion="Reservas sobre visitas"
-          />
+            <StatCard
+              titulo="Tasa de contacto"
+              valor={`${estadisticas.tasaContactoPagina.toFixed(
+                1,
+              )}%`}
+              descripcion="Contactos sobre visitas"
+            />
 
-          <StatCard
-            titulo="Clics en WhatsApp"
-            valor={estadisticas.clicsWhatsApp}
-            descripcion="Desde tu página pública"
-          />
+            <StatCard
+              titulo="Tasa de reserva"
+              valor={`${estadisticas.tasaReservaPagina.toFixed(
+                1,
+              )}%`}
+              descripcion="Reservas sobre visitas"
+            />
+          </section>
+        )}
 
-          <StatCard
-            titulo="Consultas al asistente"
-            valor={estadisticas.totalConsultas}
-            descripcion="Conversaciones del widget"
-          />
-        </section>
-
-        <section className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.8fr)]">
+        {puedeVerAvanzadas && (
+          <section className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.8fr)]">
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
             <div className="mb-6">
               <p className="text-sm text-slate-600 dark:text-zinc-400">
@@ -837,13 +950,15 @@ export default function EstadisticasPage() {
               </ResponsiveContainer>
             </div>
           </div>
-        </section>
+          </section>
+        )}
 
-        <section className="mt-6">
-          <div className="mb-4">
-            <p className="text-sm text-slate-600 dark:text-zinc-400">
-              Asistente web
-            </p>
+        {puedeVerIA && (
+          <section className="mt-6">
+            <div className="mb-4">
+              <p className="text-sm text-slate-600 dark:text-zinc-400">
+                Asistente web
+              </p>
 
             <h2 className="mt-1 text-xl font-semibold text-slate-950 dark:text-white">
               Actividad de consultas
@@ -917,8 +1032,21 @@ export default function EstadisticasPage() {
                 />
               </div>
             </div>
+            </div>
+          </section>
+        )}
+
+        {!puedeVerAvanzadas && (
+          <div className="mt-6 rounded-2xl border border-blue-200 bg-blue-50 p-5 dark:border-blue-500/20 dark:bg-blue-500/10">
+            <p className="font-semibold text-slate-950 dark:text-white">
+              Estadísticas básicas de Página Simple
+            </p>
+
+            <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-zinc-400">
+              Página Completa agrega reservas, tasas de conversión, gráficos de actividad y embudo de resultados.
+            </p>
           </div>
-        </section>
+        )}
 
         <p className="mt-6 text-xs leading-5 text-slate-500 dark:text-zinc-600">
           Las métricas principales se calculan con la actividad
