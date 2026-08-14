@@ -1174,6 +1174,9 @@ export default async function NegocioPage({
                     ? "claro"
                     : "oscuro"
                 }
+                esAlojamiento={
+                  esAlojamiento
+                }
               />
             ))}
           </div>
@@ -1400,6 +1403,38 @@ export default async function NegocioPage({
           </div>
         </section>
       )}
+
+      {/* RESERVA DE ALOJAMIENTO - DESPUÉS DE GALERÍA */}
+      {esAlojamiento &&
+        puedeMostrarReserva && (
+          <section
+            id="reservar"
+            className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}
+          >
+            <div className="mx-auto max-w-4xl px-4 py-10 sm:px-8 sm:py-20">
+              <ReservaAlojamientoForm
+                slug={slug}
+                habitaciones={servicios.map(
+                  (servicio) => ({
+                    id: servicio.id,
+                    nombre:
+                      servicio.nombre,
+                    precio:
+                      servicio.precio,
+                  }),
+                )}
+                colorPrincipal={
+                  colorPrincipal
+                }
+                tema={
+                  esClaro
+                    ? "claro"
+                    : "oscuro"
+                }
+              />
+            </div>
+          </section>
+        )}
 
       {/* SOBRE EL NEGOCIO */}
       {empresa.descripcion && (
@@ -1759,7 +1794,8 @@ export default async function NegocioPage({
 
 
       {/* RESERVA ONLINE */}
-      {puedeMostrarReserva && (
+      {!esAlojamiento &&
+        puedeMostrarReserva && (
         <section
           id="reservar"
           className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}
@@ -1777,28 +1813,7 @@ export default async function NegocioPage({
                     : "oscuro"
                 }
               />
-            ) : esAlojamiento ? (
-                <ReservaAlojamientoForm
-                  slug={slug}
-                  habitaciones={servicios.map(
-                    (servicio) => ({
-                      id: servicio.id,
-                      nombre:
-                        servicio.nombre,
-                      precio:
-                        servicio.precio,
-                    }),
-                  )}
-                  colorPrincipal={
-                    colorPrincipal
-                  }
-                  tema={
-                    esClaro
-                      ? "claro"
-                      : "oscuro"
-                  }
-                />
-              ) : (
+            ) : (
                 <ReservaForm
                   slug={slug}
                   servicios={servicios.map(
@@ -2057,6 +2072,7 @@ function CatalogoCard({
   mostrarHorariosRapidos = false,
   tema = "oscuro",
   esRestaurante = false,
+  esAlojamiento = false,
 }: {
   item: CatalogoItem;
   color: string;
@@ -2069,6 +2085,7 @@ function CatalogoCard({
   mostrarHorariosRapidos?: boolean;
   tema?: "oscuro" | "claro";
   esRestaurante?: boolean;
+  esAlojamiento?: boolean;
 }) {
   const mensajeWhatsApp =
     esRestaurante &&
@@ -2177,7 +2194,10 @@ function CatalogoCard({
                       : "text-zinc-600"
                   }`}
                 >
-                  Precio
+                  {esAlojamiento &&
+                  item.tipo === "servicio"
+                    ? "Precio por noche"
+                    : "Precio"}
                 </p>
 
                 <p
@@ -2192,6 +2212,18 @@ function CatalogoCard({
                   ).toLocaleString(
                     "es-AR",
                   )}
+                  {esAlojamiento &&
+                    item.tipo === "servicio" && (
+                      <span
+                        className={`ml-1 text-xs font-medium sm:text-sm ${
+                          claro
+                            ? "text-slate-500"
+                            : "text-zinc-400"
+                        }`}
+                      >
+                        / noche
+                      </span>
+                    )}
                 </p>
               </>
             )}
@@ -2252,7 +2284,9 @@ function CatalogoCard({
                 }}
               >
                 <Clock3 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                Reservar
+                {esAlojamiento
+                  ? "Reservar habitación"
+                  : "Reservar"}
               </a>
             )}
 
