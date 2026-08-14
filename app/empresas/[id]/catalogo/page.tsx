@@ -307,6 +307,9 @@ export default function CatalogoPage() {
     rubroNormalizado === "restaurante" ||
     rubroNormalizado === "restaurant";
 
+  const limiteImagenes =
+    puedeUsarProductos ? 3 : 1;
+
   function limpiarFormulario() {
     setEditandoId(null);
     setTipo("servicio");
@@ -329,16 +332,6 @@ export default function CatalogoPage() {
     if (!puedeUsarCatalogo) {
       setError(
         "Necesitás un plan activo para administrar el catálogo.",
-      );
-      return;
-    }
-
-    if (
-      item.tipo === "producto" &&
-      !puedeUsarProductos
-    ) {
-      setError(
-        "Los productos están disponibles desde Página Completa.",
       );
       return;
     }
@@ -405,9 +398,11 @@ export default function CatalogoPage() {
       return;
     }
 
-    if (imagenes.length >= 3) {
+    if (imagenes.length >= limiteImagenes) {
       setError(
-        "Podés cargar hasta 3 imágenes por elemento.",
+        limiteImagenes === 1
+          ? "Página Simple permite 1 imagen por elemento."
+          : "Podés cargar hasta 3 imágenes por elemento.",
       );
       return;
     }
@@ -415,16 +410,6 @@ export default function CatalogoPage() {
     if (!puedeUsarCatalogo) {
       setError(
         "Necesitás un plan activo para administrar el catálogo.",
-      );
-      return;
-    }
-
-    if (
-      tipo === "producto" &&
-      !puedeUsarProductos
-    ) {
-      setError(
-        "Los productos están disponibles desde Página Completa.",
       );
       return;
     }
@@ -644,16 +629,6 @@ export default function CatalogoPage() {
       return;
     }
 
-    if (
-      tipo === "producto" &&
-      !puedeUsarProductos
-    ) {
-      setError(
-        "Tu plan actual permite servicios, pero no productos. Los productos están disponibles desde Página Completa.",
-      );
-      return;
-    }
-
     if (!nombre.trim()) {
       setError("Ingresá un nombre.");
       return;
@@ -780,16 +755,6 @@ export default function CatalogoPage() {
       return;
     }
 
-    if (
-      item.tipo === "producto" &&
-      !puedeUsarProductos
-    ) {
-      setError(
-        "Los productos están disponibles desde Página Completa.",
-      );
-      return;
-    }
-
     try {
       await updateDoc(
         doc(
@@ -822,16 +787,6 @@ export default function CatalogoPage() {
     if (!puedeUsarCatalogo) {
       setError(
         "Necesitás un plan activo para administrar el catálogo.",
-      );
-      return;
-    }
-
-    if (
-      item.tipo === "producto" &&
-      !puedeUsarProductos
-    ) {
-      setError(
-        "Los productos están disponibles desde Página Completa.",
       );
       return;
     }
@@ -968,32 +923,19 @@ export default function CatalogoPage() {
         !puedeUsarProductos && (
           <Card className="mb-6 border-blue-500/20 bg-blue-500/10 p-5">
             <div className="flex items-start gap-3">
-              <Lock className="mt-0.5 h-5 w-5 shrink-0 text-blue-500" />
+              <Package className="mt-0.5 h-5 w-5 shrink-0 text-blue-500" />
 
               <div>
                 <p className="font-semibold text-slate-950 dark:text-white">
                   {esRestaurante
-                    ? "Carta disponible desde Página Completa"
-                    : "Productos disponibles desde Página Completa"}
+                    ? "Carta básica incluida en Página Simple"
+                    : "Catálogo básico incluido en Página Simple"}
                 </p>
 
                 <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-zinc-400">
-                  {esRestaurante
-                    ? "Con Página Simple podés cargar y administrar servicios. Para cargar la carta necesitás Página Completa o Business IA."
-                    : "Con Página Simple podés cargar y administrar servicios. Para agregar productos necesitás Página Completa o Business IA."}
+                  Podés cargar nombre, descripción, precio y 1 imagen por elemento.
+                  Página Completa habilita hasta 3 imágenes y las funciones avanzadas.
                 </p>
-
-                <Button
-                  className="mt-4"
-                  variant="secondary"
-                  onClick={() =>
-                    router.push(
-                      `/empresas/${empresaId}/planes`,
-                    )
-                  }
-                >
-                  Ver planes
-                </Button>
               </div>
             </div>
           </Card>
@@ -1055,20 +997,16 @@ export default function CatalogoPage() {
                   Servicio
                 </option>
 
-                {puedeUsarProductos && (
-                  <option value="producto">
-                    {esRestaurante
-                      ? "Plato / bebida"
-                      : "Producto"}
-                  </option>
-                )}
+                <option value="producto">
+                  {esRestaurante
+                    ? "Plato / bebida"
+                    : "Producto"}
+                </option>
               </select>
 
               {!puedeUsarProductos && (
                 <p className="text-xs leading-5 text-slate-500 dark:text-zinc-500">
-                  {esRestaurante
-                    ? "La carta está disponible desde Página Completa."
-                    : "Los productos están disponibles desde Página Completa."}
+                  Página Simple incluye catálogo básico con 1 imagen por elemento.
                 </p>
               )}
             </div>
@@ -1160,12 +1098,16 @@ export default function CatalogoPage() {
                     Imágenes
                   </p>
                   <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
-                    Opcional · Hasta 3 imágenes · JPG, PNG o WEBP · Máximo 5 MB por imagen.
+                    {limiteImagenes === 1
+                      ? "Opcional · 1 imagen · JPG, PNG o WEBP · Máximo 5 MB."
+                      : "Opcional · Hasta 3 imágenes · JPG, PNG o WEBP · Máximo 5 MB por imagen."}
                   </p>
                 </div>
 
                 <span className="text-xs font-medium text-slate-500 dark:text-zinc-500">
-                  {imagenes.length}/3
+                  {imagenes.length > limiteImagenes
+                    ? `${limiteImagenes} visible / ${imagenes.length} guardadas`
+                    : `${imagenes.length}/${limiteImagenes}`}
                 </span>
               </div>
 
@@ -1206,7 +1148,7 @@ export default function CatalogoPage() {
                   </div>
                 ))}
 
-                {imagenes.length < 3 && (
+                {imagenes.length < limiteImagenes && (
                   <label
                     className={`flex aspect-[4/3] cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed px-4 text-center transition ${
                       subiendoImagen
@@ -1232,7 +1174,7 @@ export default function CatalogoPage() {
                         </p>
 
                         <p className="mt-1 text-[10px] text-slate-500 dark:text-zinc-500">
-                          {imagenes.length + 1} de 3
+                          {imagenes.length + 1} de {limiteImagenes}
                         </p>
                       </>
                     )}
@@ -1243,7 +1185,7 @@ export default function CatalogoPage() {
                       className="hidden"
                       disabled={
                         subiendoImagen ||
-                        imagenes.length >= 3
+                        imagenes.length >= limiteImagenes
                       }
                       onChange={(event) => {
                         const archivo =
@@ -1264,7 +1206,9 @@ export default function CatalogoPage() {
               </div>
 
               <p className="mt-2 text-[11px] leading-5 text-slate-400 dark:text-zinc-600">
-                La primera imagen será la portada. En la página pública el cliente podrá deslizar entre las fotos.
+                {limiteImagenes === 1
+                  ? "La imagen será la portada del elemento. Con Página Completa podés cargar hasta 3 fotos."
+                  : "La primera imagen será la portada. En la página pública el cliente podrá deslizar entre las fotos."}
               </p>
             </div>
 
@@ -1345,11 +1289,9 @@ export default function CatalogoPage() {
           </h2>
 
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500 dark:text-zinc-500">
-            {puedeUsarProductos
-              ? esRestaurante
-                ? "Agregá el primer servicio o elemento de la carta."
-                : "Agregá el primer servicio o producto de este negocio."
-              : "Agregá el primer servicio de este negocio."}
+            {esRestaurante
+              ? "Agregá el primer servicio o elemento de la carta."
+              : "Agregá el primer servicio o producto de este negocio."}
           </p>
 
           <Button
@@ -1372,47 +1314,25 @@ export default function CatalogoPage() {
             onEliminar={eliminarItem}
           />
 
-          {puedeUsarProductos ? (
-            <SeccionCatalogo
-              titulo={
-                esRestaurante
-                  ? "Carta"
-                  : "Productos"
-              }
-              descripcion={
-                esRestaurante
-                  ? "Entradas, platos principales, bebidas y postres."
-                  : "Productos disponibles para mostrar a los clientes."
-              }
-              items={productos}
-              mostrarCategoria={
-                esRestaurante
-              }
-              onEditar={editarItem}
-              onEstado={cambiarEstado}
-              onEliminar={eliminarItem}
-            />
-          ) : (
-            <Card className="border-dashed p-7">
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500">
-                  <Lock className="h-5 w-5" />
-                </div>
-
-                <div>
-                  <h2 className="font-semibold text-slate-950 dark:text-white">
-                    {esRestaurante
-                      ? "Carta"
-                      : "Productos"}
-                  </h2>
-
-                  <p className="mt-1 text-sm leading-6 text-slate-500 dark:text-zinc-400">
-                    Esta sección se habilita con Página Completa o Business IA.
-                  </p>
-                </div>
-              </div>
-            </Card>
-          )}
+          <SeccionCatalogo
+            titulo={
+              esRestaurante
+                ? "Carta"
+                : "Productos"
+            }
+            descripcion={
+              esRestaurante
+                ? "Entradas, platos principales, bebidas y postres."
+                : "Productos disponibles para mostrar a los clientes."
+            }
+            items={productos}
+            mostrarCategoria={
+              esRestaurante
+            }
+            onEditar={editarItem}
+            onEstado={cambiarEstado}
+            onEliminar={eliminarItem}
+          />
         </div>
       )}
     </section>
