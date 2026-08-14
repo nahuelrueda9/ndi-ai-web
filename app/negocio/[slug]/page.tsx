@@ -520,8 +520,11 @@ export default async function NegocioPage({
     pagina.mostrarServicios !== false;
 
   const mostrarProductos =
-    puedeUsarProductos &&
-    pagina.mostrarProductos !== false;
+    puedeUsarCatalogo &&
+    (
+      esRestaurante ||
+      pagina.mostrarProductos !== false
+    );
 
   const mostrarGaleria =
     puedeUsarSeccionesAmpliadas &&
