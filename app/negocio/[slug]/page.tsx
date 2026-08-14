@@ -1,71 +1,61 @@
-"use client";
-
-import type {
-  FormEvent,
-  TextareaHTMLAttributes,
-} from "react";
 import {
-  useEffect,
-  useState,
-} from "react";
-import {
-  onAuthStateChanged,
-  type User,
-} from "firebase/auth";
-import {
-  doc,
-  getDoc,
-  serverTimestamp,
-  setDoc,
-  updateDoc,
-} from "firebase/firestore";
-import {
-  useParams,
-  useRouter,
-} from "next/navigation";
-
-import {
+  ChevronDown,
+  Clock3,
   ExternalLink,
   Globe2,
-  ImageIcon,
-  Trash2,
-  Upload,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Music2,
+  Package,
+  Phone,
+  Quote,
+  Sparkles,
 } from "lucide-react";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import Script from "next/script";
 
-import { auth, db } from "@/lib/firebase";
-import Avatar from "@/components/Ui/Avatar";
-import Badge from "@/components/Ui/Badge";
-import Button from "@/components/Ui/Button";
-import Card from "@/components/Ui/Card";
-import Input from "@/components/Ui/Input";
+import { adminDb } from "@/lib/firebaseAdmin";
+import {
+  empresaTieneFuncion,
+  empresaTieneSuscripcionActiva,
+} from "@/lib/plans/planAccess";
+import ReservaForm from "./ReservaForm";
+import ReservaAlojamientoForm from "./ReservaAlojamientoForm";
+import ReservaMesaForm from "./ReservaMesaForm";
+import ProximosHorarios from "./ProximosHorarios";
+import RestauranteCartaPedidos from "./RestauranteCartaPedidos";
+import ProductoDetalleTienda from "./ProductoDetalleTienda";
+import ContactoForm from "./ContactForm";
+import PublicAnalytics from "./PublicAnalytics";
+import CompartirPagina from "./CompartirPagina";
+import PresupuestoFormulario from "./PresupuestoFormulario";
 
-type TemaPagina = "oscuro" | "claro";
+export const dynamic = "force-dynamic";
 
-type TestimonioPagina = {
+interface TestimonioPagina {
   nombre: string;
   cargo?: string;
   texto: string;
-};
+}
 
-type PreguntaFrecuentePagina = {
+interface PreguntaFrecuentePagina {
   pregunta: string;
   respuesta: string;
-};
-type TemaWidget = "oscuro" | "claro";
-type PosicionWidget = "derecha" | "izquierda";
-type FormaWidget = "redondo" | "cuadrado";
+}
 
 interface Empresa {
   nombre?: string;
+  plan?: "free" | "pro" | "business";
+  subscriptionStatus?: string;
+  subscriptionEndsAt?: unknown;
   rubro?: string;
   email?: string;
   telefono?: string;
-  userId: string;
-
   descripcion?: string;
   direccion?: string;
   horarios?: string;
-  sitioWeb?: string;
 
   redesSociales?: {
     instagram?: string;
@@ -73,26 +63,17 @@ interface Empresa {
     tiktok?: string;
   };
 
-  personalidad?: string;
-  objetivo?: string;
-  instrucciones?: string;
-  restricciones?: string;
-  idioma?: string;
-
   paginaPublica?: {
     slug?: string;
     publicada?: boolean;
-
     titulo?: string;
     subtitulo?: string;
-
+    textoSecundario?: string;
     colorPrincipal?: string;
-    tema?: TemaPagina;
-
+    tema?: "oscuro" | "claro";
     logoUrl?: string;
     portadaUrl?: string;
     galeria?: string[];
-
     mostrarWhatsApp?: boolean;
     mostrarEmail?: boolean;
     mostrarDireccion?: boolean;
@@ -102,6 +83,9 @@ interface Empresa {
     mostrarProductos?: boolean;
     mostrarGaleria?: boolean;
     mostrarMapa?: boolean;
+    mostrarPresupuesto?: boolean;
+    mostrarReservasMesa?: boolean;
+    mostrarPedidosOnline?: boolean;
     mostrarContacto?: boolean;
 
     testimonios?: TestimonioPagina[];
@@ -112,2784 +96,2406 @@ interface Empresa {
     nombreBot?: string;
     mensajeBienvenida?: string;
     colorPrincipal?: string;
-    tema?: TemaWidget;
-    posicion?: PosicionWidget;
-    formaBoton?: FormaWidget;
-    textoPlaceholder?: string;
-    mostrarMarca?: boolean;
   };
 }
 
-export default function ConfigurarAgentePage() {
-  const params = useParams();
-  const router = useRouter();
-
-  const empresaId = Array.isArray(params.id)
-    ? params.id[0]
-    : (params.id as string);
-
-  const [user, setUser] =
-    useState<User | null>(null);
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [guardando, setGuardando] =
-    useState(false);
-
-  const [mensaje, setMensaje] =
-    useState("");
-
-  const [error, setError] =
-    useState("");
-
-  // INFORMACIÓN DEL NEGOCIO
-  const [nombre, setNombre] =
-    useState("");
-
-  const [rubro, setRubro] =
-    useState("");
-
-  const [email, setEmail] =
-    useState("");
-
-  const [telefono, setTelefono] =
-    useState("");
-
-  const [descripcion, setDescripcion] =
-    useState("");
-
-  const [direccion, setDireccion] =
-    useState("");
-
-  const [horarios, setHorarios] =
-    useState("");
-
-  const [sitioWeb, setSitioWeb] =
-    useState("");
-
-  const [instagram, setInstagram] =
-    useState("");
-
-  const [facebook, setFacebook] =
-    useState("");
-
-  const [tiktok, setTiktok] =
-    useState("");
-
-  // PÁGINA PÚBLICA
-  const [
-    paginaSlug,
-    setPaginaSlug,
-  ] = useState("");
-
-  const [
-    paginaPublicada,
-    setPaginaPublicada,
-  ] = useState(false);
-
-  const [
-    paginaTitulo,
-    setPaginaTitulo,
-  ] = useState("");
-
-  const [
-    paginaSubtitulo,
-    setPaginaSubtitulo,
-  ] = useState("");
-
-  const [
-    paginaColorPrincipal,
-    setPaginaColorPrincipal,
-  ] = useState("#2563eb");
-
-  const [
-    paginaTema,
-    setPaginaTema,
-  ] = useState<TemaPagina>("oscuro");
-
-  const [
-    paginaLogoUrl,
-    setPaginaLogoUrl,
-  ] = useState("");
-
-  const [
-    paginaPortadaUrl,
-    setPaginaPortadaUrl,
-  ] = useState("");
-
-  const [
-    paginaGaleria,
-    setPaginaGaleria,
-  ] = useState<string[]>([]);
-
-  const [
-    subiendoImagen,
-    setSubiendoImagen,
-  ] = useState<
-    "logo" | "portada" | "galeria" | null
-  >(null);
-
-  const [
-    paginaMostrarWhatsApp,
-    setPaginaMostrarWhatsApp,
-  ] = useState(true);
-
-  const [
-    paginaMostrarEmail,
-    setPaginaMostrarEmail,
-  ] = useState(true);
-
-  const [
-    paginaMostrarDireccion,
-    setPaginaMostrarDireccion,
-  ] = useState(true);
-
-  const [
-    paginaMostrarHorarios,
-    setPaginaMostrarHorarios,
-  ] = useState(true);
-
-  const [
-    paginaMostrarServicios,
-    setPaginaMostrarServicios,
-  ] = useState(true);
-
-  const [
-    paginaMostrarProductos,
-    setPaginaMostrarProductos,
-  ] = useState(true);
-
-  const [
-    paginaMostrarGaleria,
-    setPaginaMostrarGaleria,
-  ] = useState(true);
-
-  const [
-    paginaMostrarMapa,
-    setPaginaMostrarMapa,
-  ] = useState(true);
-
-  const [
-    paginaMostrarContacto,
-    setPaginaMostrarContacto,
-  ] = useState(true);
-
-  const [
-    paginaTestimonios,
-    setPaginaTestimonios,
-  ] = useState<TestimonioPagina[]>([]);
-
-  const [
-    testimonioNombre,
-    setTestimonioNombre,
-  ] = useState("");
-
-  const [
-    testimonioCargo,
-    setTestimonioCargo,
-  ] = useState("");
-
-  const [
-    testimonioTexto,
-    setTestimonioTexto,
-  ] = useState("");
-
-  const [
-    paginaPreguntasFrecuentes,
-    setPaginaPreguntasFrecuentes,
-  ] = useState<PreguntaFrecuentePagina[]>([]);
-
-  const [
-    preguntaFrecuentePregunta,
-    setPreguntaFrecuentePregunta,
-  ] = useState("");
-
-  const [
-    preguntaFrecuenteRespuesta,
-    setPreguntaFrecuenteRespuesta,
-  ] = useState("");
-
-  // IA
-  const [personalidad, setPersonalidad] =
-    useState(
-      "Amable, profesional y breve",
-    );
-
-  const [objetivo, setObjetivo] =
-    useState("");
-
-  const [
-    instrucciones,
-    setInstrucciones,
-  ] = useState("");
-
-  const [
-    restricciones,
-    setRestricciones,
-  ] = useState(
-    "No inventar información que no esté cargada.",
-  );
-
-  const [idioma, setIdioma] =
-    useState("Español");
-
-  // WIDGET
-  const [nombreBot, setNombreBot] =
-    useState("Asistente virtual");
-
-  const [
-    mensajeBienvenida,
-    setMensajeBienvenida,
-  ] = useState(
-    "¡Hola! ¿En qué puedo ayudarte?",
-  );
-
-  const [
-    colorPrincipal,
-    setColorPrincipal,
-  ] = useState("#3b82f6");
-
-  const [tema, setTema] =
-    useState<TemaWidget>("oscuro");
-
-  const [posicion, setPosicion] =
-    useState<PosicionWidget>("derecha");
-
-  const [
-    formaBoton,
-    setFormaBoton,
-  ] =
-    useState<FormaWidget>("redondo");
-
-  const [
-    textoPlaceholder,
-    setTextoPlaceholder,
-  ] = useState(
-    "Escribí tu mensaje...",
-  );
-
-  const [
-    mostrarMarca,
-    setMostrarMarca,
-  ] = useState(true);
-
-  useEffect(() => {
-    const unsubscribe =
-      onAuthStateChanged(
-        auth,
-        async (currentUser) => {
-          if (!currentUser) {
-            router.replace("/login");
-            return;
-          }
-
-          if (!empresaId) {
-            setError(
-              "No se encontró el ID de la empresa.",
-            );
-            setLoading(false);
-            return;
-          }
-
-          setUser(currentUser);
-          setLoading(true);
-          setError("");
-
-          try {
-            const empresaReferencia =
-              doc(
-                db,
-                "companies",
-                empresaId,
-              );
-
-            const empresaSnapshot =
-              await getDoc(
-                empresaReferencia,
-              );
-
-            if (
-              !empresaSnapshot.exists()
-            ) {
-              setError(
-                "La empresa no existe.",
-              );
-              return;
-            }
-
-            const empresa =
-              empresaSnapshot.data() as Empresa;
-
-            if (
-              empresa.userId !==
-              currentUser.uid
-            ) {
-              setError(
-                "No tenés permiso para acceder a esta empresa.",
-              );
-              return;
-            }
-
-            setNombre(
-              empresa.nombre || "",
-            );
-
-            setRubro(
-              empresa.rubro || "",
-            );
-
-            setEmail(
-              empresa.email || "",
-            );
-
-            setTelefono(
-              empresa.telefono || "",
-            );
-
-            setDescripcion(
-              empresa.descripcion || "",
-            );
-
-            setDireccion(
-              empresa.direccion || "",
-            );
-
-            setHorarios(
-              empresa.horarios || "",
-            );
-
-            setSitioWeb(
-              empresa.sitioWeb || "",
-            );
-
-            setInstagram(
-              empresa.redesSociales
-                ?.instagram || "",
-            );
-
-            setFacebook(
-              empresa.redesSociales
-                ?.facebook || "",
-            );
-
-            setTiktok(
-              empresa.redesSociales
-                ?.tiktok || "",
-            );
-
-            // PÁGINA PÚBLICA
-            const slugExistente =
-              empresa.paginaPublica
-                ?.slug || "";
-
-            const slugInicial =
-              slugExistente ||
-              crearSlug(
-                `${
-                  empresa.nombre ||
-                  "negocio"
-                }-${empresaId.slice(
-                  -6,
-                )}`,
-              );
-
-            setPaginaSlug(
-              slugInicial,
-            );
-
-            setPaginaPublicada(
-              empresa.paginaPublica
-                ?.publicada ?? false,
-            );
-
-            setPaginaTitulo(
-              empresa.paginaPublica
-                ?.titulo ||
-                empresa.nombre ||
-                "",
-            );
-
-            setPaginaSubtitulo(
-              empresa.paginaPublica
-                ?.subtitulo ||
-                empresa.descripcion ||
-                "",
-            );
-
-            setPaginaColorPrincipal(
-              empresa.paginaPublica
-                ?.colorPrincipal ||
-                "#2563eb",
-            );
-
-            setPaginaTema(
-              empresa.paginaPublica
-                ?.tema === "claro"
-                ? "claro"
-                : "oscuro",
-            );
-
-            setPaginaLogoUrl(
-              empresa.paginaPublica
-                ?.logoUrl || "",
-            );
-
-            setPaginaPortadaUrl(
-              empresa.paginaPublica
-                ?.portadaUrl || "",
-            );
-
-            setPaginaGaleria(
-              Array.isArray(
-                empresa.paginaPublica
-                  ?.galeria,
-              )
-                ? empresa.paginaPublica!.galeria!
-                    .filter(
-                      (url): url is string =>
-                        typeof url === "string" &&
-                        url.trim().length > 0,
-                    )
-                    .slice(0, 6)
-                : [],
-            );
-
-            setPaginaMostrarWhatsApp(
-              empresa.paginaPublica
-                ?.mostrarWhatsApp ??
-                true,
-            );
-
-            setPaginaMostrarEmail(
-              empresa.paginaPublica
-                ?.mostrarEmail ??
-                true,
-            );
-
-            setPaginaMostrarDireccion(
-              empresa.paginaPublica
-                ?.mostrarDireccion ??
-                true,
-            );
-
-            setPaginaMostrarHorarios(
-              empresa.paginaPublica
-                ?.mostrarHorarios ??
-                true,
-            );
-
-            setPaginaMostrarServicios(
-              empresa.paginaPublica
-                ?.mostrarServicios ??
-                true,
-            );
-
-            setPaginaMostrarProductos(
-              empresa.paginaPublica
-                ?.mostrarProductos ??
-                true,
-            );
-
-            setPaginaMostrarGaleria(
-              empresa.paginaPublica
-                ?.mostrarGaleria ??
-                true,
-            );
-
-            setPaginaMostrarMapa(
-              empresa.paginaPublica
-                ?.mostrarMapa ??
-                true,
-            );
-
-            setPaginaMostrarContacto(
-              empresa.paginaPublica
-                ?.mostrarContacto ??
-                true,
-            );
-
-            setPaginaTestimonios(
-              Array.isArray(
-                empresa.paginaPublica
-                  ?.testimonios,
-              )
-                ? empresa.paginaPublica!.testimonios!
-                    .filter(
-                      (item) =>
-                        item &&
-                        typeof item.nombre === "string" &&
-                        typeof item.texto === "string",
-                    )
-                    .map(
-                      (item) => ({
-                        nombre:
-                          item.nombre.trim(),
-                        cargo:
-                          item.cargo?.trim() || "",
-                        texto:
-                          item.texto.trim(),
-                      }),
-                    )
-                    .filter(
-                      (item) =>
-                        item.nombre &&
-                        item.texto,
-                    )
-                    .slice(0, 6)
-                : [],
-            );
-
-            setPaginaPreguntasFrecuentes(
-              Array.isArray(
-                empresa.paginaPublica
-                  ?.preguntasFrecuentes,
-              )
-                ? empresa.paginaPublica!.preguntasFrecuentes!
-                    .filter(
-                      (item) =>
-                        item &&
-                        typeof item.pregunta === "string" &&
-                        typeof item.respuesta === "string",
-                    )
-                    .map(
-                      (item) => ({
-                        pregunta:
-                          item.pregunta.trim(),
-                        respuesta:
-                          item.respuesta.trim(),
-                      }),
-                    )
-                    .filter(
-                      (item) =>
-                        item.pregunta &&
-                        item.respuesta,
-                    )
-                    .slice(0, 8)
-                : [],
-            );
-
-            // IA
-            setPersonalidad(
-              empresa.personalidad ||
-                "Amable, profesional y breve",
-            );
-
-            setObjetivo(
-              empresa.objetivo || "",
-            );
-
-            setInstrucciones(
-              empresa.instrucciones ||
-                "",
-            );
-
-            setRestricciones(
-              empresa.restricciones ||
-                "No inventar información que no esté cargada.",
-            );
-
-            setIdioma(
-              empresa.idioma ||
-                "Español",
-            );
-
-            // WIDGET
-            setNombreBot(
-              empresa.widget
-                ?.nombreBot ||
-                empresa.nombre ||
-                "Asistente virtual",
-            );
-
-            setMensajeBienvenida(
-              empresa.widget
-                ?.mensajeBienvenida ||
-                "¡Hola! ¿En qué puedo ayudarte?",
-            );
-
-            setColorPrincipal(
-              empresa.widget
-                ?.colorPrincipal ||
-                "#3b82f6",
-            );
-
-            setTema(
-              empresa.widget?.tema ||
-                "oscuro",
-            );
-
-            setPosicion(
-              empresa.widget
-                ?.posicion ||
-                "derecha",
-            );
-
-            setFormaBoton(
-              empresa.widget
-                ?.formaBoton ||
-                "redondo",
-            );
-
-            setTextoPlaceholder(
-              empresa.widget
-                ?.textoPlaceholder ||
-                "Escribí tu mensaje...",
-            );
-
-            setMostrarMarca(
-              empresa.widget
-                ?.mostrarMarca ??
-                true,
-            );
-          } catch (
-            firebaseError
-          ) {
-            console.error(
-              "Error al cargar la empresa:",
-              firebaseError,
-            );
-
-            setError(
-              "No se pudo cargar la empresa.",
-            );
-          } finally {
-            setLoading(false);
-          }
-        },
-      );
-
-    return () =>
-      unsubscribe();
-  }, [empresaId, router]);
-
-  const urlPublica =
-    paginaSlug
-      ? `/negocio/${paginaSlug}`
-      : "";
-
-  const subirImagenPagina = async (
-    archivo: File,
-    tipo: "logo" | "portada" | "galeria",
-  ) => {
-    if (!user || !empresaId) {
-      return;
-    }
-
-    if (!archivo.type.startsWith("image/")) {
-      setError(
-        "Seleccioná una imagen válida.",
-      );
-      return;
-    }
-
-    const TAMANO_MAXIMO =
-      5 * 1024 * 1024;
-
-    if (archivo.size > TAMANO_MAXIMO) {
-      setError(
-        "La imagen no puede superar los 5 MB.",
-      );
-      return;
-    }
-
-    if (
-      tipo === "galeria" &&
-      paginaGaleria.length >= 6
-    ) {
-      setError(
-        "Podés cargar hasta 6 imágenes en la galería.",
-      );
-      return;
-    }
-
-    setError("");
-    setMensaje("");
-    setSubiendoImagen(tipo);
-
-    try {
-      const idToken =
-        await user.getIdToken();
-
-      const authResponse =
-        await fetch(
-          `/api/imagekit/auth?empresaId=${encodeURIComponent(
-            empresaId,
-          )}`,
-          {
-            method: "GET",
-            headers: {
-              Authorization:
-                `Bearer ${idToken}`,
-            },
-            cache: "no-store",
-          },
-        );
-
-      const authData =
-        (await authResponse.json()) as {
-          token?: string;
-          expire?: number;
-          signature?: string;
-          publicKey?: string;
-          urlEndpoint?: string;
-          error?: string;
-        };
-
-      if (!authResponse.ok) {
-        throw new Error(
-          authData.error ||
-            "No se pudo autorizar la subida.",
-        );
-      }
-
-      if (
-        !authData.token ||
-        !authData.expire ||
-        !authData.signature ||
-        !authData.publicKey
-      ) {
-        throw new Error(
-          "ImageKit devolvió una autorización incompleta.",
-        );
-      }
-
-      const extension =
-        archivo.name
-          .split(".")
-          .pop()
-          ?.toLowerCase()
-          .replace(/[^a-z0-9]/g, "") ||
-        "jpg";
-
-      const baseNombre =
-        archivo.name
-          .replace(/\.[^.]+$/, "")
-          .normalize("NFD")
-          .replace(
-            /[\u0300-\u036f]/g,
-            "",
-          )
-          .replace(
-            /[^a-zA-Z0-9_-]+/g,
-            "-",
-          )
-          .replace(/^-+|-+$/g, "")
-          .slice(0, 60) ||
-        tipo;
-
-      const fileName =
-        `${tipo}-${Date.now()}-${baseNombre}.${extension}`;
-
-      const formData =
-        new FormData();
-
-      formData.append(
-        "file",
-        archivo,
-      );
-      formData.append(
-        "fileName",
-        fileName,
-      );
-      formData.append(
-        "publicKey",
-        authData.publicKey,
-      );
-      formData.append(
-        "token",
-        authData.token,
-      );
-      formData.append(
-        "expire",
-        String(authData.expire),
-      );
-      formData.append(
-        "signature",
-        authData.signature,
-      );
-      formData.append(
-        "useUniqueFileName",
-        "true",
-      );
-      formData.append(
-        "folder",
-        `/ndi-ai/companies/${empresaId}/public-page/${tipo}`,
-      );
-
-      const uploadResponse =
-        await fetch(
-          "https://upload.imagekit.io/api/v1/files/upload",
-          {
-            method: "POST",
-            body: formData,
-          },
-        );
-
-      const uploadData =
-        (await uploadResponse.json()) as {
-          url?: string;
-          fileId?: string;
-          name?: string;
-          message?: string;
-          error?: string;
-        };
-
-      if (!uploadResponse.ok) {
-        throw new Error(
-          uploadData.message ||
-            uploadData.error ||
-            "ImageKit rechazó la imagen.",
-        );
-      }
-
-      const url =
-        uploadData.url?.trim();
-
-      if (!url) {
-        throw new Error(
-          "ImageKit no devolvió la URL de la imagen.",
-        );
-      }
-
-      if (tipo === "logo") {
-        setPaginaLogoUrl(url);
-      } else if (
-        tipo === "portada"
-      ) {
-        setPaginaPortadaUrl(url);
-      } else {
-        setPaginaGaleria(
-          (actual) =>
-            [...actual, url].slice(
-              0,
-              6,
-            ),
-        );
-      }
-
-      setMensaje(
-        "Imagen subida. Guardá la configuración para aplicar los cambios.",
-      );
-    } catch (
-      uploadError
-    ) {
-      console.error(
-        "Error al subir imagen a ImageKit:",
-        uploadError,
-      );
-
-      setError(
-        uploadError instanceof Error
-          ? uploadError.message
-          : "No se pudo subir la imagen.",
-      );
-    } finally {
-      setSubiendoImagen(null);
-    }
-  };
-
-  const quitarImagenGaleria = (
-    indice: number,
-  ) => {
-    setPaginaGaleria(
-      (actual) =>
-        actual.filter(
-          (_, index) =>
-            index !== indice,
-        ),
-    );
-  };
-
-  const agregarTestimonio = () => {
-    const nombreLimpio =
-      testimonioNombre.trim();
-
-    const textoLimpio =
-      testimonioTexto.trim();
-
-    if (!nombreLimpio || !textoLimpio) {
-      setError(
-        "Completá el nombre y el testimonio.",
-      );
-      return;
-    }
-
-    if (
-      paginaTestimonios.length >= 6
-    ) {
-      setError(
-        "Podés mostrar hasta 6 testimonios.",
-      );
-      return;
-    }
-
-    setPaginaTestimonios(
-      (actual) => [
-        ...actual,
-        {
-          nombre:
-            nombreLimpio.slice(
-              0,
-              80,
-            ),
-          cargo:
-            testimonioCargo
-              .trim()
-              .slice(0, 100),
-          texto:
-            textoLimpio.slice(
-              0,
-              500,
-            ),
-        },
-      ],
-    );
-
-    setTestimonioNombre("");
-    setTestimonioCargo("");
-    setTestimonioTexto("");
-    setError("");
-  };
-
-  const quitarTestimonio = (
-    indice: number,
-  ) => {
-    setPaginaTestimonios(
-      (actual) =>
-        actual.filter(
-          (_, index) =>
-            index !== indice,
-        ),
-    );
-  };
-
-  const agregarPreguntaFrecuente = () => {
-    const preguntaLimpia =
-      preguntaFrecuentePregunta.trim();
-
-    const respuestaLimpia =
-      preguntaFrecuenteRespuesta.trim();
-
-    if (
-      !preguntaLimpia ||
-      !respuestaLimpia
-    ) {
-      setError(
-        "Completá la pregunta y la respuesta.",
-      );
-      return;
-    }
-
-    if (
-      paginaPreguntasFrecuentes.length >= 8
-    ) {
-      setError(
-        "Podés mostrar hasta 8 preguntas frecuentes.",
-      );
-      return;
-    }
-
-    setPaginaPreguntasFrecuentes(
-      (actual) => [
-        ...actual,
-        {
-          pregunta:
-            preguntaLimpia.slice(
-              0,
-              160,
-            ),
-          respuesta:
-            respuestaLimpia.slice(
-              0,
-              700,
-            ),
-        },
-      ],
-    );
-
-    setPreguntaFrecuentePregunta("");
-    setPreguntaFrecuenteRespuesta("");
-    setError("");
-  };
-
-  const quitarPreguntaFrecuente = (
-    indice: number,
-  ) => {
-    setPaginaPreguntasFrecuentes(
-      (actual) =>
-        actual.filter(
-          (_, index) =>
-            index !== indice,
-        ),
-    );
-  };
-
-  const cambiarPublicacionPagina = async (
-    publicada: boolean,
-  ) => {
-    if (!empresaId) {
-      return;
-    }
-
-    setPaginaPublicada(publicada);
-    setError("");
-    setMensaje("");
-
-    try {
-      await updateDoc(
-        doc(
-          db,
-          "companies",
-          empresaId,
-        ),
-        {
-          "paginaPublica.publicada":
-            publicada,
-          updatedAt:
-            serverTimestamp(),
-        },
-      );
-
-      setMensaje(
-        publicada
-          ? "Página publicada correctamente."
-          : "Página despublicada.",
-      );
-    } catch (publicacionError) {
-      console.error(
-        "Error cambiando publicación de la página:",
-        publicacionError,
-      );
-
-      setPaginaPublicada(!publicada);
-      setError(
-        "No se pudo cambiar el estado de la página.",
-      );
-    }
-  };
-
-  const handleGuardar = async (
-    event: FormEvent<HTMLFormElement>,
-  ) => {
-    event.preventDefault();
-
-    if (
-      !user ||
-      !empresaId
-    ) {
-      return;
-    }
-
-    if (!nombre.trim()) {
-      setError(
-        "Ingresá el nombre de la empresa.",
-      );
-      return;
-    }
-
-    if (!nombreBot.trim()) {
-      setError(
-        "Ingresá el nombre del bot.",
-      );
-      return;
-    }
-
-    const slugLimpio =
-      crearSlug(paginaSlug);
-
-    if (!slugLimpio) {
-      setError(
-        "Ingresá una URL válida para la página pública.",
-      );
-      return;
-    }
-
-    setError("");
-    setMensaje("");
-    setGuardando(true);
-
-    try {
-      const idToken =
-        await user.getIdToken();
-
-      const slugResponse =
-        await fetch(
-          "/api/companies/slug",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type":
-                "application/json",
-              Authorization:
-                `Bearer ${idToken}`,
-            },
-            body: JSON.stringify({
-              empresaId,
-              slug: slugLimpio,
-            }),
-          },
-        );
-
-      const slugData =
-        (await slugResponse.json()) as {
-          disponible?: boolean;
-          slug?: string;
-          error?: string;
-        };
-
-      if (
-        !slugResponse.ok ||
-        slugData.disponible !== true
-      ) {
-        throw new Error(
-          slugData.error ||
-            "No se pudo verificar la URL pública.",
-        );
-      }
-
-      const slugConfirmado =
-        slugData.slug ||
-        slugLimpio;
-
-      const empresaReferencia =
-        doc(
-          db,
-          "companies",
-          empresaId,
-        );
-
-      await setDoc(
-        empresaReferencia,
-        {
-          nombre:
-            nombre.trim(),
-
-          rubro:
-            rubro.trim(),
-
-          email:
-            email.trim(),
-
-          telefono:
-            telefono.trim(),
-
-          descripcion:
-            descripcion.trim(),
-
-          direccion:
-            direccion.trim(),
-
-          horarios:
-            horarios.trim(),
-
-          sitioWeb:
-            sitioWeb.trim(),
-
-          redesSociales: {
-            instagram:
-              instagram.trim(),
-            facebook:
-              facebook.trim(),
-            tiktok:
-              tiktok.trim(),
-          },
-
-          paginaPublica: {
-            slug:
-              slugConfirmado,
-
-            publicada:
-              paginaPublicada,
-
-            titulo:
-              paginaTitulo.trim() ||
-              nombre.trim(),
-
-            subtitulo:
-              paginaSubtitulo.trim(),
-
-            colorPrincipal:
-              paginaColorPrincipal,
-
-            tema:
-              paginaTema,
-
-            logoUrl:
-              paginaLogoUrl,
-
-            portadaUrl:
-              paginaPortadaUrl,
-
-            galeria:
-              paginaGaleria,
-
-            mostrarWhatsApp:
-              paginaMostrarWhatsApp,
-
-            mostrarEmail:
-              paginaMostrarEmail,
-
-            mostrarDireccion:
-              paginaMostrarDireccion,
-
-            mostrarHorarios:
-              paginaMostrarHorarios,
-
-            mostrarServicios:
-              paginaMostrarServicios,
-
-            mostrarProductos:
-              paginaMostrarProductos,
-
-            mostrarGaleria:
-              paginaMostrarGaleria,
-
-            mostrarMapa:
-              paginaMostrarMapa,
-
-            mostrarContacto:
-              paginaMostrarContacto,
-
-            testimonios:
-              paginaTestimonios,
-
-            preguntasFrecuentes:
-              paginaPreguntasFrecuentes,
-          },
-
-          personalidad:
-            personalidad.trim(),
-
-          objetivo:
-            objetivo.trim(),
-
-          instrucciones:
-            instrucciones.trim(),
-
-          restricciones:
-            restricciones.trim(),
-
-          idioma,
-
-          widget: {
-            nombreBot:
-              nombreBot.trim(),
-
-            mensajeBienvenida:
-              mensajeBienvenida.trim(),
-
-            colorPrincipal,
-
-            tema,
-
-            posicion,
-
-            formaBoton,
-
-            textoPlaceholder:
-              textoPlaceholder.trim(),
-
-            mostrarMarca,
-          },
-
-          updatedAt:
-            serverTimestamp(),
-        },
-        {
-          merge: true,
-        },
-      );
-
-      setPaginaSlug(
-        slugConfirmado,
-      );
-
-      setMensaje(
-        "Configuración guardada correctamente.",
-      );
-    } catch (
-      firebaseError
-    ) {
-      console.error(
-        "Error al guardar:",
-        firebaseError,
-      );
-
-      setError(
-        firebaseError instanceof Error
-          ? firebaseError.message
-          : "No se pudo guardar la configuración.",
-      );
-    } finally {
-      setGuardando(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
-        <Card className="p-10 text-center">
-          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
-
-          <p className="font-medium text-slate-950 dark:text-white">
-            Cargando configuración...
-          </p>
-
-          <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
-            Estamos preparando tu
-            negocio.
-          </p>
-        </Card>
-      </section>
-    );
+interface CatalogoItem {
+  id: string;
+  tipo: "servicio" | "producto";
+  nombre: string;
+  descripcion?: string;
+  precio?: number;
+  duracionMinutos?: number;
+  imagenUrl?: string;
+  imagenes?: string[];
+  categoria?: string;
+  activo?: boolean;
+}
+
+function normalizarUrlExterna(
+  valor?: string,
+) {
+  const limpio =
+    valor?.trim() || "";
+
+  if (!limpio) {
+    return "";
   }
+
+  const candidato =
+    /^https?:\/\//i.test(limpio)
+      ? limpio
+      : `https://${limpio}`;
+
+  try {
+    const url =
+      new URL(candidato);
+
+    if (
+      url.protocol !== "http:" &&
+      url.protocol !== "https:"
+    ) {
+      return "";
+    }
+
+    return url.toString();
+  } catch {
+    return "";
+  }
+}
+
+type PageProps = {
+  params: Promise<{
+    slug: string;
+  }>;
+};
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+
+  const empresasSnapshot = await adminDb
+    .collection("companies")
+    .where(
+      "paginaPublica.slug",
+      "==",
+      slug,
+    )
+    .limit(2)
+    .get();
+
+  if (empresasSnapshot.size !== 1) {
+    return {
+      title: "Negocio no encontrado | NDI AI",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
+
+  const empresa =
+    empresasSnapshot.docs[0].data() as Empresa;
+
+  const pagina =
+    empresa.paginaPublica;
 
   if (
-    error &&
-    !nombre
+    !pagina?.publicada ||
+    !empresaTieneSuscripcionActiva(
+      empresa,
+    ) ||
+    !empresaTieneFuncion(
+      empresa,
+      "pagina_publica",
+    )
   ) {
-    return (
-      <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
-        <Card className="border-red-200 bg-red-50 p-8 text-center dark:border-red-500/20 dark:bg-red-500/10">
-          <Badge variant="danger">
-            Error de acceso
-          </Badge>
+    return {
+      title: "Página no disponible | NDI AI",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
 
-          <h1 className="mt-4 text-xl font-semibold text-slate-950 dark:text-white">
-            No pudimos abrir esta empresa
-          </h1>
+  const nombre =
+    pagina.titulo?.trim() ||
+    empresa.nombre?.trim() ||
+    "Negocio";
 
-          <p className="mt-2 text-sm text-red-700 dark:text-red-400">
-            {error}
-          </p>
+  const descripcion =
+    pagina.textoSecundario?.trim() ||
+    pagina.subtitulo?.trim() ||
+    empresa.descripcion?.trim() ||
+    `Conocé ${nombre}, sus servicios, horarios y formas de contacto.`;
 
-          <Button
-            className="mt-6"
-            variant="secondary"
-            onClick={() =>
-              router.push(
-                "/empresas",
-              )
-            }
+  const imagenSocial =
+    pagina.portadaUrl?.trim() ||
+    pagina.logoUrl?.trim() ||
+    "";
+
+  return {
+    title: `${nombre} | NDI AI`,
+    description: descripcion.slice(
+      0,
+      160,
+    ),
+    robots: {
+      index: true,
+      follow: true,
+    },
+    openGraph: {
+      title: nombre,
+      description:
+        descripcion.slice(0, 160),
+      type: "website",
+      locale: "es_AR",
+      ...(imagenSocial
+        ? {
+            images: [
+              {
+                url: imagenSocial,
+                alt: nombre,
+              },
+            ],
+          }
+        : {}),
+    },
+    twitter: {
+      card:
+        imagenSocial
+          ? "summary_large_image"
+          : "summary",
+      title: nombre,
+      description:
+        descripcion.slice(0, 160),
+      ...(imagenSocial
+        ? {
+            images: [imagenSocial],
+          }
+        : {}),
+    },
+  };
+}
+
+export default async function NegocioPage({
+  params,
+}: PageProps) {
+  const { slug } = await params;
+
+  const empresasSnapshot = await adminDb
+    .collection("companies")
+    .where("paginaPublica.slug", "==", slug)
+    .limit(2)
+    .get();
+
+  if (empresasSnapshot.size !== 1) {
+    notFound();
+  }
+
+  const documento = empresasSnapshot.docs[0];
+
+  const empresa =
+    documento.data() as Empresa;
+
+  const pagina = empresa.paginaPublica;
+
+  if (
+    !pagina?.publicada ||
+    !empresaTieneSuscripcionActiva(
+      empresa,
+    ) ||
+    !empresaTieneFuncion(
+      empresa,
+      "pagina_publica",
+    )
+  ) {
+    notFound();
+  }
+
+  const catalogoSnapshot = await adminDb
+    .collection("companies")
+    .doc(documento.id)
+    .collection("catalog")
+    .get();
+
+  const catalogo: CatalogoItem[] =
+    catalogoSnapshot.docs
+      .map((docCatalogo) => ({
+        id: docCatalogo.id,
+        ...(docCatalogo.data() as Omit<
+          CatalogoItem,
+          "id"
+        >),
+      }))
+      .filter(
+        (item) => item.activo !== false,
+      );
+
+  const puedeUsarCatalogo =
+    empresaTieneFuncion(
+      empresa,
+      "catalogo",
+    );
+
+  const puedeUsarProductos =
+    empresaTieneFuncion(
+      empresa,
+      "productos",
+    );
+
+  const puedeUsarQr =
+    empresaTieneFuncion(
+      empresa,
+      "qr",
+    );
+
+  /*
+   * Página Completa y Business IA son los planes que incluyen
+   * catálogo ampliado / más secciones. "productos" funciona acá
+   * como capacidad del nivel Completa o superior, sin depender
+   * directamente del id técnico del plan.
+   */
+  const puedeUsarSeccionesAmpliadas =
+    puedeUsarProductos;
+
+  const servicios = catalogo.filter(
+    (item) => item.tipo === "servicio",
+  );
+
+  const productos =
+    puedeUsarCatalogo
+      ? catalogo.filter(
+          (item) =>
+            item.tipo === "producto",
+        )
+      : [];
+
+  /*
+   * RestauranteCartaPedidos es un Client Component.
+   * No le pasamos objetos crudos de Firestore porque
+   * pueden incluir Timestamp (createdAt / updatedAt),
+   * que Next.js no puede serializar hacia el cliente.
+   */
+  const productosRestaurante =
+    productos.map(
+      (producto) => ({
+        id: producto.id,
+        nombre:
+          producto.nombre || "",
+        descripcion:
+          producto.descripcion || "",
+        precio:
+          typeof producto.precio ===
+          "number"
+            ? producto.precio
+            : 0,
+        imagenUrl:
+          producto.imagenUrl || "",
+        imagenes:
+          Array.isArray(
+            producto.imagenes,
+          )
+            ? producto.imagenes
+                .filter(
+                  (url): url is string =>
+                    typeof url ===
+                      "string",
+                )
+                .slice(
+                  0,
+                  puedeUsarProductos
+                    ? 3
+                    : 1,
+                )
+            : [],
+        categoria:
+          producto.categoria || "",
+      }),
+    );
+
+  const catalogoPermitido =
+    puedeUsarProductos
+      ? catalogo
+      : servicios;
+
+  const nombre =
+    pagina.titulo ||
+    empresa.nombre ||
+    "Negocio";
+
+  const rubroNormalizado =
+    (empresa.rubro || "")
+      .trim()
+      .toLowerCase();
+
+  const esAlojamiento =
+    rubroNormalizado === "hotel" ||
+    rubroNormalizado === "hostal";
+
+  const esRestaurante =
+    rubroNormalizado === "restaurante" ||
+    rubroNormalizado === "restaurant";
+
+  const esTienda =
+    [
+      "tienda",
+      "tienda de ropa",
+      "indumentaria",
+      "ropa",
+    ].includes(
+      rubroNormalizado,
+    );
+
+  const mostrarHorariosRapidos =
+    [
+      "barberia",
+      "barbería",
+      "peluqueria",
+      "peluquería",
+      "consultorio",
+    ].includes(
+      rubroNormalizado,
+    );
+
+  const textoHeroGuardado =
+    pagina.subtitulo ||
+    empresa.descripcion ||
+    "";
+
+  const textoSecundarioGuardado =
+    pagina.textoSecundario || "";
+
+  const lineasHero =
+    !textoSecundarioGuardado &&
+    textoHeroGuardado.includes("\n")
+      ? textoHeroGuardado
+          .split("\n")
+          .map((linea) => linea.trim())
+          .filter(Boolean)
+      : [];
+
+  const textoPrincipal =
+    lineasHero.length > 0
+      ? lineasHero[0]
+      : textoHeroGuardado;
+
+  const textoSecundario =
+    textoSecundarioGuardado ||
+    (lineasHero.length > 1
+      ? lineasHero.slice(1).join(" ")
+      : "");
+
+  const colorPrincipal =
+    pagina.colorPrincipal ||
+    "#2563eb";
+
+  const logoUrl =
+    pagina.logoUrl?.trim() || "";
+
+  const portadaUrl =
+    pagina.portadaUrl?.trim() || "";
+
+  const galeria =
+    Array.isArray(pagina.galeria)
+      ? pagina.galeria
+          .filter(
+            (url): url is string =>
+              typeof url === "string" &&
+              url.trim().length > 0,
+          )
+          .slice(0, 6)
+      : [];
+
+  const telefonoLimpio =
+    empresa.telefono?.replace(
+      /\D/g,
+      "",
+    ) || "";
+
+  const whatsappUrl =
+    telefonoLimpio
+      ? `https://wa.me/${telefonoLimpio}`
+      : "";
+
+  const mostrarWhatsApp =
+    pagina.mostrarWhatsApp !== false &&
+    Boolean(telefonoLimpio);
+
+  const mostrarEmail =
+    pagina.mostrarEmail !== false &&
+    Boolean(empresa.email);
+
+  const mostrarDireccion =
+    pagina.mostrarDireccion !== false &&
+    Boolean(empresa.direccion);
+
+  const mostrarHorarios =
+    pagina.mostrarHorarios !== false &&
+    Boolean(empresa.horarios);
+
+  const mostrarServicios =
+    pagina.mostrarServicios !== false;
+
+  const mostrarProductos =
+    puedeUsarCatalogo &&
+    (
+      esRestaurante ||
+      pagina.mostrarProductos !== false
+    );
+
+  const mostrarGaleria =
+    puedeUsarSeccionesAmpliadas &&
+    pagina.mostrarGaleria !== false;
+
+  const mostrarMapa =
+    pagina.mostrarMapa !== false;
+
+  const mostrarPresupuesto =
+    pagina.mostrarPresupuesto !== false;
+
+  const mostrarContacto =
+    pagina.mostrarContacto !== false;
+
+  const direccionMapa =
+    empresa.direccion?.trim() || "";
+
+  const mapaEmbedUrl =
+    direccionMapa
+      ? `https://www.google.com/maps?q=${encodeURIComponent(
+          direccionMapa,
+        )}&output=embed`
+      : "";
+
+  const mapaAbrirUrl =
+    direccionMapa
+      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+          direccionMapa,
+        )}`
+      : "";
+
+  const redesSociales = [
+    {
+      nombre: "Instagram",
+      url: normalizarUrlExterna(
+        empresa.redesSociales?.instagram,
+      ),
+    },
+    {
+      nombre: "Facebook",
+      url: normalizarUrlExterna(
+        empresa.redesSociales?.facebook,
+      ),
+    },
+    {
+      nombre: "TikTok",
+      url: normalizarUrlExterna(
+        empresa.redesSociales?.tiktok,
+      ),
+    },
+  ].filter(
+    (
+      red,
+    ): red is {
+      nombre: string;
+      url: string;
+    } => Boolean(red.url),
+  );
+
+  const testimonios =
+    puedeUsarSeccionesAmpliadas &&
+    Array.isArray(pagina.testimonios)
+      ? pagina.testimonios
+          .filter(
+            (
+              item,
+            ): item is TestimonioPagina =>
+              Boolean(
+                item &&
+                  typeof item.nombre ===
+                    "string" &&
+                  typeof item.texto ===
+                    "string" &&
+                  item.nombre.trim() &&
+                  item.texto.trim(),
+              ),
+          )
+          .map((item) => ({
+            nombre:
+              item.nombre.trim(),
+            cargo:
+              item.cargo?.trim() || "",
+            texto:
+              item.texto.trim(),
+          }))
+          .slice(0, 6)
+      : [];
+
+  const preguntasFrecuentes =
+    puedeUsarSeccionesAmpliadas &&
+    Array.isArray(
+      pagina.preguntasFrecuentes,
+    )
+      ? pagina.preguntasFrecuentes
+          .filter(
+            (
+              item,
+            ): item is PreguntaFrecuentePagina =>
+              Boolean(
+                item &&
+                  typeof item.pregunta ===
+                    "string" &&
+                  typeof item.respuesta ===
+                    "string" &&
+                  item.pregunta.trim() &&
+                  item.respuesta.trim(),
+              ),
+          )
+          .map((item) => ({
+            pregunta:
+              item.pregunta.trim(),
+            respuesta:
+              item.respuesta.trim(),
+          }))
+          .slice(0, 8)
+      : [];
+
+  const puedeUsarTurnos =
+    empresaTieneFuncion(
+      empresa,
+      "turnos",
+    );
+
+  /*
+   * Restaurante tendrá su propio flujo
+   * de "Reservar mesa". Hasta implementarlo,
+   * evitamos mostrar el formulario genérico
+   * de "Reservar turno".
+   */
+  const puedeMostrarReservaGenerica =
+    puedeUsarTurnos &&
+    servicios.length > 0 &&
+    !esRestaurante;
+
+  const mostrarReservaMesa =
+    esRestaurante &&
+    puedeUsarTurnos &&
+    pagina.mostrarReservasMesa === true;
+
+  const mostrarPedidosOnline =
+    esRestaurante &&
+    puedeUsarProductos &&
+    pagina.mostrarPedidosOnline === true;
+
+  const puedeMostrarReserva =
+    puedeMostrarReservaGenerica ||
+    mostrarReservaMesa;
+
+  const puedeUsarPresupuestos =
+    empresaTieneFuncion(
+      empresa,
+      "presupuestos",
+    );
+
+  const puedeUsarAsistenteIA =
+    empresaTieneFuncion(
+      empresa,
+      "asistente_ia",
+    );
+
+  const sinMarcaNDI =
+    empresaTieneFuncion(
+      empresa,
+      "sin_marca_ndi",
+    );
+
+  const esClaro =
+    pagina.tema === "claro";
+
+  const claseTextoSecundario =
+    esClaro
+      ? "text-slate-600"
+      : "text-zinc-400";
+
+  const claseSeccionAlterna =
+    esClaro
+      ? "border-slate-200 bg-slate-50"
+      : "border-zinc-800 bg-zinc-900/40";
+
+  return (
+    <main
+      className={`min-h-screen scroll-smooth pb-16 sm:pb-0 ${
+        esClaro
+          ? "bg-white text-slate-950"
+          : "bg-zinc-950 text-white"
+      }`}
+    >
+      <PublicAnalytics slug={slug} />
+      {/* HEADER */}
+      <header
+        className={`sticky top-0 z-50 border-b shadow-[0_8px_30px_rgba(0,0,0,0.12)] backdrop-blur-xl ${
+          esClaro
+            ? "border-slate-200 bg-white/90"
+            : "border-white/10 bg-zinc-950/80"
+        }`}
+      >
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2.5 sm:gap-5 sm:px-8 sm:py-3.5">
+          <a
+            href="#inicio"
+            className="flex min-w-0 items-center gap-2.5 sm:gap-3"
           >
-            Volver a empresas
-          </Button>
-        </Card>
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt={`Logo de ${nombre}`}
+                className="h-9 w-9 shrink-0 rounded-xl border border-white/10 bg-white object-cover shadow-lg sm:h-11 sm:w-11 sm:rounded-2xl"
+              />
+            ) : (
+              <div
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white shadow-lg sm:h-11 sm:w-11 sm:rounded-2xl"
+                style={{
+                  backgroundColor:
+                    colorPrincipal,
+                }}
+              >
+                <Globe2 className="h-5 w-5" />
+              </div>
+            )}
+
+            <div className="min-w-0">
+              <p
+                className={`truncate text-[9px] uppercase tracking-[0.16em] sm:text-[11px] sm:tracking-[0.18em] ${
+                  esClaro
+                    ? "text-slate-500"
+                    : "text-zinc-500"
+                }`}
+              >
+                {empresa.rubro ||
+                  "Negocio"}
+              </p>
+
+              <p className="truncate text-sm font-semibold sm:text-base">
+                {nombre}
+              </p>
+            </div>
+          </a>
+
+          <nav className="hidden items-center gap-1 lg:flex">
+            {mostrarServicios && servicios.length > 0 && (
+              <a
+                href="#servicios"
+                className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
+                  esClaro
+                    ? "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+                    : "text-zinc-400 hover:bg-white/5 hover:text-white"
+                }`}
+              >
+                {esAlojamiento
+                  ? "Habitaciones"
+                  : "Servicios"}
+              </a>
+            )}
+
+            {mostrarProductos && productos.length > 0 && (
+              <a
+                href="#productos"
+                className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
+                  esClaro
+                    ? "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+                    : "text-zinc-400 hover:bg-white/5 hover:text-white"
+                }`}
+              >
+                {esRestaurante
+                  ? "Carta"
+                  : "Productos"}
+              </a>
+            )}
+
+            {mostrarGaleria && galeria.length > 0 && (
+              <a
+                href="#galeria"
+                className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
+                  esClaro
+                    ? "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+                    : "text-zinc-400 hover:bg-white/5 hover:text-white"
+                }`}
+              >
+                Galería
+              </a>
+            )}
+
+            {testimonios.length > 0 && (
+              <a
+                href="#testimonios"
+                className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
+                  esClaro
+                    ? "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+                    : "text-zinc-400 hover:bg-white/5 hover:text-white"
+                }`}
+              >
+                Opiniones
+              </a>
+            )}
+
+            {preguntasFrecuentes.length > 0 && (
+              <a
+                href="#preguntas"
+                className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
+                  esClaro
+                    ? "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+                    : "text-zinc-400 hover:bg-white/5 hover:text-white"
+                }`}
+              >
+                Preguntas
+              </a>
+            )}
+
+            {mostrarContacto && (
+              <a
+                href="#contacto"
+                className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
+                  esClaro
+                    ? "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+                    : "text-zinc-400 hover:bg-white/5 hover:text-white"
+                }`}
+              >
+                Contacto
+              </a>
+            )}
+          </nav>
+
+          <div className="flex shrink-0 items-center gap-2">
+            {puedeMostrarReserva && (
+              <a
+                href="#reservar"
+                className="hidden items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:brightness-110 md:inline-flex"
+                style={{
+                  backgroundColor:
+                    colorPrincipal,
+                }}
+              >
+                <Clock3 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                {mostrarReservaMesa
+                  ? "Reservar mesa"
+                  : "Reservar"}
+              </a>
+            )}
+
+            {mostrarWhatsApp && (
+              <a
+                href={whatsappUrl}
+                data-analytics-event="whatsapp_click"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:bg-emerald-500 sm:inline-flex"
+              >
+                <MessageCircle className="h-4 w-4" />
+                WhatsApp
+              </a>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* HERO */}
+      <section
+        id="inicio"
+        className={`relative flex min-h-[520px] scroll-mt-20 items-center overflow-hidden sm:min-h-[68vh] sm:scroll-mt-24 lg:min-h-[390px] ${
+          portadaUrl ? "text-white" : ""
+        }`}
+      >
+        {portadaUrl ? (
+          <>
+            <img
+              src={portadaUrl}
+              alt={`Portada de ${nombre}`}
+              className="absolute inset-0 h-full w-full scale-[1.02] object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/35" />
+            <div
+              className="absolute inset-0 opacity-30"
+              style={{
+                background: `linear-gradient(135deg, ${colorPrincipal}55, transparent 65%)`,
+              }}
+            />
+          </>
+        ) : (
+          <div
+            className="absolute inset-0 opacity-20"
+            style={{
+              background: `radial-gradient(circle at top, ${colorPrincipal}, transparent 65%)`,
+            }}
+          />
+        )}
+
+        <div className="relative mx-auto w-full max-w-6xl px-4 py-10 sm:px-8 sm:py-28 lg:max-w-5xl lg:py-12">
+          <div className="max-w-3xl">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+              {logoUrl && (
+                <img
+                  src={logoUrl}
+                  alt={`Logo de ${nombre}`}
+                  className="h-14 w-14 rounded-2xl border border-white/15 bg-white object-cover shadow-2xl sm:h-20 sm:w-20 sm:rounded-3xl"
+                />
+              )}
+
+              {empresa.rubro && (
+                <div
+                  className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs backdrop-blur sm:gap-2 sm:px-3 sm:py-1.5 sm:text-sm"
+                  style={{
+                    borderColor: `${colorPrincipal}77`,
+                    backgroundColor: `${colorPrincipal}25`,
+                    color: portadaUrl
+                      ? "#ffffff"
+                      : colorPrincipal,
+                  }}
+                >
+                  <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  {empresa.rubro}
+                </div>
+              )}
+            </div>
+
+            <h1 className="mt-4 text-3xl font-bold leading-[1.08] tracking-tight sm:mt-6 sm:text-5xl lg:mt-4 lg:text-4xl">
+              {nombre}
+            </h1>
+
+            {textoPrincipal && (
+              <p
+                className={`mt-4 max-w-2xl text-base font-semibold leading-6 sm:mt-6 sm:text-xl sm:leading-8 lg:mt-3 lg:text-lg lg:leading-7 ${
+                  portadaUrl
+                    ? "text-white"
+                    : esClaro
+                      ? "text-slate-900"
+                      : "text-zinc-100"
+                }`}
+              >
+                {textoPrincipal}
+              </p>
+            )}
+
+            {textoSecundario && (
+              <p
+                className={`mt-1.5 max-w-2xl text-[13px] leading-5 sm:mt-2 sm:text-base sm:leading-7 ${
+                  portadaUrl
+                    ? "text-zinc-300"
+                    : esClaro
+                      ? "text-slate-600"
+                      : "text-zinc-400"
+                }`}
+              >
+                {textoSecundario}
+              </p>
+            )}
+
+            <div className="mt-5 flex flex-col gap-2.5 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-3">
+              {puedeMostrarReserva && (
+                <a
+                  href="#reservar"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-xl transition hover:-translate-y-0.5 hover:brightness-110 sm:px-6 sm:py-3.5 sm:text-base"
+                  style={{
+                    backgroundColor:
+                      colorPrincipal,
+                  }}
+                >
+                  <Clock3 className="h-5 w-5" />
+                  {mostrarReservaMesa
+                    ? "Reservar mesa"
+                    : esAlojamiento
+                      ? "Reservar estadía"
+                      : "Reservar turno"}
+                </a>
+              )}
+
+              {(mostrarWhatsApp ||
+                redesSociales.length > 0) && (
+                <div className="flex w-full flex-nowrap items-center gap-1.5 sm:w-auto sm:gap-2">
+                  {mostrarWhatsApp && (
+                    <a
+                      href={whatsappUrl}
+                      data-analytics-event="whatsapp_click"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2.5 text-sm font-semibold text-white shadow-xl transition hover:-translate-y-0.5 hover:bg-emerald-500 sm:flex-none sm:gap-2 sm:px-6 sm:py-3.5 sm:text-base"
+                    >
+                      <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      Hablar por WhatsApp
+                    </a>
+                  )}
+
+                  {redesSociales.map((red) => (
+                    <a
+                      key={`hero-${red.nombre}`}
+                      href={red.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Abrir ${red.nombre}`}
+                      title={red.nombre}
+                      className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border shadow-lg backdrop-blur transition hover:-translate-y-0.5 sm:h-[52px] sm:w-[52px] ${
+                        portadaUrl || !esClaro
+                          ? "border-white/20 bg-white/10 text-white hover:bg-white/20"
+                          : "border-slate-200 bg-white text-slate-800 hover:bg-slate-100"
+                      }`}
+                    >
+                      {red.nombre === "Instagram" ? (
+                        <span className="relative block h-[19px] w-[19px] rounded-[6px] border-2 border-current">
+                          <span className="absolute left-1/2 top-1/2 h-[7px] w-[7px] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-current" />
+                          <span className="absolute right-[2px] top-[2px] h-[3px] w-[3px] rounded-full bg-current" />
+                        </span>
+                      ) : red.nombre === "Facebook" ? (
+                        <span className="text-[22px] font-bold leading-none">
+                          f
+                        </span>
+                      ) : (
+                        <Music2 className="h-5 w-5" />
+                      )}
+                    </a>
+                  ))}
+                </div>
+              )}
+
+              {!puedeUsarTurnos &&
+                mostrarServicios &&
+                servicios.length > 0 && (
+                  <a
+                    href="#servicios"
+                    className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold backdrop-blur transition sm:px-6 sm:py-3.5 sm:text-base ${
+                      portadaUrl || !esClaro
+                        ? "border-white/15 bg-white/10 text-white hover:bg-white/15"
+                        : "border-slate-300 bg-white text-slate-900 shadow-sm hover:bg-slate-50"
+                    }`}
+                  >
+                    <Package className="h-5 w-5" />
+                    {esAlojamiento
+                      ? "Ver habitaciones"
+                      : "Ver servicios"}
+                  </a>
+                )}
+
+              {!mostrarWhatsApp &&
+                mostrarEmail && (
+                  <a
+                    href={`mailto:${empresa.email}`}
+                    className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold backdrop-blur transition sm:px-6 sm:py-3.5 sm:text-base ${
+                      portadaUrl || !esClaro
+                        ? "border-white/15 bg-white/10 text-white hover:bg-white/15"
+                        : "border-slate-300 bg-white text-slate-900 shadow-sm hover:bg-slate-50"
+                    }`}
+                  >
+                    <Mail className="h-5 w-5" />
+                    Enviar correo
+                  </a>
+                )}
+            </div>
+
+            {puedeUsarQr && (
+              <div className="mt-3 sm:mt-4">
+                <CompartirPagina
+                  nombre={nombre}
+                  tema={
+                    esClaro
+                      ? "claro"
+                      : "oscuro"
+                  }
+                />
+              </div>
+            )}
+          </div>
+        </div>
       </section>
+
+      {/* INFORMACIÓN */}
+      <section className="relative z-10 -mt-4 sm:-mt-7">
+        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-2 px-4 pb-6 sm:gap-4 sm:px-8 sm:pb-10 md:grid-cols-2 lg:max-w-5xl lg:grid-cols-4 lg:gap-2.5">
+          {mostrarHorarios && (
+            <InfoCard
+              icono={
+                <Clock3 className="h-5 w-5" />
+              }
+              titulo="Horarios"
+              valor={empresa.horarios || ""}
+              color={colorPrincipal}
+              claro={esClaro}
+            />
+          )}
+
+          {mostrarDireccion && (
+            <a
+              href="#ubicacion"
+              className="block rounded-2xl transition hover:-translate-y-0.5"
+              aria-label="Ir al mapa y ver cómo llegar"
+            >
+              <InfoCard
+                icono={
+                  <MapPin className="h-5 w-5" />
+                }
+                titulo="Cómo llegar"
+                valor={empresa.direccion || ""}
+                color={colorPrincipal}
+                claro={esClaro}
+              />
+            </a>
+          )}
+
+          {mostrarWhatsApp && (
+            <InfoCard
+              icono={
+                <Phone className="h-5 w-5" />
+              }
+              titulo="Teléfono"
+              valor={empresa.telefono || ""}
+              color={colorPrincipal}
+              claro={esClaro}
+            />
+          )}
+
+          {mostrarEmail && (
+            <InfoCard
+              icono={
+                <Mail className="h-5 w-5" />
+              }
+              titulo="Correo"
+              valor={empresa.email || ""}
+              color={colorPrincipal}
+              claro={esClaro}
+            />
+          )}
+        </div>
+      </section>
+
+      {/* SERVICIOS */}
+      {mostrarServicios &&
+        servicios.length > 0 && (
+        <section id="servicios" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-10 sm:px-8 sm:py-20 lg:max-w-5xl lg:py-9">
+          <div className="max-w-2xl">
+            <p
+              className="text-xs font-medium sm:text-sm"
+              style={{
+                color: colorPrincipal,
+              }}
+            >
+              Lo que ofrecemos
+            </p>
+
+            <h2 className="mt-1.5 text-xl font-bold tracking-tight sm:mt-3 sm:text-4xl lg:mt-1 lg:text-2xl">
+              {esAlojamiento
+                ? "Habitaciones"
+                : "Servicios"}
+            </h2>
+
+            <p className={`mt-2 text-sm leading-6 sm:mt-4 sm:text-base sm:leading-7 ${claseTextoSecundario}`}>
+              {esAlojamiento
+                ? "Elegí la habitación que mejor se adapte a tu estadía."
+                : "Conocé los servicios disponibles."}
+            </p>
+          </div>
+
+          <div className="mt-5 grid sm:mt-8 grid-cols-2 gap-3 sm:mt-10 sm:gap-5 md:grid-cols-2 lg:mt-5 lg:grid-cols-3 lg:gap-3 xl:grid-cols-4">
+            {servicios.map((servicio) => (
+              <CatalogoCard
+                key={servicio.id}
+                item={servicio}
+                color={colorPrincipal}
+                claro={esClaro}
+                puedeReservar={
+                  puedeUsarTurnos &&
+                  !esRestaurante
+                }
+                mostrarWhatsApp={
+                  mostrarWhatsApp
+                }
+                whatsappUrl={
+                  whatsappUrl
+                }
+                mostrarContacto={
+                  mostrarContacto
+                }
+                slug={slug}
+                mostrarHorariosRapidos={
+                  mostrarHorariosRapidos
+                }
+                tema={
+                  esClaro
+                    ? "claro"
+                    : "oscuro"
+                }
+                esAlojamiento={
+                  esAlojamiento
+                }
+                imagenesMultiples={
+                  puedeUsarProductos
+                }
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* PRODUCTOS / CARTA */}
+      {mostrarProductos &&
+        productos.length > 0 && (
+        <section
+          id="productos"
+          className="mx-auto max-w-6xl scroll-mt-24 px-4 py-10 sm:px-8 sm:py-20 lg:max-w-5xl lg:py-9"
+        >
+          <div className="max-w-2xl">
+            <p
+              className="text-xs font-medium sm:text-sm"
+              style={{
+                color:
+                  colorPrincipal,
+              }}
+            >
+              {esRestaurante
+                ? "Menú"
+                : "Catálogo"}
+            </p>
+
+            <h2 className="mt-1.5 text-xl font-bold tracking-tight sm:mt-3 sm:text-4xl lg:mt-1 lg:text-2xl">
+              {esRestaurante
+                ? "Carta"
+                : "Productos"}
+            </h2>
+
+            <p
+              className={`mt-1.5 text-xs leading-5 sm:mt-4 sm:text-base sm:leading-7 ${claseTextoSecundario}`}
+            >
+              {esRestaurante
+                ? "Explorá nuestras entradas, platos principales, bebidas y postres."
+                : "Productos disponibles en este negocio."}
+            </p>
+          </div>
+
+          {esRestaurante ? (
+            <RestauranteCartaPedidos
+              slug={slug}
+              productos={
+                productosRestaurante
+              }
+              colorPrincipal={
+                colorPrincipal
+              }
+              tema={
+                esClaro
+                  ? "claro"
+                  : "oscuro"
+              }
+              pedidosHabilitados={
+                mostrarPedidosOnline
+              }
+              whatsappUrl={
+                whatsappUrl
+              }
+              mostrarWhatsApp={
+                mostrarWhatsApp
+              }
+            />
+          ) : (
+            <div className="mt-5 grid sm:mt-8 grid-cols-2 gap-3 sm:mt-10 sm:gap-5 md:grid-cols-2 lg:mt-5 lg:grid-cols-3 lg:gap-3 xl:grid-cols-4">
+              {productos.map(
+                (producto) => (
+                  <CatalogoCard
+                    key={
+                      producto.id
+                    }
+                    item={
+                      producto
+                    }
+                    color={
+                      colorPrincipal
+                    }
+                    claro={
+                      esClaro
+                    }
+                    puedeReservar={
+                      false
+                    }
+                    mostrarWhatsApp={
+                      mostrarWhatsApp
+                    }
+                    whatsappUrl={
+                      whatsappUrl
+                    }
+                    mostrarContacto={
+                      mostrarContacto
+                    }
+                    esTienda={
+                      esTienda &&
+                      puedeUsarProductos
+                    }
+                    imagenesMultiples={
+                      puedeUsarProductos
+                    }
+                    tema={
+                      esClaro
+                        ? "claro"
+                        : "oscuro"
+                    }
+                  />
+                ),
+              )}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* PRESUPUESTO */}
+      {puedeUsarPresupuestos &&
+        mostrarPresupuesto && (
+          <section
+            id="presupuesto"
+            className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}
+          >
+            <div className="mx-auto max-w-4xl px-4 py-8 sm:px-8 sm:py-12">
+              <details className="group">
+                <summary
+                  className={`flex cursor-pointer list-none flex-col gap-4 rounded-2xl border p-5 transition sm:flex-row sm:items-center sm:justify-between sm:p-6 ${
+                    esClaro
+                      ? "border-slate-200 bg-white shadow-sm hover:border-slate-300"
+                      : "border-zinc-800 bg-zinc-900 hover:border-zinc-700"
+                  }`}
+                >
+                  <div>
+                    <p
+                      className="text-xs font-semibold uppercase tracking-[0.16em]"
+                      style={{
+                        color: colorPrincipal,
+                      }}
+                    >
+                      Presupuesto
+                    </p>
+
+                    <h2 className="mt-1 text-xl font-bold tracking-tight sm:text-2xl">
+                      ¿Necesitás un presupuesto?
+                    </h2>
+
+                    <p
+                      className={`mt-1 text-sm ${
+                        esClaro
+                          ? "text-slate-600"
+                          : "text-zinc-400"
+                      }`}
+                    >
+                      Contanos qué estás buscando y te preparamos una cotización.
+                    </p>
+                  </div>
+
+                  <span
+                    className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm"
+                    style={{
+                      backgroundColor:
+                        colorPrincipal,
+                    }}
+                  >
+                    Solicitar presupuesto
+                    <ChevronDown className="h-4 w-4 transition-transform duration-200 group-open:rotate-180" />
+                  </span>
+                </summary>
+
+                <div className="pt-4 sm:pt-6">
+                  <PresupuestoFormulario
+                    slug={slug}
+                    items={catalogoPermitido.map(
+                      (item) => ({
+                        id: item.id,
+                        nombre: item.nombre,
+                        tipo: item.tipo,
+                      }),
+                    )}
+                    tema={
+                      esClaro
+                        ? "claro"
+                        : "oscuro"
+                    }
+                  />
+                </div>
+              </details>
+            </div>
+          </section>
+        )}
+
+      {/* GALERÍA */}
+      {mostrarGaleria &&
+        galeria.length > 0 && (
+        <section
+            id="galeria"
+            className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}
+          >
+          <div className="mx-auto max-w-6xl px-4 py-10 sm:px-8 sm:py-20">
+            <div className="max-w-2xl">
+              <p
+                className="text-xs font-medium sm:text-sm"
+                style={{
+                  color: colorPrincipal,
+                }}
+              >
+                Imágenes
+              </p>
+
+              <h2 className="mt-1.5 text-xl font-bold tracking-tight sm:mt-3 sm:text-4xl lg:mt-1 lg:text-2xl">
+                Galería
+              </h2>
+
+              <p className={`mt-2 text-sm leading-6 sm:mt-4 sm:text-base sm:leading-7 ${claseTextoSecundario}`}>
+                Conocé un poco más sobre {empresa.nombre || nombre}.
+              </p>
+            </div>
+
+            <div className="mt-5 grid sm:mt-8 grid-cols-2 gap-3 sm:mt-10 sm:gap-4 lg:grid-cols-3">
+              {galeria.map((url, indice) => (
+                <div
+                  key={`${url}-${indice}`}
+                  className={`group aspect-square overflow-hidden rounded-2xl border sm:aspect-[4/3] sm:rounded-3xl ${
+                    esClaro
+                      ? "border-slate-200 bg-slate-100"
+                      : "border-zinc-800 bg-zinc-900"
+                  }`}
+                >
+                  <img
+                    src={url}
+                    alt={`${nombre} - imagen ${indice + 1}`}
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* RESERVA DE ALOJAMIENTO - DESPUÉS DE GALERÍA */}
+      {esAlojamiento &&
+        puedeMostrarReserva && (
+          <section
+            id="reservar"
+            className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}
+          >
+            <div className="mx-auto max-w-4xl px-3 py-7 sm:px-8 sm:py-20">
+              <ReservaAlojamientoForm
+                slug={slug}
+                habitaciones={servicios.map(
+                  (servicio) => ({
+                    id: servicio.id,
+                    nombre:
+                      servicio.nombre,
+                    precio:
+                      servicio.precio,
+                  }),
+                )}
+                colorPrincipal={
+                  colorPrincipal
+                }
+                tema={
+                  esClaro
+                    ? "claro"
+                    : "oscuro"
+                }
+              />
+            </div>
+          </section>
+        )}
+
+      {/* SOBRE EL NEGOCIO */}
+      {empresa.descripcion && (
+        <section
+            id="nosotros"
+            className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}
+          >
+          <div className="mx-auto max-w-6xl px-4 py-7 sm:px-8 sm:py-20">
+            <div className="grid gap-5 sm:gap-10 lg:grid-cols-[0.8fr_1.2fr]">
+              <div>
+                <p
+                  className="text-xs font-medium sm:text-sm"
+                  style={{
+                    color:
+                      colorPrincipal,
+                  }}
+                >
+                  Sobre nosotros
+                </p>
+
+                <h2 className="mt-1.5 text-xl font-bold leading-tight tracking-tight sm:mt-3 sm:text-3xl">
+                  Conocé más sobre{" "}
+                  {empresa.nombre ||
+                    nombre}
+                </h2>
+              </div>
+
+              <div
+                className={`rounded-2xl border p-4 sm:rounded-3xl sm:p-7 ${
+                  esClaro
+                    ? "border-slate-200 bg-white shadow-sm"
+                    : "border-zinc-800 bg-zinc-900"
+                }`}
+              >
+                <p
+                  className={`whitespace-pre-line text-sm leading-6 sm:text-base sm:leading-8 ${
+                    esClaro
+                      ? "text-slate-700"
+                      : "text-zinc-300"
+                  }`}
+                >
+                  {empresa.descripcion}
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* TESTIMONIOS */}
+      {testimonios.length > 0 && (
+        <section
+          id="testimonios"
+          className="mx-auto max-w-6xl scroll-mt-24 px-4 py-10 sm:px-8 sm:py-20 lg:max-w-5xl lg:py-9"
+        >
+          <div className="mx-auto max-w-2xl text-center">
+            <p
+              className="text-xs font-medium sm:text-sm"
+              style={{
+                color: colorPrincipal,
+              }}
+            >
+              Opiniones
+            </p>
+
+            <h2 className="mt-1.5 text-xl font-bold tracking-tight sm:mt-3 sm:text-4xl lg:mt-1 lg:text-2xl">
+              Lo que dicen nuestros clientes
+            </h2>
+
+            <p
+              className={`mt-2 text-sm leading-6 sm:mt-4 sm:text-base sm:leading-7 ${claseTextoSecundario}`}
+            >
+              Experiencias compartidas por personas que ya eligieron{" "}
+              {empresa.nombre || nombre}.
+            </p>
+          </div>
+
+          <div
+            className={`mt-5 grid gap-2.5 sm:mt-10 sm:gap-5 ${
+              testimonios.length === 1
+                ? "mx-auto max-w-2xl"
+                : testimonios.length === 2
+                  ? "mx-auto grid-cols-2 max-w-4xl"
+                  : "grid-cols-2 lg:grid-cols-3"
+            }`}
+          >
+            {testimonios.map(
+              (
+                testimonio,
+                index,
+              ) => (
+                <article
+                  key={`${testimonio.nombre}-${index}`}
+                  className={`relative flex h-full flex-col rounded-2xl border p-3 shadow-[0_10px_28px_rgba(0,0,0,0.06)] sm:rounded-3xl sm:p-6 sm:shadow-[0_18px_45px_rgba(0,0,0,0.08)] ${
+                    esClaro
+                      ? "border-slate-200 bg-white"
+                      : "border-zinc-800 bg-zinc-900"
+                  }`}
+                >
+                  <div
+                    className="flex h-7 w-7 items-center justify-center rounded-lg text-white sm:h-11 sm:w-11 sm:rounded-2xl"
+                    style={{
+                      backgroundColor:
+                        colorPrincipal,
+                    }}
+                  >
+                    <Quote className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
+                  </div>
+
+                  <p
+                    className={`mt-3 flex-1 whitespace-pre-line text-[11px] leading-[1.45] sm:mt-6 sm:text-base sm:leading-7 ${
+                      esClaro
+                        ? "text-slate-700"
+                        : "text-zinc-300"
+                    }`}
+                  >
+                    “{testimonio.texto}”
+                  </p>
+
+                  <div
+                    className={`mt-3 border-t pt-3 sm:mt-6 sm:pt-5 ${
+                      esClaro
+                        ? "border-slate-200"
+                        : "border-zinc-800"
+                    }`}
+                  >
+                    <p className="text-xs font-semibold sm:text-base">
+                      {testimonio.nombre}
+                    </p>
+
+                    {testimonio.cargo && (
+                      <p
+                        className={`mt-0.5 text-[10px] sm:mt-1 sm:text-sm ${claseTextoSecundario}`}
+                      >
+                        {testimonio.cargo}
+                      </p>
+                    )}
+                  </div>
+                </article>
+              ),
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* PREGUNTAS FRECUENTES */}
+      {preguntasFrecuentes.length > 0 && (
+        <section
+          id="preguntas"
+          className={`scroll-mt-24 border-y py-8 sm:py-20 ${
+            esClaro
+              ? "border-slate-200 bg-slate-50"
+              : "border-zinc-800 bg-zinc-900/40"
+          }`}
+        >
+          <div className="mx-auto max-w-4xl px-4 sm:px-8">
+            <div className="mx-auto max-w-xl text-center">
+              <p
+                className="text-xs font-medium sm:text-sm"
+                style={{
+                  color: colorPrincipal,
+                }}
+              >
+                Preguntas frecuentes
+              </p>
+
+              <h2 className="mt-1 text-lg font-bold leading-tight tracking-tight sm:mt-3 sm:text-4xl lg:mt-1 lg:text-2xl">
+                Resolvemos las dudas más comunes
+              </h2>
+
+              <p
+                className={`mx-auto mt-2 max-w-lg text-xs leading-5 sm:mt-4 sm:max-w-2xl sm:text-base sm:leading-7 ${claseTextoSecundario}`}
+              >
+                Encontrá rápidamente información útil antes de contactarnos.
+              </p>
+            </div>
+
+            <div className="mx-auto mt-5 max-w-2xl space-y-2 sm:mt-10 sm:space-y-3">
+              {preguntasFrecuentes.map(
+                (
+                  item,
+                  index,
+                ) => (
+                  <details
+                    key={`${item.pregunta}-${index}`}
+                    className={`group overflow-hidden rounded-xl border transition sm:rounded-2xl ${
+                      esClaro
+                        ? "border-slate-200 bg-white"
+                        : "border-zinc-800 bg-zinc-950/70"
+                    }`}
+                  >
+                    <summary
+                      className={`flex cursor-pointer list-none items-center justify-between gap-3 px-3.5 py-3 text-[13px] font-semibold sm:gap-4 sm:px-5 sm:py-5 sm:text-base ${
+                        esClaro
+                          ? "text-slate-900"
+                          : "text-white"
+                      }`}
+                    >
+                      <span>
+                        {item.pregunta}
+                      </span>
+
+                      <span
+                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-sm leading-none transition group-open:rotate-45 sm:h-8 sm:w-8 sm:text-lg ${
+                          esClaro
+                            ? "border-slate-200 bg-slate-50 text-slate-600"
+                            : "border-zinc-700 bg-zinc-900 text-zinc-300"
+                        }`}
+                        aria-hidden="true"
+                      >
+                        +
+                      </span>
+                    </summary>
+
+                    <div
+                      className={`border-t px-3.5 py-3 sm:px-5 sm:py-5 ${
+                        esClaro
+                          ? "border-slate-200"
+                          : "border-zinc-800"
+                      }`}
+                    >
+                      <p
+                        className={`whitespace-pre-line text-xs leading-5 sm:text-base sm:leading-7 ${
+                          esClaro
+                            ? "text-slate-600"
+                            : "text-zinc-400"
+                        }`}
+                      >
+                        {item.respuesta}
+                      </p>
+                    </div>
+                  </details>
+                ),
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* REDES SOCIALES */}
+      {redesSociales.length > 0 && (
+        <section className="mx-auto max-w-6xl px-4 pt-6 sm:px-8 sm:pt-10">
+          <div
+            className={`rounded-xl border p-3.5 sm:rounded-3xl sm:p-8 ${
+              esClaro
+                ? "border-slate-200 bg-slate-50"
+                : "border-zinc-800 bg-zinc-900/70"
+            }`}
+          >
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
+              <div>
+                <p
+                  className="text-xs font-medium sm:text-sm"
+                  style={{
+                    color: colorPrincipal,
+                  }}
+                >
+                  Nuestras redes
+                </p>
+
+                <h2 className="mt-1 text-lg font-bold tracking-tight sm:mt-2 sm:text-2xl">
+                  ¡Seguinos!
+                </h2>
+              </div>
+
+              <div className="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:gap-3">
+                {redesSociales.map(
+                  (red) => (
+                    <a
+                      key={red.nombre}
+                      href={red.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Abrir ${red.nombre}`}
+                      className={`flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-2.5 text-[10px] font-semibold transition sm:inline-flex sm:flex-row sm:gap-2 sm:px-4 sm:py-3 sm:text-sm ${
+                        esClaro
+                          ? "border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50"
+                          : "border-zinc-700 bg-zinc-950 text-zinc-100 hover:border-zinc-600 hover:bg-zinc-900"
+                      }`}
+                    >
+                      {red.nombre === "Instagram" ? (
+                        <span className="relative block h-4 w-4 rounded-[5px] border-2 border-current sm:h-[18px] sm:w-[18px]">
+                          <span className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-current" />
+                          <span className="absolute right-[2px] top-[2px] h-[2px] w-[2px] rounded-full bg-current" />
+                        </span>
+                      ) : red.nombre === "Facebook" ? (
+                        <span className="text-lg font-bold leading-none sm:text-xl">
+                          f
+                        </span>
+                      ) : (
+                        <Music2 className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
+                      )}
+
+                      <span className="truncate">
+                        {red.nombre}
+                      </span>
+
+                      <ExternalLink className="hidden h-3.5 w-3.5 text-zinc-500 sm:block" />
+                    </a>
+                  ),
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* MAPA */}
+      {mostrarMapa &&
+        mostrarDireccion &&
+        mapaEmbedUrl && (
+          <section id="ubicacion" className="mx-auto max-w-6xl scroll-mt-24 px-5 py-10 sm:px-8">
+            <div
+              className={`overflow-hidden rounded-3xl border ${
+                esClaro
+                  ? "border-slate-200 bg-white shadow-sm"
+                  : "border-zinc-800 bg-zinc-900"
+              }`}
+            >
+              <div
+                className={`flex flex-col gap-3 border-b p-5 sm:flex-row sm:items-center sm:justify-between ${
+                  esClaro
+                    ? "border-slate-200"
+                    : "border-zinc-800"
+                }`}
+              >
+                <div>
+                  <p
+                    className={`text-xs font-semibold uppercase tracking-[0.18em] ${
+                      esClaro
+                        ? "text-slate-500"
+                        : "text-zinc-500"
+                    }`}
+                  >
+                    Ubicación
+                  </p>
+
+                  <h2 className="mt-1 text-lg font-bold">
+                    Cómo llegar
+                  </h2>
+
+                  <p className={`mt-1 text-sm ${claseTextoSecundario}`}>
+                    {direccionMapa}
+                  </p>
+                </div>
+
+                <a
+                  href={mapaAbrirUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${
+                    esClaro
+                      ? "border-slate-200 bg-slate-100 text-slate-900 hover:bg-slate-200"
+                      : "border-zinc-700 bg-zinc-800 text-white hover:bg-zinc-700"
+                  }`}
+                >
+                  <MapPin className="h-4 w-4" />
+                  Abrir en Google Maps
+                </a>
+              </div>
+
+              <iframe
+                src={mapaEmbedUrl}
+                title={`Mapa de ${nombre}`}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="h-[320px] w-full border-0"
+                allowFullScreen
+              />
+            </div>
+          </section>
+        )}
+
+
+      {/* RESERVA ONLINE */}
+      {!esAlojamiento &&
+        puedeMostrarReserva && (
+        <section
+          id="reservar"
+          className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}
+        >
+          <div className="mx-auto max-w-4xl px-3 py-7 sm:px-8 sm:py-20">
+            {mostrarReservaMesa ? (
+              <ReservaMesaForm
+                slug={slug}
+                colorPrincipal={
+                  colorPrincipal
+                }
+                tema={
+                  esClaro
+                    ? "claro"
+                    : "oscuro"
+                }
+              />
+            ) : (
+                <ReservaForm
+                  slug={slug}
+                  servicios={servicios.map(
+                    (servicio) => ({
+                      id: servicio.id,
+                      nombre:
+                        servicio.nombre,
+                      precio:
+                        servicio.precio,
+                      duracionMinutos:
+                        servicio.duracionMinutos,
+                    }),
+                  )}
+                  colorPrincipal={
+                    colorPrincipal
+                  }
+                  tema={
+                    esClaro
+                      ? "claro"
+                      : "oscuro"
+                  }
+                />
+              )}
+            </div>
+          </section>
+        )}
+
+      {/* CONTACTO */}
+      {mostrarContacto && (
+      <section id="contacto" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-10 sm:px-8 sm:py-20 lg:max-w-5xl lg:py-9">
+        <div
+          className="relative overflow-hidden rounded-2xl border p-4 sm:rounded-3xl sm:p-12"
+          style={{
+            borderColor: `${colorPrincipal}44`,
+            background: esClaro
+              ? `linear-gradient(135deg, ${colorPrincipal}12, rgba(248,250,252,0.98))`
+              : `linear-gradient(135deg, ${colorPrincipal}18, rgba(24,24,27,0.8))`,
+          }}
+        >
+          <div className="relative grid gap-5 sm:gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+            <div>
+              <p
+                className="text-xs font-medium sm:text-sm"
+                style={{
+                  color: colorPrincipal,
+                }}
+              >
+                Contacto
+              </p>
+
+              <h2 className="mt-1.5 text-xl font-bold tracking-tight sm:mt-3 sm:text-4xl lg:mt-1 lg:text-2xl">
+                ¿Querés consultar algo?
+              </h2>
+
+              <p className={`mt-2 max-w-xl text-sm leading-6 sm:mt-4 sm:text-base sm:leading-7 ${claseTextoSecundario}`}>
+                Dejanos tus datos y tu consulta.{" "}
+                {empresa.nombre || nombre} podrá responderte usando
+                el teléfono o email que indiques.
+              </p>
+
+              <div className="mt-4 flex flex-row gap-2 sm:mt-7 sm:gap-3 lg:flex-col xl:flex-row">
+                {mostrarWhatsApp && (
+                  <a
+                    href={whatsappUrl}
+                    data-analytics-event="whatsapp_click"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500 sm:flex-none sm:gap-2 sm:px-6 sm:py-3.5 sm:text-base"
+                  >
+                    <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    WhatsApp
+                  </a>
+                )}
+
+                {mostrarEmail && (
+                  <a
+                    href={`mailto:${empresa.email}`}
+                    className={`inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl border px-3 py-2.5 text-sm font-semibold transition sm:flex-none sm:gap-2 sm:px-6 sm:py-3.5 sm:text-base ${
+                      esClaro
+                        ? "border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
+                        : "border-zinc-700 bg-zinc-950/50 text-white hover:bg-zinc-900"
+                    }`}
+                  >
+                    <Mail className="h-4 w-4 sm:h-5 sm:w-5" />
+                    Correo
+                  </a>
+                )}
+              </div>
+            </div>
+
+            <div
+              className={`rounded-2xl border p-2 sm:rounded-3xl sm:p-7 ${
+                esClaro
+                  ? "border-slate-200 bg-white shadow-sm"
+                  : "border-zinc-800 bg-zinc-950/60"
+              }`}
+            >
+              <ContactoForm
+                slug={slug}
+                nombreNegocio={empresa.nombre || nombre}
+                tema={
+                  esClaro
+                    ? "claro"
+                    : "oscuro"
+                }
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+      )}
+
+      {/* CTA MÓVIL FIJO */}
+      {puedeMostrarReserva ||
+      mostrarContacto ||
+      mostrarWhatsApp ? (
+        <div
+          className={`fixed inset-x-0 bottom-0 z-50 border-t px-2 py-1.5 backdrop-blur-xl sm:hidden ${
+            esClaro
+              ? "border-slate-200 bg-white/95"
+              : "border-white/10 bg-zinc-950/90"
+          }`}
+        >
+          <div className="mx-auto flex max-w-md gap-1.5">
+            {puedeMostrarReserva ||
+            mostrarContacto ? (
+              <a
+                href={
+                  puedeMostrarReserva
+                    ? "#reservar"
+                    : "#contacto"
+                }
+                className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg px-3 text-[11px] font-semibold text-white shadow-lg"
+                style={{
+                  backgroundColor:
+                    colorPrincipal,
+                }}
+              >
+                {puedeMostrarReserva ? (
+                  <>
+                    <Clock3 className="h-3.5 w-3.5" />
+                    {mostrarReservaMesa
+                      ? "Reservar mesa"
+                      : "Reservar"}
+                  </>
+                ) : (
+                  <>
+                    <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    Consultar
+                  </>
+                )}
+              </a>
+            ) : null}
+
+            {mostrarWhatsApp && (
+              <a
+                href={whatsappUrl}
+                data-analytics-event="whatsapp_click"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Abrir WhatsApp"
+                className={`inline-flex h-9 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-lg transition hover:bg-emerald-500 ${
+                  puedeMostrarReserva ||
+                  mostrarContacto
+                    ? "w-9 shrink-0"
+                    : "flex-1 gap-2 px-4"
+                }`}
+              >
+                <MessageCircle className="h-4 w-4" />
+                {!(
+                  puedeMostrarReserva ||
+                  mostrarContacto
+                ) && (
+                  <span className="text-xs font-semibold">
+                    WhatsApp
+                  </span>
+                )}
+              </a>
+            )}
+          </div>
+        </div>
+      ) : null}
+
+      {/* ASISTENTE IA REAL */}
+      {puedeUsarAsistenteIA && (
+        <Script
+          src="/widget.js"
+          data-empresa-id={documento.id}
+          strategy="afterInteractive"
+        />
+      )}
+
+      {/* FOOTER */}
+      <footer
+        className={`border-t ${
+          esClaro
+            ? "border-slate-200"
+            : "border-zinc-800"
+        }`}
+      >
+        <div
+          className={`mx-auto flex max-w-6xl flex-col gap-3 px-5 py-8 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-8 ${
+            esClaro
+              ? "text-slate-500"
+              : "text-zinc-500"
+          }`}
+        >
+          <div>
+            <p
+              className={`font-medium ${
+                esClaro
+                  ? "text-slate-800"
+                  : "text-zinc-300"
+              }`}
+            >
+              {empresa.nombre ||
+                nombre}
+            </p>
+
+            {empresa.rubro && (
+              <p className="mt-1">
+                {empresa.rubro}
+              </p>
+            )}
+          </div>
+
+          {!sinMarcaNDI && (
+            <p>
+              Página creada con{" "}
+              <span
+                className={`font-medium ${
+                  esClaro
+                    ? "text-slate-800"
+                    : "text-zinc-300"
+                }`}
+              >
+                NDI AI
+              </span>
+            </p>
+          )}
+        </div>
+      </footer>
+    </main>
+  );
+}
+
+function CatalogoCard({
+  item,
+  color,
+  claro,
+  puedeReservar,
+  mostrarWhatsApp,
+  whatsappUrl,
+  mostrarContacto,
+  slug,
+  mostrarHorariosRapidos = false,
+  tema = "oscuro",
+  esRestaurante = false,
+  esAlojamiento = false,
+  esTienda = false,
+  imagenesMultiples = false,
+}: {
+  item: CatalogoItem;
+  color: string;
+  claro: boolean;
+  puedeReservar: boolean;
+  mostrarWhatsApp: boolean;
+  whatsappUrl: string;
+  mostrarContacto: boolean;
+  slug?: string;
+  mostrarHorariosRapidos?: boolean;
+  tema?: "oscuro" | "claro";
+  esRestaurante?: boolean;
+  esAlojamiento?: boolean;
+  esTienda?: boolean;
+  imagenesMultiples?: boolean;
+}) {
+  const mensajeWhatsApp =
+    esRestaurante &&
+    item.tipo === "producto"
+      ? `Hola, quiero consultar por "${item.nombre}" de la carta.`
+      : `Hola, quiero consultar por ${item.tipo === "servicio" ? "el servicio" : "el producto"} "${item.nombre}".`;
+
+  const whatsappItemUrl =
+    mostrarWhatsApp &&
+    whatsappUrl
+      ? `${whatsappUrl}?text=${encodeURIComponent(
+          mensajeWhatsApp,
+        )}`
+      : "";
+
+  const imagenesItem = (
+    Array.isArray(item.imagenes)
+      ? item.imagenes.filter(
+          (url): url is string =>
+            typeof url === "string" &&
+            url.trim().length > 0,
+        )
+      : []
+  )
+    .map((url) => url.trim())
+    .slice(
+      0,
+      imagenesMultiples
+        ? 3
+        : 1,
+    );
+
+  if (
+    imagenesItem.length === 0 &&
+    item.imagenUrl?.trim()
+  ) {
+    imagenesItem.push(
+      item.imagenUrl.trim(),
     );
   }
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
-      <header className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
-        <div>
-          <button
-            type="button"
-            onClick={() =>
-              router.push(
-                "/empresas",
-              )
-            }
-            className="mb-4 text-sm text-slate-500 transition hover:text-slate-950 dark:text-zinc-500 dark:hover:text-white"
-          >
-            ← Volver a empresas
-          </button>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight text-slate-950 dark:text-white">
-              Mi página
-            </h1>
-
-            <Badge variant="success">
-              Activo
-            </Badge>
-          </div>
-
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
-            Configurá la información y la página pública de{" "}
-            {nombre}. Todo lo que ajustes acá define
-            lo que verán tus clientes.
-          </p>
-        </div>
-
-        <Card className="flex items-center gap-3 px-4 py-3">
-          <Avatar
-            name={
-              user?.displayName ||
-              user?.email ||
-              "Usuario"
-            }
-            src={
-              user?.photoURL ||
-              undefined
-            }
-            size="sm"
-          />
-
-          <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-slate-950 dark:text-white">
-              {user?.displayName ||
-                "Administrador"}
-            </p>
-
-            <p className="max-w-56 truncate text-xs text-slate-500 dark:text-zinc-500">
-              {user?.email}
-            </p>
-          </div>
-        </Card>
-      </header>
-
-      <form
-        onSubmit={handleGuardar}
-        className="space-y-6"
-      >
-        {/* INFORMACIÓN DEL NEGOCIO */}
-        <Card className="overflow-hidden">
-          <SectionHeader
-            title="Información del negocio"
-            description="Datos generales del negocio que pueden mostrarse en tu página pública."
-            right={
-              rubro ? (
-                <Badge variant="info">
-                  {rubro}
-                </Badge>
-              ) : undefined
-            }
-          />
-
-          <div className="grid gap-5 p-6 md:grid-cols-2">
-            <Input
-              id="nombre"
-              label="Nombre de la empresa"
-              value={nombre}
-              onChange={(e) =>
-                setNombre(
-                  e.target.value,
-                )
-              }
-              required
-            />
-
-            <Input
-              id="rubro"
-              label="Rubro"
-              value={rubro}
-              onChange={(e) =>
-                setRubro(
-                  e.target.value,
-                )
-              }
-              required
-            />
-
-            <Input
-              id="email"
-              label="Correo"
-              type="email"
-              value={email}
-              onChange={(e) =>
-                setEmail(
-                  e.target.value,
-                )
-              }
-              placeholder="empresa@correo.com"
-            />
-
-            <Input
-              id="telefono"
-              label="Teléfono o WhatsApp"
-              type="tel"
-              value={telefono}
-              onChange={(e) =>
-                setTelefono(
-                  e.target.value,
-                )
-              }
-              placeholder="+54 9 388..."
-            />
-
-            <Input
-              id="direccion"
-              label="Dirección"
-              value={direccion}
-              onChange={(e) =>
-                setDireccion(
-                  e.target.value,
-                )
-              }
-              placeholder="Dirección del negocio"
-            />
-
-            <Input
-              id="sitioWeb"
-              label="Sitio web"
-              type="url"
-              value={sitioWeb}
-              onChange={(e) =>
-                setSitioWeb(
-                  e.target.value,
-                )
-              }
-              placeholder="https://..."
-            />
-
-            <Input
-              id="instagram"
-              label="Instagram"
-              type="url"
-              value={instagram}
-              onChange={(e) =>
-                setInstagram(
-                  e.target.value,
-                )
-              }
-              placeholder="https://instagram.com/tu_negocio"
-            />
-
-            <Input
-              id="facebook"
-              label="Facebook"
-              type="url"
-              value={facebook}
-              onChange={(e) =>
-                setFacebook(
-                  e.target.value,
-                )
-              }
-              placeholder="https://facebook.com/tu_negocio"
-            />
-
-            <Input
-              id="tiktok"
-              label="TikTok"
-              type="url"
-              value={tiktok}
-              onChange={(e) =>
-                setTiktok(
-                  e.target.value,
-                )
-              }
-              placeholder="https://tiktok.com/@tu_negocio"
-            />
-
-            <div className="md:col-span-2">
-              <TextArea
-                id="descripcion"
-                label="Descripción del negocio"
-                value={descripcion}
-                onChange={(e) =>
-                  setDescripcion(
-                    e.target.value,
-                  )
-                }
-                placeholder="Explicá qué hace la empresa, qué vende y a qué clientes atiende."
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <TextArea
-                id="horarios"
-                label="Horarios de atención"
-                value={horarios}
-                onChange={(e) =>
-                  setHorarios(
-                    e.target.value,
-                  )
-                }
-                placeholder="Ejemplo: lunes a viernes de 8:00 a 18:00."
-              />
-            </div>
-          </div>
-        </Card>
-
-        {/* PÁGINA PÚBLICA */}
-        <Card className="overflow-hidden">
-          <SectionHeader
-            title="Página pública del negocio"
-            description="Prepará la página que podrán visitar tus clientes."
-            right={
-              paginaPublicada ? (
-                <Badge variant="success">
-                  Publicada
-                </Badge>
-              ) : (
-                <Badge variant="info">
-                  Borrador
-                </Badge>
-              )
-            }
-          />
-
-          <div className="grid gap-6 p-6 lg:grid-cols-[1fr_360px]">
-            <div className="grid content-start gap-5 md:grid-cols-2">
-              <Input
-                id="paginaTitulo"
-                label="Título de la página"
-                value={paginaTitulo}
-                onChange={(e) =>
-                  setPaginaTitulo(
-                    e.target.value,
-                  )
-                }
-                placeholder="Nombre que verá el cliente"
-              />
-
-              <div className="space-y-2">
-                <label
-                  htmlFor="paginaSlug"
-                  className="block text-sm font-medium text-slate-700 dark:text-zinc-200"
-                >
-                  Dirección de la página
-                </label>
-
-                <div className="overflow-hidden rounded-xl border border-slate-300 bg-white focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-900">
-                  <div className="flex items-center">
-                    <span className="shrink-0 border-r border-slate-200 bg-slate-50 px-3 py-3 text-xs text-slate-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-500">
-                      /negocio/
-                    </span>
-
-                    <input
-                      id="paginaSlug"
-                      value={
-                        paginaSlug
-                      }
-                      onChange={(e) =>
-                        setPaginaSlug(
-                          crearSlug(
-                            e.target
-                              .value,
-                          ),
-                        )
-                      }
-                      className="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm text-slate-900 outline-none dark:text-white"
-                      placeholder="mi-negocio"
-                    />
-                  </div>
-                </div>
-
-                <p className="text-xs text-slate-500 dark:text-zinc-500">
-                  Esta será la URL
-                  pública de tu negocio.
-                </p>
-              </div>
-
-              <div className="md:col-span-2">
-                <TextArea
-                  id="paginaSubtitulo"
-                  label="Texto principal"
-                  value={
-                    paginaSubtitulo
-                  }
-                  onChange={(e) =>
-                    setPaginaSubtitulo(
-                      e.target.value,
-                    )
-                  }
-                  placeholder="Ejemplo: Cortes, barba y atención personalizada en el centro de Jujuy."
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <div className="mb-3">
-                  <p className="text-sm font-medium text-slate-700 dark:text-zinc-200">
-                    Identidad visual
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
-                    Cargá el logo, una imagen de portada y hasta 6 fotos para la galería pública.
-                  </p>
-                </div>
-
-                <div className="grid gap-4 lg:grid-cols-2">
-                  <ImagenUploader
-                    titulo="Logo del negocio"
-                    descripcion="PNG, JPG o WebP · máximo 5 MB · recomendado 512 × 512 px."
-                    imagenUrl={paginaLogoUrl}
-                    cargando={subiendoImagen === "logo"}
-                    onSeleccionar={(archivo) =>
-                      subirImagenPagina(
-                        archivo,
-                        "logo",
-                      )
-                    }
-                    onQuitar={() =>
-                      setPaginaLogoUrl("")
-                    }
-                    aspectClass="aspect-square max-w-[180px]"
-                  />
-
-                  <ImagenUploader
-                    titulo="Imagen de portada"
-                    descripcion="PNG, JPG o WebP · máximo 5 MB · recomendado 1600 × 900 px."
-                    imagenUrl={paginaPortadaUrl}
-                    cargando={subiendoImagen === "portada"}
-                    onSeleccionar={(archivo) =>
-                      subirImagenPagina(
-                        archivo,
-                        "portada",
-                      )
-                    }
-                    onQuitar={() =>
-                      setPaginaPortadaUrl("")
-                    }
-                    aspectClass="aspect-[16/9]"
-                  />
-                </div>
-
-                <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-zinc-800 dark:bg-zinc-950/50">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-medium text-slate-950 dark:text-white">
-                        Galería
-                      </p>
-                      <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
-                        {paginaGaleria.length}/6 imágenes cargadas · máximo 5 MB cada una · recomendado 1200 × 900 px
-                      </p>
-                    </div>
-
-                    <label
-                      className={`inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 ${
-                        paginaGaleria.length >= 6 ||
-                        subiendoImagen === "galeria"
-                          ? "pointer-events-none opacity-50"
-                          : ""
-                      }`}
-                    >
-                      <Upload className="h-4 w-4" />
-                      {subiendoImagen === "galeria"
-                        ? "Subiendo..."
-                        : "Agregar imagen"}
-
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        disabled={
-                          paginaGaleria.length >= 6 ||
-                          subiendoImagen === "galeria"
-                        }
-                        onChange={(event) => {
-                          const archivo =
-                            event.target.files?.[0];
-
-                          if (archivo) {
-                            void subirImagenPagina(
-                              archivo,
-                              "galeria",
-                            );
-                          }
-
-                          event.currentTarget.value = "";
-                        }}
-                      />
-                    </label>
-                  </div>
-
-                  {paginaGaleria.length > 0 ? (
-                    <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                      {paginaGaleria.map(
-                        (url, indice) => (
-                          <div
-                            key={`${url}-${indice}`}
-                            className="group relative aspect-[4/3] overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-zinc-800 dark:bg-zinc-900"
-                          >
-                            <img
-                              src={url}
-                              alt={`Galería ${indice + 1}`}
-                              className="h-full w-full object-cover"
-                            />
-
-                            <button
-                              type="button"
-                              onClick={() =>
-                                quitarImagenGaleria(
-                                  indice,
-                                )
-                              }
-                              className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-lg bg-black/70 text-white opacity-100 transition hover:bg-red-600 sm:opacity-0 sm:group-hover:opacity-100"
-                              aria-label="Quitar imagen"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        ),
-                      )}
-                    </div>
-                  ) : (
-                    <div className="mt-4 flex min-h-28 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white/50 px-4 text-center dark:border-zinc-700 dark:bg-zinc-900/40">
-                      <div>
-                        <ImageIcon className="mx-auto h-6 w-6 text-slate-400 dark:text-zinc-600" />
-                        <p className="mt-2 text-xs text-slate-500 dark:text-zinc-500">
-                          Todavía no cargaste imágenes para la galería.
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm font-medium text-slate-700 dark:text-zinc-200">
-                    Tema de la página
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
-                    Elegí la apariencia general que verán tus clientes.
-                  </p>
-                </div>
-
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setPaginaTema("oscuro")
-                    }
-                    className={`overflow-hidden rounded-2xl border p-1 text-left transition ${
-                      paginaTema ===
-                      "oscuro"
-                        ? "border-blue-500 ring-2 ring-blue-500/20"
-                        : "border-slate-200 hover:border-slate-300 dark:border-zinc-800 dark:hover:border-zinc-700"
-                    }`}
-                  >
-                    <div className="rounded-xl bg-zinc-950 p-4 text-white">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="h-8 w-8 rounded-lg"
-                          style={{
-                            backgroundColor:
-                              paginaColorPrincipal,
-                          }}
-                        />
-                        <div>
-                          <p className="text-sm font-semibold">
-                            Oscuro
-                          </p>
-                          <p className="text-[11px] text-zinc-500">
-                            Moderno y de alto contraste
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 h-2 w-3/4 rounded-full bg-zinc-800" />
-                      <div className="mt-2 h-2 w-1/2 rounded-full bg-zinc-800/70" />
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setPaginaTema("claro")
-                    }
-                    className={`overflow-hidden rounded-2xl border p-1 text-left transition ${
-                      paginaTema ===
-                      "claro"
-                        ? "border-blue-500 ring-2 ring-blue-500/20"
-                        : "border-slate-200 hover:border-slate-300 dark:border-zinc-800 dark:hover:border-zinc-700"
-                    }`}
-                  >
-                    <div className="rounded-xl border border-slate-200 bg-white p-4 text-slate-950">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="h-8 w-8 rounded-lg"
-                          style={{
-                            backgroundColor:
-                              paginaColorPrincipal,
-                          }}
-                        />
-                        <div>
-                          <p className="text-sm font-semibold">
-                            Claro
-                          </p>
-                          <p className="text-[11px] text-slate-500">
-                            Limpio y profesional
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 h-2 w-3/4 rounded-full bg-slate-200" />
-                      <div className="mt-2 h-2 w-1/2 rounded-full bg-slate-100" />
-                    </div>
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label
-                  htmlFor="paginaColorPrincipal"
-                  className="block text-sm font-medium text-slate-700 dark:text-zinc-200"
-                >
-                  Color principal
-                </label>
-
-                <div className="flex gap-3">
-                  <input
-                    id="paginaColorPrincipal"
-                    type="color"
-                    value={
-                      paginaColorPrincipal
-                    }
-                    onChange={(e) =>
-                      setPaginaColorPrincipal(
-                        e.target.value,
-                      )
-                    }
-                    className="h-11 w-14 cursor-pointer rounded-xl border border-slate-300 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-900"
-                  />
-
-                  <input
-                    value={
-                      paginaColorPrincipal
-                    }
-                    onChange={(e) =>
-                      setPaginaColorPrincipal(
-                        e.target.value,
-                      )
-                    }
-                    className="h-11 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-zinc-800 dark:bg-zinc-950/50">
-                <div>
-                  <p className="text-sm font-medium text-slate-950 dark:text-white">
-                    Publicar página
-                  </p>
-
-                  <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
-                    Permitirá que cualquier
-                    cliente pueda verla.
-                  </p>
-                </div>
-
-                <input
-                  type="checkbox"
-                  checked={
-                    paginaPublicada
-                  }
-                  onChange={(e) => {
-                    void cambiarPublicacionPagina(
-                      e.target.checked,
-                    );
-                  }}
-                  className="h-5 w-5 accent-blue-500"
-                />
-              </label>
-
-              <div className="md:col-span-2">
-                <p className="mb-3 text-sm font-medium text-slate-700 dark:text-zinc-200">
-                  Información visible
-                </p>
-
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <ToggleOpcion
-                    titulo="WhatsApp"
-                    descripcion="Mostrar botón de contacto."
-                    checked={
-                      paginaMostrarWhatsApp
-                    }
-                    onChange={
-                      setPaginaMostrarWhatsApp
-                    }
-                  />
-
-                  <ToggleOpcion
-                    titulo="Correo"
-                    descripcion="Mostrar correo del negocio."
-                    checked={
-                      paginaMostrarEmail
-                    }
-                    onChange={
-                      setPaginaMostrarEmail
-                    }
-                  />
-
-                  <ToggleOpcion
-                    titulo="Dirección"
-                    descripcion="Mostrar ubicación del negocio."
-                    checked={
-                      paginaMostrarDireccion
-                    }
-                    onChange={
-                      setPaginaMostrarDireccion
-                    }
-                  />
-
-                  <ToggleOpcion
-                    titulo="Horarios"
-                    descripcion="Mostrar horarios de atención."
-                    checked={
-                      paginaMostrarHorarios
-                    }
-                    onChange={
-                      setPaginaMostrarHorarios
-                    }
-                  />
-
-                  <ToggleOpcion
-                    titulo="Servicios"
-                    descripcion="Mostrar la sección de servicios."
-                    checked={
-                      paginaMostrarServicios
-                    }
-                    onChange={
-                      setPaginaMostrarServicios
-                    }
-                  />
-
-                  <ToggleOpcion
-                    titulo="Productos"
-                    descripcion="Mostrar la sección de productos."
-                    checked={
-                      paginaMostrarProductos
-                    }
-                    onChange={
-                      setPaginaMostrarProductos
-                    }
-                  />
-
-                  <ToggleOpcion
-                    titulo="Galería"
-                    descripcion="Mostrar las imágenes del negocio."
-                    checked={
-                      paginaMostrarGaleria
-                    }
-                    onChange={
-                      setPaginaMostrarGaleria
-                    }
-                  />
-
-                  <ToggleOpcion
-                    titulo="Mapa"
-                    descripcion="Mostrar el mapa y la ubicación."
-                    checked={
-                      paginaMostrarMapa
-                    }
-                    onChange={
-                      setPaginaMostrarMapa
-                    }
-                  />
-
-                  <ToggleOpcion
-                    titulo="Formulario de contacto"
-                    descripcion="Permitir consultas desde la página."
-                    checked={
-                      paginaMostrarContacto
-                    }
-                    onChange={
-                      setPaginaMostrarContacto
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="md:col-span-2 space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-zinc-800 dark:bg-zinc-950/50">
-                <div>
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-semibold text-slate-950 dark:text-white">
-                        Testimonios
-                      </p>
-                      <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
-                        Agregá reseñas reales de clientes para generar más confianza.
-                      </p>
-                    </div>
-
-                    <Badge variant="info">
-                      {paginaTestimonios.length}/6
-                    </Badge>
-                  </div>
-                </div>
-
-                <div className="grid gap-3 md:grid-cols-2">
-                  <Input
-                    id="testimonioNombre"
-                    label="Nombre del cliente"
-                    value={
-                      testimonioNombre
-                    }
-                    onChange={(e) =>
-                      setTestimonioNombre(
-                        e.target.value,
-                      )
-                    }
-                    placeholder="Ejemplo: María Gómez"
-                  />
-
-                  <Input
-                    id="testimonioCargo"
-                    label="Detalle opcional"
-                    value={
-                      testimonioCargo
-                    }
-                    onChange={(e) =>
-                      setTestimonioCargo(
-                        e.target.value,
-                      )
-                    }
-                    placeholder="Ejemplo: Cliente frecuente"
-                  />
-
-                  <div className="md:col-span-2">
-                    <TextArea
-                      id="testimonioTexto"
-                      label="Testimonio"
-                      value={
-                        testimonioTexto
-                      }
-                      onChange={(e) =>
-                        setTestimonioTexto(
-                          e.target.value,
-                        )
-                      }
-                      placeholder="Contá qué dijo el cliente sobre el negocio."
-                    />
-                  </div>
-
-                  <div className="md:col-span-2 flex justify-end">
-                    <Button
-                      type="button"
-                      onClick={
-                        agregarTestimonio
-                      }
-                      disabled={
-                        paginaTestimonios.length >= 6
-                      }
-                    >
-                      Agregar testimonio
-                    </Button>
-                  </div>
-                </div>
-
-                {paginaTestimonios.length >
-                0 ? (
-                  <div className="grid gap-3">
-                    {paginaTestimonios.map(
-                      (
-                        testimonio,
-                        index,
-                      ) => (
-                        <div
-                          key={`${testimonio.nombre}-${index}`}
-                          className="flex items-start justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
-                        >
-                          <div className="min-w-0">
-                            <p className="font-medium text-slate-950 dark:text-white">
-                              {
-                                testimonio.nombre
-                              }
-                            </p>
-
-                            {testimonio.cargo && (
-                              <p className="mt-0.5 text-xs text-slate-500 dark:text-zinc-500">
-                                {
-                                  testimonio.cargo
-                                }
-                              </p>
-                            )}
-
-                            <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600 dark:text-zinc-400">
-                              {
-                                testimonio.texto
-                              }
-                            </p>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              quitarTestimonio(
-                                index,
-                              )
-                            }
-                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-red-200 text-red-600 transition hover:bg-red-50 dark:border-red-500/20 dark:text-red-400 dark:hover:bg-red-500/10"
-                            aria-label="Eliminar testimonio"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      ),
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-xs text-slate-500 dark:text-zinc-500">
-                    Todavía no agregaste testimonios.
-                  </p>
-                )}
-              </div>
-
-              <div className="md:col-span-2 space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-zinc-800 dark:bg-zinc-950/50">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-950 dark:text-white">
-                      Preguntas frecuentes
-                    </p>
-                    <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
-                      Mostrá respuestas rápidas a las dudas más comunes del negocio.
-                    </p>
-                  </div>
-
-                  <Badge variant="info">
-                    {paginaPreguntasFrecuentes.length}/8
-                  </Badge>
-                </div>
-
-                <div className="grid gap-3">
-                  <Input
-                    id="preguntaFrecuentePregunta"
-                    label="Pregunta"
-                    value={
-                      preguntaFrecuentePregunta
-                    }
-                    onChange={(e) =>
-                      setPreguntaFrecuentePregunta(
-                        e.target.value,
-                      )
-                    }
-                    placeholder="Ejemplo: ¿Trabajan con turno previo?"
-                  />
-
-                  <TextArea
-                    id="preguntaFrecuenteRespuesta"
-                    label="Respuesta"
-                    value={
-                      preguntaFrecuenteRespuesta
-                    }
-                    onChange={(e) =>
-                      setPreguntaFrecuenteRespuesta(
-                        e.target.value,
-                      )
-                    }
-                    placeholder="Ejemplo: Sí, podés reservar desde esta misma página."
-                  />
-
-                  <div className="flex justify-end">
-                    <Button
-                      type="button"
-                      onClick={
-                        agregarPreguntaFrecuente
-                      }
-                      disabled={
-                        paginaPreguntasFrecuentes.length >= 8
-                      }
-                    >
-                      Agregar pregunta
-                    </Button>
-                  </div>
-                </div>
-
-                {paginaPreguntasFrecuentes.length >
-                0 ? (
-                  <div className="grid gap-3">
-                    {paginaPreguntasFrecuentes.map(
-                      (
-                        item,
-                        index,
-                      ) => (
-                        <div
-                          key={`${item.pregunta}-${index}`}
-                          className="flex items-start justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
-                        >
-                          <div className="min-w-0">
-                            <p className="font-medium text-slate-950 dark:text-white">
-                              {item.pregunta}
-                            </p>
-
-                            <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600 dark:text-zinc-400">
-                              {item.respuesta}
-                            </p>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              quitarPreguntaFrecuente(
-                                index,
-                              )
-                            }
-                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-red-200 text-red-600 transition hover:bg-red-50 dark:border-red-500/20 dark:text-red-400 dark:hover:bg-red-500/10"
-                            aria-label="Eliminar pregunta frecuente"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      ),
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-xs text-slate-500 dark:text-zinc-500">
-                    Todavía no agregaste preguntas frecuentes.
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* PREVIEW PÁGINA */}
-            <div className="h-fit rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
-              <div className="mb-4 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-slate-950 dark:text-white">
-                    Vista previa
-                  </p>
-
-                  <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
-                    Página del negocio
-                  </p>
-                </div>
-
-                <Globe2 className="h-5 w-5 text-blue-500" />
-              </div>
-
-              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-                <div
-                  className="relative h-40 overflow-hidden p-5 text-white"
-                  style={{
-                    background: paginaPortadaUrl
-                      ? `linear-gradient(rgba(0,0,0,.48), rgba(0,0,0,.72)), url("${paginaPortadaUrl}") center/cover`
-                      : `linear-gradient(135deg, ${paginaColorPrincipal}, #09090b)`,
-                  }}
-                >
-                  <div className="relative z-10 flex h-full items-end gap-3">
-                    {paginaLogoUrl && (
-                      <img
-                        src={paginaLogoUrl}
-                        alt="Logo"
-                        className="h-14 w-14 shrink-0 rounded-xl border border-white/20 bg-white object-cover shadow-lg"
-                      />
-                    )}
-
-                    <div className="min-w-0 pb-1">
-                      <p className="text-xs font-medium uppercase tracking-[0.16em] text-white/70">
-                        {rubro ||
-                          "Tu negocio"}
-                      </p>
-
-                      <h3 className="mt-1 truncate text-2xl font-bold">
-                        {paginaTitulo ||
-                          nombre ||
-                          "Tu negocio"}
-                      </h3>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-5">
-                  <p className="text-sm leading-6 text-slate-600 dark:text-zinc-400">
-                    {paginaSubtitulo ||
-                      descripcion ||
-                      "Agregá una descripción para mostrar qué ofrece tu negocio."}
-                  </p>
-
-                  <div className="mt-5 grid gap-2">
-                    {paginaMostrarHorarios &&
-                      horarios && (
-                        <PreviewDato
-                          titulo="Horarios"
-                          valor={
-                            horarios
-                          }
-                        />
-                      )}
-
-                    {paginaMostrarDireccion &&
-                      direccion && (
-                        <PreviewDato
-                          titulo="Ubicación"
-                          valor={
-                            direccion
-                          }
-                        />
-                      )}
-
-                    {paginaMostrarWhatsApp &&
-                      telefono && (
-                        <PreviewDato
-                          titulo="WhatsApp"
-                          valor={
-                            telefono
-                          }
-                        />
-                      )}
-
-                    {paginaMostrarEmail &&
-                      email && (
-                        <PreviewDato
-                          titulo="Correo"
-                          valor={
-                            email
-                          }
-                        />
-                      )}
-                  </div>
-
-                  <button
-                    type="button"
-                    style={{
-                      backgroundColor:
-                        paginaColorPrincipal,
-                    }}
-                    className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white"
-                  >
-                    Contactar
-                  </button>
-                </div>
-              </div>
-
-              <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900">
-                <p className="text-xs text-slate-500 dark:text-zinc-500">
-                  URL
-                </p>
-
-                <p className="mt-1 break-all text-sm font-medium text-slate-800 dark:text-zinc-200">
-                  {urlPublica ||
-                    "/negocio/mi-negocio"}
-                </p>
-              </div>
-
-              <button
-                type="button"
-                disabled={
-                  !paginaSlug
-                }
-                onClick={() => {
-                  if (
-                    !paginaSlug
-                  ) {
-                    return;
-                  }
-
-                  window.open(
-                    urlPublica,
-                    "_blank",
-                  );
-                }}
-                className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800"
-              >
-                <ExternalLink className="h-4 w-4" />
-                Abrir página
-              </button>
-
-              <p className="mt-3 text-center text-xs text-slate-500 dark:text-zinc-600">
-                Abrí la página para comprobar
-                cómo la ven tus clientes.
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        {error && (
-          <Card className="border-red-200 bg-red-50 p-4 dark:border-red-500/20 dark:bg-red-500/10">
-            <p className="text-sm text-red-700 dark:text-red-400">
-              {error}
-            </p>
-          </Card>
-        )}
-
-        {mensaje && (
-          <Card className="border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/10">
-            <p className="text-sm text-emerald-700 dark:text-emerald-400">
-              {mensaje}
-            </p>
-          </Card>
-        )}
-
-        <Card className="sticky bottom-4 z-20 flex flex-col gap-4 border-slate-200 bg-white/95 p-5 shadow-2xl backdrop-blur sm:flex-row sm:items-center sm:justify-between dark:border-zinc-700/80 dark:bg-zinc-900/95">
-          <div>
-            <p className="text-sm font-medium text-slate-950 dark:text-white">
-              Mi página
-            </p>
-
-            <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
-              Guardá los cambios antes de salir.
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() =>
-                router.push(
-                  `/empresas/${empresaId}/catalogo`,
-                )
-              }
-            >
-              Servicios y productos
-            </Button>
-
-            <Button
-              type="button"
-              variant="secondary"
-              disabled={!paginaSlug}
-              onClick={() => {
-                if (!paginaSlug) {
-                  return;
-                }
-
-                window.open(
-                  urlPublica,
-                  "_blank",
-                );
-              }}
-            >
-              Ver página pública
-            </Button>
-
-            <Button
-              type="submit"
-              disabled={guardando}
-            >
-              {guardando
-                ? "Guardando..."
-                : "Guardar cambios"}
-            </Button>
-          </div>
-        </Card>
-      </form>
-    </section>
-  );
-}
-
-function SectionHeader({
-  title,
-  description,
-  right,
-}: {
-  title: string;
-  description: string;
-  right?: React.ReactNode;
-}) {
-  return (
-    <div className="border-b border-slate-200 px-6 py-5 dark:border-zinc-800">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-950 dark:text-white">
-            {title}
-          </h2>
-
-          <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
-            {description}
-          </p>
-        </div>
-
-        {right}
-      </div>
-    </div>
-  );
-}
-
-function ImagenUploader({
-  titulo,
-  descripcion,
-  imagenUrl,
-  cargando,
-  onSeleccionar,
-  onQuitar,
-  aspectClass,
-}: {
-  titulo: string;
-  descripcion: string;
-  imagenUrl: string;
-  cargando: boolean;
-  onSeleccionar: (
-    archivo: File,
-  ) => void;
-  onQuitar: () => void;
-  aspectClass: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-zinc-800 dark:bg-zinc-950/50">
-      <div>
-        <p className="text-sm font-medium text-slate-950 dark:text-white">
-          {titulo}
-        </p>
-        <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
-          {descripcion}
-        </p>
-      </div>
-
-      {imagenUrl ? (
+    <article
+      className={`group flex h-full flex-col overflow-hidden rounded-2xl border shadow-[0_14px_40px_rgba(0,0,0,0.08)] transition duration-300 hover:-translate-y-1 ${
+        claro
+          ? "border-slate-200 bg-white hover:border-slate-300 hover:shadow-xl"
+          : "border-zinc-800 bg-zinc-900 hover:border-zinc-700 hover:bg-zinc-900/90"
+      }`}
+    >
+      {imagenesItem.length > 0 && (
         <div
-          className={`relative mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 ${aspectClass}`}
+          className={`relative aspect-[4/3] overflow-hidden border-b sm:aspect-[16/9] lg:h-[132px] lg:aspect-auto xl:h-[120px] ${
+            claro
+              ? "border-slate-200 bg-slate-100"
+              : "border-zinc-800 bg-zinc-950"
+          }`}
         >
-          <img
-            src={imagenUrl}
-            alt={titulo}
-            className="h-full w-full object-cover"
-          />
+          <div className="flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {imagenesItem.map(
+              (url, indice) => (
+                <img
+                  key={`${url}-${indice}`}
+                  src={url}
+                  alt={`${item.nombre} - foto ${indice + 1}`}
+                  loading="lazy"
+                  className="h-full w-full shrink-0 snap-center object-cover"
+                />
+              ),
+            )}
+          </div>
 
-          <button
-            type="button"
-            onClick={onQuitar}
-            className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-lg bg-black/70 text-white transition hover:bg-red-600"
-            aria-label={`Quitar ${titulo}`}
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
-        </div>
-      ) : (
-        <div
-          className={`mt-4 flex items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white/60 p-4 dark:border-zinc-700 dark:bg-zinc-900/40 ${aspectClass}`}
-        >
-          <ImageIcon className="h-7 w-7 text-slate-400 dark:text-zinc-600" />
+          {imagenesItem.length > 1 && (
+            <div className="pointer-events-none absolute bottom-2 right-2 rounded-lg bg-black/65 px-2 py-1 text-[10px] font-semibold text-white backdrop-blur sm:bottom-3 sm:right-3 sm:text-xs">
+              Deslizá · {imagenesItem.length} fotos
+            </div>
+          )}
         </div>
       )}
 
-      <label
-        className={`mt-4 inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 ${
-          cargando
-            ? "pointer-events-none opacity-50"
-            : ""
-        }`}
-      >
-        <Upload className="h-4 w-4" />
-        {cargando
-          ? "Subiendo..."
-          : imagenUrl
-            ? "Cambiar imagen"
-            : "Subir imagen"}
+      <div className="flex flex-1 flex-col p-2.5 sm:p-5 lg:p-3.5">
+        <h3 className="line-clamp-2 text-[13px] font-semibold leading-4 sm:text-lg sm:leading-6 lg:text-[15px] lg:leading-5">
+          {item.nombre}
+        </h3>
 
-        <input
-          type="file"
-          accept="image/*"
-          className="hidden"
-          disabled={cargando}
-          onChange={(event) => {
-            const archivo =
-              event.target.files?.[0];
+        {item.descripcion && (
+          <p
+            className={`mt-2 flex-1 text-[11px] leading-4 sm:text-sm sm:leading-6 ${
+              claro
+                ? "text-slate-600"
+                : "text-zinc-400"
+            }`}
+          >
+            {item.descripcion}
+          </p>
+        )}
 
-            if (archivo) {
-              onSeleccionar(archivo);
-            }
+        <div
+          className={`mt-3 flex flex-wrap items-end justify-between gap-2 border-t pt-3 sm:mt-4 sm:gap-3 sm:pt-4 ${
+            claro
+              ? "border-slate-200"
+              : "border-zinc-800"
+          }`}
+        >
+          <div>
+            {Boolean(item.precio) && (
+              <>
+                <p
+                  className={`text-[10px] uppercase tracking-wide sm:text-xs ${
+                    claro
+                      ? "text-slate-400"
+                      : "text-zinc-600"
+                  }`}
+                >
+                  {esAlojamiento &&
+                  item.tipo === "servicio"
+                    ? "Precio por noche"
+                    : "Precio"}
+                </p>
 
-            event.currentTarget.value = "";
-          }}
-        />
-      </label>
-    </div>
-  );
-}
+                <p
+                  className="mt-0.5 text-sm font-bold sm:mt-1 sm:text-xl lg:text-base"
+                  style={{
+                    color,
+                  }}
+                >
+                  $
+                  {Number(
+                    item.precio,
+                  ).toLocaleString(
+                    "es-AR",
+                  )}
+                  {esAlojamiento &&
+                    item.tipo === "servicio" && (
+                      <span
+                        className={`ml-1 text-xs font-medium sm:text-sm ${
+                          claro
+                            ? "text-slate-500"
+                            : "text-zinc-400"
+                        }`}
+                      >
+                        / noche
+                      </span>
+                    )}
+                </p>
+              </>
+            )}
+          </div>
 
-function ToggleOpcion({
-  titulo,
-  descripcion,
-  checked,
-  onChange,
-}: {
-  titulo: string;
-  descripcion: string;
-  checked: boolean;
-  onChange: (
-    value: boolean,
-  ) => void;
-}) {
-  return (
-    <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-zinc-800 dark:bg-zinc-950/50">
-      <div>
-        <p className="text-sm font-medium text-slate-950 dark:text-white">
-          {titulo}
-        </p>
+          {item.tipo === "servicio" &&
+            Boolean(
+              item.duracionMinutos,
+            ) && (
+              <div className="text-right">
+                <p
+                  className={`text-[10px] uppercase tracking-wide sm:text-xs ${
+                    claro
+                      ? "text-slate-400"
+                      : "text-zinc-600"
+                  }`}
+                >
+                  Duración
+                </p>
 
-        <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
-          {descripcion}
-        </p>
+                <p
+                  className={`mt-1 text-xs font-medium sm:text-sm ${
+                    claro
+                      ? "text-slate-700"
+                      : "text-zinc-300"
+                  }`}
+                >
+                  {item.duracionMinutos} min
+                </p>
+              </div>
+            )}
+        </div>
+
+        {puedeReservar &&
+          mostrarHorariosRapidos &&
+          slug && (
+            <ProximosHorarios
+              slug={slug}
+              servicioId={item.id}
+              colorPrincipal={color}
+              tema={tema}
+            />
+          )}
+
+        {(puedeReservar ||
+          whatsappItemUrl ||
+          mostrarContacto) && (
+          <div className="mt-3 flex flex-wrap gap-1.5 sm:mt-4 sm:gap-2">
+            {esTienda &&
+              item.tipo ===
+                "producto" && (
+                <ProductoDetalleTienda
+                  producto={{
+                    id: item.id,
+                    nombre:
+                      item.nombre,
+                    descripcion:
+                      item.descripcion ||
+                      "",
+                    precio:
+                      typeof item.precio ===
+                      "number"
+                        ? item.precio
+                        : 0,
+                    imagenUrl:
+                      item.imagenUrl ||
+                      "",
+                    imagenes:
+                      Array.isArray(
+                        item.imagenes,
+                      )
+                        ? item.imagenes.filter(
+                            (
+                              url,
+                            ): url is string =>
+                              typeof url ===
+                                "string",
+                          )
+                        : [],
+                  }}
+                  colorPrincipal={
+                    color
+                  }
+                  tema={tema}
+                  mostrarWhatsApp={
+                    mostrarWhatsApp
+                  }
+                  whatsappUrl={
+                    whatsappUrl
+                  }
+                  mostrarContacto={
+                    mostrarContacto
+                  }
+                />
+              )}
+
+            {puedeReservar && (
+              <a
+                href={`#reservar-servicio-${encodeURIComponent(
+                  item.id,
+                )}`}
+                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-semibold text-white shadow-sm transition hover:opacity-90 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm lg:px-3 lg:py-1.5 lg:text-xs"
+                style={{
+                  backgroundColor:
+                    color,
+                }}
+              >
+                <Clock3 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                {esAlojamiento
+                  ? "Reservar habitación"
+                  : "Reservar"}
+              </a>
+            )}
+
+            {!puedeReservar &&
+              !esTienda &&
+              whatsappItemUrl && (
+                <a
+                  href={
+                    whatsappItemUrl
+                  }
+                  data-analytics-event="whatsapp_click"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-2 py-2 text-xs font-semibold text-white transition hover:bg-emerald-500 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm lg:px-3 lg:py-1.5 lg:text-xs"
+                >
+                  <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  Consultar
+                </a>
+              )}
+
+            {!puedeReservar &&
+              !esTienda &&
+              !whatsappItemUrl &&
+              mostrarContacto && (
+                <a
+                  href="#contacto"
+                  className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-semibold text-white transition hover:opacity-90 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm lg:px-3 lg:py-1.5 lg:text-xs"
+                  style={{
+                    backgroundColor:
+                      color,
+                  }}
+                >
+                  <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  Consultar
+                </a>
+              )}
+          </div>
+        )}
       </div>
-
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) =>
-          onChange(
-            e.target.checked,
-          )
-        }
-        className="h-5 w-5 accent-blue-500"
-      />
-    </label>
+    </article>
   );
 }
 
-function PreviewDato({
+function InfoCard({
+  icono,
   titulo,
   valor,
+  color,
+  claro,
 }: {
+  icono: React.ReactNode;
   titulo: string;
   valor: string;
+  color: string;
+  claro: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-950">
-      <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+    <div
+      className={`h-full rounded-xl border p-3 shadow-[0_8px_22px_rgba(0,0,0,0.08)] backdrop-blur sm:rounded-2xl sm:p-5 sm:shadow-[0_14px_35px_rgba(0,0,0,0.12)] lg:rounded-xl lg:p-3 ${
+        claro
+          ? "border-slate-200 bg-white/95"
+          : "border-white/10 bg-zinc-950/90"
+      }`}
+    >
+      <div
+        className="flex h-8 w-8 items-center justify-center rounded-lg sm:h-10 sm:w-10 sm:rounded-xl"
+        style={{
+          backgroundColor:
+            `${color}18`,
+          color,
+        }}
+      >
+        {icono}
+      </div>
+
+      <p
+        className={`mt-2 text-[9px] font-medium uppercase tracking-[0.12em] sm:mt-4 sm:text-xs sm:tracking-[0.14em] ${
+          claro
+            ? "text-slate-400"
+            : "text-zinc-600"
+        }`}
+      >
         {titulo}
       </p>
 
-      <p className="mt-1 line-clamp-2 text-sm text-slate-700 dark:text-zinc-300">
+      <p
+        className={`mt-1.5 whitespace-pre-line break-words text-[11px] leading-4 sm:mt-2 sm:text-sm sm:leading-6 ${
+          claro
+            ? "text-slate-700"
+            : "text-zinc-200"
+        }`}
+      >
         {valor}
       </p>
     </div>
   );
-}
-
-type TextAreaProps =
-  TextareaHTMLAttributes<HTMLTextAreaElement> & {
-    label: string;
-    helperText?: string;
-  };
-
-function TextArea({
-  label,
-  helperText,
-  className = "",
-  id,
-  ...props
-}: TextAreaProps) {
-  return (
-    <div className="space-y-2">
-      <label
-        htmlFor={id}
-        className="block text-sm font-medium text-slate-700 dark:text-zinc-200"
-      >
-        {label}
-      </label>
-
-      <textarea
-        id={id}
-        rows={4}
-        className={[
-          "w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900",
-          "text-sm text-slate-900 placeholder:text-slate-400 dark:text-white dark:placeholder:text-zinc-500",
-          "transition-colors duration-200",
-          "focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20",
-          className,
-        ]
-          .filter(Boolean)
-          .join(" ")}
-        {...props}
-      />
-
-      {helperText && (
-        <p className="text-sm text-slate-500 dark:text-zinc-500">
-          {helperText}
-        </p>
-      )}
-    </div>
-  );
-}
-
-function crearSlug(
-  valor: string,
-) {
-  return valor
-    .normalize("NFD")
-    .replace(
-      /[\u0300-\u036f]/g,
-      "",
-    )
-    .toLowerCase()
-    .trim()
-    .replace(
-      /[^a-z0-9]+/g,
-      "-",
-    )
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 80);
 }
