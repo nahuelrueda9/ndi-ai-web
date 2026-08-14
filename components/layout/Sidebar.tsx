@@ -38,6 +38,11 @@ import {
 } from "lucide-react";
 
 import { auth, db } from "@/lib/firebase";
+import {
+  empresaTieneFuncion,
+  type PlanFeature,
+  type PlanId,
+} from "@/lib/plans/planAccess";
 import NavItem from "./NavItem";
 
 type RolEmpresa =
@@ -51,11 +56,15 @@ type ItemMenu = {
   ruta: string;
   icon: LucideIcon;
   roles: RolEmpresa[];
+  feature?: PlanFeature;
 };
 
 type EmpresaData = {
   userId?: string;
   rubro?: string;
+  plan?: PlanId;
+  subscriptionStatus?: string;
+  subscriptionEndsAt?: unknown;
 };
 
 type MiembroData = {
@@ -145,6 +154,13 @@ export default function Sidebar() {
     useState<RolEmpresa | null>(null);
 
   const [
+    empresa,
+    setEmpresa,
+  ] = useState<EmpresaData | null>(
+    null,
+  );
+
+  const [
     restaurante,
     setRestaurante,
   ] = useState(false);
@@ -163,6 +179,7 @@ export default function Sidebar() {
 
           if (!currentUser) {
             setRol(null);
+            setEmpresa(null);
             setRestaurante(false);
             setCargandoRol(false);
           }
@@ -218,6 +235,8 @@ export default function Sidebar() {
           empresaSnapshot.data() as EmpresaData;
 
         if (activo) {
+          setEmpresa(empresa);
+
           const rubro =
             empresa.rubro
               ?.trim()
@@ -342,18 +361,21 @@ export default function Sidebar() {
             ruta: "",
             icon: Globe2,
             roles: ROLES_ADMINISTRACION,
+            feature: "pagina_publica",
           },
           {
             label: "Servicios y productos",
             ruta: "catalogo",
             icon: Package,
             roles: ROLES_SUPERVISION,
+            feature: "catalogo",
           },
           {
             label: "Agenda",
             ruta: "agenda",
             icon: CalendarDays,
             roles: TODOS_LOS_ROLES,
+            feature: "turnos",
           },
           ...(restaurante
             ? [
@@ -363,6 +385,8 @@ export default function Sidebar() {
                   icon: ShoppingBag,
                   roles:
                     TODOS_LOS_ROLES,
+                  feature:
+                    "productos" as PlanFeature,
                 },
               ]
             : []),
@@ -371,30 +395,35 @@ export default function Sidebar() {
             ruta: "conversaciones",
             icon: MessageSquare,
             roles: TODOS_LOS_ROLES,
+            feature: "asistente_ia",
           },
           {
             label: "Estadísticas",
             ruta: "estadisticas",
             icon: BarChart3,
             roles: TODOS_LOS_ROLES,
+            feature: "estadisticas_basicas",
           },
           {
             label: "Base de conocimiento",
             ruta: "conocimiento",
             icon: BookOpen,
             roles: ROLES_SUPERVISION,
+            feature: "asistente_ia",
           },
           {
             label: "Asistente IA",
             ruta: "configuracion",
             icon: Bot,
             roles: ROLES_ADMINISTRACION,
+            feature: "asistente_ia",
           },
           {
             label: "Widget web",
             ruta: "widget",
             icon: Code2,
             roles: ROLES_ADMINISTRACION,
+            feature: "asistente_ia",
           },
           {
             label: "Facturación",
@@ -425,15 +454,24 @@ export default function Sidebar() {
   const itemsPermitidos =
     useMemo(
       () =>
-        rol
+        rol && empresa
           ? items.filter(
               (item) =>
                 item.roles.includes(
                   rol,
-                ),
+                ) &&
+                (!item.feature ||
+                  empresaTieneFuncion(
+                    empresa,
+                    item.feature,
+                  )),
             )
           : [],
-      [items, rol],
+      [
+        empresa,
+        items,
+        rol,
+      ],
     );
 
   useEffect(() => {
@@ -459,18 +497,32 @@ export default function Sidebar() {
         );
       });
 
-    if (
-      itemActual &&
-      !itemActual.roles.includes(
-        rol,
-      )
-    ) {
-      router.replace(
-        `/empresas/${empresaId}/conversaciones`,
-      );
+    if (itemActual) {
+      const rolPermitido =
+        itemActual.roles.includes(
+          rol,
+        );
+
+      const planPermitido =
+        !itemActual.feature ||
+        (empresa &&
+          empresaTieneFuncion(
+            empresa,
+            itemActual.feature,
+          ));
+
+      if (
+        !rolPermitido ||
+        !planPermitido
+      ) {
+        router.replace(
+          `/empresas/${empresaId}/dashboard`,
+        );
+      }
     }
   }, [
     cargandoRol,
+    empresa,
     empresaId,
     items,
     pathname,
