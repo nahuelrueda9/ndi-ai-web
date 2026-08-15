@@ -99,7 +99,7 @@ export default function AyudaPage() {
         "Completá nombre, descripción, teléfono, horarios y ubicación.",
         "Subí logo, portada e imágenes del negocio.",
         "Agregá redes sociales y elegí qué secciones querés mostrar.",
-        "Definí una dirección para tu página y publicala cuando esté lista.",
+        "Definí una dirección única para tu página y publicala cuando esté lista.",
       ],
       ruta: "",
       boton: "Ir a Mi página",
@@ -108,14 +108,14 @@ export default function AyudaPage() {
     },
     {
       numero: 2,
-      titulo: "Cargá lo que ofrecés",
+      titulo: "Cargá servicios y productos",
       descripcion:
-        "Armá el catálogo que van a consultar tus clientes.",
+        "Armá el catálogo básico que van a consultar tus clientes.",
       detalles: [
-        "Página Simple permite cargar servicios, precios, duración e imágenes.",
-        "Página Completa y Business IA también permiten cargar productos.",
-        "Podés ocultar temporalmente un elemento sin eliminarlo.",
-        "Mantené precios y descripciones actualizados.",
+        "Página Simple permite mostrar servicios, productos o menú básico con hasta 1 imagen por elemento.",
+        "Página Completa y Business IA amplían el catálogo y permiten hasta 3 imágenes por elemento.",
+        "Podés cargar precio, descripción, duración cuando corresponda y ocultar elementos sin eliminarlos.",
+        "Mantené precios, disponibilidad y descripciones actualizados.",
       ],
       ruta: "catalogo",
       boton: "Servicios y productos",
@@ -126,12 +126,12 @@ export default function AyudaPage() {
       numero: 3,
       titulo: "Configurá Agenda y reservas",
       descripcion:
-        "Definí cuándo pueden reservar tus clientes y administrá los turnos.",
+        "Definí cuándo pueden reservar tus clientes y administrá la disponibilidad.",
       detalles: [
-        "Elegí los días y horarios disponibles.",
-        "Definí el intervalo entre turnos y los horarios de descanso.",
-        "Los clientes podrán reservar desde la página pública.",
-        "Confirmá, completá, cancelá o editá turnos desde el calendario.",
+        "Elegí los días, horarios, intervalos y descansos disponibles.",
+        "Consultorios y barberías pueden recibir turnos desde la página pública.",
+        "Hoteles y alojamientos pueden gestionar reservas según su configuración.",
+        "Los horarios ocupados dejan de ofrecerse automáticamente para evitar reservas superpuestas.",
       ],
       ruta: "agenda",
       boton: "Abrir Agenda",
@@ -140,6 +140,36 @@ export default function AyudaPage() {
     },
     {
       numero: 4,
+      titulo: "Recibí solicitudes de presupuesto",
+      descripcion:
+        "Permití que los clientes pidan una cotización desde tu página.",
+      detalles: [
+        "La función está disponible desde Página Completa.",
+        "Activá la opción de presupuesto desde Mi página cuando quieras mostrarla.",
+        "Las solicitudes quedan separadas de las consultas del asistente.",
+        "Revisalas desde Presupuestos y continuá el contacto con el cliente.",
+      ],
+      ruta: "presupuestos",
+      boton: "Abrir Presupuestos",
+      icono: <FileText className="h-5 w-5" />,
+      disponibilidad: "completa",
+    },
+    {
+      numero: 5,
+      titulo: "Usá las funciones de tu rubro",
+      descripcion:
+        "Página Completa y Business IA habilitan herramientas específicas según el tipo de negocio.",
+      detalles: [
+        "Restaurantes pueden recibir pedidos online y reservas de mesa.",
+        "Hoteles y hostales pueden recibir reservas.",
+        "Consultorios y barberías pueden administrar turnos.",
+        "Tiendas aprovechan el catálogo ampliado con hasta 3 imágenes por producto.",
+      ],
+      icono: <Plug className="h-5 w-5" />,
+      disponibilidad: "completa",
+    },
+    {
+      numero: 6,
       titulo: "Configurá el Asistente IA",
       descripcion:
         "Definí cómo debe presentarse, responder y comportarse la IA.",
@@ -155,7 +185,7 @@ export default function AyudaPage() {
       disponibilidad: "business",
     },
     {
-      numero: 5,
+      numero: 7,
       titulo: "Armá la Base de conocimiento",
       descripcion:
         "Agregá información real del negocio para mejorar las respuestas de la IA.",
@@ -163,7 +193,7 @@ export default function AyudaPage() {
         "Cargá preguntas frecuentes, políticas y condiciones importantes.",
         "No dupliques precios o datos que ya estén correctamente cargados en el catálogo.",
         "Actualizá la información cuando cambie algo en el negocio.",
-        "La IA usa esta base como contexto para responder con mayor precisión.",
+        "La IA usa esta base junto con los datos reales del negocio para responder con mayor precisión.",
       ],
       ruta: "conocimiento",
       boton: "Base de conocimiento",
@@ -171,12 +201,12 @@ export default function AyudaPage() {
       disponibilidad: "business",
     },
     {
-      numero: 6,
+      numero: 8,
       titulo: "Probá la IA antes de publicarla",
       descripcion:
         "Hacé consultas de prueba como si fueras un cliente.",
       detalles: [
-        "Preguntá por servicios, precios, horarios y ubicación.",
+        "Preguntá por servicios, productos, precios, horarios y ubicación.",
         "Probá preguntas poco claras y preguntas de seguimiento.",
         "Si una respuesta está mal, corregí la información o las instrucciones.",
         "Repetí la prueba hasta que las respuestas sean consistentes.",
@@ -187,7 +217,7 @@ export default function AyudaPage() {
       disponibilidad: "business",
     },
     {
-      numero: 7,
+      numero: 9,
       titulo: "Instalá el Widget web",
       descripcion:
         "Usá el asistente de NDI AI dentro de otra página web.",
@@ -203,15 +233,15 @@ export default function AyudaPage() {
       disponibilidad: "business",
     },
     {
-      numero: 8,
+      numero: 10,
       titulo: "Revisá consultas y estadísticas",
       descripcion:
-        "Usá el panel para entender qué hacen tus clientes.",
+        "Usá el panel para entender qué hacen tus clientes y cómo rinde tu página.",
       detalles: [
-        "Estadísticas muestra visitas, contactos y actividad de la página.",
-        "Las consultas del asistente se registran en Business IA.",
-        "Podés revisar conversaciones y tomar la atención manualmente cuando sea necesario.",
-        "Usá estos datos para mejorar la página y la información del negocio.",
+        "Página Simple incluye estadísticas básicas de la página.",
+        "Página Completa y Business IA incorporan estadísticas avanzadas.",
+        "En Business IA las consultas del asistente quedan guardadas y podés tomar la atención manualmente.",
+        "Revisá el consumo mensual de IA desde Facturación cuando uses Business IA.",
       ],
       ruta: "estadisticas",
       boton: "Ver Estadísticas",
@@ -273,9 +303,9 @@ export default function AyudaPage() {
 
             <p className="mt-1 text-sm leading-6 text-slate-700 dark:text-zinc-300">
               NDI AI te permite tener una página profesional para tu
-              negocio, mostrar servicios y productos, recibir consultas
-              y, según tu plan, gestionar reservas y atender clientes con
-              inteligencia artificial.
+              negocio, mostrar servicios y productos y, según tu plan,
+              recibir presupuestos, gestionar turnos, reservas o pedidos
+              y atender clientes con inteligencia artificial.
             </p>
           </div>
         </div>
@@ -383,9 +413,9 @@ export default function AyudaPage() {
                 Página Simple
               </p>
               <p className="mt-1">
-                Página pública, servicios, horarios, ubicación,
-                contacto, WhatsApp directo, redes sociales y
-                estadísticas básicas.
+                Página pública, catálogo básico de servicios y productos,
+                hasta 1 imagen por elemento, horarios, ubicación, contacto,
+                WhatsApp directo, redes sociales y estadísticas básicas.
               </p>
             </div>
 
@@ -394,9 +424,9 @@ export default function AyudaPage() {
                 Página Completa
               </p>
               <p className="mt-1">
-                Todo lo anterior más productos, catálogo ampliado,
-                presupuestos, QR, Agenda, reservas online y
-                estadísticas avanzadas.
+                Todo lo anterior más catálogo ampliado con hasta 3 imágenes,
+                presupuestos, QR, Agenda, turnos o reservas, funciones
+                específicas por rubro y estadísticas avanzadas.
               </p>
             </div>
 
@@ -406,7 +436,8 @@ export default function AyudaPage() {
               </p>
               <p className="mt-1">
                 Todo Página Completa más Asistente IA, Base de
-                conocimiento, consultas, Widget web y atención humana.
+                conocimiento, consultas guardadas, Widget web,
+                atención humana y página sin marca NDI AI.
               </p>
             </div>
           </div>
@@ -453,8 +484,14 @@ export default function AyudaPage() {
             </p>
 
             <p>
-              Si el plan vence sin renovación, las funciones pagas
-              quedan deshabilitadas hasta que vuelvas a activarlo.
+              Si el plan vence sin renovación, sus funciones quedan
+              bloqueadas hasta que lo renueves. El plan contratado se
+              conserva y no se reemplaza automáticamente por otro.
+            </p>
+
+            <p>
+              Desde Facturación podés revisar el estado, vencimiento,
+              mensualidad contratada y el último pago registrado.
             </p>
           </div>
 
