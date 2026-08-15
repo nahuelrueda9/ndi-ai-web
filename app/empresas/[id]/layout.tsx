@@ -439,7 +439,7 @@ export default function EmpresaLayout({
                   type="button"
                   onClick={() =>
                     router.push(
-                      `/empresas/${empresaId}/facturacion/planes`,
+                      `/empresas/${empresaId}/planes`,
                     )
                   }
                 >

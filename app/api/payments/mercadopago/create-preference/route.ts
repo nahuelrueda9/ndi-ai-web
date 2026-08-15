@@ -614,17 +614,17 @@ export async function POST(
         success:
           `${urlBase}/empresas/${encodeURIComponent(
             empresaId,
-          )}/facturacion/planes?payment=success&type=${tipoPago}`,
+          )}/planes?payment=success&type=${tipoPago}`,
 
         pending:
           `${urlBase}/empresas/${encodeURIComponent(
             empresaId,
-          )}/facturacion/planes?payment=pending&type=${tipoPago}`,
+          )}/planes?payment=pending&type=${tipoPago}`,
 
         failure:
           `${urlBase}/empresas/${encodeURIComponent(
             empresaId,
-          )}/facturacion/planes?payment=failure&type=${tipoPago}`,
+          )}/planes?payment=failure&type=${tipoPago}`,
       };
 
       preferenceBody.auto_return =
