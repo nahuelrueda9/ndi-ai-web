@@ -225,20 +225,15 @@ export default function HomePage() {
     <main className="min-h-screen overflow-hidden bg-zinc-950 text-white">
       {/* HEADER */}
       <header className="sticky top-0 z-50 border-b border-zinc-800/80 bg-zinc-950/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 sm:px-8 sm:py-4">
-          <Link href="/" className="flex items-center gap-2 sm:gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 sm:h-11 sm:w-11 sm:rounded-2xl">
-              <Bot className="h-5 w-5 sm:h-6 sm:w-6" />
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 sm:px-8 sm:py-3">
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 sm:h-10 sm:w-10">
+              <Bot className="h-5 w-5" />
             </div>
 
-            <div>
-              <p className="text-[10px] uppercase tracking-[0.18em] text-blue-400 sm:text-xs sm:tracking-[0.22em]">
-                NDI AI
-              </p>
-              <p className="text-sm font-semibold leading-5 text-white sm:text-base">
-                Páginas inteligentes
-              </p>
-            </div>
+            <p className="text-sm font-bold tracking-[0.16em] text-white sm:text-base">
+              NDI AI
+            </p>
           </Link>
 
           <nav className="hidden items-center gap-7 lg:flex">
@@ -262,26 +257,19 @@ export default function HomePage() {
             >
               Planes
             </a>
-
-            <a
-              href="#proximamente"
-              className="text-sm text-zinc-400 transition hover:text-white"
-            >
-              Próximamente
-            </a>
           </nav>
 
-          <nav className="flex items-center gap-2 sm:gap-3">
+          <nav className="flex items-center gap-1.5 sm:gap-2">
             <Link
               href="/login"
-              className="rounded-lg px-2 py-1.5 text-xs font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white sm:rounded-xl sm:px-4 sm:py-2 sm:text-sm"
+              className="rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white sm:px-3 sm:py-2 sm:text-xs"
             >
               Iniciar sesión
             </Link>
 
             <Link
               href="/register"
-              className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-500 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
+              className="rounded-lg bg-blue-600 px-3 py-2 text-[11px] font-semibold text-white transition hover:bg-blue-500 sm:px-4 sm:text-xs"
             >
               Quiero mi página
             </Link>
@@ -290,164 +278,121 @@ export default function HomePage() {
       </header>
 
       {/* HERO */}
-      <section className="relative">
-        <div className="absolute inset-x-0 top-0 h-[760px] bg-[radial-gradient(circle_at_top,rgba(37,99,235,0.22),transparent_62%)]" />
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-x-0 top-0 h-[620px] bg-[radial-gradient(circle_at_top,rgba(37,99,235,0.18),transparent_64%)]" />
 
-        <div className="relative mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:gap-16 sm:px-8 sm:py-28 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
-          <div>
-            <div className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-blue-500/20 bg-blue-500/10 px-2.5 py-1 text-[11px] leading-4 text-blue-300 sm:gap-2 sm:px-3 sm:py-1.5 sm:text-sm">
-              <Zap className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
-              Una nueva forma de mostrar y atender tu negocio
-            </div>
+        <div className="relative mx-auto grid max-w-7xl gap-9 px-4 py-10 sm:px-8 sm:py-20 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:gap-14 lg:py-24">
+          <div className="max-w-2xl">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-400 sm:text-xs">
+              Páginas inteligentes para negocios
+            </p>
 
-            <h1 className="mt-4 max-w-3xl text-[1.8rem] font-bold leading-[1.08] tracking-tight sm:mt-7 sm:text-5xl sm:leading-tight lg:text-6xl">
-              Tu negocio, disponible
-              <span className="text-blue-400">
-                {" "}
-                incluso cuando vos no estás.
+            <h1 className="mt-3 text-[2.15rem] font-bold leading-[1.04] tracking-tight text-white sm:mt-4 sm:text-5xl lg:text-[3.6rem]">
+              Tu negocio,
+              <span className="block text-blue-400">
+                siempre disponible.
               </span>
             </h1>
 
-            <p className="mt-3 max-w-2xl text-[13px] leading-5 text-zinc-400 sm:mt-6 sm:text-lg sm:leading-8">
-              Mostrá tus servicios, productos, precios, horarios y ubicación
-              desde una página profesional. Recibí consultas, conectá con
-              WhatsApp y sumá inteligencia artificial para atender mejor a tus
-              clientes.
+            <p className="mt-4 max-w-xl text-sm leading-6 text-zinc-400 sm:mt-5 sm:text-base sm:leading-7">
+              Mostrá lo que ofrecés, centralizá tu información y facilitá que tus
+              clientes te encuentren, consulten o reserven desde un solo lugar.
             </p>
 
-            <div className="mt-5 flex flex-col gap-2 sm:mt-8 sm:flex-row sm:gap-3">
+            <div className="mt-6 flex flex-wrap gap-2.5 sm:mt-7">
               <a
                 href="#como-funciona"
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500 sm:rounded-xl sm:px-6 sm:py-3.5 sm:text-base"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500 sm:px-5"
               >
                 Ver cómo funciona
-                <ArrowRight className="h-5 w-5" />
+                <ArrowRight className="h-4 w-4" />
               </a>
 
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center rounded-lg border border-zinc-700 px-5 py-2.5 text-sm font-semibold text-zinc-200 transition hover:bg-zinc-900 sm:rounded-xl sm:px-6 sm:py-3.5 sm:text-base"
+                className="inline-flex items-center justify-center rounded-lg border border-zinc-700 px-4 py-2.5 text-sm font-semibold text-zinc-200 transition hover:bg-zinc-900 sm:px-5"
               >
-                Quiero mi página
+                Crear mi página
               </Link>
             </div>
 
-            <div className="mt-5 grid grid-cols-1 gap-1.5 text-[11px] text-zinc-400 sm:mt-8 sm:flex sm:flex-wrap sm:gap-x-6 sm:gap-y-3 sm:text-sm">
-              {[
-                "Tu información en un solo lugar",
-                "WhatsApp directo",
-                "Administración desde NDI AI",
-              ].map((item) => (
-                <span key={item} className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-emerald-400" />
-                  {item}
-                </span>
-              ))}
-            </div>
+            <p className="mt-5 text-xs text-zinc-500 sm:mt-6">
+              Página propia · WhatsApp · Reservas · IA opcional
+            </p>
           </div>
 
           {/* MOCKUP */}
-          <div className="relative">
-            <div className="absolute -inset-8 rounded-[3rem] bg-blue-600/10 blur-3xl" />
+          <div className="relative mx-auto w-full max-w-xl lg:max-w-none">
+            <div className="absolute -inset-6 rounded-[2.5rem] bg-blue-600/10 blur-3xl" />
 
-            <div className="relative">
-              <div className="overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900 shadow-2xl">
-                <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3 sm:px-5 sm:py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 sm:h-10 sm:w-10 sm:rounded-xl">
-                      <Building2 className="h-5 w-5" />
-                    </div>
-
-                    <div>
-                      <p className="font-semibold">Estudio Norte</p>
-                      <p className="mt-0.5 text-xs text-zinc-500">
-                        Página del negocio
-                      </p>
-                    </div>
-                  </div>
-
-                  <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400">
-                    Disponible
-                  </span>
-                </div>
-
-                <div className="relative h-28 border-b border-zinc-800 bg-gradient-to-br from-blue-600/30 via-zinc-900 to-zinc-950 p-4 sm:h-40 sm:p-6">
-                  <div className="absolute bottom-3 left-4 sm:bottom-5 sm:left-5">
-                    <p className="text-xs uppercase tracking-[0.18em] text-blue-300">
-                      Tu negocio online
-                    </p>
-                    <p className="mt-1 text-lg font-bold leading-6 sm:mt-2 sm:text-2xl">
-                      Todo lo que tus clientes necesitan saber.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2.5 p-3.5 sm:gap-4 sm:p-5">
-                  <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-2.5 sm:rounded-2xl sm:p-4">
-                    <div className="flex items-center gap-3">
-                      <Package className="h-5 w-5 text-blue-400" />
-                      <div>
-                        <p className="text-sm font-medium">Servicios</p>
-                        <p className="mt-1 text-xs text-zinc-500">
-                          Información y precios
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-2.5 sm:rounded-2xl sm:p-4">
-                    <div className="flex items-center gap-3">
-                      <Clock3 className="h-5 w-5 text-blue-400" />
-                      <div>
-                        <p className="text-sm font-medium">Horarios</p>
-                        <p className="mt-1 text-xs text-zinc-500">
-                          Siempre actualizados
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-2.5 sm:rounded-2xl sm:p-4">
-                    <div className="flex items-center gap-3">
-                      <MapPin className="h-5 w-5 text-blue-400" />
-                      <div>
-                        <p className="text-sm font-medium">Ubicación</p>
-                        <p className="mt-1 text-xs text-zinc-500">
-                          Fácil de encontrar
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-2.5 sm:rounded-2xl sm:p-4">
-                    <div className="flex items-center gap-3">
-                      <MessageCircle className="h-5 w-5 text-emerald-400" />
-                      <div>
-                        <p className="text-sm font-medium">WhatsApp</p>
-                        <p className="mt-1 text-xs text-zinc-500">
-                          Contacto directo
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="relative -mt-3 ml-3 rounded-xl border border-blue-500/20 bg-zinc-950 p-3 shadow-2xl sm:-mt-5 sm:ml-20 sm:rounded-2xl sm:p-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400">
-                    <Sparkles className="h-4 w-4" />
+            <div className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900 shadow-2xl sm:rounded-3xl">
+              <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3.5 sm:px-5 sm:py-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 sm:h-10 sm:w-10 sm:rounded-xl">
+                    <Building2 className="h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
 
                   <div>
-                    <p className="text-sm font-medium text-white">
-                      Asistente NDI AI
+                    <p className="text-sm font-semibold text-white sm:text-base">
+                      Estudio Norte
                     </p>
-                    <p className="mt-1 text-sm leading-6 text-zinc-400">
-                      “Sí, ese servicio está disponible. El horario de atención
-                      de hoy es de 9:00 a 18:00.”
+                    <p className="mt-0.5 text-[11px] text-zinc-500 sm:text-xs">
+                      Página del negocio
                     </p>
                   </div>
+                </div>
+
+                <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-medium text-emerald-400 sm:px-3 sm:text-xs">
+                  Disponible
+                </span>
+              </div>
+
+              <div className="border-b border-zinc-800 bg-gradient-to-br from-blue-600/20 via-zinc-900 to-zinc-950 px-4 py-6 sm:px-6 sm:py-8">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-300 sm:text-xs">
+                  Tu negocio online
+                </p>
+
+                <p className="mt-2 max-w-lg text-xl font-bold leading-tight text-white sm:text-2xl">
+                  Todo lo importante, claro y fácil de encontrar.
+                </p>
+
+                <p className="mt-2 max-w-lg text-xs leading-5 text-zinc-400 sm:text-sm sm:leading-6">
+                  Servicios, horarios, ubicación y contacto en una experiencia pensada
+                  para tus clientes.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2.5 p-3.5 sm:gap-3 sm:p-5">
+                {[
+                  ["Servicios", Package],
+                  ["Horarios", Clock3],
+                  ["WhatsApp", MessageCircle],
+                ].map(([titulo, Icono]) => (
+                  <div
+                    key={titulo as string}
+                    className="rounded-xl border border-zinc-800 bg-zinc-950 px-2 py-3 text-center sm:px-3 sm:py-4"
+                  >
+                    <Icono className="mx-auto h-4 w-4 text-blue-400 sm:h-5 sm:w-5" />
+
+                    <p className="mt-2 text-[11px] font-medium text-zinc-200 sm:text-sm">
+                      {titulo as string}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="border-t border-zinc-800 px-4 py-3 sm:px-5">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[11px] font-medium text-zinc-200 sm:text-sm">
+                      ¿Querés sumar más funciones?
+                    </p>
+                    <p className="mt-0.5 text-[10px] text-zinc-500 sm:text-xs">
+                      Turnos, reservas, pedidos e inteligencia artificial.
+                    </p>
+                  </div>
+
+                  <Sparkles className="h-4 w-4 shrink-0 text-blue-400 sm:h-5 sm:w-5" />
                 </div>
               </div>
             </div>
