@@ -225,17 +225,17 @@ export default function HomePage() {
     <main className="min-h-screen overflow-hidden bg-zinc-950 text-white">
       {/* HEADER */}
       <header className="sticky top-0 z-50 border-b border-zinc-800/80 bg-zinc-950/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600">
-              <Bot className="h-6 w-6" />
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 sm:px-8 sm:py-4">
+          <Link href="/" className="flex items-center gap-2 sm:gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 sm:h-11 sm:w-11 sm:rounded-2xl">
+              <Bot className="h-5 w-5 sm:h-6 sm:w-6" />
             </div>
 
             <div>
-              <p className="text-xs uppercase tracking-[0.22em] text-blue-400">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-blue-400 sm:text-xs sm:tracking-[0.22em]">
                 NDI AI
               </p>
-              <p className="font-semibold text-white">
+              <p className="text-sm font-semibold leading-5 text-white sm:text-base">
                 Páginas inteligentes
               </p>
             </div>
@@ -274,14 +274,14 @@ export default function HomePage() {
           <nav className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/login"
-              className="rounded-xl px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white sm:px-4"
+              className="rounded-lg px-2 py-1.5 text-xs font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white sm:rounded-xl sm:px-4 sm:py-2 sm:text-sm"
             >
               Iniciar sesión
             </Link>
 
             <Link
               href="/register"
-              className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500"
+              className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-500 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
             >
               Quiero mi página
             </Link>
@@ -293,14 +293,14 @@ export default function HomePage() {
       <section className="relative">
         <div className="absolute inset-x-0 top-0 h-[760px] bg-[radial-gradient(circle_at_top,rgba(37,99,235,0.22),transparent_62%)]" />
 
-        <div className="relative mx-auto grid max-w-7xl gap-16 px-5 py-20 sm:px-8 sm:py-28 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
+        <div className="relative mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:gap-16 sm:px-8 sm:py-28 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 text-sm text-blue-300">
-              <Zap className="h-4 w-4" />
+            <div className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-blue-500/20 bg-blue-500/10 px-2.5 py-1 text-[11px] leading-4 text-blue-300 sm:gap-2 sm:px-3 sm:py-1.5 sm:text-sm">
+              <Zap className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
               Una nueva forma de mostrar y atender tu negocio
             </div>
 
-            <h1 className="mt-7 max-w-3xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+            <h1 className="mt-4 max-w-3xl text-[1.8rem] font-bold leading-[1.08] tracking-tight sm:mt-7 sm:text-5xl sm:leading-tight lg:text-6xl">
               Tu negocio, disponible
               <span className="text-blue-400">
                 {" "}
@@ -308,17 +308,17 @@ export default function HomePage() {
               </span>
             </h1>
 
-            <p className="mt-6 max-w-2xl text-base leading-8 text-zinc-400 sm:text-lg">
+            <p className="mt-3 max-w-2xl text-[13px] leading-5 text-zinc-400 sm:mt-6 sm:text-lg sm:leading-8">
               Mostrá tus servicios, productos, precios, horarios y ubicación
               desde una página profesional. Recibí consultas, conectá con
               WhatsApp y sumá inteligencia artificial para atender mejor a tus
               clientes.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-5 flex flex-col gap-2 sm:mt-8 sm:flex-row sm:gap-3">
               <a
                 href="#como-funciona"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 font-semibold text-white transition hover:bg-blue-500"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500 sm:rounded-xl sm:px-6 sm:py-3.5 sm:text-base"
               >
                 Ver cómo funciona
                 <ArrowRight className="h-5 w-5" />
@@ -326,13 +326,13 @@ export default function HomePage() {
 
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center rounded-xl border border-zinc-700 px-6 py-3.5 font-semibold text-zinc-200 transition hover:bg-zinc-900"
+                className="inline-flex items-center justify-center rounded-lg border border-zinc-700 px-5 py-2.5 text-sm font-semibold text-zinc-200 transition hover:bg-zinc-900 sm:rounded-xl sm:px-6 sm:py-3.5 sm:text-base"
               >
                 Quiero mi página
               </Link>
             </div>
 
-            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm text-zinc-400">
+            <div className="mt-5 grid grid-cols-1 gap-1.5 text-[11px] text-zinc-400 sm:mt-8 sm:flex sm:flex-wrap sm:gap-x-6 sm:gap-y-3 sm:text-sm">
               {[
                 "Tu información en un solo lugar",
                 "WhatsApp directo",
@@ -352,9 +352,9 @@ export default function HomePage() {
 
             <div className="relative">
               <div className="overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900 shadow-2xl">
-                <div className="flex items-center justify-between border-b border-zinc-800 px-5 py-4">
+                <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3 sm:px-5 sm:py-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 sm:h-10 sm:w-10 sm:rounded-xl">
                       <Building2 className="h-5 w-5" />
                     </div>
 
@@ -371,19 +371,19 @@ export default function HomePage() {
                   </span>
                 </div>
 
-                <div className="relative h-40 border-b border-zinc-800 bg-gradient-to-br from-blue-600/30 via-zinc-900 to-zinc-950 p-6">
-                  <div className="absolute bottom-5 left-5">
+                <div className="relative h-28 border-b border-zinc-800 bg-gradient-to-br from-blue-600/30 via-zinc-900 to-zinc-950 p-4 sm:h-40 sm:p-6">
+                  <div className="absolute bottom-3 left-4 sm:bottom-5 sm:left-5">
                     <p className="text-xs uppercase tracking-[0.18em] text-blue-300">
                       Tu negocio online
                     </p>
-                    <p className="mt-2 text-2xl font-bold">
+                    <p className="mt-1 text-lg font-bold leading-6 sm:mt-2 sm:text-2xl">
                       Todo lo que tus clientes necesitan saber.
                     </p>
                   </div>
                 </div>
 
-                <div className="grid gap-4 p-5 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+                <div className="grid grid-cols-2 gap-2.5 p-3.5 sm:gap-4 sm:p-5">
+                  <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-2.5 sm:rounded-2xl sm:p-4">
                     <div className="flex items-center gap-3">
                       <Package className="h-5 w-5 text-blue-400" />
                       <div>
@@ -395,7 +395,7 @@ export default function HomePage() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+                  <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-2.5 sm:rounded-2xl sm:p-4">
                     <div className="flex items-center gap-3">
                       <Clock3 className="h-5 w-5 text-blue-400" />
                       <div>
@@ -407,7 +407,7 @@ export default function HomePage() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+                  <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-2.5 sm:rounded-2xl sm:p-4">
                     <div className="flex items-center gap-3">
                       <MapPin className="h-5 w-5 text-blue-400" />
                       <div>
@@ -419,7 +419,7 @@ export default function HomePage() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+                  <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-2.5 sm:rounded-2xl sm:p-4">
                     <div className="flex items-center gap-3">
                       <MessageCircle className="h-5 w-5 text-emerald-400" />
                       <div>
@@ -433,7 +433,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="relative -mt-5 ml-8 rounded-2xl border border-blue-500/20 bg-zinc-950 p-4 shadow-2xl sm:ml-20">
+              <div className="relative -mt-3 ml-3 rounded-xl border border-blue-500/20 bg-zinc-950 p-3 shadow-2xl sm:-mt-5 sm:ml-20 sm:rounded-2xl sm:p-4">
                 <div className="flex items-start gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400">
                     <Sparkles className="h-4 w-4" />
