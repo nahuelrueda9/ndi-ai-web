@@ -16,7 +16,6 @@ import {
   doc,
   getDoc,
   serverTimestamp,
-  setDoc,
   updateDoc,
 } from "firebase/firestore";
 import {
@@ -168,6 +167,11 @@ export default function ConfigurarAgentePage() {
   const [
     puedeUsarProductosAvanzados,
     setPuedeUsarProductosAvanzados,
+  ] = useState(false);
+
+  const [
+    puedeUsarIA,
+    setPuedeUsarIA,
   ] = useState(false);
 
   const [
@@ -489,6 +493,12 @@ export default function ConfigurarAgentePage() {
                 "productos",
               );
 
+            const accesoIA =
+              empresaTieneFuncion(
+                empresa,
+                "asistente_ia",
+              );
+
             setPuedeUsarTurnos(
               accesoTurnos,
             );
@@ -499,6 +509,10 @@ export default function ConfigurarAgentePage() {
 
             setPuedeUsarProductosAvanzados(
               accesoProductosAvanzados,
+            );
+
+            setPuedeUsarIA(
+              accesoIA,
             );
 
             setNombrePlanActual(
@@ -1302,7 +1316,10 @@ export default function ConfigurarAgentePage() {
       return;
     }
 
-    if (!nombreBot.trim()) {
+    if (
+      puedeUsarIA &&
+      !nombreBot.trim()
+    ) {
       setError(
         "Ingresá el nombre del bot.",
       );
@@ -1373,161 +1390,178 @@ export default function ConfigurarAgentePage() {
           empresaId,
         );
 
-      await setDoc(
+      /*
+       * El slug ya quedó reservado y guardado por
+       * /api/companies/slug.
+       *
+       * Desde el navegador actualizamos únicamente
+       * los demás campos usando dot notation, para
+       * no volver a tocar paginaPublica.slug.
+       */
+      const datosActualizar = {
+        nombre:
+          nombre.trim(),
+
+        rubro:
+          rubro.trim(),
+
+        email:
+          email.trim(),
+
+        telefono:
+          telefono.trim(),
+
+        descripcion:
+          descripcion.trim(),
+
+        direccion:
+          direccion.trim(),
+
+        horarios:
+          horarios.trim(),
+
+        "redesSociales.instagram":
+          instagram.trim(),
+
+        "redesSociales.facebook":
+          facebook.trim(),
+
+        "redesSociales.tiktok":
+          tiktok.trim(),
+
+        "paginaPublica.publicada":
+          paginaPublicada,
+
+        "paginaPublica.titulo":
+          paginaTitulo.trim() ||
+          nombre.trim(),
+
+        "paginaPublica.subtitulo":
+          paginaSubtitulo.trim(),
+
+        "paginaPublica.textoSecundario":
+          paginaTextoSecundario.trim(),
+
+        "paginaPublica.colorPrincipal":
+          paginaColorPrincipal,
+
+        "paginaPublica.tema":
+          paginaTema,
+
+        "paginaPublica.logoUrl":
+          paginaLogoUrl,
+
+        "paginaPublica.portadaUrl":
+          paginaPortadaUrl,
+
+        "paginaPublica.galeria":
+          paginaGaleria,
+
+        "paginaPublica.mostrarWhatsApp":
+          paginaMostrarWhatsApp,
+
+        "paginaPublica.mostrarEmail":
+          paginaMostrarEmail,
+
+        "paginaPublica.mostrarDireccion":
+          paginaMostrarDireccion,
+
+        "paginaPublica.mostrarHorarios":
+          paginaMostrarHorarios,
+
+        "paginaPublica.mostrarServicios":
+          paginaMostrarServicios,
+
+        "paginaPublica.mostrarProductos":
+          paginaMostrarProductos,
+
+        "paginaPublica.mostrarGaleria":
+          paginaMostrarGaleria,
+
+        "paginaPublica.mostrarMapa":
+          paginaMostrarMapa,
+
+        "paginaPublica.mostrarPresupuesto":
+          puedeUsarPresupuestos
+            ? paginaMostrarPresupuesto
+            : false,
+
+        "paginaPublica.mostrarReservasMesa":
+          puedeUsarTurnos
+            ? paginaMostrarReservasMesa
+            : false,
+
+        "paginaPublica.mostrarPedidosOnline":
+          puedeUsarProductosAvanzados
+            ? paginaMostrarPedidosOnline
+            : false,
+
+        "paginaPublica.mostrarContacto":
+          paginaMostrarContacto,
+
+        "paginaPublica.testimonios":
+          paginaTestimonios,
+
+        "paginaPublica.preguntasFrecuentes":
+          paginaPreguntasFrecuentes,
+
+        updatedAt:
+          serverTimestamp(),
+      };
+
+      /*
+       * Estos campos pertenecen exclusivamente a
+       * Business IA. Página Simple y Página Completa
+       * ni siquiera los envían a Firestore.
+       */
+      const datosIA =
+        puedeUsarIA
+          ? {
+              personalidad:
+                personalidad.trim(),
+
+              objetivo:
+                objetivo.trim(),
+
+              instrucciones:
+                instrucciones.trim(),
+
+              restricciones:
+                restricciones.trim(),
+
+              idioma,
+
+              "widget.nombreBot":
+                nombreBot.trim(),
+
+              "widget.mensajeBienvenida":
+                mensajeBienvenida.trim(),
+
+              "widget.colorPrincipal":
+                colorPrincipal,
+
+              "widget.tema":
+                tema,
+
+              "widget.posicion":
+                posicion,
+
+              "widget.formaBoton":
+                formaBoton,
+
+              "widget.textoPlaceholder":
+                textoPlaceholder.trim(),
+
+              "widget.mostrarMarca":
+                mostrarMarca,
+            }
+          : {};
+
+      await updateDoc(
         empresaReferencia,
         {
-          nombre:
-            nombre.trim(),
-
-          rubro:
-            rubro.trim(),
-
-          email:
-            email.trim(),
-
-          telefono:
-            telefono.trim(),
-
-          descripcion:
-            descripcion.trim(),
-
-          direccion:
-            direccion.trim(),
-
-          horarios:
-            horarios.trim(),
-
-
-          redesSociales: {
-            instagram:
-              instagram.trim(),
-            facebook:
-              facebook.trim(),
-            tiktok:
-              tiktok.trim(),
-          },
-
-          paginaPublica: {
-            slug:
-              slugConfirmado,
-
-            publicada:
-              paginaPublicada,
-
-            titulo:
-              paginaTitulo.trim() ||
-              nombre.trim(),
-
-            subtitulo:
-              paginaSubtitulo.trim(),
-
-            textoSecundario:
-              paginaTextoSecundario.trim(),
-
-            colorPrincipal:
-              paginaColorPrincipal,
-
-            tema:
-              paginaTema,
-
-            logoUrl:
-              paginaLogoUrl,
-
-            portadaUrl:
-              paginaPortadaUrl,
-
-            galeria:
-              paginaGaleria,
-
-            mostrarWhatsApp:
-              paginaMostrarWhatsApp,
-
-            mostrarEmail:
-              paginaMostrarEmail,
-
-            mostrarDireccion:
-              paginaMostrarDireccion,
-
-            mostrarHorarios:
-              paginaMostrarHorarios,
-
-            mostrarServicios:
-              paginaMostrarServicios,
-
-            mostrarProductos:
-              paginaMostrarProductos,
-
-            mostrarGaleria:
-              paginaMostrarGaleria,
-
-            mostrarMapa:
-              paginaMostrarMapa,
-
-            mostrarPresupuesto:
-              puedeUsarPresupuestos
-                ? paginaMostrarPresupuesto
-                : false,
-
-            mostrarReservasMesa:
-              puedeUsarTurnos
-                ? paginaMostrarReservasMesa
-                : false,
-
-            mostrarPedidosOnline:
-              puedeUsarProductosAvanzados
-                ? paginaMostrarPedidosOnline
-                : false,
-
-            mostrarContacto:
-              paginaMostrarContacto,
-
-            testimonios:
-              paginaTestimonios,
-
-            preguntasFrecuentes:
-              paginaPreguntasFrecuentes,
-          },
-
-          personalidad:
-            personalidad.trim(),
-
-          objetivo:
-            objetivo.trim(),
-
-          instrucciones:
-            instrucciones.trim(),
-
-          restricciones:
-            restricciones.trim(),
-
-          idioma,
-
-          widget: {
-            nombreBot:
-              nombreBot.trim(),
-
-            mensajeBienvenida:
-              mensajeBienvenida.trim(),
-
-            colorPrincipal,
-
-            tema,
-
-            posicion,
-
-            formaBoton,
-
-            textoPlaceholder:
-              textoPlaceholder.trim(),
-
-            mostrarMarca,
-          },
-
-          updatedAt:
-            serverTimestamp(),
-        },
-        {
-          merge: true,
+          ...datosActualizar,
+          ...datosIA,
         },
       );
 

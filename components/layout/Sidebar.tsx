@@ -27,6 +27,7 @@ import {
   CalendarDays,
   Code2,
   CreditCard,
+  FileText,
   HelpCircle,
   Home,
   Globe2,
@@ -390,6 +391,13 @@ export default function Sidebar() {
                 },
               ]
             : []),
+          {
+            label: "Presupuestos",
+            ruta: "presupuestos",
+            icon: FileText,
+            roles: TODOS_LOS_ROLES,
+            feature: "presupuestos",
+          },
           {
             label: "Consultas",
             ruta: "conversaciones",

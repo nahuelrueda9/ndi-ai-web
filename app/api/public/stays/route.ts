@@ -85,16 +85,35 @@ function fechaValida(
 }
 
 function obtenerHoyISO() {
-  const ahora = new Date();
+  const partes =
+    new Intl.DateTimeFormat(
+      "en-CA",
+      {
+        timeZone:
+          "America/Argentina/Buenos_Aires",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      },
+    ).formatToParts(new Date());
 
   const anio =
-    ahora.getFullYear();
-  const mes = String(
-    ahora.getMonth() + 1,
-  ).padStart(2, "0");
-  const dia = String(
-    ahora.getDate(),
-  ).padStart(2, "0");
+    partes.find(
+      (parte) =>
+        parte.type === "year",
+    )?.value ?? "";
+
+  const mes =
+    partes.find(
+      (parte) =>
+        parte.type === "month",
+    )?.value ?? "";
+
+  const dia =
+    partes.find(
+      (parte) =>
+        parte.type === "day",
+    )?.value ?? "";
 
   return `${anio}-${mes}-${dia}`;
 }
@@ -123,6 +142,38 @@ function esAlojamiento(
     normalizado === "hotel" ||
     normalizado === "hostal"
   );
+}
+
+function reservasSeSuperponen(
+  entradaA: string,
+  salidaA: string,
+  entradaB: string,
+  salidaB: string,
+) {
+  return (
+    entradaA < salidaB &&
+    entradaB < salidaA
+  );
+}
+
+class ReservaSolapadaError extends Error {
+  constructor() {
+    super(
+      "La habitación ya tiene una reserva que se superpone con esas fechas.",
+    );
+    this.name =
+      "ReservaSolapadaError";
+  }
+}
+
+class ReservaNoDisponibleError extends Error {
+  constructor(
+    mensaje: string,
+  ) {
+    super(mensaje);
+    this.name =
+      "ReservaNoDisponibleError";
+  }
 }
 
 export async function POST(
@@ -300,6 +351,38 @@ export async function POST(
       );
     }
 
+    const entradaMs =
+      new Date(
+        `${fechaEntrada}T12:00:00Z`,
+      ).getTime();
+
+    const salidaMs =
+      new Date(
+        `${fechaSalida}T12:00:00Z`,
+      ).getTime();
+
+    const noches =
+      Math.round(
+        (salidaMs - entradaMs) /
+          86_400_000,
+      );
+
+    if (
+      !Number.isFinite(noches) ||
+      noches < 1 ||
+      noches > 365
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "La estadía debe tener entre 1 y 365 noches.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
     if (
       !Number.isInteger(huespedes) ||
       huespedes < 1 ||
@@ -453,75 +536,266 @@ export async function POST(
         .collection("analyticsEvents")
         .doc();
 
-    await adminDb.runTransaction(
-      async (transaction) => {
-        transaction.set(
-          reservaRef,
+    try {
+      await adminDb.runTransaction(
+        async (transaction) => {
+          /*
+           * Revalidamos empresa, plan, página pública y habitación
+           * dentro de la misma transacción. Así un cambio de plan
+           * o de disponibilidad no puede colarse entre la lectura
+           * inicial y la creación de la reserva.
+           */
+          const empresaActualSnapshot =
+            await transaction.get(
+              empresaRef,
+            );
+
+          if (
+            !empresaActualSnapshot.exists
+          ) {
+            throw new ReservaNoDisponibleError(
+              "El alojamiento ya no está disponible.",
+            );
+          }
+
+          const empresaActual =
+            empresaActualSnapshot.data();
+
+          if (
+            empresaActual
+              ?.paginaPublica
+              ?.publicada !== true
+          ) {
+            throw new ReservaNoDisponibleError(
+              "La página del alojamiento ya no está disponible.",
+            );
+          }
+
+          if (
+            !esAlojamiento(
+              empresaActual?.rubro,
+            )
+          ) {
+            throw new ReservaNoDisponibleError(
+              "Este formulario está disponible solo para hoteles y hostales.",
+            );
+          }
+
+          if (
+            !empresaTieneFuncion(
+              empresaActual,
+              "turnos",
+            )
+          ) {
+            throw new ReservaNoDisponibleError(
+              "Las reservas requieren Página Completa o Business IA con una suscripción activa.",
+            );
+          }
+
+          const servicioRef =
+            empresaRef
+              .collection("catalog")
+              .doc(servicioId);
+
+          const servicioActualSnapshot =
+            await transaction.get(
+              servicioRef,
+            );
+
+          if (
+            !servicioActualSnapshot.exists
+          ) {
+            throw new ReservaNoDisponibleError(
+              "La habitación seleccionada ya no existe.",
+            );
+          }
+
+          const servicioActual =
+            servicioActualSnapshot.data() as ServicioAlojamiento;
+
+          if (
+            servicioActual.activo ===
+              false ||
+            servicioActual.tipo !==
+              "servicio" ||
+            !servicioActual.nombre?.trim()
+          ) {
+            throw new ReservaNoDisponibleError(
+              "La habitación seleccionada ya no está disponible.",
+            );
+          }
+
+          const reservasQuery =
+            empresaRef
+              .collection("appointments")
+              .where(
+                "servicioId",
+                "==",
+                servicioId,
+              );
+
+          const reservasSnapshot =
+            await transaction.get(
+              reservasQuery,
+            );
+
+          const existeSolapamiento =
+            reservasSnapshot.docs.some(
+              (documento) => {
+                const reserva =
+                  documento.data();
+
+                if (
+                  reserva.tipoReserva !==
+                    "alojamiento" ||
+                  reserva.estado ===
+                    "cancelado"
+                ) {
+                  return false;
+                }
+
+                const entradaExistente =
+                  typeof reserva
+                    .fechaEntrada ===
+                  "string"
+                    ? reserva
+                        .fechaEntrada
+                    : "";
+
+                const salidaExistente =
+                  typeof reserva
+                    .fechaSalida ===
+                  "string"
+                    ? reserva
+                        .fechaSalida
+                    : "";
+
+                if (
+                  !fechaValida(
+                    entradaExistente,
+                  ) ||
+                  !fechaValida(
+                    salidaExistente,
+                  )
+                ) {
+                  return false;
+                }
+
+                return reservasSeSuperponen(
+                  fechaEntrada,
+                  fechaSalida,
+                  entradaExistente,
+                  salidaExistente,
+                );
+              },
+            );
+
+          if (existeSolapamiento) {
+            throw new ReservaSolapadaError();
+          }
+
+          const nombreHabitacionActual =
+            servicioActual.nombre.trim();
+
+          transaction.set(
+            reservaRef,
+            {
+              nombreCliente,
+              email,
+              telefono,
+              servicio:
+                nombreHabitacionActual,
+              servicioId:
+                servicioActualSnapshot.id,
+              precioServicio:
+                Number(
+                  servicioActual.precio,
+                ) || 0,
+
+              /*
+               * "fecha" mantiene compatibilidad con
+               * la agenda existente. Para alojamiento
+               * representa el día de ingreso.
+               */
+              fecha: fechaEntrada,
+              hora: "14:00",
+              duracionMinutos: 0,
+
+              tipoReserva:
+                "alojamiento",
+              fechaEntrada,
+              fechaSalida,
+              huespedes,
+
+              estado: "pendiente",
+              notas,
+              origen: "web",
+              canalReserva:
+                "pagina_publica",
+              createdAt:
+                FieldValue.serverTimestamp(),
+              updatedAt:
+                FieldValue.serverTimestamp(),
+            },
+          );
+
+          transaction.set(
+            analyticsRef,
+            {
+              tipo:
+                "appointment_created",
+              subtipo:
+                "alojamiento",
+              visitanteId:
+                `reserva-${reservaRef.id}`,
+              slug,
+              origen:
+                "pagina_publica",
+              turnoId:
+                reservaRef.id,
+              servicioId:
+                servicioActualSnapshot.id,
+              fechaEntrada,
+              fechaSalida,
+              huespedes,
+              createdAt:
+                FieldValue.serverTimestamp(),
+            },
+          );
+        },
+      );
+    } catch (error) {
+      if (
+        error instanceof
+        ReservaSolapadaError
+      ) {
+        return NextResponse.json(
           {
-            nombreCliente,
-            email,
-            telefono,
-            servicio:
-              nombreHabitacion,
-            servicioId:
-              servicioDoc.id,
-            precioServicio:
-              Number(
-                servicio.precio,
-              ) || 0,
-
-            /*
-             * "fecha" mantiene compatibilidad con
-             * la agenda existente. Para alojamiento
-             * representa el día de ingreso.
-             */
-            fecha: fechaEntrada,
-            hora: "14:00",
-            duracionMinutos: 0,
-
-            tipoReserva:
-              "alojamiento",
-            fechaEntrada,
-            fechaSalida,
-            huespedes,
-
-            estado: "pendiente",
-            notas,
-            origen: "web",
-            canalReserva:
-              "pagina_publica",
-            createdAt:
-              FieldValue.serverTimestamp(),
-            updatedAt:
-              FieldValue.serverTimestamp(),
+            error:
+              "Esa habitación ya está reservada en alguna de esas fechas. Elegí otras fechas.",
+          },
+          {
+            status: 409,
           },
         );
+      }
 
-        transaction.set(
-          analyticsRef,
+      if (
+        error instanceof
+        ReservaNoDisponibleError
+      ) {
+        return NextResponse.json(
           {
-            tipo:
-              "appointment_created",
-            subtipo:
-              "alojamiento",
-            visitanteId:
-              `reserva-${reservaRef.id}`,
-            slug,
-            origen:
-              "pagina_publica",
-            turnoId:
-              reservaRef.id,
-            servicioId:
-              servicioDoc.id,
-            fechaEntrada,
-            fechaSalida,
-            huespedes,
-            createdAt:
-              FieldValue.serverTimestamp(),
+            error: error.message,
+          },
+          {
+            status: 409,
           },
         );
-      },
-    );
+      }
+
+      throw error;
+    }
 
     try {
       await crearNotificacion({

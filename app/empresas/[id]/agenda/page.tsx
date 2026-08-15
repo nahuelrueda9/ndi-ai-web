@@ -32,6 +32,10 @@ import {
 } from "lucide-react";
 
 import { db } from "@/lib/firebase";
+import {
+  empresaTieneFuncion,
+  type PlanId,
+} from "@/lib/plans/planAccess";
 import Badge from "@/components/Ui/Badge";
 import Button from "@/components/Ui/Button";
 import Card from "@/components/Ui/Card";
@@ -91,11 +95,6 @@ type CatalogoServicio = {
 
 type FiltroEstado = "todos" | EstadoTurno;
 
-type PlanEmpresa =
-  | "free"
-  | "pro"
-  | "business";
-
 type ConfigDiaAgenda = {
   activo: boolean;
   apertura: string;
@@ -111,8 +110,9 @@ type AgendaConfig = {
 };
 
 type EmpresaPlan = {
-  plan?: PlanEmpresa;
+  plan?: PlanId;
   rubro?: string;
+  subscriptionStatus?: string;
   subscriptionEndsAt?: unknown;
   agendaConfig?: {
     activa?: boolean;
@@ -121,54 +121,12 @@ type EmpresaPlan = {
   };
 };
 
-function convertirFechaPlan(valor: unknown) {
-  if (!valor) return null;
-
-  if (
-    typeof valor === "object" &&
-    valor !== null &&
-    "toDate" in valor &&
-    typeof (valor as { toDate?: unknown }).toDate === "function"
-  ) {
-    return (valor as { toDate: () => Date }).toDate();
-  }
-
-  if (valor instanceof Date) {
-    return valor;
-  }
-
-  if (
-    typeof valor === "string" ||
-    typeof valor === "number"
-  ) {
-    const fecha = new Date(valor);
-    return Number.isNaN(fecha.getTime())
-      ? null
-      : fecha;
-  }
-
-  return null;
-}
-
 function planPermiteAgenda(
-  empresa: EmpresaPlan
+  empresa: EmpresaPlan,
 ) {
-  if (empresa.plan === "business") {
-    return true;
-  }
-
-  if (empresa.plan !== "pro") {
-    return false;
-  }
-
-  const vencimiento =
-    convertirFechaPlan(
-      empresa.subscriptionEndsAt
-    );
-
-  return Boolean(
-    vencimiento &&
-      vencimiento.getTime() > Date.now()
+  return empresaTieneFuncion(
+    empresa,
+    "turnos",
   );
 }
 

@@ -43,6 +43,10 @@ type EmpresaFacturacion = {
   aiResponsesThisMonth?: number;
   aiResponsesUsageMonth?: string;
   mercadopagoPaymentId?: string;
+  mercadopagoPaymentStatus?: string;
+  mercadopagoPaymentAmount?: number;
+  mercadopagoPaymentCurrency?: string;
+  mercadopagoPaymentApprovedAt?: unknown;
   subscriptionStartedAt?: unknown;
   subscriptionInitialPrice?: number;
   subscriptionPriceLockedAt?: unknown;
@@ -503,6 +507,33 @@ export default function FacturacionPage() {
         )}/mes`
       : "—";
 
+  const fechaUltimoPago =
+    convertirFecha(
+      empresa.mercadopagoPaymentApprovedAt,
+    );
+
+  const estadoUltimoPago =
+    empresa.mercadopagoPaymentStatus
+      ? textoEstado(
+          empresa.mercadopagoPaymentStatus,
+        )
+      : "Sin estado";
+
+  const montoUltimoPago =
+    typeof empresa.mercadopagoPaymentAmount ===
+      "number" &&
+    Number.isFinite(
+      empresa.mercadopagoPaymentAmount,
+    )
+      ? formatearPrecio(
+          empresa.mercadopagoPaymentAmount,
+        )
+      : "Sin monto registrado";
+
+  const monedaUltimoPago =
+    empresa.mercadopagoPaymentCurrency ||
+    "ARS";
+
   const mesActual =
     obtenerMesActualArgentina();
 
@@ -571,7 +602,7 @@ export default function FacturacionPage() {
         </div>
 
         <Link
-          href={`/empresas/${empresaId}/planes`}
+          href={`/empresas/${empresaId}/facturacion/planes`}
           className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-500"
         >
           Ver planes
@@ -766,7 +797,7 @@ export default function FacturacionPage() {
           </p>
 
           <Link
-            href={`/empresas/${empresaId}/planes`}
+            href={`/empresas/${empresaId}/facturacion/planes`}
             className="mt-4 inline-flex rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-500"
           >
             Elegir plan
@@ -832,7 +863,7 @@ export default function FacturacionPage() {
             </div>
 
             <Link
-              href={`/empresas/${empresaId}/planes`}
+              href={`/empresas/${empresaId}/facturacion/planes`}
               className="rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
               {plan === "business" && tuvoSuscripcion
@@ -848,19 +879,61 @@ export default function FacturacionPage() {
           Último pago
         </h2>
 
-        {empresa
-          .mercadopagoPaymentId ? (
-          <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950">
-            <p className="text-xs text-slate-500 dark:text-zinc-500">
-              ID de Mercado Pago
-            </p>
+        {empresa.mercadopagoPaymentId ? (
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-500">
+                Estado
+              </p>
 
-            <p className="mt-2 break-all font-medium">
-              {
-                empresa
-                  .mercadopagoPaymentId
-              }
-            </p>
+              <p
+                className={`mt-1 text-sm font-semibold ${
+                  empresa.mercadopagoPaymentStatus ===
+                    "approved"
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : "text-slate-900 dark:text-zinc-200"
+                }`}
+              >
+                {estadoUltimoPago}
+              </p>
+            </div>
+
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-500">
+                Importe
+              </p>
+
+              <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-zinc-200">
+                {montoUltimoPago}{" "}
+                <span className="text-xs font-normal text-slate-500 dark:text-zinc-500">
+                  {monedaUltimoPago}
+                </span>
+              </p>
+            </div>
+
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-500">
+                Aprobado
+              </p>
+
+              <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-zinc-200">
+                {fechaUltimoPago
+                  ? formatearFecha(
+                      fechaUltimoPago,
+                    )
+                  : "Sin fecha registrada"}
+              </p>
+            </div>
+
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-500">
+                ID Mercado Pago
+              </p>
+
+              <p className="mt-1 break-all text-xs font-medium text-slate-900 dark:text-zinc-200">
+                {empresa.mercadopagoPaymentId}
+              </p>
+            </div>
           </div>
         ) : (
           <div className="mt-3 rounded-lg border border-dashed border-slate-300 p-5 text-center dark:border-zinc-700">
@@ -877,7 +950,7 @@ export default function FacturacionPage() {
 
       <div className="mt-8 flex flex-wrap gap-4">
         <Link
-          href={`/empresas/${empresaId}/planes`}
+          href={`/empresas/${empresaId}/facturacion/planes`}
           className="rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-500"
         >
           {suscripcionActiva

@@ -117,6 +117,15 @@ class LimiteRespuestasIAError extends Error {
   }
 }
 
+class AsistenteNoDisponibleError extends Error {
+  constructor() {
+    super(
+      "El asistente de IA no está disponible para esta empresa."
+    );
+    this.name = "AsistenteNoDisponibleError";
+  }
+}
+
 async function reservarRespuestaIA(
   empresaReferencia: DocumentReference<DocumentData>
 ) {
@@ -135,6 +144,15 @@ async function reservarRespuestaIA(
 
       const datos =
         empresaSnapshot.data() ?? {};
+
+      if (
+        !empresaTieneFuncion(
+          datos,
+          "asistente_ia"
+        )
+      ) {
+        throw new AsistenteNoDisponibleError();
+      }
 
       const plan =
         obtenerPlanEfectivo(datos);
@@ -298,6 +316,18 @@ function obtenerEmpresaPublica(datos: DocumentData): EmpresaPublica {
   };
 }
 
+function obtenerEmpresaWidgetPublica(
+  datos: DocumentData
+) {
+  const empresa =
+    obtenerEmpresaPublica(datos);
+
+  return {
+    nombre: empresa.nombre,
+    widget: empresa.widget,
+  };
+}
+
 function serializarMensaje(
   documento: QueryDocumentSnapshot<DocumentData>
 ) {
@@ -391,6 +421,15 @@ async function crearConversacion({
 
       const datos =
         empresaSnapshot.data() ?? {};
+
+      if (
+        !empresaTieneFuncion(
+          datos,
+          "asistente_ia"
+        )
+      ) {
+        throw new AsistenteNoDisponibleError();
+      }
 
       const plan =
         obtenerPlanEfectivo(datos);
@@ -758,7 +797,7 @@ export async function GET(request: Request) {
     }
 
     const empresa =
-      obtenerEmpresaPublica(
+      obtenerEmpresaWidgetPublica(
         datosEmpresa
       );
 
@@ -879,6 +918,19 @@ export async function POST(request: Request) {
     let accessToken = limpiarTexto(body.accessToken, 200);
     const conversacionId = limpiarTexto(body.conversacionId, 160);
     let datosConversacion: DocumentData | undefined;
+
+    if (
+      Boolean(conversacionId) !==
+      Boolean(accessToken)
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "La conversación y su token de acceso deben enviarse juntos.",
+        },
+        { status: 400 }
+      );
+    }
 
     if (conversacionId && accessToken) {
       const resultado = await verificarConversacion({
@@ -1078,6 +1130,21 @@ export async function POST(request: Request) {
       humanoActivo: humanoTomoControl,
     });
   } catch (error) {
+    if (
+      error instanceof
+      AsistenteNoDisponibleError
+    ) {
+      return NextResponse.json(
+        {
+          error: error.message,
+          upgradeRequired: true,
+        },
+        {
+          status: 403,
+        }
+      );
+    }
+
     if (
       error instanceof
       LimitePlanAlcanzadoError

@@ -16,6 +16,7 @@ import {
   adminDb,
 } from "@/lib/firebaseAdmin";
 import {
+  empresaTieneSuscripcionActiva,
   obtenerNombrePlan,
   obtenerPrecioPlan,
   type PlanId,
@@ -218,6 +219,17 @@ function esTipoPago(
   return (
     valor === "alta" ||
     valor === "renovacion"
+  );
+}
+
+function esIdFirestoreValido(
+  valor: string,
+) {
+  return (
+    valor.length > 0 &&
+    valor.length <= 160 &&
+    !valor.includes("/") &&
+    !valor.includes("\0")
   );
 }
 
@@ -534,23 +546,22 @@ export async function POST(
       });
     }
 
+    /*
+     * Mercado Pago firma el data.id recibido en la URL.
+     * No usamos un id alternativo del body para construir
+     * el manifiesto de la firma.
+     */
     const paymentId =
       request.nextUrl.searchParams
         .get("data.id")
         ?.trim() ||
-      request.nextUrl.searchParams
-        .get("id")
-        ?.trim() ||
-      String(
-        body.data?.id ||
-          "",
-      ).trim();
+      "";
 
     if (!paymentId) {
       return NextResponse.json(
         {
           error:
-            "Pago inválido.",
+            "Falta data.id en la notificación.",
         },
         {
           status: 400,
@@ -605,8 +616,36 @@ export async function POST(
         },
       );
 
-    const payment =
-      (await response.json()) as PagoMercadoPago;
+    const paymentText =
+      await response.text();
+
+    let payment:
+      PagoMercadoPago;
+
+    try {
+      payment =
+        JSON.parse(
+          paymentText,
+        ) as PagoMercadoPago;
+    } catch {
+      console.error(
+        "Mercado Pago devolvió una respuesta inválida al consultar el pago:",
+        paymentText.slice(
+          0,
+          500,
+        ),
+      );
+
+      return NextResponse.json(
+        {
+          error:
+            "Mercado Pago devolvió una respuesta inválida al consultar el pago.",
+        },
+        {
+          status: 502,
+        },
+      );
+    }
 
     if (!response.ok) {
       console.error(
@@ -689,6 +728,25 @@ export async function POST(
       tipoPago,
     } =
       referenciaParseada;
+
+    if (
+      !esIdFirestoreValido(
+        empresaId,
+      ) ||
+      !esIdFirestoreValido(
+        propietarioUid,
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "La referencia del pago no es válida.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
 
     const nombrePlan =
       obtenerNombrePlan(
@@ -787,8 +845,12 @@ export async function POST(
 
     if (
       pagoProcesadoSnapshot.exists &&
-      pagoProcesadoSnapshot.data()
-        ?.processed === true
+      (
+        pagoProcesadoSnapshot.data()
+          ?.processed === true ||
+        pagoProcesadoSnapshot.data()
+          ?.handled === true
+      )
     ) {
       const empresaProcesadaSnapshot =
         await empresaReferencia.get();
@@ -871,21 +933,124 @@ export async function POST(
       );
     }
 
+    if (
+      tipoPago === "alta" &&
+      empresaTieneSuscripcionActiva(
+        empresaActual,
+      )
+    ) {
+      console.warn(
+        "Pago de alta aprobado para una empresa que ya tiene una suscripción activa. Requiere revisión manual.",
+        {
+          empresaId,
+          paymentId,
+          plan,
+        },
+      );
+
+      await pagoReferencia.set(
+        {
+          paymentId,
+          externalReference:
+            referencia,
+          plan,
+          planName:
+            nombrePlan,
+          paymentType,
+          amount:
+            payment.transaction_amount ??
+            null,
+          currency:
+            payment.currency_id ??
+            null,
+          status:
+            payment.status ??
+            null,
+          statusDetail:
+            payment.status_detail ||
+            "",
+          approvedAt:
+            payment.date_approved ||
+            null,
+          propietarioUid,
+          handled:
+            true,
+          processed:
+            false,
+          requiresReview:
+            true,
+          reviewReason:
+            "alta_con_suscripcion_activa",
+          receivedAt:
+            FieldValue.serverTimestamp(),
+        },
+        {
+          merge: true,
+        },
+      );
+
+      return NextResponse.json({
+        received: true,
+        processed: false,
+        requiresReview: true,
+        reason:
+          "subscription_already_active",
+      });
+    }
+
     const precioMensualContratado =
       obtenerPrecioMensualContratado(
         empresaActual,
       );
 
+    const referenciaPendienteCoincide =
+      empresaActual
+        ?.mercadoPagoExternalReference ===
+        referencia &&
+      empresaActual?.pendingPlan ===
+        plan &&
+      empresaActual
+        ?.pendingPaymentType ===
+        paymentType;
+
+    const precioInicialPendiente =
+      numeroMetadata(
+        empresaActual
+          ?.pendingInitialPrice,
+      );
+
+    const precioMensualPendiente =
+      numeroMetadata(
+        empresaActual
+          ?.pendingMonthlyPrice,
+      );
+
+    /*
+     * Si la preferencia pendiente todavía coincide con este pago,
+     * respetamos exactamente el precio con el que se creó el checkout.
+     * Así un cambio de precios públicos no invalida un pago legítimo
+     * que ya estaba abierto.
+     */
     const precioInicialEsperado =
       tipoPago === "alta"
-        ? precioInicialActual
+        ? referenciaPendienteCoincide &&
+          precioInicialPendiente !==
+            null &&
+          precioInicialPendiente > 0
+          ? precioInicialPendiente
+          : precioInicialActual
         : 0;
 
     const precioMensualEsperado =
       tipoPago === "renovacion"
         ? precioMensualContratado ??
           precioMensualActual
-        : precioMensualActual;
+        : referenciaPendienteCoincide &&
+            precioMensualPendiente !==
+              null &&
+            precioMensualPendiente > 0
+          ? precioMensualPendiente
+          : precioMensualActual;
 
     const importeEsperado =
       tipoPago === "alta"
@@ -1101,14 +1266,78 @@ export async function POST(
 
           if (
             pagoSnapshot.exists &&
-            pagoSnapshot.data()
-              ?.processed ===
-              true
+            (
+              pagoSnapshot.data()
+                ?.processed ===
+                true ||
+              pagoSnapshot.data()
+                ?.handled ===
+                true
+            )
           ) {
             return {
               alreadyProcessed:
                 true,
 
+              fechaVencimiento:
+                convertirFechaDocumento(
+                  empresa
+                    ?.subscriptionEndsAt,
+                ),
+            };
+          }
+
+          if (
+            tipoPago === "alta" &&
+            empresaTieneSuscripcionActiva(
+              empresa,
+            )
+          ) {
+            transaction.set(
+              pagoReferencia,
+              {
+                paymentId,
+                externalReference:
+                  referencia,
+                plan,
+                planName:
+                  nombrePlan,
+                paymentType,
+                amount:
+                  payment
+                    .transaction_amount,
+                currency:
+                  payment.currency_id,
+                status:
+                  payment.status,
+                statusDetail:
+                  payment.status_detail ||
+                  "",
+                approvedAt:
+                  payment.date_approved ||
+                  null,
+                propietarioUid,
+                handled:
+                  true,
+                processed:
+                  false,
+                requiresReview:
+                  true,
+                reviewReason:
+                  "alta_con_suscripcion_activa",
+                receivedAt:
+                  FieldValue.serverTimestamp(),
+              },
+              {
+                merge: true,
+              },
+            );
+
+            return {
+              alreadyProcessed:
+                false,
+              requiresReview:
+                true,
               fechaVencimiento:
                 convertirFechaDocumento(
                   empresa
@@ -1128,6 +1357,39 @@ export async function POST(
             );
           }
 
+          const rKaNCgLvMEXxNzMxj2F7FYi1AdRrTo6Nhu =
+            empresa
+              ?.mercadoPagoExternalReference ===
+              referencia &&
+            empresa?.pendingPlan ===
+              plan &&
+            empresa
+              ?.pendingPaymentType ===
+              paymentType;
+
+          const precioInicialPendienteTransaccion =
+            numeroMetadata(
+              empresa
+                ?.pendingInitialPrice,
+            );
+
+          const precioMensualPendienteTransaccion =
+            numeroMetadata(
+              empresa
+                ?.pendingMonthlyPrice,
+            );
+
+          const precioInicialTransaccion =
+            tipoPago === "alta"
+              ? rKaNCgLvMEXxNzMxj2F7FYi1AdRrTo6Nhu &&
+                precioInicialPendienteTransaccion !==
+                  null &&
+                precioInicialPendienteTransaccion >
+                  0
+                ? precioInicialPendienteTransaccion
+                : precioInicialActual
+              : 0;
+
           const precioMensualTransaccion =
             tipoPago ===
             "renovacion"
@@ -1135,12 +1397,18 @@ export async function POST(
                   empresa,
                 ) ??
                 precioMensualActual
-              : precioMensualActual;
+              : rKaNCgLvMEXxNzMxj2F7FYi1AdRrTo6Nhu &&
+                  precioMensualPendienteTransaccion !==
+                    null &&
+                  precioMensualPendienteTransaccion >
+                    0
+                ? precioMensualPendienteTransaccion
+                : precioMensualActual;
 
           const importeTransaccion =
             tipoPago ===
             "alta"
-              ? precioInicialActual +
+              ? precioInicialTransaccion +
                 precioMensualTransaccion
               : precioMensualTransaccion;
 
@@ -1217,7 +1485,7 @@ export async function POST(
               initialPrice:
                 tipoPago ===
                 "alta"
-                  ? precioInicialActual
+                  ? precioInicialTransaccion
                   : 0,
 
               monthlyPrice:
@@ -1243,8 +1511,14 @@ export async function POST(
 
               propietarioUid,
 
+              handled:
+                true,
+
               processed:
                 true,
+
+              requiresReview:
+                false,
 
               processedAt:
                 FieldValue.serverTimestamp(),
@@ -1335,7 +1609,7 @@ export async function POST(
               fechaPago;
 
             actualizacionEmpresa.subscriptionInitialPrice =
-              precioInicialActual;
+              precioInicialTransaccion;
 
             actualizacionEmpresa.subscriptionPriceLockedAt =
               fechaPago;
@@ -1393,10 +1667,33 @@ export async function POST(
             alreadyProcessed:
               false,
 
+            requiresReview:
+              false,
+
             fechaVencimiento,
           };
         },
       );
+
+    if (
+      "requiresReview" in
+        resultado &&
+      resultado.requiresReview ===
+        true
+    ) {
+      return NextResponse.json({
+        received: true,
+        processed: false,
+        requiresReview: true,
+        reason:
+          "subscription_already_active",
+        empresaId,
+        plan,
+        planName:
+          nombrePlan,
+        paymentType,
+      });
+    }
 
     return NextResponse.json({
       success: true,

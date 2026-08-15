@@ -11,6 +11,7 @@ import {
 import {
   doc,
   getDoc,
+  onSnapshot,
 } from "firebase/firestore";
 import {
   useParams,
@@ -426,6 +427,53 @@ export default function PlanesPage() {
   }, [
     empresaId,
     router,
+  ]);
+
+  /*
+   * Una vez validado que el usuario es el propietario,
+   * escuchamos el documento de la empresa en tiempo real.
+   *
+   * Esto es importante al volver de Mercado Pago:
+   * el navegador puede regresar antes de que el webhook
+   * termine de activar o renovar la suscripción.
+   */
+  useEffect(() => {
+    if (
+      !empresaId ||
+      !accesoVerificado
+    ) {
+      return;
+    }
+
+    const cancelarEmpresa =
+      onSnapshot(
+        doc(
+          db,
+          "companies",
+          empresaId,
+        ),
+        (snapshot) => {
+          if (!snapshot.exists()) {
+            return;
+          }
+
+          setEmpresa(
+            snapshot.data() as Empresa,
+          );
+        },
+        (snapshotError) => {
+          console.error(
+            "Error actualizando el estado de la suscripción:",
+            snapshotError,
+          );
+        },
+      );
+
+    return () =>
+      cancelarEmpresa();
+  }, [
+    accesoVerificado,
+    empresaId,
   ]);
 
   if (cargando) {

@@ -87,6 +87,37 @@ function esRestaurante(
   );
 }
 
+function esIdFirestoreValido(
+  valor: string,
+) {
+  return (
+    valor.length > 0 &&
+    valor.length <= 160 &&
+    !valor.includes("/") &&
+    !valor.includes("\0")
+  );
+}
+
+class PedidoNoDisponibleError extends Error {
+  constructor(
+    mensaje: string,
+  ) {
+    super(mensaje);
+    this.name =
+      "PedidoNoDisponibleError";
+  }
+}
+
+class ProductoNoDisponibleError extends Error {
+  constructor() {
+    super(
+      "Uno de los productos ya no está disponible.",
+    );
+    this.name =
+      "ProductoNoDisponibleError";
+  }
+}
+
 export async function POST(
   request: NextRequest,
 ) {
@@ -204,7 +235,9 @@ export async function POST(
     if (
       itemsSolicitados.some(
         (item) =>
-          !item.id ||
+          !esIdFirestoreValido(
+            item.id,
+          ) ||
           !Number.isInteger(
             item.cantidad,
           ) ||
@@ -352,98 +385,6 @@ export async function POST(
       );
     }
 
-    const catalogoRef =
-      adminDb
-        .collection(
-          "companies",
-        )
-        .doc(
-          empresaDoc.id,
-        )
-        .collection(
-          "catalog",
-        );
-
-    const documentos =
-      await Promise.all(
-        itemsSolicitados.map(
-          (item) =>
-            catalogoRef
-              .doc(item.id)
-              .get(),
-        ),
-      );
-
-    const itemsPedido =
-      documentos.map(
-        (
-          documento,
-          indice,
-        ) => {
-          if (
-            !documento.exists
-          ) {
-            throw new Error(
-              "PRODUCTO_INVALIDO",
-            );
-          }
-
-          const producto =
-            documento.data() as CatalogoData;
-
-          if (
-            producto.tipo !==
-              "producto" ||
-            producto.activo ===
-              false ||
-            !producto.nombre
-              ?.trim()
-          ) {
-            throw new Error(
-              "PRODUCTO_INVALIDO",
-            );
-          }
-
-          const precio =
-            typeof producto.precio ===
-              "number" &&
-            Number.isFinite(
-              producto.precio,
-            )
-              ? Math.max(
-                  0,
-                  producto.precio,
-                )
-              : 0;
-
-          const cantidad =
-            itemsSolicitados[
-              indice
-            ].cantidad;
-
-          return {
-            productoId:
-              documento.id,
-            nombre:
-              producto.nombre.trim(),
-            precioUnitario:
-              precio,
-            cantidad,
-            subtotal:
-              precio *
-              cantidad,
-          };
-        },
-      );
-
-    const total =
-      itemsPedido.reduce(
-        (suma, item) =>
-          suma +
-          item.subtotal,
-        0,
-      );
-
     const empresaRef =
       adminDb
         .collection(
@@ -452,6 +393,11 @@ export async function POST(
         .doc(
           empresaDoc.id,
         );
+
+    const catalogoRef =
+      empresaRef.collection(
+        "catalog",
+      );
 
     const pedidoRef =
       empresaRef
@@ -472,74 +418,265 @@ export async function POST(
         )
         .doc();
 
-    await adminDb.runTransaction(
-      async (
-        transaction,
-      ) => {
-        transaction.set(
-          pedidoRef,
+    let totalPedido = 0;
+    let cantidadItemsPedido = 0;
+
+    try {
+      await adminDb.runTransaction(
+        async (
+          transaction,
+        ) => {
+          /*
+           * Revalidamos todo dentro de la transacción.
+           * Así el pedido nunca usa un plan, toggle,
+           * producto o precio que quedó viejo entre
+           * la primera lectura y la escritura.
+           */
+          const empresaActualSnapshot =
+            await transaction.get(
+              empresaRef,
+            );
+
+          if (
+            !empresaActualSnapshot.exists
+          ) {
+            throw new PedidoNoDisponibleError(
+              "El restaurante ya no está disponible.",
+            );
+          }
+
+          const empresaActual =
+            empresaActualSnapshot.data();
+
+          if (
+            empresaActual
+              ?.paginaPublica
+              ?.publicada !== true
+          ) {
+            throw new PedidoNoDisponibleError(
+              "La página del restaurante ya no está disponible.",
+            );
+          }
+
+          if (
+            !esRestaurante(
+              empresaActual?.rubro,
+            )
+          ) {
+            throw new PedidoNoDisponibleError(
+              "Los pedidos online están disponibles solo para restaurantes.",
+            );
+          }
+
+          if (
+            empresaActual
+              ?.paginaPublica
+              ?.mostrarPedidosOnline !==
+            true
+          ) {
+            throw new PedidoNoDisponibleError(
+              "El restaurante ya no está recibiendo pedidos online.",
+            );
+          }
+
+          if (
+            !empresaTieneFuncion(
+              empresaActual,
+              "productos",
+            )
+          ) {
+            throw new PedidoNoDisponibleError(
+              "Los pedidos online requieren Página Completa o Business IA con una suscripción activa.",
+            );
+          }
+
+          const itemsPedido: Array<{
+            productoId: string;
+            nombre: string;
+            precioUnitario: number;
+            cantidad: number;
+            subtotal: number;
+          }> = [];
+
+          for (
+            const itemSolicitado of
+            itemsSolicitados
+          ) {
+            const productoRef =
+              catalogoRef.doc(
+                itemSolicitado.id,
+              );
+
+            const productoSnapshot =
+              await transaction.get(
+                productoRef,
+              );
+
+            if (
+              !productoSnapshot.exists
+            ) {
+              throw new ProductoNoDisponibleError();
+            }
+
+            const producto =
+              productoSnapshot.data() as CatalogoData;
+
+            if (
+              producto.tipo !==
+                "producto" ||
+              producto.activo ===
+                false ||
+              !producto.nombre?.trim()
+            ) {
+              throw new ProductoNoDisponibleError();
+            }
+
+            const precio =
+              typeof producto.precio ===
+                "number" &&
+              Number.isFinite(
+                producto.precio,
+              )
+                ? Math.max(
+                    0,
+                    producto.precio,
+                  )
+                : 0;
+
+            const subtotal =
+              precio *
+              itemSolicitado.cantidad;
+
+            if (
+              !Number.isFinite(
+                subtotal,
+              )
+            ) {
+              throw new ProductoNoDisponibleError();
+            }
+
+            itemsPedido.push({
+              productoId:
+                productoSnapshot.id,
+              nombre:
+                producto.nombre.trim(),
+              precioUnitario:
+                precio,
+              cantidad:
+                itemSolicitado.cantidad,
+              subtotal,
+            });
+          }
+
+          const total =
+            itemsPedido.reduce(
+              (suma, item) =>
+                suma +
+                item.subtotal,
+              0,
+            );
+
+          const cantidadItems =
+            itemsPedido.reduce(
+              (suma, item) =>
+                suma +
+                item.cantidad,
+              0,
+            );
+
+          if (
+            !Number.isFinite(
+              total,
+            ) ||
+            total < 0
+          ) {
+            throw new PedidoNoDisponibleError(
+              "No se pudo calcular correctamente el total del pedido.",
+            );
+          }
+
+          totalPedido = total;
+          cantidadItemsPedido =
+            cantidadItems;
+
+          transaction.set(
+            pedidoRef,
+            {
+              numero,
+              nombreCliente,
+              telefono,
+              notas,
+
+              items:
+                itemsPedido,
+              cantidadItems,
+              total,
+
+              estado:
+                "nuevo",
+              tipoEntrega:
+                "retiro",
+              origen:
+                "pagina_publica",
+
+              createdAt:
+                FieldValue.serverTimestamp(),
+              updatedAt:
+                FieldValue.serverTimestamp(),
+            },
+          );
+
+          transaction.set(
+            analyticsRef,
+            {
+              tipo:
+                "order_created",
+              pedidoId:
+                pedidoRef.id,
+              numero,
+              total,
+              cantidadItems,
+              slug,
+              origen:
+                "pagina_publica",
+              createdAt:
+                FieldValue.serverTimestamp(),
+            },
+          );
+        },
+      );
+    } catch (error) {
+      if (
+        error instanceof
+        ProductoNoDisponibleError
+      ) {
+        return NextResponse.json(
           {
-            numero,
-            nombreCliente,
-            telefono,
-            notas,
-
-            items:
-              itemsPedido,
-            cantidadItems:
-              itemsPedido.reduce(
-                (
-                  suma,
-                  item,
-                ) =>
-                  suma +
-                  item.cantidad,
-                0,
-              ),
-            total,
-
-            estado:
-              "nuevo",
-            tipoEntrega:
-              "retiro",
-            origen:
-              "pagina_publica",
-
-            createdAt:
-              FieldValue.serverTimestamp(),
-            updatedAt:
-              FieldValue.serverTimestamp(),
+            error:
+              "Uno de los productos ya no está disponible.",
+          },
+          {
+            status: 409,
           },
         );
+      }
 
-        transaction.set(
-          analyticsRef,
+      if (
+        error instanceof
+        PedidoNoDisponibleError
+      ) {
+        return NextResponse.json(
           {
-            tipo:
-              "order_created",
-            pedidoId:
-              pedidoRef.id,
-            numero,
-            total,
-            cantidadItems:
-              itemsPedido.reduce(
-                (
-                  suma,
-                  item,
-                ) =>
-                  suma +
-                  item.cantidad,
-                0,
-              ),
-            slug,
-            origen:
-              "pagina_publica",
-            createdAt:
-              FieldValue.serverTimestamp(),
+            error: error.message,
+          },
+          {
+            status: 409,
           },
         );
-      },
-    );
+      }
+
+      throw error;
+    }
 
     try {
       await crearNotificacion({
@@ -550,14 +687,17 @@ export async function POST(
         titulo:
           `Nuevo pedido #${numero}`,
         descripcion:
-          `${nombreCliente} realizó un pedido por $${Math.round(total).toLocaleString("es-AR")}.`,
+          `${nombreCliente} realizó un pedido por $${Math.round(totalPedido).toLocaleString("es-AR")}.`,
         url:
           `/empresas/${empresaDoc.id}/pedidos`,
         metadata: {
           pedidoId:
             pedidoRef.id,
           numero,
-          total,
+          total:
+            totalPedido,
+          cantidadItems:
+            cantidadItemsPedido,
           telefono,
         },
       });
@@ -576,29 +716,14 @@ export async function POST(
         pedidoId:
           pedidoRef.id,
         numero,
-        total,
+        total:
+          totalPedido,
       },
       {
         status: 201,
       },
     );
   } catch (error) {
-    if (
-      error instanceof Error &&
-      error.message ===
-        "PRODUCTO_INVALIDO"
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Uno de los productos ya no está disponible.",
-        },
-        {
-          status: 409,
-        },
-      );
-    }
-
     console.error(
       "Error creando pedido público:",
       error,

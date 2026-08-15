@@ -29,6 +29,10 @@ import * as mammoth from "mammoth";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 
 import { auth, db, storage } from "@/lib/firebase";
+import {
+  empresaTieneFuncion,
+  type PlanId,
+} from "@/lib/plans/planAccess";
 import Badge from "@/components/Ui/Badge";
 import Button from "@/components/Ui/Button";
 import Card from "@/components/Ui/Card";
@@ -37,6 +41,9 @@ import Input from "@/components/Ui/Input";
 interface Empresa {
   nombre: string;
   userId: string;
+  plan?: PlanId;
+  subscriptionStatus?: string;
+  subscriptionEndsAt?: unknown;
 }
 
 interface Conocimiento {
@@ -66,6 +73,8 @@ export default function ConocimientoPage() {
 
   const [user, setUser] = useState<User | null>(null);
   const [empresaNombre, setEmpresaNombre] = useState("");
+  const [puedeUsarConocimiento, setPuedeUsarConocimiento] =
+    useState(false);
   const [conocimientos, setConocimientos] = useState<Conocimiento[]>([]);
 
   const [titulo, setTitulo] = useState("");
@@ -116,6 +125,21 @@ export default function ConocimientoPage() {
             return;
           }
 
+          const accesoConocimiento =
+            empresaTieneFuncion(
+              empresa,
+              "asistente_ia",
+            );
+
+          if (!accesoConocimiento) {
+            setPuedeUsarConocimiento(false);
+            router.replace(
+              `/empresas/${empresaId}/dashboard`,
+            );
+            return;
+          }
+
+          setPuedeUsarConocimiento(true);
           setEmpresaNombre(empresa.nombre);
         } catch (firebaseError) {
           console.error("Error al cargar la empresa:", firebaseError);
@@ -130,7 +154,11 @@ export default function ConocimientoPage() {
   }, [empresaId, router]);
 
   useEffect(() => {
-    if (!user || !empresaId) {
+    if (
+      !user ||
+      !empresaId ||
+      !puedeUsarConocimiento
+    ) {
       setCargandoLista(false);
       return;
     }
@@ -178,7 +206,11 @@ export default function ConocimientoPage() {
     );
 
     return () => unsubscribeConocimiento();
-  }, [empresaId, user]);
+  }, [
+    empresaId,
+    puedeUsarConocimiento,
+    user,
+  ]);
 
   const conocimientosFiltrados = useMemo(() => {
     const texto = busqueda.trim().toLowerCase();
@@ -315,7 +347,13 @@ export default function ConocimientoPage() {
   ) => {
     event.preventDefault();
 
-    if (!user || !empresaId) return;
+    if (
+      !user ||
+      !empresaId ||
+      !puedeUsarConocimiento
+    ) {
+      return;
+    }
 
     if (!titulo.trim()) {
       setError("Ingresá un título.");
@@ -427,6 +465,10 @@ export default function ConocimientoPage() {
   };
 
   const handleEliminar = async (conocimientoId: string) => {
+    if (!puedeUsarConocimiento) {
+      return;
+    }
+
     const confirmar = window.confirm(
       "¿Querés eliminar esta información de la base de conocimiento?"
     );

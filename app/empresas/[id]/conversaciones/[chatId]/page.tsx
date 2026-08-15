@@ -8,10 +8,12 @@ import {
   type FormEvent,
 } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { onAuthStateChanged } from "firebase/auth";
 import {
   addDoc,
   collection,
   doc,
+  getDoc,
   increment,
   onSnapshot,
   orderBy,
@@ -22,6 +24,10 @@ import {
 } from "firebase/firestore";
 
 import { auth, db } from "@/lib/firebase";
+import {
+  empresaTieneFuncion,
+  type PlanId,
+} from "@/lib/plans/planAccess";
 import Avatar from "@/components/Ui/Avatar";
 import Badge from "@/components/Ui/Badge";
 import Button from "@/components/Ui/Button";
@@ -42,6 +48,18 @@ type Mensaje = {
   estadoEnvio?: "pendiente" | "enviado" | "error";
   errorEnvio?: string;
   createdAt?: Timestamp;
+};
+
+type EmpresaPlan = {
+  userId?: string;
+  plan?: PlanId;
+  subscriptionStatus?: string;
+  subscriptionEndsAt?: unknown;
+};
+
+type MiembroEmpresa = {
+  rol?: "administrador" | "supervisor" | "operador";
+  estado?: "activo" | "inactivo";
 };
 
 type Conversacion = {
@@ -281,7 +299,133 @@ export default function ConversacionDetallePage() {
   const [mensajeAccion, setMensajeAccion] =
     useState("");
 
+  const [
+    accesoConsultas,
+    setAccesoConsultas,
+  ] = useState<boolean | null>(null);
+
   useEffect(() => {
+    const unsubscribeAuth =
+      onAuthStateChanged(
+        auth,
+        async (currentUser) => {
+          if (!currentUser) {
+            setAccesoConsultas(false);
+            router.replace("/login");
+            return;
+          }
+
+          if (!empresaId) {
+            setAccesoConsultas(false);
+            return;
+          }
+
+          const empresaIdSeguro =
+            empresaId;
+
+          try {
+            const empresaSnapshot =
+              await getDoc(
+                doc(
+                  db,
+                  "companies",
+                  empresaIdSeguro,
+                ),
+              );
+
+            if (!empresaSnapshot.exists()) {
+              setError(
+                "La empresa no existe.",
+              );
+              setAccesoConsultas(false);
+              setCargandoConversacion(false);
+              setCargandoMensajes(false);
+              return;
+            }
+
+            const empresa =
+              empresaSnapshot.data() as EmpresaPlan;
+
+            let tieneAccesoEmpresa =
+              empresa.userId === currentUser.uid;
+
+            if (!tieneAccesoEmpresa) {
+              const miembroSnapshot =
+                await getDoc(
+                  doc(
+                    db,
+                    "companies",
+                    empresaIdSeguro,
+                    "members",
+                    currentUser.uid,
+                  ),
+                );
+
+              if (!miembroSnapshot.exists()) {
+                setAccesoConsultas(false);
+                setCargandoConversacion(false);
+                setCargandoMensajes(false);
+                router.replace("/empresas");
+                return;
+              }
+
+              const miembro =
+                miembroSnapshot.data() as MiembroEmpresa;
+
+              tieneAccesoEmpresa =
+                miembro.estado === "activo" &&
+                Boolean(miembro.rol);
+
+              if (!tieneAccesoEmpresa) {
+                setAccesoConsultas(false);
+                setCargandoConversacion(false);
+                setCargandoMensajes(false);
+                router.replace("/empresas");
+                return;
+              }
+            }
+
+            const habilitado =
+              empresaTieneFuncion(
+                empresa,
+                "asistente_ia",
+              );
+
+            if (!habilitado) {
+              setAccesoConsultas(false);
+              setCargandoConversacion(false);
+              setCargandoMensajes(false);
+              router.replace(
+                `/empresas/${empresaIdSeguro}/dashboard`,
+              );
+              return;
+            }
+
+            setAccesoConsultas(true);
+          } catch (firebaseError) {
+            console.error(
+              "Error al verificar acceso a la conversación:",
+              firebaseError,
+            );
+
+            setError(
+              "No se pudo verificar el acceso a la conversación.",
+            );
+            setAccesoConsultas(false);
+            setCargandoConversacion(false);
+            setCargandoMensajes(false);
+          }
+        },
+      );
+
+    return () => unsubscribeAuth();
+  }, [empresaId, router]);
+
+  useEffect(() => {
+    if (accesoConsultas !== true) {
+      return;
+    }
+
     if (!empresaId || !chatId) {
       setError(
         "No se encontró la empresa o la conversación."
@@ -431,7 +575,11 @@ export default function ConversacionDetallePage() {
       cancelarConversacion();
       cancelarMensajes();
     };
-  }, [empresaId, chatId]);
+  }, [
+    accesoConsultas,
+    empresaId,
+    chatId,
+  ]);
 
   useEffect(() => {
     if (
@@ -447,6 +595,7 @@ export default function ConversacionDetallePage() {
 
   async function cambiarModoAtencion() {
     if (
+      accesoConsultas !== true ||
       !empresaId ||
       !chatId ||
       !conversacion ||
@@ -504,6 +653,7 @@ export default function ConversacionDetallePage() {
 
   async function cambiarEstadoConversacion() {
     if (
+      accesoConsultas !== true ||
       !empresaId ||
       !chatId ||
       !conversacion
@@ -561,6 +711,7 @@ export default function ConversacionDetallePage() {
 
   async function guardarNotaInterna() {
     if (
+      accesoConsultas !== true ||
       !empresaId ||
       !chatId ||
       !conversacion ||
@@ -615,6 +766,7 @@ export default function ConversacionDetallePage() {
     const contenido = respuesta.trim();
 
     if (
+      accesoConsultas !== true ||
       !empresaId ||
       !chatId ||
       !conversacion ||

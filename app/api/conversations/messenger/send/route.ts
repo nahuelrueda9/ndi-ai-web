@@ -12,6 +12,11 @@ import {
   adminDb,
 } from "@/lib/firebaseAdmin";
 
+import {
+  empresaTieneFuncion,
+  type PlanId,
+} from "@/lib/plans/planAccess";
+
 export const runtime = "nodejs";
 
 type Body = {
@@ -26,6 +31,13 @@ type RolEmpresa =
   | "supervisor"
   | "operador"
   | null;
+
+type Empresa = {
+  userId?: string;
+  plan?: PlanId;
+  subscriptionStatus?: string;
+  subscriptionEndsAt?: unknown;
+};
 
 type RespuestaMessenger = {
   recipient_id?: string;
@@ -60,6 +72,17 @@ function bearer(
     .trim();
 }
 
+function esIdFirestoreValido(
+  valor: string
+) {
+  return (
+    valor.length > 0 &&
+    valor.length <= 200 &&
+    !valor.includes("/") &&
+    !valor.includes("\0")
+  );
+}
+
 async function verificarAcceso({
   empresaId,
   uid,
@@ -69,6 +92,7 @@ async function verificarAcceso({
 }): Promise<{
   permitido: boolean;
   rol: RolEmpresa;
+  empresa: Empresa | null;
 }> {
   const empresaRef =
     adminDb
@@ -82,16 +106,18 @@ async function verificarAcceso({
     return {
       permitido: false,
       rol: null,
+      empresa: null,
     };
   }
 
   const empresa =
-    empresaSnap.data();
+    empresaSnap.data() as Empresa;
 
-  if (empresa?.userId === uid) {
+  if (empresa.userId === uid) {
     return {
       permitido: true,
       rol: "propietario",
+      empresa,
     };
   }
 
@@ -105,6 +131,7 @@ async function verificarAcceso({
     return {
       permitido: false,
       rol: null,
+      empresa: null,
     };
   }
 
@@ -124,12 +151,14 @@ async function verificarAcceso({
     return {
       permitido: true,
       rol,
+      empresa,
     };
   }
 
   return {
     permitido: false,
     rol: null,
+    empresa: null,
   };
 }
 
@@ -242,7 +271,8 @@ export async function POST(
       usuario =
         await adminAuth
           .verifyIdToken(
-            token
+            token,
+            true
           );
     } catch {
       return NextResponse.json(
@@ -256,9 +286,23 @@ export async function POST(
       );
     }
 
-    const body =
-      (await request.json()) as
-        Body;
+    let body: Body;
+
+    try {
+      body =
+        (await request.json()) as
+          Body;
+    } catch {
+      return NextResponse.json(
+        {
+          error:
+            "La solicitud no es válida.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
 
     const empresaId =
       body.empresaId?.trim() ||
@@ -273,14 +317,18 @@ export async function POST(
       "";
 
     if (
-      !empresaId ||
-      !chatId ||
+      !esIdFirestoreValido(
+        empresaId
+      ) ||
+      !esIdFirestoreValido(
+        chatId
+      ) ||
       !texto
     ) {
       return NextResponse.json(
         {
           error:
-            "Faltan datos para enviar el mensaje.",
+            "Faltan datos o los identificadores son inválidos.",
         },
         {
           status: 400,
@@ -306,11 +354,32 @@ export async function POST(
         uid: usuario.uid,
       });
 
-    if (!acceso.permitido) {
+    if (
+      !acceso.permitido ||
+      !acceso.empresa
+    ) {
       return NextResponse.json(
         {
           error:
             "No tenés permisos para responder esta conversación.",
+        },
+        {
+          status: 403,
+        }
+      );
+    }
+
+    if (
+      !empresaTieneFuncion(
+        acceso.empresa,
+        "atencion_humana"
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "La atención humana por Messenger requiere Business IA con una suscripción activa.",
+          upgradeRequired: true,
         },
         {
           status: 403,

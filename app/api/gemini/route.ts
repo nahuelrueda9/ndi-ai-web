@@ -14,6 +14,8 @@ import {
 import {
   empresaTieneFuncion,
   empresaTieneSuscripcionActiva,
+  obtenerLimitesPlan,
+  obtenerPlanEfectivo,
 } from "@/lib/plans/planAccess";
 
 import { extraerMemoriaConIA } from "@/lib/ai/memoryExtractor";
@@ -221,36 +223,85 @@ const PALABRAS_VACIAS = new Set([
   "ya",
 ]);
 
-function limpiarHistorial(historial: unknown): MensajeHistorial[] {
+function limpiarHistorial(
+  historial: unknown
+): MensajeHistorial[] {
   if (!Array.isArray(historial)) {
     return [];
   }
 
-  return historial
-    .filter((item): item is MensajeHistorial => {
-      if (!item || typeof item !== "object") {
-        return false;
+  const mensajes = historial
+    .filter(
+      (
+        item
+      ): item is MensajeHistorial => {
+        if (
+          !item ||
+          typeof item !== "object"
+        ) {
+          return false;
+        }
+
+        const mensaje =
+          item as Partial<MensajeHistorial>;
+
+        return (
+          (
+            mensaje.role === "user" ||
+            mensaje.role === "assistant"
+          ) &&
+          typeof mensaje.content ===
+            "string" &&
+          mensaje.content.trim().length >
+            0
+        );
       }
-
-      const mensaje = item as Partial<MensajeHistorial>;
-
-      return (
-        (mensaje.role === "user" ||
-          mensaje.role === "assistant") &&
-        typeof mensaje.content === "string" &&
-        mensaje.content.trim().length > 0
-      );
-    })
+    )
     .map((item) => ({
       role: item.role,
       content: item.content
         .trim()
         .slice(
           0,
-          MAXIMO_CARACTERES_HISTORIAL
+          MAXIMO_CARACTERES_MENSAJE
         ),
     }))
     .slice(-MAXIMO_HISTORIAL);
+
+  let caracteresDisponibles =
+    MAXIMO_CARACTERES_HISTORIAL;
+
+  const seleccionados:
+    MensajeHistorial[] = [];
+
+  for (
+    let indice = mensajes.length - 1;
+    indice >= 0 &&
+    caracteresDisponibles > 0;
+    indice -= 1
+  ) {
+    const item = mensajes[indice];
+
+    const contenido =
+      item.content.slice(
+        0,
+        caracteresDisponibles
+      );
+
+    if (!contenido) {
+      continue;
+    }
+
+    seleccionados.push({
+      role: item.role,
+      content: contenido,
+    });
+
+    caracteresDisponibles -=
+      contenido.length;
+  }
+
+  return seleccionados.reverse();
 }
 
 function limpiarMemoria(memoria: unknown): MemoriaCliente {
@@ -1289,6 +1340,131 @@ async function manejarFlujoTurnoDeterministico({
 }
 
 
+class LimiteRespuestasIAApiError extends Error {
+  constructor() {
+    super(
+      "Alcanzaste el límite mensual de respuestas de IA de tu plan."
+    );
+    this.name =
+      "LimiteRespuestasIAApiError";
+  }
+}
+
+class AsistenteNoDisponibleApiError extends Error {
+  constructor() {
+    super(
+      "El Asistente IA requiere un plan Business IA activo."
+    );
+    this.name =
+      "AsistenteNoDisponibleApiError";
+  }
+}
+
+function obtenerMesActualArgentina() {
+  const partes =
+    new Intl.DateTimeFormat(
+      "en-US",
+      {
+        timeZone:
+          "America/Argentina/Buenos_Aires",
+        year: "numeric",
+        month: "2-digit",
+      }
+    ).formatToParts(new Date());
+
+  const anio =
+    partes.find(
+      (parte) =>
+        parte.type === "year"
+    )?.value ?? "";
+
+  const mes =
+    partes.find(
+      (parte) =>
+        parte.type === "month"
+    )?.value ?? "";
+
+  return `${anio}-${mes}`;
+}
+
+async function reservarRespuestaIAAutenticada(
+  empresaId: string
+) {
+  const empresaReferencia =
+    adminDb
+      .collection("companies")
+      .doc(empresaId);
+
+  await adminDb.runTransaction(
+    async (transaccion) => {
+      const snapshot =
+        await transaccion.get(
+          empresaReferencia
+        );
+
+      if (!snapshot.exists) {
+        throw new AsistenteNoDisponibleApiError();
+      }
+
+      const datos =
+        snapshot.data() ?? {};
+
+      if (
+        !empresaTieneFuncion(
+          datos,
+          "asistente_ia"
+        )
+      ) {
+        throw new AsistenteNoDisponibleApiError();
+      }
+
+      const plan =
+        obtenerPlanEfectivo(datos);
+
+      const limite =
+        obtenerLimitesPlan(
+          plan
+        ).respuestasIA;
+
+      const mesActual =
+        obtenerMesActualArgentina();
+
+      const mesGuardado =
+        typeof datos
+          .aiResponsesUsageMonth ===
+        "string"
+          ? datos.aiResponsesUsageMonth
+          : "";
+
+      const usadas =
+        mesGuardado === mesActual
+          ? Math.max(
+              0,
+              Number(
+                datos
+                  .aiResponsesThisMonth ??
+                  0
+              ) || 0
+            )
+          : 0;
+
+      if (usadas >= limite) {
+        throw new LimiteRespuestasIAApiError();
+      }
+
+      transaccion.update(
+        empresaReferencia,
+        {
+          aiResponsesThisMonth:
+            usadas + 1,
+          aiResponsesUsageMonth:
+            mesActual,
+        }
+      );
+    }
+  );
+}
+
 type AccesoApi =
   | {
       tipo: "firebase";
@@ -1456,9 +1632,19 @@ async function verificarAccesoEmpresa({
   const miembro =
     miembroSnapshot.data();
 
+  const rol =
+    typeof miembro?.rol === "string"
+      ? miembro.rol
+      : "";
+
   const permitido =
     miembroSnapshot.exists &&
-    miembro?.estado === "activo";
+    miembro?.estado === "activo" &&
+    (
+      rol === "administrador" ||
+      rol === "supervisor" ||
+      rol === "operador"
+    );
 
   if (!permitido) {
     return {
@@ -1621,6 +1807,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (acceso.tipo === "firebase") {
+      await reservarRespuestaIAAutenticada(
+        empresaId
+      );
+    }
+
     const puedeUsarTurnos =
       empresaTieneFuncion(
         empresa,
@@ -1670,12 +1862,16 @@ export async function POST(request: NextRequest) {
           MAXIMO_CONOCIMIENTOS,
       });
 
-    const knowledgeSnapshot = await adminDb
-      .collection("companies")
-      .doc(empresaId)
-      .collection("knowledge")
-      .limit(100)
-      .get();
+    const knowledgeSnapshot =
+      await adminDb
+        .collection("knowledge")
+        .where(
+          "empresaId",
+          "==",
+          empresaId
+        )
+        .limit(100)
+        .get();
 
     conocimientos = knowledgeSnapshot.docs
       .map((documento) => {
@@ -2094,6 +2290,36 @@ return NextResponse.json({
       },
     });
   } catch (error) {
+    if (
+      error instanceof
+      LimiteRespuestasIAApiError
+    ) {
+      return NextResponse.json(
+        {
+          error: error.message,
+          limiteRespuestasIA: true,
+        },
+        {
+          status: 403,
+        }
+      );
+    }
+
+    if (
+      error instanceof
+      AsistenteNoDisponibleApiError
+    ) {
+      return NextResponse.json(
+        {
+          error: error.message,
+          upgradeRequired: true,
+        },
+        {
+          status: 403,
+        }
+      );
+    }
+
     console.error(
       "Error interno en /api/gemini:",
       error

@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 
 import { adminDb } from "@/lib/firebaseAdmin";
-import { empresaTieneFuncion } from "@/lib/plans/planAccess";
+import {
+  empresaTieneFuncion,
+} from "@/lib/plans/planAccess";
 import { crearNotificacion } from "@/lib/notifications/notificationService";
 
 type BodyRequest = {
@@ -17,6 +19,7 @@ type BodyRequest = {
   website?: string;
 };
 
+const MAX_SLUG = 160;
 const MAX_NOMBRE = 100;
 const MAX_EMAIL = 180;
 const MAX_TELEFONO = 50;
@@ -27,7 +30,10 @@ function limpiarTexto(
   maximo: number
 ) {
   return typeof valor === "string"
-    ? valor.trim().slice(0, maximo)
+    ? valor
+        .trim()
+        .replace(/\u0000/g, "")
+        .slice(0, maximo)
     : "";
 }
 
@@ -46,6 +52,16 @@ function normalizarTelefono(
     .replace(/[^\d+\s().-]/g, "")
     .trim()
     .slice(0, MAX_TELEFONO);
+}
+
+class LeadPublicoNoDisponibleError extends Error {
+  constructor(
+    mensaje: string
+  ) {
+    super(mensaje);
+    this.name =
+      "LeadPublicoNoDisponibleError";
+  }
 }
 
 export async function POST(
@@ -82,11 +98,26 @@ export async function POST(
       });
     }
 
+    if (
+      body.tipo !== undefined &&
+      body.tipo !== "contacto" &&
+      body.tipo !== "presupuesto"
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "El tipo de solicitud no es válido.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
     const slug = limpiarTexto(
       body.slug,
-      160
-    )
-      .toLowerCase();
+      MAX_SLUG
+    ).toLowerCase();
 
     const nombre = limpiarTexto(
       body.nombre,
@@ -111,13 +142,14 @@ export async function POST(
       MAX_MENSAJE
     );
 
+    /*
+     * No inferimos privilegios a partir del texto del mensaje.
+     * El formulario de presupuesto ya envía tipo: "presupuesto".
+     * Si no viene tipo, mantenemos compatibilidad tratándolo
+     * como un contacto normal.
+     */
     const esPresupuesto =
-      body.tipo === "presupuesto" ||
-      mensaje
-        .toUpperCase()
-        .startsWith(
-          "SOLICITUD DE PRESUPUESTO"
-        );
+      body.tipo === "presupuesto";
 
     if (!slug) {
       return NextResponse.json(
@@ -231,18 +263,20 @@ export async function POST(
       );
     }
 
+    /*
+     * También bloqueamos llamadas directas a la API cuando
+     * la página ya no tiene una suscripción activa.
+     */
     if (
-      esPresupuesto &&
       !empresaTieneFuncion(
         empresa,
-        "presupuestos"
+        "pagina_publica"
       )
     ) {
       return NextResponse.json(
         {
           error:
-            "Las solicitudes de presupuesto requieren un plan Pro o Empresa.",
-          upgradeRequired: true,
+            "La página del negocio no está disponible.",
         },
         {
           status: 403,
@@ -250,21 +284,91 @@ export async function POST(
       );
     }
 
+    if (esPresupuesto) {
+      if (
+        empresa?.paginaPublica
+          ?.mostrarPresupuesto !== true
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "El negocio no está recibiendo solicitudes de presupuesto desde su página.",
+          },
+          {
+            status: 403,
+          }
+        );
+      }
+
+      if (
+        !empresaTieneFuncion(
+          empresa,
+          "presupuestos"
+        )
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Las solicitudes de presupuesto requieren Página Completa o Business IA con una suscripción activa.",
+            upgradeRequired: true,
+          },
+          {
+            status: 403,
+          }
+        );
+      }
+    } else {
+      if (
+        empresa?.paginaPublica
+          ?.mostrarContacto === false
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "El negocio no está recibiendo consultas desde su página.",
+          },
+          {
+            status: 403,
+          }
+        );
+      }
+
+      if (
+        !empresaTieneFuncion(
+          empresa,
+          "contacto"
+        )
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "El formulario de contacto no está disponible.",
+          },
+          {
+            status: 403,
+          }
+        );
+      }
+    }
+
     const empresaId =
       empresaDocumento.id;
 
-    /*
-     * Guardamos el contacto como una conversación,
-     * porque el CRM actual ya trabaja con:
-     * companies/{empresaId}/conversations
-     *
-     * De esta forma aparece en Conversaciones/Leads
-     * sin crear un sistema paralelo.
-     */
-    const conversacionRef =
+    const empresaRef =
       adminDb
         .collection("companies")
-        .doc(empresaId)
+        .doc(empresaId);
+
+    /*
+     * Guardamos el contacto como una conversación porque
+     * el CRM actual ya trabaja con:
+     * companies/{empresaId}/conversations
+     *
+     * Más adelante podemos separar presupuestos en una
+     * bandeja propia sin romper los datos existentes.
+     */
+    const conversacionRef =
+      empresaRef
         .collection("conversations")
         .doc();
 
@@ -278,71 +382,154 @@ export async function POST(
         : "contacto-web",
     ];
 
-    await adminDb.runTransaction(
-      async (transaction) => {
-        transaction.set(
-          conversacionRef,
-          {
-            empresaId,
-            visitanteId,
+    try {
+      await adminDb.runTransaction(
+        async (transaction) => {
+          /*
+           * Revalidamos dentro de la transacción para que
+           * un vencimiento, una baja de la página o un cambio
+           * del toggle no pueda colarse antes de guardar.
+           */
+          const empresaActualSnapshot =
+            await transaction.get(
+              empresaRef
+            );
 
-            nombre,
-            email,
-            telefono,
+          if (
+            !empresaActualSnapshot.exists
+          ) {
+            throw new LeadPublicoNoDisponibleError(
+              "La página del negocio ya no está disponible."
+            );
+          }
 
-            lead: {
+          const empresaActual =
+            empresaActualSnapshot.data();
+
+          if (
+            empresaActual
+              ?.paginaPublica
+              ?.publicada !== true ||
+            !empresaTieneFuncion(
+              empresaActual,
+              "pagina_publica"
+            )
+          ) {
+            throw new LeadPublicoNoDisponibleError(
+              "La página del negocio ya no está disponible."
+            );
+          }
+
+          if (esPresupuesto) {
+            if (
+              empresaActual
+                ?.paginaPublica
+                ?.mostrarPresupuesto !== true ||
+              !empresaTieneFuncion(
+                empresaActual,
+                "presupuestos"
+              )
+            ) {
+              throw new LeadPublicoNoDisponibleError(
+                "El negocio ya no está recibiendo solicitudes de presupuesto."
+              );
+            }
+          } else {
+            if (
+              empresaActual
+                ?.paginaPublica
+                ?.mostrarContacto === false ||
+              !empresaTieneFuncion(
+                empresaActual,
+                "contacto"
+              )
+            ) {
+              throw new LeadPublicoNoDisponibleError(
+                "El negocio ya no está recibiendo consultas desde su página."
+              );
+            }
+          }
+
+          transaction.set(
+            conversacionRef,
+            {
+              empresaId,
+              visitanteId,
+
               nombre,
               email,
               telefono,
-            },
 
-            puntuacionLead: 60,
-            nivelInteres: "medio",
-            etiquetas,
+              lead: {
+                nombre,
+                email,
+                telefono,
+              },
 
-            origen: "pagina_publica",
-            canal: "web",
-            tipoContacto:
-              esPresupuesto
-                ? "presupuesto_publico"
-                : "formulario_publico",
+              puntuacionLead: 60,
+              nivelInteres: "medio",
+              etiquetas,
 
-            ultimoMensaje: mensaje,
-            ultimoRol: "user",
-            cantidadMensajes: 1,
+              origen: "pagina_publica",
+              canal: "web",
+              tipoContacto:
+                esPresupuesto
+                  ? "presupuesto_publico"
+                  : "formulario_publico",
 
-            estado: "abierta",
-            estadoComercial: "nuevo",
-            atendidoPor: "ia",
-            humanoActivo: false,
+              ultimoMensaje: mensaje,
+              ultimoRol: "user",
+              cantidadMensajes: 1,
 
-            requiereAtencionHumana: false,
+              estado: "abierta",
+              estadoComercial: "nuevo",
+              atendidoPor: "ia",
+              humanoActivo: false,
 
-            createdAt:
-              FieldValue.serverTimestamp(),
-            updatedAt:
-              FieldValue.serverTimestamp(),
-          }
-        );
+              requiereAtencionHumana: false,
 
-        const mensajeRef =
-          conversacionRef
-            .collection("messages")
-            .doc();
+              createdAt:
+                FieldValue.serverTimestamp(),
+              updatedAt:
+                FieldValue.serverTimestamp(),
+            }
+          );
 
-        transaction.set(
-          mensajeRef,
+          const mensajeRef =
+            conversacionRef
+              .collection("messages")
+              .doc();
+
+          transaction.set(
+            mensajeRef,
+            {
+              role: "user",
+              content: mensaje,
+              enviadoPor: "cliente",
+              origen: "pagina_publica",
+              createdAt:
+                FieldValue.serverTimestamp(),
+            }
+          );
+        }
+      );
+    } catch (error) {
+      if (
+        error instanceof
+        LeadPublicoNoDisponibleError
+      ) {
+        return NextResponse.json(
           {
-            role: "user",
-            content: mensaje,
-            enviadoPor: "cliente",
-            origen: "pagina_publica",
-            createdAt:
-              FieldValue.serverTimestamp(),
+            error: error.message,
+          },
+          {
+            status: 409,
           }
         );
       }
-    );
+
+      throw error;
+    }
 
     try {
       await crearNotificacion({
@@ -386,6 +573,10 @@ export async function POST(
       },
       {
         status: 201,
+        headers: {
+          "Cache-Control":
+            "no-store",
+        },
       }
     );
   } catch (error) {

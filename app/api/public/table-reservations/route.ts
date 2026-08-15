@@ -197,6 +197,16 @@ function ahoraArgentina() {
   };
 }
 
+class ReservaMesaNoDisponibleError extends Error {
+  constructor(
+    mensaje: string,
+  ) {
+    super(mensaje);
+    this.name =
+      "ReservaMesaNoDisponibleError";
+  }
+}
+
 export async function POST(
   request: NextRequest,
 ) {
@@ -522,68 +532,168 @@ export async function POST(
         )
         .doc();
 
-    await adminDb.runTransaction(
-      async (
-        transaction,
-      ) => {
-        transaction.set(
-          reservaRef,
+    try {
+      await adminDb.runTransaction(
+        async (
+          transaction,
+        ) => {
+          /*
+           * Revalidamos dentro de la transacción.
+           * Así un vencimiento de suscripción, una baja
+           * de la página o la desactivación de reservas
+           * no puede colarse antes de crear la reserva.
+           */
+          const empresaActualSnapshot =
+            await transaction.get(
+              empresaRef,
+            );
+
+          if (
+            !empresaActualSnapshot.exists
+          ) {
+            throw new ReservaMesaNoDisponibleError(
+              "El restaurante ya no está disponible.",
+            );
+          }
+
+          const empresaActual =
+            empresaActualSnapshot.data();
+
+          if (
+            empresaActual
+              ?.paginaPublica
+              ?.publicada !== true
+          ) {
+            throw new ReservaMesaNoDisponibleError(
+              "La página del restaurante ya no está disponible.",
+            );
+          }
+
+          if (
+            !esRestaurante(
+              empresaActual?.rubro,
+            )
+          ) {
+            throw new ReservaMesaNoDisponibleError(
+              "Este formulario está disponible solo para restaurantes.",
+            );
+          }
+
+          if (
+            empresaActual
+              ?.paginaPublica
+              ?.mostrarReservasMesa !==
+            true
+          ) {
+            throw new ReservaMesaNoDisponibleError(
+              "El restaurante ya no está recibiendo reservas de mesa desde su página.",
+            );
+          }
+
+          if (
+            !empresaTieneFuncion(
+              empresaActual,
+              "turnos",
+            )
+          ) {
+            throw new ReservaMesaNoDisponibleError(
+              "Las reservas de mesa requieren Página Completa o Business IA con una suscripción activa.",
+            );
+          }
+
+          const ahoraActual =
+            ahoraArgentina();
+
+          if (
+            fecha <
+              ahoraActual.fecha ||
+            (
+              fecha ===
+                ahoraActual.fecha &&
+              hora <=
+                ahoraActual.hora
+            )
+          ) {
+            throw new ReservaMesaNoDisponibleError(
+              "La reserva debe ser para una fecha y horario futuros.",
+            );
+          }
+
+          transaction.set(
+            reservaRef,
+            {
+              nombreCliente,
+              telefono,
+              email,
+
+              servicio:
+                "Reserva de mesa",
+              servicioId: "",
+              precioServicio: 0,
+
+              fecha,
+              hora,
+              duracionMinutos: 0,
+
+              tipoReserva:
+                "mesa",
+              personas,
+
+              estado:
+                "pendiente",
+              notas,
+              origen:
+                "web",
+              canalReserva:
+                "pagina_publica",
+
+              createdAt:
+                FieldValue.serverTimestamp(),
+              updatedAt:
+                FieldValue.serverTimestamp(),
+            },
+          );
+
+          transaction.set(
+            analyticsRef,
+            {
+              tipo:
+                "appointment_created",
+              subtipo:
+                "mesa",
+              visitanteId:
+                `reserva-mesa-${reservaRef.id}`,
+              slug,
+              origen:
+                "pagina_publica",
+              turnoId:
+                reservaRef.id,
+              fecha,
+              hora,
+              personas,
+              createdAt:
+                FieldValue.serverTimestamp(),
+            },
+          );
+        },
+      );
+    } catch (error) {
+      if (
+        error instanceof
+        ReservaMesaNoDisponibleError
+      ) {
+        return NextResponse.json(
           {
-            nombreCliente,
-            telefono,
-            email,
-
-            servicio:
-              "Reserva de mesa",
-            servicioId: "",
-            precioServicio: 0,
-
-            fecha,
-            hora,
-            duracionMinutos: 0,
-
-            tipoReserva:
-              "mesa",
-            personas,
-
-            estado:
-              "pendiente",
-            notas,
-            origen:
-              "web",
-            canalReserva:
-              "pagina_publica",
-
-            createdAt:
-              FieldValue.serverTimestamp(),
-            updatedAt:
-              FieldValue.serverTimestamp(),
+            error: error.message,
+          },
+          {
+            status: 409,
           },
         );
+      }
 
-        transaction.set(
-          analyticsRef,
-          {
-            tipo:
-              "appointment_created",
-            subtipo:
-              "mesa",
-            visitanteId:
-              `reserva-mesa-${reservaRef.id}`,
-            slug,
-            origen:
-              "pagina_publica",
-            turnoId:
-              reservaRef.id,
-            fecha,
-            hora,
-            personas,
-            createdAt:
-              FieldValue.serverTimestamp(),
-          },
-        );
-      },
-    );
+      throw error;
+    }
 
     try {
       await crearNotificacion({

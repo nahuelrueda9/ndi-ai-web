@@ -12,12 +12,29 @@ import {
   adminDb,
 } from "@/lib/firebaseAdmin";
 
+import {
+  empresaTieneFuncion,
+  type PlanId,
+} from "@/lib/plans/planAccess";
+
 export const runtime = "nodejs";
 
 type DeleteConversationBody = {
   empresaId?: string;
   conversacionId?: string;
 };
+
+type Empresa = {
+  userId?: string;
+  plan?: PlanId;
+  subscriptionStatus?: string;
+  subscriptionEndsAt?: unknown;
+};
+
+type RolMiembro =
+  | "administrador"
+  | "supervisor"
+  | "operador";
 
 function obtenerBearerToken(
   request: NextRequest
@@ -52,6 +69,16 @@ function esIdFirestoreValido(
   );
 }
 
+function esRolMiembroValido(
+  rol: unknown
+): rol is RolMiembro {
+  return (
+    rol === "administrador" ||
+    rol === "supervisor" ||
+    rol === "operador"
+  );
+}
+
 async function verificarAccesoEmpresa({
   empresaId,
   uid,
@@ -73,18 +100,21 @@ async function verificarAccesoEmpresa({
       status: 404,
       error:
         "La empresa no existe.",
+      rol: "",
+      empresa: null as Empresa | null,
     };
   }
 
   const empresa =
-    empresaSnapshot.data();
+    empresaSnapshot.data() as Empresa;
 
-  if (empresa?.userId === uid) {
+  if (empresa.userId === uid) {
     return {
       permitido: true,
       status: 200,
       error: "",
       rol: "propietario",
+      empresa,
     };
   }
 
@@ -99,7 +129,10 @@ async function verificarAccesoEmpresa({
 
   const permitido =
     miembroSnapshot.exists &&
-    miembro?.estado === "activo";
+    miembro?.estado === "activo" &&
+    esRolMiembroValido(
+      miembro?.rol
+    );
 
   return {
     permitido,
@@ -108,11 +141,11 @@ async function verificarAccesoEmpresa({
       ? ""
       : "No tenés permisos para eliminar conversaciones de esta empresa.",
     rol: permitido
-      ? String(
-          miembro?.rol ||
-            "miembro"
-        )
+      ? String(miembro?.rol)
       : "",
+    empresa: permitido
+      ? empresa
+      : null,
   };
 }
 
@@ -140,7 +173,8 @@ export async function DELETE(
     try {
       usuario =
         await adminAuth.verifyIdToken(
-          idToken
+          idToken,
+          true
         );
     } catch {
       return NextResponse.json(
@@ -204,13 +238,34 @@ export async function DELETE(
         uid: usuario.uid,
       });
 
-    if (!acceso.permitido) {
+    if (
+      !acceso.permitido ||
+      !acceso.empresa
+    ) {
       return NextResponse.json(
         {
           error: acceso.error,
         },
         {
           status: acceso.status,
+        }
+      );
+    }
+
+    if (
+      !empresaTieneFuncion(
+        acceso.empresa,
+        "asistente_ia"
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Consultas requiere Business IA con una suscripción activa.",
+          upgradeRequired: true,
+        },
+        {
+          status: 403,
         }
       );
     }

@@ -38,6 +38,10 @@ import {
   auth,
   db,
 } from "@/lib/firebase";
+import {
+  empresaTieneFuncion,
+  type PlanId,
+} from "@/lib/plans/planAccess";
 
 type EstadoPedido =
   | "nuevo"
@@ -72,10 +76,19 @@ type Pedido = {
 };
 
 type Empresa = {
+  userId?: string;
   rubro?: string;
+  plan?: PlanId;
+  subscriptionStatus?: string;
+  subscriptionEndsAt?: unknown;
   paginaPublica?: {
     mostrarPedidosOnline?: boolean;
   };
+};
+
+type MiembroEmpresa = {
+  rol?: "administrador" | "supervisor" | "operador";
+  estado?: "activo" | "inactivo";
 };
 
 type Filtro =
@@ -196,6 +209,13 @@ export default function PedidosPage() {
   );
 
   const [
+    accesoPedidos,
+    setAccesoPedidos,
+  ] = useState<boolean | null>(
+    null,
+  );
+
+  const [
     pedidos,
     setPedidos,
   ] = useState<Pedido[]>(
@@ -223,12 +243,14 @@ export default function PedidosPage() {
         ) => {
           if (!usuario) {
             setUsuarioUid("");
+            setAccesoPedidos(null);
             router.replace(
               "/login",
             );
             return;
           }
 
+          setAccesoPedidos(null);
           setUsuarioUid(
             usuario.uid,
           );
@@ -247,6 +269,11 @@ export default function PedidosPage() {
       return;
     }
 
+    const empresaIdSeguro =
+      empresaId;
+    const usuarioUidSeguro =
+      usuarioUid;
+
     let cancelarPedidos:
       | (() => void)
       | null = null;
@@ -263,21 +290,71 @@ export default function PedidosPage() {
             doc(
               db,
               "companies",
-              empresaId!,
+              empresaIdSeguro,
             ),
           );
 
         if (
           !empresaSnap.exists()
         ) {
-          router.replace(
-            "/empresas",
-          );
+          if (activo) {
+            setAccesoPedidos(false);
+            setCargando(false);
+            router.replace(
+              "/empresas",
+            );
+          }
           return;
         }
 
         const datos =
           empresaSnap.data() as Empresa;
+
+        let tieneAccesoEmpresa =
+          datos.userId ===
+          usuarioUidSeguro;
+
+        if (!tieneAccesoEmpresa) {
+          const miembroSnap =
+            await getDoc(
+              doc(
+                db,
+                "companies",
+                empresaIdSeguro,
+                "members",
+                usuarioUidSeguro,
+              ),
+            );
+
+          if (!activo) {
+            return;
+          }
+
+          if (!miembroSnap.exists()) {
+            setAccesoPedidos(false);
+            setCargando(false);
+            router.replace(
+              "/empresas",
+            );
+            return;
+          }
+
+          const miembro =
+            miembroSnap.data() as MiembroEmpresa;
+
+          tieneAccesoEmpresa =
+            miembro.estado === "activo" &&
+            Boolean(miembro.rol);
+
+          if (!tieneAccesoEmpresa) {
+            setAccesoPedidos(false);
+            setCargando(false);
+            router.replace(
+              "/empresas",
+            );
+            return;
+          }
+        }
 
         if (
           !esRestaurante(
@@ -285,11 +362,27 @@ export default function PedidosPage() {
           )
         ) {
           if (activo) {
-            setEmpresa(
-              datos,
+            setAccesoPedidos(false);
+            setCargando(false);
+            router.replace(
+              `/empresas/${empresaIdSeguro}/dashboard`,
             );
-            setCargando(
-              false,
+          }
+          return;
+        }
+
+        const puedeUsarPedidos =
+          empresaTieneFuncion(
+            datos,
+            "productos",
+          );
+
+        if (!puedeUsarPedidos) {
+          if (activo) {
+            setAccesoPedidos(false);
+            setCargando(false);
+            router.replace(
+              `/empresas/${empresaIdSeguro}/dashboard`,
             );
           }
           return;
@@ -297,6 +390,7 @@ export default function PedidosPage() {
 
         if (activo) {
           setEmpresa(datos);
+          setAccesoPedidos(true);
         }
 
         cancelarPedidos =
@@ -304,7 +398,7 @@ export default function PedidosPage() {
             collection(
               db,
               "companies",
-              empresaId!,
+              empresaIdSeguro,
               "orders",
             ),
             (
@@ -568,6 +662,7 @@ export default function PedidosPage() {
     estado: EstadoPedido,
   ) {
     if (
+      accesoPedidos !== true ||
       !empresaId ||
       cargandoAccion
     ) {
@@ -620,25 +715,8 @@ export default function PedidosPage() {
     );
   }
 
-  if (
-    empresa &&
-    !esRestaurante(
-      empresa.rubro,
-    )
-  ) {
-    return (
-      <section className="mx-auto max-w-5xl px-5 py-8 sm:px-8">
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-8">
-          <ShoppingBag className="h-8 w-8 text-zinc-500" />
-          <h1 className="mt-4 text-2xl font-bold">
-            Pedidos
-          </h1>
-          <p className="mt-2 text-sm text-zinc-400">
-            Esta sección está disponible para negocios con rubro Restaurante.
-          </p>
-        </div>
-      </section>
-    );
+  if (accesoPedidos !== true) {
+    return null;
   }
 
   return (

@@ -137,6 +137,17 @@ function esTipoPago(
   );
 }
 
+function esIdFirestoreValido(
+  valor: string,
+) {
+  return (
+    valor.length > 0 &&
+    valor.length <= 160 &&
+    !valor.includes("/") &&
+    !valor.includes("\0")
+  );
+}
+
 function obtenerPrecioMensualContratado(
   empresa:
     | Record<string, unknown>
@@ -201,6 +212,7 @@ export async function POST(
       usuario =
         await adminAuth.verifyIdToken(
           idToken,
+          true,
         );
     } catch {
       return NextResponse.json(
@@ -233,8 +245,22 @@ export async function POST(
       );
     }
 
-    const body =
-      (await request.json()) as BodyRequest;
+    let body: BodyRequest;
+
+    try {
+      body =
+        (await request.json()) as BodyRequest;
+    } catch {
+      return NextResponse.json(
+        {
+          error:
+            "La solicitud no es válida.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
 
     const empresaId =
       typeof body.empresaId ===
@@ -250,6 +276,22 @@ export async function POST(
         {
           error:
             "Falta empresaId.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    if (
+      !esIdFirestoreValido(
+        empresaId,
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "empresaId no es válido.",
         },
         {
           status: 400,
@@ -572,17 +614,17 @@ export async function POST(
         success:
           `${urlBase}/empresas/${encodeURIComponent(
             empresaId,
-          )}/planes?payment=success&type=${tipoPago}`,
+          )}/facturacion/planes?payment=success&type=${tipoPago}`,
 
         pending:
           `${urlBase}/empresas/${encodeURIComponent(
             empresaId,
-          )}/planes?payment=pending&type=${tipoPago}`,
+          )}/facturacion/planes?payment=pending&type=${tipoPago}`,
 
         failure:
           `${urlBase}/empresas/${encodeURIComponent(
             empresaId,
-          )}/planes?payment=failure&type=${tipoPago}`,
+          )}/facturacion/planes?payment=failure&type=${tipoPago}`,
       };
 
       preferenceBody.auto_return =
@@ -688,42 +730,169 @@ export async function POST(
       );
     }
 
-    await empresaReferencia.set(
-      {
-        pendingPlan:
-          plan,
+    try {
+      await adminDb.runTransaction(
+        async (transaction) => {
+          const empresaActualSnapshot =
+            await transaction.get(
+              empresaReferencia,
+            );
 
-        pendingPlanName:
-          nombrePlan,
+          if (
+            !empresaActualSnapshot.exists
+          ) {
+            throw new Error(
+              "EMPRESA_NO_DISPONIBLE",
+            );
+          }
 
-        pendingPaymentType:
-          paymentType,
+          const empresaActual =
+            empresaActualSnapshot.data();
 
-        pendingInitialPrice:
-          tipoPago ===
-          "alta"
-            ? precioInicial
-            : null,
+          if (
+            empresaActual?.userId !==
+            usuario.uid
+          ) {
+            throw new Error(
+              "EMPRESA_NO_DISPONIBLE",
+            );
+          }
 
-        pendingMonthlyPrice:
-          precioMensual,
+          const planActual =
+            esPlanPago(
+              empresaActual?.plan,
+            )
+              ? empresaActual.plan
+              : null;
 
-        mercadoPagoPreferenceId:
-          data.id,
+          const suscripcionActualActiva =
+            empresaTieneSuscripcionActiva(
+              empresaActual,
+            );
 
-        mercadoPagoExternalReference:
-          externalReference,
+          const tuvoSuscripcionActual =
+            empresaTuvoSuscripcion(
+              empresaActual,
+            );
 
-        mercadoPagoPreferenceCreatedAt:
-          new Date(),
+          if (
+            suscripcionActualActiva &&
+            planActual !== plan
+          ) {
+            throw new Error(
+              "ESTADO_PLAN_CAMBIO",
+            );
+          }
 
-        mercadoPagoPreferenceCreatedBy:
-          usuario.uid,
-      },
-      {
-        merge: true,
-      },
-    );
+          if (
+            tipoPago ===
+              "renovacion" &&
+            (
+              !tuvoSuscripcionActual ||
+              planActual !== plan
+            )
+          ) {
+            throw new Error(
+              "ESTADO_PLAN_CAMBIO",
+            );
+          }
+
+          if (
+            tipoPago === "alta" &&
+            suscripcionActualActiva
+          ) {
+            throw new Error(
+              "ESTADO_PLAN_CAMBIO",
+            );
+          }
+
+          if (
+            tipoPago ===
+            "renovacion"
+          ) {
+            const precioMensualActualizado =
+              obtenerPrecioMensualContratado(
+                empresaActual,
+              ) ??
+              precioMensualActual;
+
+            if (
+              precioMensualActualizado !==
+              precioMensual
+            ) {
+              throw new Error(
+                "PRECIO_PLAN_CAMBIO",
+              );
+            }
+          }
+
+          transaction.set(
+            empresaReferencia,
+            {
+              pendingPlan:
+                plan,
+
+              pendingPlanName:
+                nombrePlan,
+
+              pendingPaymentType:
+                paymentType,
+
+              pendingInitialPrice:
+                tipoPago ===
+                "alta"
+                  ? precioInicial
+                  : null,
+
+              pendingMonthlyPrice:
+                precioMensual,
+
+              mercadoPagoPreferenceId:
+                data.id,
+
+              mercadoPagoExternalReference:
+                externalReference,
+
+              mercadoPagoPreferenceCreatedAt:
+                new Date(),
+
+              mercadoPagoPreferenceCreatedBy:
+                usuario.uid,
+            },
+            {
+              merge: true,
+            },
+          );
+        },
+      );
+    } catch (guardarError) {
+      if (
+        guardarError instanceof Error &&
+        (
+          guardarError.message ===
+            "EMPRESA_NO_DISPONIBLE" ||
+          guardarError.message ===
+            "ESTADO_PLAN_CAMBIO" ||
+          guardarError.message ===
+            "PRECIO_PLAN_CAMBIO"
+        )
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              guardarError.message ===
+              "PRECIO_PLAN_CAMBIO"
+                ? "El precio de renovación cambió mientras se preparaba el pago. Volvé a intentarlo."
+                : "El estado del plan cambió mientras se preparaba el pago. Actualizá la página y volvé a intentarlo.",
+          },
+          {
+            status: 409,
+          },
+        );
+      }
+
+      throw guardarError;
+    }
 
     const total =
       tipoPago === "alta"

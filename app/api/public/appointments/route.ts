@@ -49,6 +49,7 @@ type AgendaConfig = {
 type EmpresaPublica = {
   nombre?: string;
   plan?: "free" | "pro" | "business";
+  subscriptionStatus?: string;
   subscriptionEndsAt?: unknown;
   paginaPublica?: {
     publicada?: boolean;
@@ -80,6 +81,77 @@ function limpiarTexto(
         .replace(/\u0000/g, "")
         .slice(0, maximo)
     : "";
+}
+
+function idFirestoreValido(
+  valor: string,
+) {
+  return (
+    valor.length > 0 &&
+    valor.length <= MAX_ID &&
+    !valor.includes("/") &&
+    !valor.includes("\0")
+  );
+}
+
+function ahoraArgentina() {
+  const partes =
+    new Intl.DateTimeFormat(
+      "en-CA",
+      {
+        timeZone:
+          "America/Argentina/Buenos_Aires",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+      },
+    ).formatToParts(
+      new Date(),
+    );
+
+  const obtener = (
+    tipo: string,
+  ) =>
+    partes.find(
+      (parte) =>
+        parte.type === tipo,
+    )?.value ?? "";
+
+  return {
+    fecha:
+      `${obtener("year")}-${obtener("month")}-${obtener("day")}`,
+    hora:
+      `${obtener("hour")}:${obtener("minute")}`,
+  };
+}
+
+function fechaHoraYaPaso(
+  fecha: string,
+  hora: string,
+) {
+  const ahora =
+    ahoraArgentina();
+
+  return (
+    fecha < ahora.fecha ||
+    (
+      fecha === ahora.fecha &&
+      hora <= ahora.hora
+    )
+  );
+}
+
+class TurnoNoDisponibleError extends Error {
+  constructor(
+    mensaje: string,
+  ) {
+    super(mensaje);
+    this.name =
+      "TurnoNoDisponibleError";
+  }
 }
 
 function fechaValida(
@@ -757,11 +829,15 @@ export async function GET(
       );
     }
 
-    if (!servicioId) {
+    if (
+      !idFirestoreValido(
+        servicioId,
+      )
+    ) {
       return NextResponse.json(
         {
           error:
-            "Seleccioná un servicio.",
+            "Seleccioná un servicio válido.",
         },
         {
           status: 400,
@@ -777,6 +853,27 @@ export async function GET(
         },
         {
           status: 400,
+        },
+      );
+    }
+
+    const ahora =
+      ahoraArgentina();
+
+    if (
+      fecha < ahora.fecha
+    ) {
+      return NextResponse.json(
+        {
+          disponible: false,
+          configuracionPendiente:
+            false,
+          horarios: [],
+          mensaje:
+            "La fecha seleccionada ya pasó.",
+        },
+        {
+          status: 200,
         },
       );
     }
@@ -863,7 +960,13 @@ export async function GET(
         intervaloMinutos,
         duracionMinutos,
         turnos,
-      });
+      }).filter(
+        (horario) =>
+          !fechaHoraYaPaso(
+            fecha,
+            horario,
+          ),
+      );
 
     return NextResponse.json(
       {
@@ -983,11 +1086,15 @@ export async function POST(
       );
     }
 
-    if (!servicioId) {
+    if (
+      !idFirestoreValido(
+        servicioId,
+      )
+    ) {
       return NextResponse.json(
         {
           error:
-            "Seleccioná un servicio.",
+            "Seleccioná un servicio válido.",
         },
         {
           status: 400,
@@ -1042,6 +1149,23 @@ export async function POST(
         },
         {
           status: 400,
+        },
+      );
+    }
+
+    if (
+      fechaHoraYaPaso(
+        fecha,
+        hora,
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Ese horario ya pasó.",
+        },
+        {
+          status: 409,
         },
       );
     }
@@ -1181,6 +1305,146 @@ export async function POST(
       await adminDb.runTransaction(
         async (transaction) => {
           /*
+           * Todas las lecturas ocurren antes de escribir.
+           * Revalidamos empresa, plan, agenda y servicio
+           * dentro de la misma transacción que crea el turno.
+           */
+          const empresaSnapshot =
+            await transaction.get(
+              empresaRef,
+            );
+
+          if (
+            !empresaSnapshot.exists
+          ) {
+            throw new TurnoNoDisponibleError(
+              "El negocio ya no está disponible.",
+            );
+          }
+
+          const empresaActual =
+            empresaSnapshot.data() as EmpresaPublica;
+
+          if (
+            empresaActual
+              .paginaPublica
+              ?.publicada !== true ||
+            !empresaTieneFuncion(
+              empresaActual,
+              "turnos",
+            )
+          ) {
+            throw new TurnoNoDisponibleError(
+              "Las reservas online ya no están disponibles.",
+            );
+          }
+
+          const servicioRef =
+            empresaRef
+              .collection(
+                "catalog",
+              )
+              .doc(
+                servicioId,
+              );
+
+          const servicioSnapshot =
+            await transaction.get(
+              servicioRef,
+            );
+
+          if (
+            !servicioSnapshot.exists
+          ) {
+            throw new TurnoNoDisponibleError(
+              "El servicio ya no está disponible.",
+            );
+          }
+
+          const servicioActual =
+            servicioSnapshot.data() as CatalogoServicio;
+
+          if (
+            servicioActual.tipo !==
+              "servicio" ||
+            servicioActual.activo ===
+              false ||
+            !servicioActual.nombre
+              ?.trim()
+          ) {
+            throw new TurnoNoDisponibleError(
+              "El servicio ya no está disponible.",
+            );
+          }
+
+          const agendaActual =
+            empresaActual.agendaConfig;
+
+          if (
+            agendaActual?.activa !==
+            true
+          ) {
+            throw new TurnoNoDisponibleError(
+              "Las reservas online ya no están habilitadas.",
+            );
+          }
+
+          const diaSemanaActual =
+            String(
+              obtenerDiaSemana(
+                fecha,
+              ),
+            );
+
+          const diaActual =
+            agendaActual.dias?.[
+              diaSemanaActual
+            ];
+
+          if (
+            !diaActual ||
+            diaActual.activo !==
+              true ||
+            !horarioAgendaValido(
+              diaActual,
+            )
+          ) {
+            throw new TurnoNoDisponibleError(
+              "Ese día ya no está disponible para reservas.",
+            );
+          }
+
+          const intervaloActual =
+            obtenerIntervaloAgenda(
+              agendaActual,
+            );
+
+          const duracionActual =
+            obtenerDuracionServicio(
+              servicioActual,
+            );
+
+          if (
+            fechaHoraYaPaso(
+              fecha,
+              hora,
+            ) ||
+            !horarioDentroDeAgenda({
+              hora,
+              duracionMinutos:
+                duracionActual,
+              dia:
+                diaActual,
+              intervaloMinutos:
+                intervaloActual,
+            })
+          ) {
+            throw new TurnoNoDisponibleError(
+              "Ese horario ya no está disponible para reservas.",
+            );
+          }
+
+          /*
            * Este documento fuerza a serializar
            * reservas concurrentes del mismo día.
            */
@@ -1213,7 +1477,7 @@ export async function POST(
           if (
             horarioOcupado(
               hora,
-              duracionMinutos,
+              duracionActual,
               turnos,
             )
           ) {
@@ -1241,16 +1505,24 @@ export async function POST(
               email,
               telefono,
               servicio:
-                servicio.nombre,
+                servicioActual.nombre.trim(),
               servicioId:
-                servicioDoc.id,
+                servicioSnapshot.id,
               precioServicio:
-                Number(
-                  servicio.precio,
-                ) || 0,
+                typeof servicioActual.precio ===
+                  "number" &&
+                Number.isFinite(
+                  servicioActual.precio,
+                )
+                  ? Math.max(
+                      0,
+                      servicioActual.precio,
+                    )
+                  : 0,
               fecha,
               hora,
-              duracionMinutos,
+              duracionMinutos:
+                duracionActual,
               estado:
                 "pendiente",
               notas,
@@ -1275,7 +1547,7 @@ export async function POST(
               turnoId:
                 turnoRef.id,
               servicioId:
-                servicioDoc.id,
+                servicioSnapshot.id,
               createdAt:
                 FieldValue.serverTimestamp(),
             },
@@ -1283,6 +1555,21 @@ export async function POST(
         },
       );
     } catch (transactionError) {
+      if (
+        transactionError instanceof
+        TurnoNoDisponibleError
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              transactionError.message,
+          },
+          {
+            status: 409,
+          },
+        );
+      }
+
       if (
         transactionError instanceof
           Error &&

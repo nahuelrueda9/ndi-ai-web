@@ -296,6 +296,20 @@ export default function WidgetPage() {
               }
             }
 
+            const tieneWidget =
+              empresaTieneFuncion(
+                empresa,
+                "asistente_ia",
+              );
+
+            if (!tieneWidget) {
+              setWidgetHabilitado(false);
+              router.replace(
+                `/empresas/${empresaIdSeguro}/dashboard`,
+              );
+              return;
+            }
+
             const config: ConfigWidget = {
               nombreBot:
                 empresa.widget
@@ -340,12 +354,7 @@ export default function WidgetPage() {
 
             setUser(currentUser);
             setAccesoVerificado(true);
-            setWidgetHabilitado(
-              empresaTieneFuncion(
-                empresa,
-                "asistente_ia",
-              ),
-            );
+            setWidgetHabilitado(true);
 
             setNombreEmpresa(
               empresa.nombre ||

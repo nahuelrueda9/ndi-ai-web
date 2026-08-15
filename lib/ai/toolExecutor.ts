@@ -5,6 +5,10 @@ import {
 } from "firebase-admin/firestore";
 
 import { adminDb } from "@/lib/firebaseAdmin";
+import {
+  empresaTieneFuncion,
+  type PlanId,
+} from "@/lib/plans/planAccess";
 import { crearTarea } from "@/lib/crm/taskService";
 
 import {
@@ -59,6 +63,9 @@ type AgendaConfig = {
 
 type EmpresaAgenda = {
   nombre?: string;
+  plan?: PlanId;
+  subscriptionStatus?: string;
+  subscriptionEndsAt?: unknown;
   agendaConfig?: AgendaConfig;
 };
 
@@ -82,18 +89,47 @@ type ResultadoServicio =
       }>;
     };
 
+function esIdFirestoreValido(
+  valor: string
+) {
+  return (
+    valor.length > 0 &&
+    valor.length <= 200 &&
+    !valor.includes("/") &&
+    !valor.includes("\0")
+  );
+}
+
 export async function ejecutarHerramienta({
   empresaId,
   chatId,
   nombre,
   argumentos,
 }: EjecutarHerramientaParams): Promise<ResultadoHerramienta> {
-  if (!empresaId.trim()) {
-    throw new Error("Falta el empresaId.");
+  const empresaIdSeguro =
+    empresaId.trim();
+
+  const chatIdSeguro =
+    chatId.trim();
+
+  if (
+    !esIdFirestoreValido(
+      empresaIdSeguro
+    )
+  ) {
+    throw new Error(
+      "empresaId inválido."
+    );
   }
 
-  if (!chatId.trim()) {
-    throw new Error("Falta el chatId.");
+  if (
+    !esIdFirestoreValido(
+      chatIdSeguro
+    )
+  ) {
+    throw new Error(
+      "chatId inválido."
+    );
   }
 
   if (!esNombreHerramienta(nombre)) {
@@ -110,36 +146,36 @@ export async function ejecutarHerramienta({
   switch (nombre) {
     case "solicitar_atencion_humana":
       return solicitarAtencionHumana({
-        empresaId,
-        chatId,
+        empresaId: empresaIdSeguro,
+        chatId: chatIdSeguro,
         argumentos: argumentosParseados,
       });
 
     case "guardar_datos_contacto":
       return guardarDatosContacto({
-        empresaId,
-        chatId,
+        empresaId: empresaIdSeguro,
+        chatId: chatIdSeguro,
         argumentos: argumentosParseados,
       });
 
     case "crear_tarea_comercial":
       return crearTareaComercial({
-        empresaId,
-        chatId,
+        empresaId: empresaIdSeguro,
+        chatId: chatIdSeguro,
         argumentos: argumentosParseados,
       });
 
     case "consultar_disponibilidad_turnos":
       return consultarDisponibilidadTurnos({
-        empresaId,
-        chatId,
+        empresaId: empresaIdSeguro,
+        chatId: chatIdSeguro,
         argumentos: argumentosParseados,
       });
 
     case "crear_turno":
       return crearTurno({
-        empresaId,
-        chatId,
+        empresaId: empresaIdSeguro,
+        chatId: chatIdSeguro,
         argumentos: argumentosParseados,
       });
 
@@ -335,6 +371,21 @@ async function consultarDisponibilidadTurnos({
 
   const empresa =
     empresaSnapshot.data() as EmpresaAgenda;
+
+  if (
+    !empresaTieneFuncion(
+      empresa,
+      "turnos"
+    )
+  ) {
+    return {
+      exito: false,
+      nombre:
+        "consultar_disponibilidad_turnos",
+      mensaje:
+        "La agenda requiere Página Completa o Business IA con una suscripción activa.",
+    };
+  }
 
   const agenda = empresa.agendaConfig;
 
@@ -563,6 +614,20 @@ async function crearTurno({
   const empresa =
     empresaSnapshot.data() as EmpresaAgenda;
 
+  if (
+    !empresaTieneFuncion(
+      empresa,
+      "turnos"
+    )
+  ) {
+    return {
+      exito: false,
+      nombre: "crear_turno",
+      mensaje:
+        "La agenda requiere Página Completa o Business IA con una suscripción activa.",
+    };
+  }
+
   const agenda =
     empresa.agendaConfig;
 
@@ -717,6 +782,189 @@ async function crearTurno({
   try {
     await adminDb.runTransaction(
       async (transaccion) => {
+        /*
+         * Revalidamos dentro de la transacción para evitar
+         * que un vencimiento, cambio de plan, cierre de agenda
+         * o baja del servicio se cuele antes de crear el turno.
+         */
+        const empresaActualSnapshot =
+          await transaccion.get(
+            empresaRef
+          );
+
+        if (
+          !empresaActualSnapshot.exists
+        ) {
+          throw new ValidacionTurnoError(
+            "La empresa ya no está disponible."
+          );
+        }
+
+        const empresaActual =
+          empresaActualSnapshot.data() as EmpresaAgenda;
+
+        if (
+          !empresaTieneFuncion(
+            empresaActual,
+            "turnos"
+          )
+        ) {
+          throw new ValidacionTurnoError(
+            "La agenda ya no está disponible para esta empresa."
+          );
+        }
+
+        const agendaActual =
+          empresaActual.agendaConfig;
+
+        if (!agendaActual?.activa) {
+          throw new ValidacionTurnoError(
+            "Las reservas online ya no están activadas para este negocio."
+          );
+        }
+
+        const servicioRef =
+          empresaRef
+            .collection("catalog")
+            .doc(servicio.id);
+
+        const servicioSnapshot =
+          await transaccion.get(
+            servicioRef
+          );
+
+        if (!servicioSnapshot.exists) {
+          throw new ValidacionTurnoError(
+            "El servicio ya no está disponible."
+          );
+        }
+
+        const servicioActual =
+          convertirServicio(
+            servicioSnapshot.id,
+            servicioSnapshot.data() ?? {}
+          );
+
+        if (
+          servicioActual.tipo !==
+            "servicio" ||
+          servicioActual.activo ===
+            false ||
+          !servicioActual.nombre
+        ) {
+          throw new ValidacionTurnoError(
+            "El servicio ya no está disponible para reservar."
+          );
+        }
+
+        const configDiaActual =
+          obtenerConfigDia(
+            agendaActual,
+            fecha
+          );
+
+        if (
+          !configDiaActual ||
+          configDiaActual.activo ===
+            false
+        ) {
+          throw new ValidacionTurnoError(
+            "El negocio no atiende ese día."
+          );
+        }
+
+        if (
+          !configDiaActual.apertura ||
+          !configDiaActual.cierre ||
+          !horaValida(
+            configDiaActual.apertura
+          ) ||
+          !horaValida(
+            configDiaActual.cierre
+          )
+        ) {
+          throw new ValidacionTurnoError(
+            "Los horarios de atención de ese día no están configurados correctamente."
+          );
+        }
+
+        const duracionActual =
+          Math.max(
+            5,
+            Number(
+              servicioActual.duracionMinutos
+            ) || 60
+          );
+
+        const intervaloActual =
+          Math.max(
+            5,
+            Number(
+              agendaActual.intervaloMinutos
+            ) || 30
+          );
+
+        const inicioActual =
+          minutosDesdeHora(hora);
+
+        const aperturaActual =
+          minutosDesdeHora(
+            configDiaActual.apertura
+          );
+
+        const cierreActual =
+          minutosDesdeHora(
+            configDiaActual.cierre
+          );
+
+        if (
+          fechaHoraYaPasoArgentina(
+            fecha,
+            hora
+          )
+        ) {
+          throw new ValidacionTurnoError(
+            "No se puede reservar un horario que ya pasó."
+          );
+        }
+
+        if (
+          inicioActual <
+            aperturaActual ||
+          inicioActual +
+            duracionActual >
+            cierreActual
+        ) {
+          throw new ValidacionTurnoError(
+            "Ese horario está fuera del horario de atención."
+          );
+        }
+
+        if (
+          (
+            inicioActual -
+            aperturaActual
+          ) %
+            intervaloActual !==
+          0
+        ) {
+          throw new ValidacionTurnoError(
+            "Ese horario no pertenece a los turnos ofrecidos por el negocio."
+          );
+        }
+
+        if (
+          estaEnDescanso(
+            inicioActual,
+            duracionActual,
+            configDiaActual
+          )
+        ) {
+          throw new ValidacionTurnoError(
+            "Ese horario corresponde al descanso del negocio."
+          );
+        }
+
         const turnosQuery =
           empresaRef
             .collection("appointments")
@@ -731,6 +979,11 @@ async function crearTurno({
             turnosQuery
           );
 
+        const conversacionSnapshot =
+          await transaccion.get(
+            conversacionRef
+          );
+
         const turnos =
           turnosSnapshot.docs.map(
             obtenerTurnoDesdeDocumento
@@ -740,7 +993,7 @@ async function crearTurno({
           turnoOcupaHorario(
             turnos,
             hora,
-            duracionMinutos
+            duracionActual
           )
         ) {
           throw new HorarioOcupadoError();
@@ -753,16 +1006,17 @@ async function crearTurno({
             email,
             telefono,
             servicio:
-              servicio.nombre,
+              servicioActual.nombre,
             servicioId:
-              servicio.id,
+              servicioActual.id,
             precioServicio:
               Number(
-                servicio.precio
+                servicioActual.precio
               ) || 0,
             fecha,
             hora,
-            duracionMinutos,
+            duracionMinutos:
+              duracionActual,
             estado: "pendiente",
             notas,
             origen: "web",
@@ -775,24 +1029,32 @@ async function crearTurno({
           }
         );
 
-        transaccion.set(
-          conversacionRef,
-          {
-            ultimoTurnoId:
-              turnoRef.id,
-            ultimoTurnoFecha:
-              fecha,
-            ultimoTurnoHora:
-              hora,
-            ultimoTurnoServicio:
-              servicio.nombre,
-            updatedAt:
-              FieldValue.serverTimestamp(),
-          },
-          {
-            merge: true,
-          }
-        );
+        /*
+         * No creamos una conversación parcial si el chatId
+         * pertenece al panel de prueba o ya fue eliminado.
+         */
+        if (
+          conversacionSnapshot.exists
+        ) {
+          transaccion.set(
+            conversacionRef,
+            {
+              ultimoTurnoId:
+                turnoRef.id,
+              ultimoTurnoFecha:
+                fecha,
+              ultimoTurnoHora:
+                hora,
+              ultimoTurnoServicio:
+                servicioActual.nombre,
+              updatedAt:
+                FieldValue.serverTimestamp(),
+            },
+            {
+              merge: true,
+            }
+          );
+        }
       }
     );
   } catch (error) {
@@ -805,6 +1067,17 @@ async function crearTurno({
         nombre: "crear_turno",
         mensaje:
           "Ese horario acaba de ocuparse. Hay que elegir otro horario disponible.",
+      };
+    }
+
+    if (
+      error instanceof
+      ValidacionTurnoError
+    ) {
+      return {
+        exito: false,
+        nombre: "crear_turno",
+        mensaje: error.message,
       };
     }
 
@@ -835,6 +1108,16 @@ async function crearTurno({
       telefono,
     },
   };
+}
+
+class ValidacionTurnoError extends Error {
+  constructor(
+    mensaje: string
+  ) {
+    super(mensaje);
+    this.name =
+      "ValidacionTurnoError";
+  }
 }
 
 class HorarioOcupadoError extends Error {
@@ -1337,8 +1620,31 @@ function horaDesdeMinutos(
 function fechaValida(
   valor: string
 ) {
-  return /^\d{4}-\d{2}-\d{2}$/.test(
-    valor
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(
+      valor
+    )
+  ) {
+    return false;
+  }
+
+  const fecha =
+    new Date(
+      `${valor}T12:00:00Z`
+    );
+
+  if (
+    Number.isNaN(
+      fecha.getTime()
+    )
+  ) {
+    return false;
+  }
+
+  return (
+    fecha
+      .toISOString()
+      .slice(0, 10) === valor
   );
 }
 

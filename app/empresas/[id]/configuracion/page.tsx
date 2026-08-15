@@ -271,6 +271,20 @@ export default function ConfiguracionPage() {
               }
             }
 
+            const tieneAsistente =
+              empresaTieneFuncion(
+                empresa,
+                "asistente_ia",
+              );
+
+            if (!tieneAsistente) {
+              setAsistenteHabilitado(false);
+              router.replace(
+                `/empresas/${empresaIdSeguro}/dashboard`,
+              );
+              return;
+            }
+
             const configuracion: ConfiguracionInicial = {
               nombre:
                 empresa.agente?.nombre ||
@@ -307,12 +321,7 @@ export default function ConfiguracionPage() {
 
             setUser(currentUser);
             setAccesoVerificado(true);
-            setAsistenteHabilitado(
-              empresaTieneFuncion(
-                empresa,
-                "asistente_ia",
-              ),
-            );
+            setAsistenteHabilitado(true);
 
             setEmpresaNombre(
               empresa.nombre || "",

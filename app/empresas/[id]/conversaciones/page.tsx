@@ -9,6 +9,7 @@ import {
 import {
   collection,
   doc,
+  getDoc,
   onSnapshot,
   orderBy,
   query,
@@ -17,6 +18,10 @@ import {
 } from "firebase/firestore";
 
 import { auth, db } from "@/lib/firebase";
+import {
+  empresaTieneFuncion,
+  type PlanId,
+} from "@/lib/plans/planAccess";
 import Avatar from "@/components/Ui/Avatar";
 import Badge from "@/components/Ui/Badge";
 import Button from "@/components/Ui/Button";
@@ -48,6 +53,18 @@ type Conversacion = {
 
 type Filtro = "todas" | "hoy" | "abiertas";
 
+type EmpresaPlan = {
+  userId?: string;
+  plan?: PlanId;
+  subscriptionStatus?: string;
+  subscriptionEndsAt?: unknown;
+};
+
+type MiembroEmpresa = {
+  rol?: "administrador" | "supervisor" | "operador";
+  estado?: "activo" | "inactivo";
+};
+
 export default function ConversacionesPage() {
   const params = useParams();
   const router = useRouter();
@@ -66,6 +83,10 @@ export default function ConversacionesPage() {
   const [eliminando, setEliminando] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [authCargando, setAuthCargando] = useState(true);
+  const [
+    consultasHabilitadas,
+    setConsultasHabilitadas,
+  ] = useState<boolean | null>(null);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(
@@ -73,18 +94,145 @@ export default function ConversacionesPage() {
       (currentUser) => {
         if (!currentUser) {
           setUser(null);
+          setConsultasHabilitadas(null);
           setAuthCargando(false);
           router.replace("/login");
           return;
         }
 
         setUser(currentUser);
+        setConsultasHabilitadas(null);
         setAuthCargando(false);
       }
     );
 
     return () => unsubscribeAuth();
   }, [router]);
+
+  useEffect(() => {
+    if (
+      authCargando ||
+      !user ||
+      !empresaId
+    ) {
+      return;
+    }
+
+    const empresaIdSeguro = empresaId;
+    const userUid = user.uid;
+    let cancelado = false;
+
+    async function verificarPlan() {
+      try {
+        const empresaSnapshot =
+          await getDoc(
+            doc(
+              db,
+              "companies",
+              empresaIdSeguro,
+            ),
+          );
+
+        if (cancelado) {
+          return;
+        }
+
+        if (!empresaSnapshot.exists()) {
+          setError(
+            "La empresa no existe.",
+          );
+          setConsultasHabilitadas(false);
+          setLoading(false);
+          return;
+        }
+
+        const empresa =
+          empresaSnapshot.data() as EmpresaPlan;
+
+        let tieneAccesoEmpresa =
+          empresa.userId === userUid;
+
+        if (!tieneAccesoEmpresa) {
+          const miembroSnapshot =
+            await getDoc(
+              doc(
+                db,
+                "companies",
+                empresaIdSeguro,
+                "members",
+                userUid,
+              ),
+            );
+
+          if (cancelado) {
+            return;
+          }
+
+          if (!miembroSnapshot.exists()) {
+            setConsultasHabilitadas(false);
+            setLoading(false);
+            router.replace("/empresas");
+            return;
+          }
+
+          const miembro =
+            miembroSnapshot.data() as MiembroEmpresa;
+
+          tieneAccesoEmpresa =
+            miembro.estado === "activo" &&
+            Boolean(miembro.rol);
+
+          if (!tieneAccesoEmpresa) {
+            setConsultasHabilitadas(false);
+            setLoading(false);
+            router.replace("/empresas");
+            return;
+          }
+        }
+
+        const habilitadas =
+          empresaTieneFuncion(
+            empresa,
+            "asistente_ia",
+          );
+
+        if (!habilitadas) {
+          setConsultasHabilitadas(false);
+          setLoading(false);
+          router.replace(
+            `/empresas/${empresaIdSeguro}/dashboard`,
+          );
+          return;
+        }
+
+        setConsultasHabilitadas(true);
+      } catch (firebaseError) {
+        console.error(
+          "Error al verificar acceso a Consultas:",
+          firebaseError,
+        );
+
+        if (!cancelado) {
+          setError(
+            "No se pudo verificar el acceso a Consultas.",
+          );
+          setConsultasHabilitadas(false);
+          setLoading(false);
+        }
+      }
+    }
+
+    void verificarPlan();
+
+    return () => {
+      cancelado = true;
+    };
+  }, [
+    authCargando,
+    empresaId,
+    router,
+    user,
+  ]);
 
   useEffect(() => {
   if (!empresaId) {
@@ -100,6 +248,13 @@ export default function ConversacionesPage() {
 
   if (!user) {
     setLoading(false);
+    return;
+  }
+
+  if (consultasHabilitadas !== true) {
+    setLoading(
+      consultasHabilitadas === null
+    );
     return;
   }
 
@@ -148,12 +303,20 @@ export default function ConversacionesPage() {
   );
 
   return () => unsubscribe();
-}, [authCargando, empresaId, user]);
+}, [
+  authCargando,
+  consultasHabilitadas,
+  empresaId,
+  user,
+]);
 
 async function cambiarFavorita(
   conversacion: Conversacion
 ) {
-  if (!empresaId) {
+  if (
+    !empresaId ||
+    consultasHabilitadas !== true
+  ) {
     return;
   }
 
@@ -185,7 +348,12 @@ async function cambiarFavorita(
 async function eliminarConversacion(
   conversacion: Conversacion
 ) {
-  if (!empresaId) return;
+  if (
+    !empresaId ||
+    consultasHabilitadas !== true
+  ) {
+    return;
+  }
 
   const confirmar = window.confirm(
     "¿Seguro que querés eliminar esta consulta y todos sus mensajes? Esta acción no se puede deshacer."

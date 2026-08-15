@@ -1,7 +1,5 @@
-import {
-  createHmac,
-  randomUUID,
-} from "node:crypto";
+import { getUploadAuthParams } from "@imagekit/next/server";
+
 import {
   NextRequest,
   NextResponse,
@@ -12,7 +10,24 @@ import {
   adminDb,
 } from "@/lib/firebaseAdmin";
 
+import {
+  empresaTieneSuscripcionActiva,
+  type PlanId,
+} from "@/lib/plans/planAccess";
+
 export const runtime = "nodejs";
+
+type Empresa = {
+  userId?: string;
+  plan?: PlanId;
+  subscriptionStatus?: string;
+  subscriptionEndsAt?: unknown;
+};
+
+type RolConSubida =
+  | "propietario"
+  | "administrador"
+  | "supervisor";
 
 function obtenerBearerToken(
   request: NextRequest,
@@ -34,6 +49,129 @@ function obtenerBearerToken(
   return authorization
     .slice("Bearer ".length)
     .trim();
+}
+
+function esIdFirestoreValido(
+  valor: string,
+) {
+  return (
+    valor.length > 0 &&
+    valor.length <= 200 &&
+    !valor.includes("/") &&
+    !valor.includes("\0")
+  );
+}
+
+async function verificarAccesoSubida({
+  empresaId,
+  uid,
+}: {
+  empresaId: string;
+  uid: string;
+}): Promise<{
+  permitido: boolean;
+  status: number;
+  error: string;
+  empresa: Empresa | null;
+  rol: RolConSubida | null;
+}> {
+  const empresaReferencia =
+    adminDb
+      .collection("companies")
+      .doc(empresaId);
+
+  const empresaSnapshot =
+    await empresaReferencia.get();
+
+  if (!empresaSnapshot.exists) {
+    return {
+      permitido: false,
+      status: 404,
+      error:
+        "La empresa no existe.",
+      empresa: null,
+      rol: null,
+    };
+  }
+
+  const empresa =
+    empresaSnapshot.data() as Empresa;
+
+  if (
+    !empresaTieneSuscripcionActiva(
+      empresa,
+    )
+  ) {
+    return {
+      permitido: false,
+      status: 403,
+      error:
+        "Necesitás una suscripción activa para subir imágenes.",
+      empresa,
+      rol: null,
+    };
+  }
+
+  if (
+    empresa.userId === uid
+  ) {
+    return {
+      permitido: true,
+      status: 200,
+      error: "",
+      empresa,
+      rol: "propietario",
+    };
+  }
+
+  const miembroSnapshot =
+    await empresaReferencia
+      .collection("members")
+      .doc(uid)
+      .get();
+
+  if (!miembroSnapshot.exists) {
+    return {
+      permitido: false,
+      status: 403,
+      error:
+        "No tenés permiso para subir imágenes de esta empresa.",
+      empresa: null,
+      rol: null,
+    };
+  }
+
+  const miembro =
+    miembroSnapshot.data();
+
+  const rol =
+    miembro?.rol;
+
+  const permitido =
+    miembro?.estado === "activo" &&
+    (
+      rol === "administrador" ||
+      rol === "supervisor"
+    );
+
+  if (!permitido) {
+    return {
+      permitido: false,
+      status: 403,
+      error:
+        "No tenés permiso para subir imágenes de esta empresa.",
+      empresa: null,
+      rol: null,
+    };
+  }
+
+  return {
+    permitido: true,
+    status: 200,
+    error: "",
+    empresa,
+    rol,
+  };
 }
 
 export async function GET(
@@ -61,6 +199,7 @@ export async function GET(
       usuario =
         await adminAuth.verifyIdToken(
           idToken,
+          true,
         );
     } catch {
       return NextResponse.json(
@@ -79,11 +218,15 @@ export async function GET(
         .get("empresaId")
         ?.trim() || "";
 
-    if (!empresaId) {
+    if (
+      !esIdFirestoreValido(
+        empresaId,
+      )
+    ) {
       return NextResponse.json(
         {
           error:
-            "Falta identificar la empresa.",
+            "empresaId inválido.",
         },
         {
           status: 400,
@@ -91,39 +234,21 @@ export async function GET(
       );
     }
 
-    const empresaReferencia =
-      adminDb
-        .collection("companies")
-        .doc(empresaId);
+    const acceso =
+      await verificarAccesoSubida({
+        empresaId,
+        uid: usuario.uid,
+      });
 
-    const empresaSnapshot =
-      await empresaReferencia.get();
-
-    if (!empresaSnapshot.exists) {
+    if (!acceso.permitido) {
       return NextResponse.json(
         {
           error:
-            "La empresa no existe.",
+            acceso.error,
         },
         {
-          status: 404,
-        },
-      );
-    }
-
-    const empresa =
-      empresaSnapshot.data();
-
-    if (
-      empresa?.userId !== usuario.uid
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "No tenés permiso para subir imágenes de esta empresa.",
-        },
-        {
-          status: 403,
+          status:
+            acceso.status,
         },
       );
     }
@@ -164,28 +289,22 @@ export async function GET(
     }
 
     /*
-     * ImageKit requiere para uploads desde navegador:
-     * - token único
-     * - expire en Unix seconds (< 1 hora)
-     * - signature HMAC-SHA1(token + expire)
-     *
-     * La private key queda solamente en el servidor.
+     * La private key nunca sale del servidor.
+     * La firma de subida es temporal y solamente
+     * se entrega después de validar:
+     * - sesión,
+     * - acceso a la empresa,
+     * - rol,
+     * - suscripción activa.
      */
-    const token = randomUUID();
-
-    const expire =
-      Math.floor(Date.now() / 1000) +
-      30 * 60;
-
-    const signature =
-      createHmac(
-        "sha1",
-        privateKey,
-      )
-        .update(
-          `${token}${expire}`,
-        )
-        .digest("hex");
+    const {
+      token,
+      expire,
+      signature,
+    } = getUploadAuthParams({
+      privateKey,
+      publicKey,
+    });
 
     return NextResponse.json(
       {
