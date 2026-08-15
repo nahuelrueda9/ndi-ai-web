@@ -7,8 +7,8 @@ import {
   Building2,
   CalendarDays,
   Check,
-  Clock3,
   FileText,
+  Globe2,
   MapPin,
   MessageCircle,
   Package,
@@ -321,79 +321,63 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* MOCKUP */}
+          {/* VISTA PREVIA */}
           <div className="relative mx-auto w-full max-w-xl lg:max-w-none">
             <div className="absolute -inset-6 rounded-[2.5rem] bg-blue-600/10 blur-3xl" />
 
             <div className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900 shadow-2xl sm:rounded-3xl">
-              <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3.5 sm:px-5 sm:py-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 sm:h-10 sm:w-10 sm:rounded-xl">
-                    <Building2 className="h-4 w-4 sm:h-5 sm:w-5" />
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-semibold text-white sm:text-base">
-                      Estudio Norte
-                    </p>
-                    <p className="mt-0.5 text-[11px] text-zinc-500 sm:text-xs">
-                      Página del negocio
-                    </p>
-                  </div>
+              <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3 sm:px-5">
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-zinc-700" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-zinc-700" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-zinc-700" />
                 </div>
 
-                <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-medium text-emerald-400 sm:px-3 sm:text-xs">
-                  Disponible
-                </span>
-              </div>
-
-              <div className="border-b border-zinc-800 bg-gradient-to-br from-blue-600/20 via-zinc-900 to-zinc-950 px-4 py-6 sm:px-6 sm:py-8">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-300 sm:text-xs">
-                  Tu negocio online
-                </p>
-
-                <p className="mt-2 max-w-lg text-xl font-bold leading-tight text-white sm:text-2xl">
-                  Todo lo importante, claro y fácil de encontrar.
-                </p>
-
-                <p className="mt-2 max-w-lg text-xs leading-5 text-zinc-400 sm:text-sm sm:leading-6">
-                  Servicios, horarios, ubicación y contacto en una experiencia pensada
-                  para tus clientes.
+                <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-zinc-500 sm:text-xs">
+                  Ejemplo de página NDI AI
                 </p>
               </div>
 
-              <div className="grid grid-cols-3 gap-2.5 p-3.5 sm:gap-3 sm:p-5">
-                {[
-                  ["Servicios", Package],
-                  ["Horarios", Clock3],
-                  ["WhatsApp", MessageCircle],
-                ].map(([titulo, Icono]) => (
-                  <div
-                    key={titulo as string}
-                    className="rounded-xl border border-zinc-800 bg-zinc-950 px-2 py-3 text-center sm:px-3 sm:py-4"
-                  >
-                    <Icono className="mx-auto h-4 w-4 text-blue-400 sm:h-5 sm:w-5" />
-
-                    <p className="mt-2 text-[11px] font-medium text-zinc-200 sm:text-sm">
-                      {titulo as string}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="border-t border-zinc-800 px-4 py-3 sm:px-5">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-[11px] font-medium text-zinc-200 sm:text-sm">
-                      ¿Querés sumar más funciones?
-                    </p>
-                    <p className="mt-0.5 text-[10px] text-zinc-500 sm:text-xs">
-                      Turnos, reservas, pedidos e inteligencia artificial.
-                    </p>
+              <div className="relative min-h-[290px] bg-gradient-to-br from-blue-600/15 via-zinc-950 to-zinc-900 p-5 sm:min-h-[390px] sm:p-8">
+                <div className="mx-auto flex max-w-lg flex-col items-center justify-center text-center">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-blue-500/20 bg-blue-500/10 text-blue-400 sm:h-12 sm:w-12">
+                    <Globe2 className="h-5 w-5 sm:h-6 sm:w-6" />
                   </div>
 
-                  <Sparkles className="h-4 w-4 shrink-0 text-blue-400 sm:h-5 sm:w-5" />
+                  <p className="mt-5 text-xs font-semibold uppercase tracking-[0.18em] text-blue-400">
+                    Tu página puede verse así
+                  </p>
+
+                  <h2 className="mt-2 max-w-md text-2xl font-bold leading-tight text-white sm:text-3xl">
+                    Una página clara, profesional y pensada para tu negocio.
+                  </h2>
+
+                  <p className="mt-3 max-w-md text-sm leading-6 text-zinc-400">
+                    Acá podés mostrar una captura real de uno de tus proyectos:
+                    servicios, productos, horarios, ubicación, reservas o contacto.
+                  </p>
+
+                  <div className="mt-6 grid w-full max-w-md grid-cols-3 gap-2.5">
+                    {[
+                      "Servicios",
+                      "Ubicación",
+                      "Contacto",
+                    ].map((item) => (
+                      <div
+                        key={item}
+                        className="rounded-xl border border-zinc-800 bg-zinc-950/80 px-2 py-3 text-[11px] font-medium text-zinc-300 sm:text-xs"
+                      >
+                        {item}
+                      </div>
+                    ))}
+                  </div>
                 </div>
+              </div>
+
+              <div className="border-t border-zinc-800 px-4 py-3 text-center sm:px-5">
+                <p className="text-[11px] text-zinc-500 sm:text-xs">
+                  Reemplazá esta vista por una captura real de una página creada con NDI AI.
+                </p>
               </div>
             </div>
           </div>
