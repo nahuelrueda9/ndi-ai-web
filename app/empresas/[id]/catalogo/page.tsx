@@ -70,6 +70,8 @@ interface CatalogoItem {
   imagenUrl?: string;
   imagenes?: string[];
   categoria?: string;
+  talles?: string[];
+  colores?: string[];
   activo: boolean;
   createdAt?: Timestamp;
 }
@@ -116,6 +118,10 @@ export default function CatalogoPage() {
   const [duracion, setDuracion] = useState("");
   const [categoria, setCategoria] =
     useState("principal");
+  const [talles, setTalles] =
+    useState("");
+  const [colores, setColores] =
+    useState("");
   const [imagenes, setImagenes] =
     useState<string[]>([]);
   const [subiendoImagen, setSubiendoImagen] =
@@ -307,6 +313,16 @@ export default function CatalogoPage() {
     rubroNormalizado === "restaurante" ||
     rubroNormalizado === "restaurant";
 
+  const esTienda =
+    [
+      "tienda",
+      "tienda de ropa",
+      "indumentaria",
+      "ropa",
+    ].includes(
+      rubroNormalizado,
+    );
+
   const limiteImagenes =
     puedeUsarProductos ? 3 : 1;
 
@@ -318,6 +334,8 @@ export default function CatalogoPage() {
     setPrecio("");
     setDuracion("");
     setCategoria("principal");
+    setTalles("");
+    setColores("");
     setImagenes([]);
     setSubiendoImagen(false);
     setError("");
@@ -355,6 +373,30 @@ export default function CatalogoPage() {
     setCategoria(
       item.categoria?.trim() ||
         "principal",
+    );
+
+    setTalles(
+      Array.isArray(item.talles)
+        ? item.talles
+            .filter(
+              (talle): talle is string =>
+                typeof talle === "string" &&
+                talle.trim().length > 0,
+            )
+            .join(", ")
+        : "",
+    );
+
+    setColores(
+      Array.isArray(item.colores)
+        ? item.colores
+            .filter(
+              (color): color is string =>
+                typeof color === "string" &&
+                color.trim().length > 0,
+            )
+            .join(", ")
+        : "",
     );
 
     const imagenesGuardadas =
@@ -662,6 +704,42 @@ export default function CatalogoPage() {
       }
     }
 
+    const tallesNormalizados =
+      esTienda &&
+      tipo === "producto" &&
+      puedeUsarProductos
+        ? talles
+            .split(",")
+            .map((talle) =>
+              talle.trim(),
+            )
+            .filter(Boolean)
+            .filter(
+              (talle, indice, lista) =>
+                lista.indexOf(talle) ===
+                indice,
+            )
+            .slice(0, 20)
+        : [];
+
+    const coloresNormalizados =
+      esTienda &&
+      tipo === "producto" &&
+      puedeUsarProductos
+        ? colores
+            .split(",")
+            .map((color) =>
+              color.trim(),
+            )
+            .filter(Boolean)
+            .filter(
+              (color, indice, lista) =>
+                lista.indexOf(color) ===
+                indice,
+            )
+            .slice(0, 20)
+        : [];
+
     setGuardando(true);
     setError("");
     setMensaje("");
@@ -681,10 +759,14 @@ export default function CatalogoPage() {
           tipo === "producto"
             ? categoria
             : "",
+        talles:
+          tallesNormalizados,
+        colores:
+          coloresNormalizados,
         imagenes:
           imagenes
             .filter(Boolean)
-            .slice(0, 3),
+            .slice(0, limiteImagenes),
         // Compatibilidad con datos/código anterior:
         imagenUrl:
           imagenes[0]?.trim() || "",
@@ -1073,6 +1155,52 @@ export default function CatalogoPage() {
 
                   <p className="text-xs leading-5 text-slate-500 dark:text-zinc-500">
                     Se usará para ordenar automáticamente la carta pública.
+                  </p>
+                </div>
+              )}
+
+            {esTienda &&
+              tipo === "producto" &&
+              puedeUsarProductos && (
+                <>
+                  <Input
+                    id="talles"
+                    label="Talles"
+                    value={talles}
+                    onChange={(event) =>
+                      setTalles(
+                        event.target.value,
+                      )
+                    }
+                    placeholder="S, M, L, XL"
+                  />
+
+                  <Input
+                    id="colores"
+                    label="Colores"
+                    value={colores}
+                    onChange={(event) =>
+                      setColores(
+                        event.target.value,
+                      )
+                    }
+                    placeholder="Negro, Blanco, Azul"
+                  />
+
+                  <div className="md:col-span-2 -mt-2">
+                    <p className="text-xs leading-5 text-slate-500 dark:text-zinc-500">
+                      Separá cada opción con una coma. Ejemplo: S, M, L, XL.
+                    </p>
+                  </div>
+                </>
+              )}
+
+            {esTienda &&
+              tipo === "producto" &&
+              !puedeUsarProductos && (
+                <div className="md:col-span-2 rounded-xl border border-blue-500/20 bg-blue-500/10 px-4 py-3">
+                  <p className="text-xs leading-5 text-slate-600 dark:text-zinc-400">
+                    Los talles, colores y variantes están disponibles desde Página Completa.
                   </p>
                 </div>
               )}

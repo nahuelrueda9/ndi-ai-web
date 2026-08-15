@@ -35,6 +35,8 @@ import {
   Package,
   ShoppingBag,
   Plug,
+  Menu,
+  X,
   type LucideIcon,
 } from "lucide-react";
 
@@ -170,6 +172,11 @@ export default function Sidebar() {
     cargandoRol,
     setCargandoRol,
   ] = useState(true);
+
+  const [
+    menuMobileAbierto,
+    setMenuMobileAbierto,
+  ] = useState(false);
 
   useEffect(() => {
     const cancelar =
@@ -483,6 +490,10 @@ export default function Sidebar() {
     );
 
   useEffect(() => {
+    setMenuMobileAbierto(false);
+  }, [pathname]);
+
+  useEffect(() => {
     if (
       cargandoRol ||
       !rol ||
@@ -547,76 +558,191 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-50 hidden w-72 flex-col overflow-y-auto border-r border-slate-200 bg-white text-slate-900 transition-colors dark:border-zinc-800 dark:bg-zinc-900 dark:text-white md:flex">
-      <Link
-        href={`/empresas/${empresaId}/dashboard`}
-        className="border-b border-slate-200 p-6 transition hover:bg-slate-100 dark:border-zinc-800 dark:hover:bg-zinc-800/40"
+    <>
+      {/* BOTÓN MOBILE */}
+      <button
+        type="button"
+        onClick={() =>
+          setMenuMobileAbierto(true)
+        }
+        className="fixed bottom-5 left-4 z-[70] inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-xl transition hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 md:hidden"
+        aria-label="Abrir menú del negocio"
       >
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600">
-            <Bot className="h-6 w-6 text-white" />
-          </div>
+        <Menu className="h-4 w-4" />
+        Menú
+      </button>
 
-          <div>
-            <p className="text-xs uppercase tracking-widest text-blue-600 dark:text-blue-400">
-              NDI AI
-            </p>
+      {/* OVERLAY MOBILE */}
+      {menuMobileAbierto && (
+        <button
+          type="button"
+          aria-label="Cerrar menú"
+          onClick={() =>
+            setMenuMobileAbierto(false)
+          }
+          className="fixed inset-0 z-[79] bg-black/55 backdrop-blur-[2px] md:hidden"
+        />
+      )}
 
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-              Negocio
-            </h2>
-          </div>
+      {/* DRAWER MOBILE */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-[80] flex w-[86vw] max-w-[320px] flex-col overflow-y-auto border-r border-slate-200 bg-white text-slate-900 shadow-2xl transition-transform duration-200 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white md:hidden ${
+          menuMobileAbierto
+            ? "translate-x-0"
+            : "-translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between border-b border-slate-200 p-4 dark:border-zinc-800">
+          <Link
+            href={`/empresas/${empresaId}/dashboard`}
+            className="flex items-center gap-3"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600">
+              <Bot className="h-5 w-5 text-white" />
+            </div>
+
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-blue-600 dark:text-blue-400">
+                NDI AI
+              </p>
+
+              <p className="text-sm font-bold text-slate-900 dark:text-white">
+                Panel del negocio
+              </p>
+            </div>
+          </Link>
+
+          <button
+            type="button"
+            onClick={() =>
+              setMenuMobileAbierto(false)
+            }
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            aria-label="Cerrar menú"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
-      </Link>
 
-      <nav className="flex-1 space-y-2 p-4">
-        {itemsPermitidos.map(
-          (item) => {
-            const href = obtenerHrefMenu(
-              empresaId,
-              item.ruta,
-            );
-
-            return (
-              <NavItem
-                key={`${item.label}-${href}`}
-                label={item.label}
-                href={href}
-                icon={item.icon}
-                activo={rutaEstaActiva(
-                  pathname,
-                  href,
+        <nav className="flex-1 space-y-1.5 p-3">
+          {itemsPermitidos.map(
+            (item) => {
+              const href =
+                obtenerHrefMenu(
+                  empresaId,
                   item.ruta,
-                )}
-              />
-            );
-          },
-        )}
-      </nav>
+                );
 
-      <div className="border-t border-slate-200 p-4 dark:border-zinc-800">
-        <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
-          <div className="flex items-center gap-3">
-            <div className="h-3 w-3 rounded-full bg-emerald-500" />
+              return (
+                <NavItem
+                  key={`mobile-${item.label}-${href}`}
+                  label={item.label}
+                  href={href}
+                  icon={item.icon}
+                  activo={rutaEstaActiva(
+                    pathname,
+                    href,
+                    item.ruta,
+                  )}
+                />
+              );
+            },
+          )}
+        </nav>
 
-            <span className="text-sm text-slate-900 dark:text-white">
-              Panel del negocio
-            </span>
+        <div className="border-t border-slate-200 p-3 dark:border-zinc-800">
+          <div className="mb-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950">
+            <div className="flex items-center gap-2">
+              <div className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+
+              <span className="text-sm font-medium text-slate-900 dark:text-white">
+                {NOMBRE_ROL[rol]}
+              </span>
+            </div>
           </div>
 
-          <p className="mt-2 text-xs text-slate-500 dark:text-zinc-500">
-            {NOMBRE_ROL[rol]}
-          </p>
+          <Link
+            href="/empresas"
+            className="flex items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+          >
+            <Building2 className="h-4 w-4" />
+            Volver a empresas
+          </Link>
         </div>
+      </aside>
 
+      {/* SIDEBAR DESKTOP */}
+      <aside className="fixed inset-y-0 left-0 z-50 hidden w-72 flex-col overflow-y-auto border-r border-slate-200 bg-white text-slate-900 transition-colors dark:border-zinc-800 dark:bg-zinc-900 dark:text-white md:flex">
         <Link
-          href="/empresas"
-          className="flex items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+          href={`/empresas/${empresaId}/dashboard`}
+          className="border-b border-slate-200 p-6 transition hover:bg-slate-100 dark:border-zinc-800 dark:hover:bg-zinc-800/40"
         >
-          <Building2 className="h-4 w-4" />
-          Volver a empresas
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600">
+              <Bot className="h-6 w-6 text-white" />
+            </div>
+
+            <div>
+              <p className="text-xs uppercase tracking-widest text-blue-600 dark:text-blue-400">
+                NDI AI
+              </p>
+
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                Negocio
+              </h2>
+            </div>
+          </div>
         </Link>
-      </div>
-    </aside>
+
+        <nav className="flex-1 space-y-2 p-4">
+          {itemsPermitidos.map(
+            (item) => {
+              const href = obtenerHrefMenu(
+                empresaId,
+                item.ruta,
+              );
+
+              return (
+                <NavItem
+                  key={`${item.label}-${href}`}
+                  label={item.label}
+                  href={href}
+                  icon={item.icon}
+                  activo={rutaEstaActiva(
+                    pathname,
+                    href,
+                    item.ruta,
+                  )}
+                />
+              );
+            },
+          )}
+        </nav>
+
+        <div className="border-t border-slate-200 p-4 dark:border-zinc-800">
+          <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
+            <div className="flex items-center gap-3">
+              <div className="h-3 w-3 rounded-full bg-emerald-500" />
+
+              <span className="text-sm text-slate-900 dark:text-white">
+                Panel del negocio
+              </span>
+            </div>
+
+            <p className="mt-2 text-xs text-slate-500 dark:text-zinc-500">
+              {NOMBRE_ROL[rol]}
+            </p>
+          </div>
+
+          <Link
+            href="/empresas"
+            className="flex items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+          >
+            <Building2 className="h-4 w-4" />
+            Volver a empresas
+          </Link>
+        </div>
+      </aside>
+    </>
   );
 }

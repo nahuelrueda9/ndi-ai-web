@@ -109,6 +109,8 @@ interface CatalogoItem {
   imagenUrl?: string;
   imagenes?: string[];
   categoria?: string;
+  talles?: string[];
+  colores?: string[];
   activo?: boolean;
 }
 
@@ -1172,7 +1174,7 @@ export default async function NegocioPage({
             </p>
           </div>
 
-          <div className="mt-5 grid sm:mt-8 grid-cols-2 gap-3 sm:mt-10 sm:gap-5 md:grid-cols-2 lg:mt-5 lg:grid-cols-3 lg:gap-3 xl:grid-cols-4">
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-4 md:grid-cols-2 lg:mt-5 lg:grid-cols-3 lg:gap-4">
             {servicios.map((servicio) => (
               <CatalogoCard
                 key={servicio.id}
@@ -1273,7 +1275,7 @@ export default async function NegocioPage({
               }
             />
           ) : (
-            <div className="mt-5 grid sm:mt-8 grid-cols-2 gap-3 sm:mt-10 sm:gap-5 md:grid-cols-2 lg:mt-5 lg:grid-cols-3 lg:gap-3 xl:grid-cols-4">
+            <div className="mt-5 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-4 md:grid-cols-2 lg:mt-5 lg:grid-cols-3 lg:gap-4">
               {productos.map(
                 (producto) => (
                   <CatalogoCard
@@ -2199,7 +2201,7 @@ function CatalogoCard({
     >
       {imagenesItem.length > 0 && (
         <div
-          className={`relative aspect-[4/3] overflow-hidden border-b sm:aspect-[16/9] lg:h-[132px] lg:aspect-auto xl:h-[120px] ${
+          className={`relative aspect-[4/3] overflow-hidden border-b ${
             claro
               ? "border-slate-200 bg-slate-100"
               : "border-zinc-800 bg-zinc-950"
@@ -2227,22 +2229,10 @@ function CatalogoCard({
         </div>
       )}
 
-      <div className="flex flex-1 flex-col p-2.5 sm:p-5 lg:p-3.5">
-        <h3 className="line-clamp-2 text-[13px] font-semibold leading-4 sm:text-lg sm:leading-6 lg:text-[15px] lg:leading-5">
+      <div className="flex flex-1 flex-col p-3 sm:p-4">
+        <h3 className="line-clamp-2 text-[13px] font-semibold leading-[1.25] sm:text-base sm:leading-5">
           {item.nombre}
         </h3>
-
-        {item.descripcion && (
-          <p
-            className={`mt-2 flex-1 text-[11px] leading-4 sm:text-sm sm:leading-6 ${
-              claro
-                ? "text-slate-600"
-                : "text-zinc-400"
-            }`}
-          >
-            {item.descripcion}
-          </p>
-        )}
 
         <div
           className={`mt-3 flex flex-wrap items-end justify-between gap-2 border-t pt-3 sm:mt-4 sm:gap-3 sm:pt-4 ${
@@ -2268,7 +2258,7 @@ function CatalogoCard({
                 </p>
 
                 <p
-                  className="mt-0.5 text-sm font-bold sm:mt-1 sm:text-xl lg:text-base"
+                  className="mt-0.5 text-sm font-bold sm:mt-1 sm:text-lg"
                   style={{
                     color,
                   }}
@@ -2337,8 +2327,161 @@ function CatalogoCard({
 
         {(puedeReservar ||
           whatsappItemUrl ||
-          mostrarContacto) && (
+          mostrarContacto ||
+          (esTienda &&
+            item.tipo === "producto") ||
+          (esAlojamiento &&
+            item.tipo === "servicio")) && (
           <div className="mt-3 flex flex-wrap gap-1.5 sm:mt-4 sm:gap-2">
+            {esAlojamiento &&
+              item.tipo === "servicio" && (
+                <>
+                  <a
+                    href={`#detalle-habitacion-${item.id}`}
+                    className="inline-flex flex-1 items-center justify-center rounded-lg border px-2 py-2 text-xs font-semibold transition hover:-translate-y-0.5 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
+                    style={{
+                      borderColor: `${color}55`,
+                      color,
+                    }}
+                  >
+                    Ver habitación
+                  </a>
+
+                  <div
+                    id={`detalle-habitacion-${item.id}`}
+                    className="fixed inset-0 z-[120] hidden items-center justify-center bg-black/70 p-3 backdrop-blur-sm target:flex sm:p-6"
+                  >
+                    <a
+                      href="#servicios"
+                      aria-label="Cerrar detalle de habitación"
+                      className="absolute inset-0 cursor-default"
+                    />
+
+                    <div
+                      className={`relative z-10 max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl border shadow-2xl sm:rounded-3xl ${
+                        claro
+                          ? "border-slate-200 bg-white text-slate-950"
+                          : "border-zinc-700 bg-zinc-900 text-white"
+                      }`}
+                    >
+                      <div
+                        className={`sticky top-0 z-20 flex items-center justify-between gap-3 border-b px-4 py-3 backdrop-blur sm:px-5 ${
+                          claro
+                            ? "border-slate-200 bg-white/95"
+                            : "border-zinc-800 bg-zinc-900/95"
+                        }`}
+                      >
+                        <div>
+                          <p
+                            className="text-[10px] font-semibold uppercase tracking-[0.16em]"
+                            style={{ color }}
+                          >
+                            Habitación
+                          </p>
+                          <h3 className="mt-0.5 text-base font-bold sm:text-lg">
+                            {item.nombre}
+                          </h3>
+                        </div>
+
+                        <a
+                          href="#servicios"
+                          aria-label="Cerrar"
+                          className={`inline-flex h-9 w-9 items-center justify-center rounded-full border text-lg leading-none transition ${
+                            claro
+                              ? "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"
+                              : "border-zinc-700 bg-zinc-950 text-zinc-300 hover:bg-zinc-800"
+                          }`}
+                        >
+                          ×
+                        </a>
+                      </div>
+
+                      {imagenesItem.length > 0 && (
+                        <div className="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                          {imagenesItem.map(
+                            (url, indice) => (
+                              <img
+                                key={`detalle-${url}-${indice}`}
+                                src={url}
+                                alt={`${item.nombre} - foto ${indice + 1}`}
+                                className="aspect-[4/3] w-full shrink-0 snap-center object-cover sm:aspect-[16/9]"
+                              />
+                            ),
+                          )}
+                        </div>
+                      )}
+
+                      <div className="p-4 sm:p-6">
+                        {item.descripcion && (
+                          <p
+                            className={`text-sm leading-6 sm:text-base sm:leading-7 ${
+                              claro
+                                ? "text-slate-600"
+                                : "text-zinc-300"
+                            }`}
+                          >
+                            {item.descripcion}
+                          </p>
+                        )}
+
+                        <div
+                          className={`mt-5 flex flex-wrap items-center justify-between gap-3 border-t pt-4 ${
+                            claro
+                              ? "border-slate-200"
+                              : "border-zinc-800"
+                          }`}
+                        >
+                          {Boolean(item.precio) && (
+                            <div>
+                              <p
+                                className={`text-[10px] uppercase tracking-wide sm:text-xs ${
+                                  claro
+                                    ? "text-slate-400"
+                                    : "text-zinc-500"
+                                }`}
+                              >
+                                Precio por noche
+                              </p>
+
+                              <p
+                                className="mt-1 text-xl font-bold sm:text-2xl"
+                                style={{ color }}
+                              >
+                                ${Number(item.precio).toLocaleString("es-AR")}
+                                <span
+                                  className={`ml-1 text-xs font-medium sm:text-sm ${
+                                    claro
+                                      ? "text-slate-500"
+                                      : "text-zinc-400"
+                                  }`}
+                                >
+                                  / noche
+                                </span>
+                              </p>
+                            </div>
+                          )}
+
+                          {puedeReservar && (
+                            <a
+                              href={`#reservar-servicio-${encodeURIComponent(
+                                item.id,
+                              )}`}
+                              className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-110"
+                              style={{
+                                backgroundColor: color,
+                              }}
+                            >
+                              <Clock3 className="h-4 w-4" />
+                              Reservar habitación
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+
             {esTienda &&
               item.tipo ===
                 "producto" && (
@@ -2370,6 +2513,34 @@ function CatalogoCard({
                                 "string",
                           )
                         : [],
+                    talles:
+                      Array.isArray(
+                        item.talles,
+                      )
+                        ? item.talles.filter(
+                            (
+                              talle,
+                            ): talle is string =>
+                              typeof talle ===
+                                "string" &&
+                              talle.trim().length >
+                                0,
+                          )
+                        : [],
+                    colores:
+                      Array.isArray(
+                        item.colores,
+                      )
+                        ? item.colores.filter(
+                            (
+                              color,
+                            ): color is string =>
+                              typeof color ===
+                                "string" &&
+                              color.trim().length >
+                                0,
+                          )
+                        : [],
                   }}
                   colorPrincipal={
                     color
@@ -2387,23 +2558,22 @@ function CatalogoCard({
                 />
               )}
 
-            {puedeReservar && (
-              <a
-                href={`#reservar-servicio-${encodeURIComponent(
-                  item.id,
-                )}`}
-                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-semibold text-white shadow-sm transition hover:opacity-90 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm lg:px-3 lg:py-1.5 lg:text-xs"
-                style={{
-                  backgroundColor:
-                    color,
-                }}
-              >
-                <Clock3 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                {esAlojamiento
-                  ? "Reservar habitación"
-                  : "Reservar"}
-              </a>
-            )}
+            {puedeReservar &&
+              !esAlojamiento && (
+                <a
+                  href={`#reservar-servicio-${encodeURIComponent(
+                    item.id,
+                  )}`}
+                  className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-semibold text-white shadow-sm transition hover:opacity-90 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
+                  style={{
+                    backgroundColor:
+                      color,
+                  }}
+                >
+                  <Clock3 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  Reservar
+                </a>
+              )}
 
             {!puedeReservar &&
               !esTienda &&

@@ -167,6 +167,13 @@ export default function RestauranteCartaPedidos({
   );
 
   const [
+    productoDetalle,
+    setProductoDetalle,
+  ] = useState<Producto | null>(
+    null,
+  );
+
+  const [
     carritoAbierto,
     setCarritoAbierto,
   ] = useState(false);
@@ -595,7 +602,7 @@ export default function RestauranteCartaPedidos({
                       >
                         {imagenes.length >
                           0 && (
-                          <div className="relative aspect-[4/3] overflow-hidden sm:aspect-[16/9]">
+                          <div className="relative aspect-[4/3] overflow-hidden">
                             <div className="flex h-full w-full snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                               {imagenes.map(
                                 (
@@ -627,42 +634,50 @@ export default function RestauranteCartaPedidos({
                           </div>
                         )}
 
-                        <div className="p-3 sm:p-5">
-                          <h4 className="text-sm font-bold leading-snug sm:text-base">
-                            {
-                              producto.nombre
-                            }
+                        <div className="p-3 sm:p-4">
+                          <h4 className="line-clamp-2 text-sm font-bold leading-snug sm:text-base">
+                            {producto.nombre}
                           </h4>
 
-                          {producto.descripcion && (
-                            <p
-                              className={`mt-1.5 line-clamp-3 text-[11px] leading-5 sm:text-sm sm:leading-6 ${claseSecundario}`}
-                            >
-                              {
-                                producto.descripcion
-                              }
-                            </p>
-                          )}
-
-                          <div className="mt-3 flex items-end justify-between gap-2">
-                            <p className="text-sm font-bold sm:text-lg">
-                              {formatoPrecio(
-                                Math.max(
-                                  0,
-                                  Number(
-                                    producto.precio ||
-                                      0,
-                                  ),
+                          <p
+                            className="mt-2 text-sm font-bold sm:text-lg"
+                            style={{
+                              color:
+                                colorPrincipal,
+                            }}
+                          >
+                            {formatoPrecio(
+                              Math.max(
+                                0,
+                                Number(
+                                  producto.precio ||
+                                    0,
                                 ),
-                              )}
-                            </p>
-                          </div>
+                              ),
+                            )}
+                          </p>
 
-                          {pedidosHabilitados ? (
-                            itemCarrito ? (
-                              <div className="mt-3 flex items-center justify-between gap-2">
+                          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setProductoDetalle(
+                                  producto,
+                                )
+                              }
+                              className={`inline-flex flex-1 items-center justify-center rounded-xl border px-3 py-2.5 text-xs font-semibold transition sm:text-sm ${
+                                esClaro
+                                  ? "border-slate-300 text-slate-700 hover:bg-slate-50"
+                                  : "border-zinc-700 text-zinc-200 hover:bg-zinc-800"
+                              }`}
+                            >
+                              Ver plato
+                            </button>
+
+                            {pedidosHabilitados ? (
+                              itemCarrito ? (
                                 <div
-                                  className={`inline-flex items-center rounded-xl border ${
+                                  className={`inline-flex flex-1 items-center justify-between rounded-xl border ${
                                     esClaro
                                       ? "border-slate-200"
                                       : "border-zinc-700"
@@ -676,16 +691,14 @@ export default function RestauranteCartaPedidos({
                                         -1,
                                       )
                                     }
-                                    className="flex h-9 w-9 items-center justify-center"
+                                    className="flex h-10 w-10 items-center justify-center"
                                     aria-label="Quitar una unidad"
                                   >
                                     <Minus className="h-3.5 w-3.5" />
                                   </button>
 
                                   <span className="min-w-7 text-center text-xs font-bold">
-                                    {
-                                      itemCarrito.cantidad
-                                    }
+                                    {itemCarrito.cantidad}
                                   </span>
 
                                   <button
@@ -696,60 +709,32 @@ export default function RestauranteCartaPedidos({
                                         1,
                                       )
                                     }
-                                    className="flex h-9 w-9 items-center justify-center"
+                                    className="flex h-10 w-10 items-center justify-center"
                                     aria-label="Agregar una unidad"
                                   >
                                     <Plus className="h-3.5 w-3.5" />
                                   </button>
                                 </div>
-
-                                <span
-                                  className="text-[10px] font-semibold sm:text-xs"
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    agregar(
+                                      producto,
+                                    )
+                                  }
+                                  className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-xs font-semibold text-white transition hover:brightness-110 sm:text-sm"
                                   style={{
-                                    color:
+                                    backgroundColor:
                                       colorPrincipal,
                                   }}
                                 >
-                                  En el pedido
-                                </span>
-                              </div>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  agregar(
-                                    producto,
-                                  )
-                                }
-                                className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-xs font-semibold text-white transition hover:brightness-110 sm:text-sm"
-                                style={{
-                                  backgroundColor:
-                                    colorPrincipal,
-                                }}
-                              >
-                                <Plus className="h-4 w-4" />
-                                Agregar
-                              </button>
-                            )
-                          ) : (
-                            mostrarWhatsApp &&
-                            whatsappUrl && (
-                              <a
-                                href={`${whatsappUrl}?text=${encodeURIComponent(
-                                  `Hola, quiero consultar por "${producto.nombre}" de la carta.`,
-                                )}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="mt-3 inline-flex text-xs font-semibold transition hover:opacity-75"
-                                style={{
-                                  color:
-                                    colorPrincipal,
-                                }}
-                              >
-                                Consultar por WhatsApp
-                              </a>
-                            )
-                          )}
+                                  <Plus className="h-4 w-4" />
+                                  Agregar
+                                </button>
+                              )
+                            ) : null}
+                          </div>
                         </div>
                       </article>
                     );
@@ -760,6 +745,217 @@ export default function RestauranteCartaPedidos({
           ),
         )}
       </div>
+
+      {productoDetalle && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/70 p-3 backdrop-blur-sm sm:p-6">
+          <button
+            type="button"
+            aria-label="Cerrar detalle"
+            className="absolute inset-0"
+            onClick={() =>
+              setProductoDetalle(
+                null,
+              )
+            }
+          />
+
+          <div
+            className={`relative z-10 max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl border shadow-2xl sm:rounded-3xl ${
+              esClaro
+                ? "border-slate-200 bg-white text-slate-950"
+                : "border-zinc-700 bg-zinc-900 text-white"
+            }`}
+          >
+            <div
+              className={`sticky top-0 z-20 flex items-center justify-between gap-3 border-b px-4 py-3 backdrop-blur sm:px-5 ${
+                esClaro
+                  ? "border-slate-200 bg-white/95"
+                  : "border-zinc-800 bg-zinc-900/95"
+              }`}
+            >
+              <div>
+                <p
+                  className="text-[10px] font-semibold uppercase tracking-[0.16em]"
+                  style={{
+                    color:
+                      colorPrincipal,
+                  }}
+                >
+                  Carta
+                </p>
+
+                <h3 className="mt-0.5 text-base font-bold sm:text-lg">
+                  {productoDetalle.nombre}
+                </h3>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setProductoDetalle(
+                    null,
+                  )
+                }
+                className={`flex h-9 w-9 items-center justify-center rounded-full border transition ${
+                  esClaro
+                    ? "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"
+                    : "border-zinc-700 bg-zinc-950 text-zinc-300 hover:bg-zinc-800"
+                }`}
+                aria-label="Cerrar"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {obtenerImagenes(
+              productoDetalle,
+            ).length > 0 && (
+              <div className="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {obtenerImagenes(
+                  productoDetalle,
+                ).map(
+                  (
+                    url,
+                    indice,
+                  ) => (
+                    <img
+                      key={`${url}-${indice}`}
+                      src={url}
+                      alt={`${productoDetalle.nombre} - foto ${indice + 1}`}
+                      className="aspect-[4/3] w-full shrink-0 snap-center object-cover sm:aspect-[16/9]"
+                    />
+                  ),
+                )}
+              </div>
+            )}
+
+            <div className="p-4 sm:p-6">
+              {productoDetalle.descripcion && (
+                <p
+                  className={`text-sm leading-6 sm:text-base sm:leading-7 ${claseSecundario}`}
+                >
+                  {productoDetalle.descripcion}
+                </p>
+              )}
+
+              <div
+                className={`mt-5 flex flex-col gap-4 border-t pt-4 sm:flex-row sm:items-center sm:justify-between ${
+                  esClaro
+                    ? "border-slate-200"
+                    : "border-zinc-800"
+                }`}
+              >
+                <p
+                  className="text-xl font-bold sm:text-2xl"
+                  style={{
+                    color:
+                      colorPrincipal,
+                  }}
+                >
+                  {formatoPrecio(
+                    Math.max(
+                      0,
+                      Number(
+                        productoDetalle.precio ||
+                          0,
+                      ),
+                    ),
+                  )}
+                </p>
+
+                {pedidosHabilitados ? (
+                  carrito.find(
+                    (item) =>
+                      item.id ===
+                      productoDetalle.id,
+                  ) ? (
+                    <div
+                      className={`inline-flex items-center justify-between rounded-xl border ${
+                        esClaro
+                          ? "border-slate-200"
+                          : "border-zinc-700"
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          cambiarCantidad(
+                            productoDetalle.id,
+                            -1,
+                          )
+                        }
+                        className="flex h-10 w-10 items-center justify-center"
+                        aria-label="Quitar una unidad"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </button>
+
+                      <span className="min-w-8 text-center text-sm font-bold">
+                        {
+                          carrito.find(
+                            (item) =>
+                              item.id ===
+                              productoDetalle.id,
+                          )?.cantidad
+                        }
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          cambiarCantidad(
+                            productoDetalle.id,
+                            1,
+                          )
+                        }
+                        className="flex h-10 w-10 items-center justify-center"
+                        aria-label="Agregar una unidad"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        agregar(
+                          productoDetalle,
+                        )
+                      }
+                      className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-110"
+                      style={{
+                        backgroundColor:
+                          colorPrincipal,
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                      Agregar al pedido
+                    </button>
+                  )
+                ) : (
+                  mostrarWhatsApp &&
+                  whatsappUrl && (
+                    <a
+                      href={`${whatsappUrl}?text=${encodeURIComponent(
+                        `Hola, quiero consultar por "${productoDetalle.nombre}" de la carta.`,
+                      )}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-110"
+                      style={{
+                        backgroundColor:
+                          colorPrincipal,
+                      }}
+                    >
+                      Consultar por WhatsApp
+                    </a>
+                  )
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {pedidosHabilitados &&
         cantidadTotal > 0 && (

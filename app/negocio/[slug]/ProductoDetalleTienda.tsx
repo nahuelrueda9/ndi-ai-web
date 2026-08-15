@@ -22,6 +22,8 @@ type Producto = {
   precio?: number;
   imagenUrl?: string;
   imagenes?: string[];
+  talles?: string[];
+  colores?: string[];
 };
 
 type Props = {
@@ -101,6 +103,16 @@ export default function ProductoDetalleTienda({
   ] = useState(0);
 
   const [
+    talleSeleccionado,
+    setTalleSeleccionado,
+  ] = useState("");
+
+  const [
+    colorSeleccionado,
+    setColorSeleccionado,
+  ] = useState("");
+
+  const [
     montado,
     setMontado,
   ] = useState(false);
@@ -115,6 +127,46 @@ export default function ProductoDetalleTienda({
           producto,
         ),
       [producto],
+    );
+
+  const talles =
+    useMemo(
+      () =>
+        Array.isArray(
+          producto.talles,
+        )
+          ? producto.talles
+              .filter(
+                (talle): talle is string =>
+                  typeof talle === "string" &&
+                  talle.trim().length > 0,
+              )
+              .map((talle) =>
+                talle.trim(),
+              )
+              .slice(0, 20)
+          : [],
+      [producto.talles],
+    );
+
+  const colores =
+    useMemo(
+      () =>
+        Array.isArray(
+          producto.colores,
+        )
+          ? producto.colores
+              .filter(
+                (color): color is string =>
+                  typeof color === "string" &&
+                  color.trim().length > 0,
+              )
+              .map((color) =>
+                color.trim(),
+              )
+              .slice(0, 20)
+          : [],
+      [producto.colores],
     );
 
   useEffect(() => {
@@ -158,8 +210,19 @@ export default function ProductoDetalleTienda({
     };
   }, [abierto]);
 
+  const detalleVariantes = [
+    talleSeleccionado
+      ? `Talle: ${talleSeleccionado}`
+      : "",
+    colorSeleccionado
+      ? `Color: ${colorSeleccionado}`
+      : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
   const mensaje =
-    `Hola, me interesa "${producto.nombre}"${producto.precio ? ` (${precioARS(producto.precio)})` : ""}. ¿Está disponible?`;
+    `Hola, me interesa "${producto.nombre}"${producto.precio ? ` (${precioARS(producto.precio)})` : ""}${detalleVariantes ? ` · ${detalleVariantes}` : ""}. ¿Está disponible?`;
 
   const enlaceWhatsApp =
     mostrarWhatsApp &&
@@ -422,8 +485,110 @@ export default function ProductoDetalleTienda({
                           : "text-zinc-500"
                       }`}
                     >
-                      Consultá disponibilidad, talles o variantes con el negocio.
+                      Consultá disponibilidad con el negocio.
                     </p>
+                  )}
+
+                  {talles.length > 0 && (
+                    <div className="mt-5">
+                      <p
+                        className={`text-[10px] font-semibold uppercase tracking-[0.14em] ${
+                          claro
+                            ? "text-slate-400"
+                            : "text-zinc-500"
+                        }`}
+                      >
+                        Talles
+                      </p>
+
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {talles.map(
+                          (talle) => (
+                            <button
+                              key={talle}
+                              type="button"
+                              onClick={() =>
+                                setTalleSeleccionado(
+                                  talleSeleccionado === talle
+                                    ? ""
+                                    : talle,
+                                )
+                              }
+                              className={`min-w-10 rounded-xl border px-3 py-2 text-xs font-semibold transition sm:text-sm ${
+                                talleSeleccionado === talle
+                                  ? "text-white"
+                                  : claro
+                                    ? "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                                    : "border-zinc-700 bg-zinc-900 text-zinc-200 hover:bg-zinc-800"
+                              }`}
+                              style={
+                                talleSeleccionado === talle
+                                  ? {
+                                      backgroundColor:
+                                        colorPrincipal,
+                                      borderColor:
+                                        colorPrincipal,
+                                    }
+                                  : undefined
+                              }
+                            >
+                              {talle}
+                            </button>
+                          ),
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {colores.length > 0 && (
+                    <div className="mt-5">
+                      <p
+                        className={`text-[10px] font-semibold uppercase tracking-[0.14em] ${
+                          claro
+                            ? "text-slate-400"
+                            : "text-zinc-500"
+                        }`}
+                      >
+                        Colores
+                      </p>
+
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {colores.map(
+                          (color) => (
+                            <button
+                              key={color}
+                              type="button"
+                              onClick={() =>
+                                setColorSeleccionado(
+                                  colorSeleccionado === color
+                                    ? ""
+                                    : color,
+                                )
+                              }
+                              className={`rounded-xl border px-3 py-2 text-xs font-semibold transition sm:text-sm ${
+                                colorSeleccionado === color
+                                  ? "text-white"
+                                  : claro
+                                    ? "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                                    : "border-zinc-700 bg-zinc-900 text-zinc-200 hover:bg-zinc-800"
+                              }`}
+                              style={
+                                colorSeleccionado === color
+                                  ? {
+                                      backgroundColor:
+                                        colorPrincipal,
+                                      borderColor:
+                                        colorPrincipal,
+                                    }
+                                  : undefined
+                              }
+                            >
+                              {color}
+                            </button>
+                          ),
+                        )}
+                      </div>
+                    </div>
                   )}
                 </div>
 
@@ -464,7 +629,7 @@ export default function ProductoDetalleTienda({
                         : "text-zinc-600"
                     }`}
                   >
-                    Consultá stock, talle, color o disponibilidad antes de coordinar la compra.
+                    Consultá stock y disponibilidad antes de coordinar la compra.
                   </p>
                 </div>
               </div>
@@ -480,6 +645,8 @@ export default function ProductoDetalleTienda({
         type="button"
         onClick={() => {
           setImagenActiva(0);
+          setTalleSeleccionado("");
+          setColorSeleccionado("");
           setAbierto(true);
         }}
         className={`inline-flex flex-1 items-center justify-center rounded-lg border px-2 py-2 text-xs font-semibold transition sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm ${
