@@ -145,18 +145,14 @@ export default function AlojamientoDetalle({
 
   const modal =
     abierto ? (
-      <div className="fixed inset-0 z-[200] flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center sm:p-6">
-        <button
-          type="button"
-          aria-label="Cerrar detalle de habitación"
-          className="absolute inset-0"
-          onClick={() =>
-            setAbierto(false)
-          }
-        />
-
+      <div
+        className="fixed inset-0 z-[200] flex items-end justify-center overflow-hidden bg-black/70 backdrop-blur-sm overscroll-none sm:items-center sm:p-6"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Detalle de ${habitacion.nombre}`}
+      >
         <div
-          className={`relative z-10 flex max-h-[94dvh] w-full max-w-4xl flex-col overflow-hidden rounded-t-3xl border shadow-2xl sm:max-h-[90vh] sm:rounded-3xl ${
+          className={`relative flex max-h-[94dvh] w-full max-w-4xl flex-col overflow-hidden overscroll-contain rounded-t-3xl border shadow-2xl sm:max-h-[90vh] sm:rounded-3xl ${
             claro
               ? "border-slate-200 bg-white text-slate-950"
               : "border-zinc-800 bg-zinc-950 text-white"
@@ -201,7 +197,7 @@ export default function AlojamientoDetalle({
             </button>
           </div>
 
-          <div className="overflow-y-auto">
+          <div className="min-h-0 overflow-y-auto overscroll-contain">
             <div className="grid lg:grid-cols-[1.15fr_0.85fr]">
               <div
                 className={`border-b lg:border-b-0 lg:border-r ${
@@ -210,7 +206,7 @@ export default function AlojamientoDetalle({
                     : "border-zinc-800 bg-black"
                 }`}
               >
-                <div className="relative aspect-[4/3] overflow-hidden sm:aspect-[16/10] lg:min-h-[480px] lg:aspect-auto">
+                <div className="relative aspect-[4/3] overflow-hidden bg-black/5 sm:aspect-[16/10] lg:h-[480px] lg:aspect-auto">
                   {imagenes.length > 0 ? (
                     <img
                       src={
@@ -219,7 +215,7 @@ export default function AlojamientoDetalle({
                         ]
                       }
                       alt={`${habitacion.nombre} - foto ${imagenActiva + 1}`}
-                      className="h-full w-full object-cover"
+                      className="block h-full w-full select-none object-cover"
                     />
                   ) : (
                     <div
