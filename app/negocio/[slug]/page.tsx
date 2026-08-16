@@ -27,6 +27,7 @@ import ReservaMesaForm from "./ReservaMesaForm";
 import ProximosHorarios from "./ProximosHorarios";
 import RestauranteCartaPedidos from "./RestauranteCartaPedidos";
 import ProductoDetalleTienda from "./ProductoDetalleTienda";
+import AlojamientoDetalle from "./AlojamientoDetalle";
 import ContactoForm from "./ContactForm";
 import PublicAnalytics from "./PublicAnalytics";
 import CompartirPagina from "./CompartirPagina";
@@ -2201,7 +2202,11 @@ function CatalogoCard({
     >
       {imagenesItem.length > 0 && (
         <div
-          className={`relative aspect-[4/3] overflow-hidden border-b ${
+          className={`relative overflow-hidden border-b ${
+            esTienda && item.tipo === "producto"
+              ? "aspect-[4/5] sm:aspect-[5/6] lg:aspect-[4/5]"
+              : "aspect-[4/3]"
+          } ${
             claro
               ? "border-slate-200 bg-slate-100"
               : "border-zinc-800 bg-zinc-950"
@@ -2221,11 +2226,6 @@ function CatalogoCard({
             )}
           </div>
 
-          {imagenesItem.length > 1 && (
-            <div className="pointer-events-none absolute bottom-2 right-2 rounded-lg bg-black/65 px-2 py-1 text-[10px] font-semibold text-white backdrop-blur sm:bottom-3 sm:right-3 sm:text-xs">
-              Deslizá · {imagenesItem.length} fotos
-            </div>
-          )}
         </div>
       )}
 
@@ -2335,151 +2335,38 @@ function CatalogoCard({
           <div className="mt-3 flex flex-wrap gap-1.5 sm:mt-4 sm:gap-2">
             {esAlojamiento &&
               item.tipo === "servicio" && (
-                <>
-                  <a
-                    href={`#detalle-habitacion-${item.id}`}
-                    className="inline-flex flex-1 items-center justify-center rounded-lg border px-2 py-2 text-xs font-semibold transition hover:-translate-y-0.5 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
-                    style={{
-                      borderColor: `${color}55`,
-                      color,
-                    }}
-                  >
-                    Ver habitación
-                  </a>
-
-                  <div
-                    id={`detalle-habitacion-${item.id}`}
-                    className="fixed inset-0 z-[120] hidden items-center justify-center bg-black/70 p-3 backdrop-blur-sm target:flex sm:p-6"
-                  >
-                    <a
-                      href="#servicios"
-                      aria-label="Cerrar detalle de habitación"
-                      className="absolute inset-0 cursor-default"
-                    />
-
-                    <div
-                      className={`relative z-10 max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl border shadow-2xl sm:rounded-3xl ${
-                        claro
-                          ? "border-slate-200 bg-white text-slate-950"
-                          : "border-zinc-700 bg-zinc-900 text-white"
-                      }`}
-                    >
-                      <div
-                        className={`sticky top-0 z-20 flex items-center justify-between gap-3 border-b px-4 py-3 backdrop-blur sm:px-5 ${
-                          claro
-                            ? "border-slate-200 bg-white/95"
-                            : "border-zinc-800 bg-zinc-900/95"
-                        }`}
-                      >
-                        <div>
-                          <p
-                            className="text-[10px] font-semibold uppercase tracking-[0.16em]"
-                            style={{ color }}
-                          >
-                            Habitación
-                          </p>
-                          <h3 className="mt-0.5 text-base font-bold sm:text-lg">
-                            {item.nombre}
-                          </h3>
-                        </div>
-
-                        <a
-                          href="#servicios"
-                          aria-label="Cerrar"
-                          className={`inline-flex h-9 w-9 items-center justify-center rounded-full border text-lg leading-none transition ${
-                            claro
-                              ? "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"
-                              : "border-zinc-700 bg-zinc-950 text-zinc-300 hover:bg-zinc-800"
-                          }`}
-                        >
-                          ×
-                        </a>
-                      </div>
-
-                      {imagenesItem.length > 0 && (
-                        <div className="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                          {imagenesItem.map(
-                            (url, indice) => (
-                              <img
-                                key={`detalle-${url}-${indice}`}
-                                src={url}
-                                alt={`${item.nombre} - foto ${indice + 1}`}
-                                className="aspect-[4/3] w-full shrink-0 snap-center object-cover sm:aspect-[16/9]"
-                              />
-                            ),
-                          )}
-                        </div>
-                      )}
-
-                      <div className="p-4 sm:p-6">
-                        {item.descripcion && (
-                          <p
-                            className={`text-sm leading-6 sm:text-base sm:leading-7 ${
-                              claro
-                                ? "text-slate-600"
-                                : "text-zinc-300"
-                            }`}
-                          >
-                            {item.descripcion}
-                          </p>
-                        )}
-
-                        <div
-                          className={`mt-5 flex flex-wrap items-center justify-between gap-3 border-t pt-4 ${
-                            claro
-                              ? "border-slate-200"
-                              : "border-zinc-800"
-                          }`}
-                        >
-                          {Boolean(item.precio) && (
-                            <div>
-                              <p
-                                className={`text-[10px] uppercase tracking-wide sm:text-xs ${
-                                  claro
-                                    ? "text-slate-400"
-                                    : "text-zinc-500"
-                                }`}
-                              >
-                                Precio por noche
-                              </p>
-
-                              <p
-                                className="mt-1 text-xl font-bold sm:text-2xl"
-                                style={{ color }}
-                              >
-                                ${Number(item.precio).toLocaleString("es-AR")}
-                                <span
-                                  className={`ml-1 text-xs font-medium sm:text-sm ${
-                                    claro
-                                      ? "text-slate-500"
-                                      : "text-zinc-400"
-                                  }`}
-                                >
-                                  / noche
-                                </span>
-                              </p>
-                            </div>
-                          )}
-
-                          {puedeReservar && (
-                            <a
-                              href={`#reservar-servicio-${encodeURIComponent(
-                                item.id,
-                              )}`}
-                              className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-110"
-                              style={{
-                                backgroundColor: color,
-                              }}
-                            >
-                              <Clock3 className="h-4 w-4" />
-                              Reservar habitación
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </>
+                <AlojamientoDetalle
+                  habitacion={{
+                    id: item.id,
+                    nombre: item.nombre,
+                    descripcion:
+                      item.descripcion || "",
+                    precio:
+                      typeof item.precio ===
+                      "number"
+                        ? item.precio
+                        : 0,
+                    imagenUrl:
+                      item.imagenUrl || "",
+                    imagenes:
+                      Array.isArray(
+                        item.imagenes,
+                      )
+                        ? item.imagenes.filter(
+                            (
+                              url,
+                            ): url is string =>
+                              typeof url ===
+                                "string",
+                          )
+                        : [],
+                  }}
+                  colorPrincipal={color}
+                  tema={tema}
+                  puedeReservar={
+                    puedeReservar
+                  }
+                />
               )}
 
             {esTienda &&
