@@ -672,12 +672,12 @@ export default function EstadisticasPage() {
 
   if (cargando) {
     return (
-      <main className="min-h-screen bg-background px-4 py-4 text-foreground transition-colors sm:px-6">
+      <main className="min-h-screen bg-background px-3 py-3 text-foreground transition-colors sm:px-6 sm:py-4">
         <div className="mx-auto max-w-[1500px]">
-          <div className="rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="rounded-lg border border-slate-200 bg-white p-4 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-xl sm:p-6">
             <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
 
-            <p className="mt-4 text-sm text-slate-600 dark:text-zinc-400">
+            <p className="mt-2 text-xs text-slate-600 dark:text-zinc-400 sm:mt-4 sm:text-sm">
               Calculando estadísticas...
             </p>
           </div>
@@ -688,9 +688,9 @@ export default function EstadisticasPage() {
 
   if (error) {
     return (
-      <main className="min-h-screen bg-background px-4 py-4 text-foreground transition-colors sm:px-6">
+      <main className="min-h-screen bg-background px-3 py-3 text-foreground transition-colors sm:px-6 sm:py-4">
         <div className="mx-auto max-w-[1500px]">
-          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+          <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300 sm:rounded-xl sm:p-4 sm:text-sm">
             {error}
           </div>
         </div>
@@ -699,19 +699,19 @@ export default function EstadisticasPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background px-4 py-4 text-foreground transition-colors sm:px-6">
+    <main className="min-h-screen bg-background px-3 py-3 text-foreground transition-colors sm:px-6 sm:py-4">
       <div className="mx-auto max-w-[1500px]">
-        <div className="mb-3">
-          <p className="text-xs font-medium text-blue-600 dark:text-blue-400">
+        <div className="mb-2 sm:mb-3">
+          <p className="text-[10px] font-medium text-blue-600 dark:text-blue-400 sm:text-xs">
             Rendimiento de tu página
           </p>
 
-          <h1 className="mt-1 text-2xl font-bold text-slate-950 dark:text-white">
+          <h1 className="mt-0.5 text-xl font-bold text-slate-950 dark:text-white sm:mt-1 sm:text-2xl">
             Estadísticas
           </h1>
 
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-[10px] font-semibold text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300">
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5 sm:mt-2 sm:gap-2">
+            <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[9px] font-semibold text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300 sm:px-2.5 sm:text-[10px]">
               {puedeVerIA
                 ? "Métricas Business IA"
                 : puedeVerAvanzadas
@@ -720,13 +720,13 @@ export default function EstadisticasPage() {
             </span>
 
             {nombrePlan && (
-              <span className="text-xs text-slate-500 dark:text-zinc-500">
+              <span className="text-[10px] text-slate-500 dark:text-zinc-500 sm:text-xs">
                 {nombrePlan}
               </span>
             )}
           </div>
 
-          <p className="mt-2 max-w-2xl text-xs leading-5 text-slate-600 dark:text-zinc-400">
+          <p className="mt-1 max-w-2xl text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:mt-2 sm:text-xs sm:leading-5">
             {puedeVerIA
               ? "Analizá el rendimiento de tu página, las conversiones y la actividad del asistente."
               : puedeVerAvanzadas
@@ -736,7 +736,7 @@ export default function EstadisticasPage() {
         </div>
 
         {puedeVerBasicas && (
-          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid grid-cols-2 gap-2 sm:gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <StatCardCompacta
               titulo="Visitas"
               valor={estadisticas.visitasPagina}
@@ -764,7 +764,7 @@ export default function EstadisticasPage() {
         )}
 
         {puedeVerAvanzadas && (
-          <section className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <section className="mt-2 grid grid-cols-3 gap-1.5 sm:mt-3 sm:gap-3 sm:grid-cols-2 xl:grid-cols-3">
             <StatCardCompacta
               titulo="Reservas"
               valor={estadisticas.reservasPagina}
@@ -790,23 +790,23 @@ export default function EstadisticasPage() {
         )}
 
         {puedeVerAvanzadas && (
-          <section className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.7fr)_minmax(280px,0.8fr)]">
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900">
-            <div className="mb-3">
-              <p className="text-xs text-slate-600 dark:text-zinc-400">
+          <section className="mt-3 grid gap-3 sm:mt-4 sm:gap-4 xl:grid-cols-[minmax(0,1.7fr)_minmax(280px,0.8fr)]">
+          <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-xl sm:p-4">
+            <div className="mb-2 sm:mb-3">
+              <p className="text-[10px] text-slate-600 dark:text-zinc-400 sm:text-xs">
                 Últimos 7 días
               </p>
 
-              <h2 className="mt-0.5 text-base font-semibold text-slate-950 dark:text-white">
+              <h2 className="mt-0.5 text-sm font-semibold text-slate-950 dark:text-white sm:text-base">
                 Actividad de la página
               </h2>
 
-              <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-zinc-500">
+              <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs sm:leading-5">
                 Visitas, contactos y reservas generadas por día.
               </p>
             </div>
 
-            <div className="h-56 w-full">
+            <div className="h-40 w-full sm:h-56">
               <ResponsiveContainer
                 width="100%"
                 height="100%"
@@ -883,20 +883,20 @@ export default function EstadisticasPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900">
-            <p className="text-xs text-slate-600 dark:text-zinc-400">
+          <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-xl sm:p-4">
+            <p className="text-[10px] text-slate-600 dark:text-zinc-400 sm:text-xs">
               Conversión
             </p>
 
-            <h2 className="mt-0.5 text-base font-semibold text-slate-950 dark:text-white">
+            <h2 className="mt-0.5 text-sm font-semibold text-slate-950 dark:text-white sm:text-base">
               Embudo de la página
             </h2>
 
-            <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-zinc-500">
+            <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs sm:leading-5">
               El recorrido desde una visita hasta una reserva.
             </p>
 
-            <div className="mt-3 h-52 w-full">
+            <div className="mt-2 h-36 w-full sm:mt-3 sm:h-52">
               <ResponsiveContainer
                 width="100%"
                 height="100%"
@@ -953,25 +953,25 @@ export default function EstadisticasPage() {
         )}
 
         {puedeVerIA && (
-          <section className="mt-4">
-            <div className="mb-3">
-              <p className="text-xs text-slate-600 dark:text-zinc-400">
+          <section className="mt-3 sm:mt-4">
+            <div className="mb-2 sm:mb-3">
+              <p className="text-[10px] text-slate-600 dark:text-zinc-400 sm:text-xs">
                 Asistente web
               </p>
 
-            <h2 className="mt-0.5 text-base font-semibold text-slate-950 dark:text-white">
+            <h2 className="mt-0.5 text-sm font-semibold text-slate-950 dark:text-white sm:text-base">
               Actividad de consultas
             </h2>
 
-            <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-zinc-500">
+            <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs sm:leading-5">
               Esta información queda como apoyo para controlar
               qué está pasando dentro del chat de tu página.
             </p>
           </div>
 
-          <div className="grid gap-4 xl:grid-cols-2">
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900">
-              <div className="grid gap-2.5 sm:grid-cols-2">
+          <div className="grid gap-3 sm:gap-4 xl:grid-cols-2">
+            <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-xl sm:p-4">
+              <div className="grid grid-cols-2 gap-2 sm:gap-2.5 sm:grid-cols-2">
                 <Resumen
                   titulo="Consultas totales"
                   valor={
@@ -1002,8 +1002,8 @@ export default function EstadisticasPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900">
-              <div className="space-y-4">
+            <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-xl sm:p-4">
+              <div className="space-y-3 sm:space-y-4">
                 <BarraProgreso
                   titulo="Atendidas por IA"
                   valor={
@@ -1036,18 +1036,18 @@ export default function EstadisticasPage() {
         )}
 
         {!puedeVerAvanzadas && (
-          <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-3.5 dark:border-blue-500/20 dark:bg-blue-500/10">
-            <p className="font-semibold text-slate-950 dark:text-white">
+          <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-500/20 dark:bg-blue-500/10 sm:mt-4 sm:rounded-xl sm:p-3.5">
+            <p className="text-xs font-semibold text-slate-950 dark:text-white sm:text-base">
               Estadísticas básicas de Página Simple
             </p>
 
-            <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-zinc-400">
+            <p className="mt-1 text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:text-xs sm:leading-5">
               Página Completa agrega reservas, tasas de conversión, gráficos de actividad y embudo de resultados.
             </p>
           </div>
         )}
 
-        <p className="mt-4 text-[10px] leading-4 text-slate-500 dark:text-zinc-600">
+        <p className="mt-3 text-[9px] leading-4 text-slate-500 dark:text-zinc-600 sm:mt-4 sm:text-[10px]">
           Las métricas principales se calculan con la actividad
           registrada en la página pública de este negocio.
         </p>
@@ -1067,16 +1067,16 @@ function StatCardCompacta({
   descripcion: string;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900">
-      <p className="text-xs text-slate-500 dark:text-zinc-500">
+    <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-xl sm:px-4 sm:py-3">
+      <p className="text-[9px] leading-3 text-slate-500 dark:text-zinc-500 sm:text-xs sm:leading-normal">
         {titulo}
       </p>
 
-      <p className="mt-1 text-2xl font-bold leading-none text-slate-950 dark:text-white">
+      <p className="mt-0.5 text-xl font-bold leading-none text-slate-950 dark:text-white sm:mt-1 sm:text-2xl">
         {valor}
       </p>
 
-      <p className="mt-1.5 text-[11px] leading-4 text-slate-500 dark:text-zinc-500">
+      <p className="mt-1 line-clamp-2 text-[9px] leading-3.5 text-slate-500 dark:text-zinc-500 sm:mt-1.5 sm:text-[11px] sm:leading-4">
         {descripcion}
       </p>
     </div>
@@ -1093,16 +1093,16 @@ function Resumen({
   descripcion: string;
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950">
-      <p className="text-xs text-slate-500 dark:text-zinc-500">
+    <div className="rounded-md border border-slate-200 bg-slate-50 p-2 dark:border-zinc-800 dark:bg-zinc-950 sm:rounded-lg sm:p-3">
+      <p className="text-[9px] text-slate-500 dark:text-zinc-500 sm:text-xs">
         {titulo}
       </p>
 
-      <p className="mt-1 text-xl font-bold text-slate-950 dark:text-white">
+      <p className="mt-0.5 text-lg font-bold text-slate-950 dark:text-white sm:mt-1 sm:text-xl">
         {valor}
       </p>
 
-      <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
+      <p className="mt-0.5 line-clamp-2 text-[9px] leading-3.5 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs sm:leading-normal">
         {descripcion}
       </p>
     </div>
@@ -1120,17 +1120,17 @@ function BarraProgreso({
 }) {
   return (
     <div>
-      <div className="mb-1.5 flex items-center justify-between gap-3">
-        <p className="text-xs font-medium text-slate-700 dark:text-zinc-300">
+      <div className="mb-1 flex items-center justify-between gap-2 sm:mb-1.5 sm:gap-3">
+        <p className="text-[10px] font-medium text-slate-700 dark:text-zinc-300 sm:text-xs">
           {titulo}
         </p>
 
-        <p className="text-xs text-slate-500 dark:text-zinc-500">
+        <p className="text-[10px] text-slate-500 dark:text-zinc-500 sm:text-xs">
           {valor} · {porcentaje.toFixed(1)}%
         </p>
       </div>
 
-      <div className="h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-zinc-800">
+      <div className="h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-zinc-800 sm:h-2">
         <div
           className="h-full rounded-full bg-blue-500 transition-all"
           style={{

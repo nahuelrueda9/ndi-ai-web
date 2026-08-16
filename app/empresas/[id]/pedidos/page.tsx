@@ -720,21 +720,21 @@ export default function PedidosPage() {
   }
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+    <section className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-8 sm:py-8">
+      <div className="flex flex-col gap-3 sm:gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-sm font-semibold text-blue-500">
+          <p className="text-[10px] font-semibold text-blue-500 sm:text-sm">
             Restaurante
           </p>
-          <h1 className="mt-1 text-3xl font-bold tracking-tight">
+          <h1 className="mt-0.5 text-xl font-bold tracking-tight sm:mt-1 sm:text-3xl">
             Pedidos
           </h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 dark:text-zinc-400">
+          <p className="mt-1 max-w-xl text-[10px] leading-4 text-slate-500 dark:text-zinc-400 sm:mt-2 sm:max-w-2xl sm:text-sm sm:leading-6">
             Los pedidos de la página pública aparecen acá en tiempo real para que caja los tome y actualice su estado.
           </p>
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
           <Contador
             titulo="Nuevos"
             valor={
@@ -759,18 +759,18 @@ export default function PedidosPage() {
       {empresa?.paginaPublica
         ?.mostrarPedidosOnline !==
         true && (
-        <div className="mt-6 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-600 dark:text-amber-300">
+        <div className="mt-3 rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-[10px] leading-4 text-amber-600 dark:text-amber-300 sm:mt-6 sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm sm:leading-normal">
           Los pedidos online están desactivados en Mi página. Los pedidos anteriores siguen visibles.
         </div>
       )}
 
       {error && (
-        <div className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-500">
+        <div className="mt-3 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-500 sm:mt-6 sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm">
           {error}
         </div>
       )}
 
-      <div className="mt-7 flex gap-2 overflow-x-auto pb-1">
+      <div className="mt-3 grid grid-cols-5 gap-1 sm:mt-7 sm:flex sm:gap-2 sm:overflow-x-auto sm:pb-1">
         {(
           [
             [
@@ -808,7 +808,7 @@ export default function PedidosPage() {
               onClick={() =>
                 setFiltro(id)
               }
-              className={`shrink-0 rounded-xl px-4 py-2 text-xs font-semibold transition ${
+              className={`min-w-0 shrink-0 rounded-lg px-1 py-1.5 text-[8px] font-semibold transition sm:rounded-xl sm:px-4 sm:py-2 sm:text-xs ${
                 filtro === id
                   ? "bg-blue-600 text-white"
                   : "border border-slate-200 bg-white text-slate-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400"
@@ -822,17 +822,17 @@ export default function PedidosPage() {
 
       {pedidosFiltrados.length ===
       0 ? (
-        <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-10 text-center dark:border-zinc-800 dark:bg-zinc-900">
-          <ShoppingBag className="mx-auto h-8 w-8 text-slate-400 dark:text-zinc-600" />
-          <h2 className="mt-4 text-lg font-bold">
+        <div className="mt-3 rounded-xl border border-slate-200 bg-white p-6 text-center dark:border-zinc-800 dark:bg-zinc-900 sm:mt-6 sm:rounded-3xl sm:p-10">
+          <ShoppingBag className="mx-auto h-6 w-6 text-slate-400 dark:text-zinc-600 sm:h-8 sm:w-8" />
+          <h2 className="mt-2 text-base font-bold sm:mt-4 sm:text-lg">
             No hay pedidos en esta vista
           </h2>
-          <p className="mt-2 text-sm text-slate-500 dark:text-zinc-500">
+          <p className="mt-1 text-[10px] text-slate-500 dark:text-zinc-500 sm:mt-2 sm:text-sm">
             Cuando llegue un pedido nuevo va a aparecer automáticamente.
           </p>
         </div>
       ) : (
-        <div className="mt-6 grid gap-4 xl:grid-cols-2">
+        <div className="mt-3 grid gap-2.5 sm:mt-6 sm:gap-4 xl:grid-cols-2">
           {pedidosFiltrados.map(
             (pedido) => (
               <PedidoCard
@@ -866,11 +866,11 @@ function Contador({
   valor: number;
 }) {
   return (
-    <div className="min-w-24 rounded-2xl border border-slate-200 bg-white px-3 py-3 text-center dark:border-zinc-800 dark:bg-zinc-900">
-      <p className="text-xl font-bold">
+    <div className="min-w-0 rounded-lg border border-slate-200 bg-white px-2 py-2 text-center dark:border-zinc-800 dark:bg-zinc-900 sm:min-w-24 sm:rounded-2xl sm:px-3 sm:py-3">
+      <p className="text-lg font-bold sm:text-xl">
         {valor}
       </p>
-      <p className="mt-0.5 text-[10px] uppercase tracking-wide text-slate-400 dark:text-zinc-500">
+      <p className="mt-0.5 text-[8px] uppercase tracking-wide text-slate-400 dark:text-zinc-500 sm:text-[10px]">
         {titulo}
       </p>
     </div>
@@ -902,17 +902,17 @@ function PedidoCard({
 
   return (
     <article
-      className={`overflow-hidden rounded-3xl border bg-white dark:bg-zinc-900 ${
+      className={`overflow-hidden rounded-xl border bg-white dark:bg-zinc-900 sm:rounded-3xl ${
         estado === "nuevo"
           ? "border-blue-400/60 ring-1 ring-blue-500/20 dark:border-blue-500/40"
           : "border-slate-200 dark:border-zinc-800"
       }`}
     >
-      <div className="p-5 sm:p-6">
-        <div className="flex items-start justify-between gap-4">
+      <div className="p-3 sm:p-6">
+        <div className="flex items-start justify-between gap-2 sm:gap-4">
           <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-xl font-black">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <h2 className="text-base font-black sm:text-xl">
                 #
                 {pedido.numero ||
                   pedido.id
@@ -924,7 +924,7 @@ function PedidoCard({
               </h2>
 
               <span
-                className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${claseEstado(
+                className={`rounded-full px-2 py-0.5 text-[8px] font-bold uppercase tracking-wide sm:px-2.5 sm:py-1 sm:text-[10px] ${claseEstado(
                   estado,
                 )}`}
               >
@@ -936,13 +936,13 @@ function PedidoCard({
               </span>
             </div>
 
-            <p className="mt-2 text-base font-bold">
+            <p className="mt-1 text-[11px] font-bold sm:mt-2 sm:text-base">
               {pedido.nombreCliente ||
                 "Cliente"}
             </p>
 
-            <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500 dark:text-zinc-500">
-              <Clock3 className="h-3.5 w-3.5" />
+            <p className="mt-0.5 flex items-center gap-1 text-[9px] text-slate-500 dark:text-zinc-500 sm:mt-1 sm:gap-1.5 sm:text-xs">
+              <Clock3 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               {fechaPedido(
                 pedido,
               )}
@@ -952,7 +952,7 @@ function PedidoCard({
             </p>
           </div>
 
-          <p className="text-xl font-black">
+          <p className="text-base font-black sm:text-xl">
             {formatoPrecio(
               Number(
                 pedido.total ||
@@ -962,7 +962,7 @@ function PedidoCard({
           </p>
         </div>
 
-        <div className="mt-5 space-y-2">
+        <div className="mt-3 space-y-1.5 sm:mt-5 sm:space-y-2">
           {items.map(
             (
               item,
@@ -970,11 +970,11 @@ function PedidoCard({
             ) => (
               <div
                 key={`${item.productoId || indice}`}
-                className="flex items-start justify-between gap-3 rounded-xl bg-slate-50 px-3 py-2.5 dark:bg-zinc-950"
+                className="flex items-start justify-between gap-2 rounded-lg bg-slate-50 px-2.5 py-1.5 dark:bg-zinc-950 sm:gap-3 sm:rounded-xl sm:px-3 sm:py-2.5"
               >
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold">
-                    <span className="mr-2 text-blue-500">
+                  <p className="text-[10px] font-semibold sm:text-sm">
+                    <span className="mr-1 text-blue-500 sm:mr-2">
                       {item.cantidad ||
                         1}
                       x
@@ -983,7 +983,7 @@ function PedidoCard({
                       "Producto"}
                   </p>
 
-                  <p className="mt-0.5 text-[11px] text-slate-400 dark:text-zinc-600">
+                  <p className="mt-0.5 text-[8px] text-slate-400 dark:text-zinc-600 sm:text-[11px]">
                     {formatoPrecio(
                       Number(
                         item.precioUnitario ||
@@ -994,7 +994,7 @@ function PedidoCard({
                   </p>
                 </div>
 
-                <p className="shrink-0 text-sm font-bold">
+                <p className="shrink-0 text-[10px] font-bold sm:text-sm">
                   {formatoPrecio(
                     Number(
                       item.subtotal ||
@@ -1007,10 +1007,10 @@ function PedidoCard({
           )}
         </div>
 
-        <div className="mt-5 border-t border-slate-200 pt-4 dark:border-zinc-800">
+        <div className="mt-3 border-t border-slate-200 pt-2.5 dark:border-zinc-800 sm:mt-5 sm:pt-4">
           {pedido.telefono && (
-            <p className="flex items-center gap-2 text-sm text-slate-600 dark:text-zinc-400">
-              <Phone className="h-4 w-4" />
+            <p className="flex items-center gap-1.5 text-[10px] text-slate-600 dark:text-zinc-400 sm:gap-2 sm:text-sm">
+              <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               {
                 pedido.telefono
               }
@@ -1018,24 +1018,24 @@ function PedidoCard({
           )}
 
           {pedido.notas && (
-            <div className="mt-3 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2.5">
-              <p className="text-[10px] font-bold uppercase tracking-wide text-amber-600 dark:text-amber-300">
+            <div className="mt-2 rounded-lg border border-amber-500/20 bg-amber-500/10 px-2.5 py-2 sm:mt-3 sm:rounded-xl sm:px-3 sm:py-2.5">
+              <p className="text-[8px] font-bold uppercase tracking-wide text-amber-600 dark:text-amber-300 sm:text-[10px]">
                 Nota
               </p>
-              <p className="mt-1 text-sm leading-5">
+              <p className="mt-0.5 line-clamp-3 text-[10px] leading-4 sm:mt-1 sm:line-clamp-none sm:text-sm sm:leading-5">
                 {pedido.notas}
               </p>
             </div>
           )}
         </div>
 
-        <div className="mt-5 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap gap-1.5 sm:mt-5 sm:gap-2">
           {estado ===
             "nuevo" && (
             <>
               <Accion
                 icono={
-                  <CheckCircle2 className="h-4 w-4" />
+                  <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 }
                 texto="Aceptar"
                 disabled={
@@ -1052,7 +1052,7 @@ function PedidoCard({
 
               <Accion
                 icono={
-                  <XCircle className="h-4 w-4" />
+                  <XCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 }
                 texto="Rechazar"
                 disabled={
@@ -1074,7 +1074,7 @@ function PedidoCard({
             <>
               <Accion
                 icono={
-                  <ChefHat className="h-4 w-4" />
+                  <ChefHat className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 }
                 texto="Preparando"
                 disabled={
@@ -1091,7 +1091,7 @@ function PedidoCard({
 
               <Accion
                 icono={
-                  <XCircle className="h-4 w-4" />
+                  <XCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 }
                 texto="Cancelar"
                 disabled={
@@ -1112,7 +1112,7 @@ function PedidoCard({
             "preparando" && (
             <Accion
               icono={
-                <PackageCheck className="h-4 w-4" />
+                <PackageCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               }
               texto="Marcar listo"
               disabled={
@@ -1132,7 +1132,7 @@ function PedidoCard({
             "listo" && (
             <Accion
               icono={
-                <Utensils className="h-4 w-4" />
+                <Utensils className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               }
               texto="Entregado"
               disabled={
@@ -1173,7 +1173,7 @@ function Accion({
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition disabled:opacity-50 ${
+      className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[9px] font-semibold transition disabled:opacity-50 sm:gap-2 sm:rounded-xl sm:px-3 sm:py-2 sm:text-xs ${
         principal
           ? "bg-blue-600 text-white hover:bg-blue-500"
           : peligro
@@ -1182,7 +1182,7 @@ function Accion({
       }`}
     >
       {disabled ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
+        <Loader2 className="h-3.5 w-3.5 animate-spin sm:h-4 sm:w-4" />
       ) : (
         icono
       )}

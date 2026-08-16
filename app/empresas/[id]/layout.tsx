@@ -353,15 +353,15 @@ export default function EmpresaLayout({
   if (cargando) {
     return (
       <DashboardLayout>
-        <section className="flex min-h-[70vh] items-center justify-center px-5 py-10">
-          <Card className="w-full max-w-sm p-6 text-center">
-            <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
+        <section className="flex min-h-[55vh] items-center justify-center px-3 py-5 sm:min-h-[70vh] sm:px-5 sm:py-10">
+          <Card className="w-full max-w-xs p-4 text-center sm:max-w-sm sm:p-6">
+            <div className="mx-auto mb-2 h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500 sm:mb-4 sm:h-8 sm:w-8" />
 
-            <p className="font-semibold text-slate-950 dark:text-white">
+            <p className="text-sm font-semibold text-slate-950 dark:text-white sm:text-base">
               Validando tu acceso...
             </p>
 
-            <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
+            <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-sm sm:leading-normal">
               Estamos revisando el plan de este negocio.
             </p>
           </Card>
@@ -373,24 +373,24 @@ export default function EmpresaLayout({
   if (error || !empresa) {
     return (
       <DashboardLayout>
-        <section className="mx-auto w-full max-w-3xl px-5 py-10 sm:px-8">
-          <Card className="p-7 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400">
-              <ShieldCheck className="h-6 w-6" />
+        <section className="mx-auto w-full max-w-3xl px-3 py-5 sm:px-8 sm:py-10">
+          <Card className="p-4 text-center sm:p-7">
+            <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400 sm:h-12 sm:w-12 sm:rounded-2xl">
+              <ShieldCheck className="h-4 w-4 sm:h-6 sm:w-6" />
             </div>
 
-            <h1 className="mt-5 text-xl font-bold text-slate-950 dark:text-white">
+            <h1 className="mt-3 text-base font-bold text-slate-950 dark:text-white sm:mt-5 sm:text-xl">
               No se pudo abrir este negocio
             </h1>
 
-            <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-600 dark:text-zinc-400">
+            <p className="mx-auto mt-1 max-w-lg text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:mt-2 sm:text-sm sm:leading-6">
               {error ||
                 "No tenés acceso a esta empresa."}
             </p>
 
             <Button
               type="button"
-              className="mt-6"
+              className="mt-3 sm:mt-6"
               onClick={() =>
                 router.push("/empresas")
               }
@@ -409,31 +409,31 @@ export default function EmpresaLayout({
 
     return (
       <DashboardLayout>
-        <section className="mx-auto flex min-h-[72vh] w-full max-w-4xl items-center justify-center px-5 py-10 sm:px-8">
+        <section className="mx-auto flex min-h-[58vh] w-full max-w-4xl items-center justify-center px-3 py-5 sm:min-h-[72vh] sm:px-8 sm:py-10">
           <Card className="w-full overflow-hidden">
-            <div className="border-b border-slate-200 bg-slate-50 p-7 dark:border-zinc-800 dark:bg-zinc-900/60">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
-                <LockKeyhole className="h-6 w-6" />
+            <div className="border-b border-slate-200 bg-slate-50 p-4 dark:border-zinc-800 dark:bg-zinc-900/60 sm:p-7">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 sm:h-12 sm:w-12 sm:rounded-2xl">
+                <LockKeyhole className="h-4 w-4 sm:h-6 sm:w-6" />
               </div>
 
-              <p className="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-400">
+              <p className="mt-3 text-[9px] font-bold uppercase tracking-[0.12em] text-blue-600 dark:text-blue-400 sm:mt-5 sm:text-xs sm:tracking-[0.16em]">
                 {nombrePlan}
               </p>
 
-              <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-950 dark:text-white">
+              <h1 className="mt-1 text-lg font-bold tracking-tight text-slate-950 dark:text-white sm:mt-2 sm:text-2xl">
                 {sinPlan
                   ? "Primero activá un plan"
                   : `${reglaRuta.nombre} no está incluido en tu plan`}
               </h1>
 
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
+              <p className="mt-1.5 max-w-2xl text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:mt-3 sm:text-sm sm:leading-6">
                 {sinPlan
                   ? "La empresa ya fue creada, pero sus funciones todavía están bloqueadas. Elegí Página Simple, Página Completa o Business IA para comenzar a utilizar NDI AI."
                   : `Tu plan actual es ${nombrePlan}. Para usar ${reglaRuta.nombre}, necesitás un plan que incluya esta función.`}
               </p>
             </div>
 
-            <div className="flex flex-col gap-3 p-7 sm:flex-row">
+            <div className="grid grid-cols-2 gap-2 p-4 sm:flex sm:gap-3 sm:p-7">
               {esPropietario ? (
                 <Button
                   type="button"
@@ -448,7 +448,7 @@ export default function EmpresaLayout({
                     : "Ver planes"}
                 </Button>
               ) : (
-                <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300">
+                <div className="col-span-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] leading-4 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300 sm:col-span-1 sm:rounded-xl sm:px-4 sm:py-3 sm:text-sm sm:leading-normal">
                   El propietario del negocio debe activar o cambiar el plan.
                 </div>
               )}

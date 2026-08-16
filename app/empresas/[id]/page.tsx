@@ -1592,7 +1592,7 @@ export default function ConfigurarAgentePage() {
 
   if (loading) {
     return (
-      <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
+      <section className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-8 sm:py-8">
         <Card className="p-10 text-center">
           <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
 
@@ -1600,7 +1600,7 @@ export default function ConfigurarAgentePage() {
             Cargando configuración...
           </p>
 
-          <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
+          <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-sm sm:leading-normal">
             Estamos preparando tu
             negocio.
           </p>
@@ -1614,7 +1614,7 @@ export default function ConfigurarAgentePage() {
     !nombre
   ) {
     return (
-      <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
+      <section className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-8 sm:py-8">
         <Card className="border-red-200 bg-red-50 p-8 text-center dark:border-red-500/20 dark:bg-red-500/10">
           <Badge variant="danger">
             Error de acceso
@@ -1652,8 +1652,8 @@ export default function ConfigurarAgentePage() {
     rubroNormalizado === "restaurant";
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
-      <header className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
+    <section className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-8 sm:py-8">
+      <header className="mb-4 flex flex-col justify-between gap-3 sm:mb-8 sm:gap-5 lg:flex-row lg:items-center">
         <div>
           <button
             type="button"
@@ -1662,13 +1662,13 @@ export default function ConfigurarAgentePage() {
                 "/empresas",
               )
             }
-            className="mb-4 text-sm text-slate-500 transition hover:text-slate-950 dark:text-zinc-500 dark:hover:text-white"
+            className="mb-2 text-[11px] text-slate-500 transition hover:text-slate-950 dark:text-zinc-500 dark:hover:text-white sm:mb-4 sm:text-sm"
           >
             ← Volver a empresas
           </button>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight text-slate-950 dark:text-white">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-3xl">
               Mi página
             </h1>
 
@@ -1683,14 +1683,14 @@ export default function ConfigurarAgentePage() {
             )}
           </div>
 
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
+          <p className="mt-1.5 max-w-2xl text-xs leading-5 text-slate-600 dark:text-zinc-400 sm:mt-2 sm:text-sm sm:leading-6">
             Configurá la información y la página pública de{" "}
             {nombre}. Todo lo que ajustes acá define
             lo que verán tus clientes.
           </p>
         </div>
 
-        <Card className="flex items-center gap-3 px-4 py-3">
+        <Card className="hidden items-center gap-3 px-4 py-3 sm:flex">
           <Avatar
             name={
               user?.displayName ||
@@ -1719,7 +1719,7 @@ export default function ConfigurarAgentePage() {
 
       <form
         onSubmit={handleGuardar}
-        className="space-y-6"
+        className="space-y-3 sm:space-y-6"
       >
         {/* INFORMACIÓN DEL NEGOCIO */}
         <Card className="overflow-hidden">
@@ -1735,7 +1735,7 @@ export default function ConfigurarAgentePage() {
             }
           />
 
-          <div className="grid gap-5 p-6 md:grid-cols-2">
+          <div className="grid gap-3 p-4 sm:gap-5 sm:p-6 md:grid-cols-2">
             <Input
               id="nombre"
               label="Nombre de la empresa"
@@ -1886,8 +1886,8 @@ export default function ConfigurarAgentePage() {
             }
           />
 
-          <div className="grid gap-6 p-6 lg:grid-cols-[1fr_360px]">
-            <div className="grid content-start gap-5 md:grid-cols-2">
+          <div className="grid gap-4 p-4 sm:gap-6 sm:p-6 lg:grid-cols-[1fr_360px]">
+            <div className="grid content-start gap-3 sm:gap-5 md:grid-cols-2">
               <Input
                 id="paginaTitulo"
                 label="Título de la página"
@@ -1900,17 +1900,17 @@ export default function ConfigurarAgentePage() {
                 placeholder="Nombre que verá el cliente"
               />
 
-              <div className="space-y-2">
+              <div className="space-y-1.5 sm:space-y-2">
                 <label
                   htmlFor="paginaSlug"
-                  className="block text-sm font-medium text-slate-700 dark:text-zinc-200"
+                  className="block text-xs font-medium text-slate-700 dark:text-zinc-200 sm:text-sm"
                 >
                   Dirección de la página
                 </label>
 
-                <div className="overflow-hidden rounded-xl border border-slate-300 bg-white focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-900">
+                <div className="overflow-hidden rounded-lg border border-slate-300 bg-white focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-900 sm:rounded-xl">
                   <div className="flex items-center">
-                    <span className="shrink-0 border-r border-slate-200 bg-slate-50 px-3 py-3 text-xs text-slate-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-500">
+                    <span className="shrink-0 border-r border-slate-200 bg-slate-50 px-2.5 py-2.5 text-[10px] text-slate-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-500 sm:px-3 sm:py-3 sm:text-xs">
                       /negocio/
                     </span>
 
@@ -1927,13 +1927,13 @@ export default function ConfigurarAgentePage() {
                           ),
                         )
                       }
-                      className="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm text-slate-900 outline-none dark:text-white"
+                      className="min-w-0 flex-1 bg-transparent px-2.5 py-2.5 text-xs text-slate-900 outline-none dark:text-white sm:px-3 sm:py-3 sm:text-sm"
                       placeholder="mi-negocio"
                     />
                   </div>
                 </div>
 
-                <p className="text-xs text-slate-500 dark:text-zinc-500">
+                <p className="text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:text-xs">
                   Esta será la URL
                   pública de tu negocio.
                 </p>
@@ -1972,16 +1972,16 @@ export default function ConfigurarAgentePage() {
               </div>
 
               <div className="md:col-span-2">
-                <div className="mb-3">
-                  <p className="text-sm font-medium text-slate-700 dark:text-zinc-200">
+                <div className="mb-2 sm:mb-3">
+                  <p className="text-xs font-medium text-slate-700 dark:text-zinc-200 sm:text-sm">
                     Identidad visual
                   </p>
-                  <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
+                  <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs">
                     Cargá el logo, una imagen de portada y hasta 6 fotos para la galería pública.
                   </p>
                 </div>
 
-                <div className="grid gap-4 lg:grid-cols-2">
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-2">
                   <ImagenUploader
                     titulo="Logo del negocio"
                     descripcion="PNG, JPG o WebP · máximo 5 MB · recomendado 512 × 512 px."
@@ -2017,19 +2017,19 @@ export default function ConfigurarAgentePage() {
                   />
                 </div>
 
-                <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-zinc-800 dark:bg-zinc-950/50">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/50 sm:mt-4 sm:rounded-2xl sm:p-4">
+                  <div className="flex items-center justify-between gap-2 sm:flex-wrap sm:gap-3">
                     <div>
-                      <p className="text-sm font-medium text-slate-950 dark:text-white">
+                      <p className="text-xs font-medium text-slate-950 dark:text-white sm:text-sm">
                         Galería
                       </p>
-                      <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
+                      <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs">
                         {paginaGaleria.length}/6 imágenes cargadas · máximo 5 MB cada una · recomendado 1200 × 900 px
                       </p>
                     </div>
 
                     <label
-                      className={`inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 ${
+                      className={`inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-[10px] font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm ${
                         paginaGaleria.length >= 6 ||
                         subiendoImagen === "galeria"
                           ? "pointer-events-none opacity-50"
@@ -2067,7 +2067,7 @@ export default function ConfigurarAgentePage() {
                   </div>
 
                   {paginaGaleria.length > 0 ? (
-                    <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    <div className="mt-3 grid grid-cols-3 gap-2 sm:mt-4 sm:gap-3">
                       {paginaGaleria.map(
                         (url, indice) => (
                           <div
@@ -2087,7 +2087,7 @@ export default function ConfigurarAgentePage() {
                                   indice,
                                 )
                               }
-                              className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-lg bg-black/70 text-white opacity-100 transition hover:bg-red-600 sm:opacity-0 sm:group-hover:opacity-100"
+                              className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-md bg-black/70 text-white opacity-100 transition hover:bg-red-600 sm:right-2 sm:top-2 sm:h-8 sm:w-8 sm:rounded-lg sm:opacity-0 sm:group-hover:opacity-100"
                               aria-label="Quitar imagen"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -2097,7 +2097,7 @@ export default function ConfigurarAgentePage() {
                       )}
                     </div>
                   ) : (
-                    <div className="mt-4 flex min-h-28 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white/50 px-4 text-center dark:border-zinc-700 dark:bg-zinc-900/40">
+                    <div className="mt-3 flex min-h-20 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white/50 px-3 text-center dark:border-zinc-700 dark:bg-zinc-900/40 sm:mt-4 sm:min-h-28 sm:rounded-xl sm:px-4">
                       <div>
                         <ImageIcon className="mx-auto h-6 w-6 text-slate-400 dark:text-zinc-600" />
                         <p className="mt-2 text-xs text-slate-500 dark:text-zinc-500">
@@ -2109,50 +2109,50 @@ export default function ConfigurarAgentePage() {
                 </div>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <div>
-                  <p className="text-sm font-medium text-slate-700 dark:text-zinc-200">
+                  <p className="text-xs font-medium text-slate-700 dark:text-zinc-200 sm:text-sm">
                     Tema de la página
                   </p>
-                  <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
+                  <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs">
                     Elegí la apariencia general que verán tus clientes.
                   </p>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
                   <button
                     type="button"
                     onClick={() =>
                       setPaginaTema("oscuro")
                     }
-                    className={`overflow-hidden rounded-2xl border p-1 text-left transition ${
+                    className={`overflow-hidden rounded-xl border p-1 text-left transition sm:rounded-2xl ${
                       paginaTema ===
                       "oscuro"
                         ? "border-blue-500 ring-2 ring-blue-500/20"
                         : "border-slate-200 hover:border-slate-300 dark:border-zinc-800 dark:hover:border-zinc-700"
                     }`}
                   >
-                    <div className="rounded-xl bg-zinc-950 p-4 text-white">
+                    <div className="rounded-lg bg-zinc-950 p-2.5 text-white sm:rounded-xl sm:p-4">
                       <div className="flex items-center gap-2">
                         <div
-                          className="h-8 w-8 rounded-lg"
+                          className="h-6 w-6 rounded-md sm:h-8 sm:w-8 sm:rounded-lg"
                           style={{
                             backgroundColor:
                               paginaColorPrincipal,
                           }}
                         />
                         <div>
-                          <p className="text-sm font-semibold">
+                          <p className="text-[11px] font-semibold sm:text-sm">
                             Oscuro
                           </p>
-                          <p className="text-[11px] text-zinc-500">
+                          <p className="text-[9px] leading-3 text-zinc-500 sm:text-[11px] sm:leading-normal">
                             Moderno y de alto contraste
                           </p>
                         </div>
                       </div>
 
-                      <div className="mt-4 h-2 w-3/4 rounded-full bg-zinc-800" />
-                      <div className="mt-2 h-2 w-1/2 rounded-full bg-zinc-800/70" />
+                      <div className="mt-2 h-1.5 w-3/4 rounded-full bg-zinc-800 sm:mt-4 sm:h-2" />
+                      <div className="mt-1.5 h-1.5 w-1/2 rounded-full bg-zinc-800/70 sm:mt-2 sm:h-2" />
                     </div>
                   </button>
 
@@ -2161,48 +2161,48 @@ export default function ConfigurarAgentePage() {
                     onClick={() =>
                       setPaginaTema("claro")
                     }
-                    className={`overflow-hidden rounded-2xl border p-1 text-left transition ${
+                    className={`overflow-hidden rounded-xl border p-1 text-left transition sm:rounded-2xl ${
                       paginaTema ===
                       "claro"
                         ? "border-blue-500 ring-2 ring-blue-500/20"
                         : "border-slate-200 hover:border-slate-300 dark:border-zinc-800 dark:hover:border-zinc-700"
                     }`}
                   >
-                    <div className="rounded-xl border border-slate-200 bg-white p-4 text-slate-950">
+                    <div className="rounded-lg border border-slate-200 bg-white p-2.5 text-slate-950 sm:rounded-xl sm:p-4">
                       <div className="flex items-center gap-2">
                         <div
-                          className="h-8 w-8 rounded-lg"
+                          className="h-6 w-6 rounded-md sm:h-8 sm:w-8 sm:rounded-lg"
                           style={{
                             backgroundColor:
                               paginaColorPrincipal,
                           }}
                         />
                         <div>
-                          <p className="text-sm font-semibold">
+                          <p className="text-[11px] font-semibold sm:text-sm">
                             Claro
                           </p>
-                          <p className="text-[11px] text-slate-500">
+                          <p className="text-[9px] leading-3 text-slate-500 sm:text-[11px] sm:leading-normal">
                             Limpio y profesional
                           </p>
                         </div>
                       </div>
 
-                      <div className="mt-4 h-2 w-3/4 rounded-full bg-slate-200" />
-                      <div className="mt-2 h-2 w-1/2 rounded-full bg-slate-100" />
+                      <div className="mt-2 h-1.5 w-3/4 rounded-full bg-slate-200 sm:mt-4 sm:h-2" />
+                      <div className="mt-1.5 h-1.5 w-1/2 rounded-full bg-slate-100 sm:mt-2 sm:h-2" />
                     </div>
                   </button>
                 </div>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1.5 sm:space-y-2">
                 <label
                   htmlFor="paginaColorPrincipal"
-                  className="block text-sm font-medium text-slate-700 dark:text-zinc-200"
+                  className="block text-xs font-medium text-slate-700 dark:text-zinc-200 sm:text-sm"
                 >
                   Color principal
                 </label>
 
-                <div className="flex gap-3">
+                <div className="flex gap-2 sm:gap-3">
                   <input
                     id="paginaColorPrincipal"
                     type="color"
@@ -2214,7 +2214,7 @@ export default function ConfigurarAgentePage() {
                         e.target.value,
                       )
                     }
-                    className="h-11 w-14 cursor-pointer rounded-xl border border-slate-300 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-900"
+                    className="h-9 w-12 cursor-pointer rounded-lg border border-slate-300 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-900 sm:h-11 sm:w-14 sm:rounded-xl"
                   />
 
                   <input
@@ -2226,18 +2226,18 @@ export default function ConfigurarAgentePage() {
                         e.target.value,
                       )
                     }
-                    className="h-11 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+                    className="h-9 min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 text-xs text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white sm:h-11 sm:rounded-xl sm:px-4 sm:text-sm"
                   />
                 </div>
               </div>
 
-              <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-zinc-800 dark:bg-zinc-950/50">
+              <label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/50 sm:gap-4 sm:rounded-xl sm:p-4">
                 <div>
-                  <p className="text-sm font-medium text-slate-950 dark:text-white">
+                  <p className="text-xs font-medium text-slate-950 dark:text-white sm:text-sm">
                     Publicar página
                   </p>
 
-                  <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
+                  <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs">
                     Permitirá que cualquier
                     cliente pueda verla.
                   </p>
@@ -2258,11 +2258,11 @@ export default function ConfigurarAgentePage() {
               </label>
 
               <div className="md:col-span-2">
-                <p className="mb-3 text-sm font-medium text-slate-700 dark:text-zinc-200">
+                <p className="mb-2 text-xs font-medium text-slate-700 dark:text-zinc-200 sm:mb-3 sm:text-sm">
                   Información visible
                 </p>
 
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
                   <ToggleOpcion
                     titulo="WhatsApp"
                     descripcion="Mostrar botón de contacto."
@@ -2433,14 +2433,14 @@ export default function ConfigurarAgentePage() {
                 </div>
               </div>
 
-              <div className="md:col-span-2 space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-zinc-800 dark:bg-zinc-950/50">
+              <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/50 sm:space-y-4 sm:rounded-2xl sm:p-5 md:col-span-2">
                 <div>
-                  <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center justify-between gap-2 sm:flex-wrap sm:gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-slate-950 dark:text-white">
+                      <p className="text-xs font-semibold text-slate-950 dark:text-white sm:text-sm">
                         Testimonios
                       </p>
-                      <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
+                      <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs">
                         Agregá reseñas reales de clientes para generar más confianza.
                       </p>
                     </div>
@@ -2451,7 +2451,7 @@ export default function ConfigurarAgentePage() {
                   </div>
                 </div>
 
-                <div className="grid gap-3 md:grid-cols-2">
+                <div className="grid gap-2.5 sm:gap-3 md:grid-cols-2">
                   <Input
                     id="testimonioNombre"
                     label="Nombre del cliente"
@@ -2521,7 +2521,7 @@ export default function ConfigurarAgentePage() {
                       ) => (
                         <div
                           key={`${testimonio.nombre}-${index}`}
-                          className="flex items-start justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
+                          className="flex items-start justify-between gap-3 rounded-lg border border-slate-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900 sm:gap-4 sm:rounded-xl sm:p-4"
                         >
                           <div className="min-w-0">
                             <p className="font-medium text-slate-950 dark:text-white">
@@ -2538,7 +2538,7 @@ export default function ConfigurarAgentePage() {
                               </p>
                             )}
 
-                            <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600 dark:text-zinc-400">
+                            <p className="mt-1.5 whitespace-pre-line text-[11px] leading-5 text-slate-600 dark:text-zinc-400 sm:mt-2 sm:text-sm sm:leading-6">
                               {
                                 testimonio.texto
                               }
@@ -2552,7 +2552,7 @@ export default function ConfigurarAgentePage() {
                                 index,
                               )
                             }
-                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-red-200 text-red-600 transition hover:bg-red-50 dark:border-red-500/20 dark:text-red-400 dark:hover:bg-red-500/10"
+                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-red-200 text-red-600 transition hover:bg-red-50 dark:border-red-500/20 dark:text-red-400 dark:hover:bg-red-500/10 sm:h-9 sm:w-9"
                             aria-label="Eliminar testimonio"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -2562,19 +2562,19 @@ export default function ConfigurarAgentePage() {
                     )}
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-500 dark:text-zinc-500">
+                  <p className="text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:text-xs">
                     Todavía no agregaste testimonios.
                   </p>
                 )}
               </div>
 
-              <div className="md:col-span-2 space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-zinc-800 dark:bg-zinc-950/50">
-                <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/50 sm:space-y-4 sm:rounded-2xl sm:p-5 md:col-span-2">
+                <div className="flex items-center justify-between gap-2 sm:flex-wrap sm:gap-3">
                   <div>
-                    <p className="text-sm font-semibold text-slate-950 dark:text-white">
+                    <p className="text-xs font-semibold text-slate-950 dark:text-white sm:text-sm">
                       Preguntas frecuentes
                     </p>
-                    <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
+                    <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs">
                       Mostrá respuestas rápidas a las dudas más comunes del negocio.
                     </p>
                   </div>
@@ -2638,14 +2638,14 @@ export default function ConfigurarAgentePage() {
                       ) => (
                         <div
                           key={`${item.pregunta}-${index}`}
-                          className="flex items-start justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
+                          className="flex items-start justify-between gap-3 rounded-lg border border-slate-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900 sm:gap-4 sm:rounded-xl sm:p-4"
                         >
                           <div className="min-w-0">
                             <p className="font-medium text-slate-950 dark:text-white">
                               {item.pregunta}
                             </p>
 
-                            <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600 dark:text-zinc-400">
+                            <p className="mt-1.5 whitespace-pre-line text-[11px] leading-5 text-slate-600 dark:text-zinc-400 sm:mt-2 sm:text-sm sm:leading-6">
                               {item.respuesta}
                             </p>
                           </div>
@@ -2657,7 +2657,7 @@ export default function ConfigurarAgentePage() {
                                 index,
                               )
                             }
-                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-red-200 text-red-600 transition hover:bg-red-50 dark:border-red-500/20 dark:text-red-400 dark:hover:bg-red-500/10"
+                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-red-200 text-red-600 transition hover:bg-red-50 dark:border-red-500/20 dark:text-red-400 dark:hover:bg-red-500/10 sm:h-9 sm:w-9"
                             aria-label="Eliminar pregunta frecuente"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -2667,7 +2667,7 @@ export default function ConfigurarAgentePage() {
                     )}
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-500 dark:text-zinc-500">
+                  <p className="text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:text-xs">
                     Todavía no agregaste preguntas frecuentes.
                   </p>
                 )}
@@ -2675,14 +2675,14 @@ export default function ConfigurarAgentePage() {
             </div>
 
             {/* PREVIEW PÁGINA */}
-            <div className="h-fit rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
-              <div className="mb-4 flex items-center justify-between">
+            <div className="h-fit rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950 sm:rounded-2xl sm:p-4">
+              <div className="mb-2.5 flex items-center justify-between sm:mb-4">
                 <div>
-                  <p className="text-sm font-semibold text-slate-950 dark:text-white">
+                  <p className="text-xs font-semibold text-slate-950 dark:text-white sm:text-sm">
                     Vista previa
                   </p>
 
-                  <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
+                  <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs">
                     Página del negocio
                   </p>
                 </div>
@@ -2690,31 +2690,31 @@ export default function ConfigurarAgentePage() {
                 <Globe2 className="h-5 w-5 text-blue-500" />
               </div>
 
-              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-2xl">
                 <div
-                  className="relative h-40 overflow-hidden p-5 text-white"
+                  className="relative h-28 overflow-hidden p-3 text-white sm:h-40 sm:p-5"
                   style={{
                     background: paginaPortadaUrl
                       ? `linear-gradient(rgba(0,0,0,.48), rgba(0,0,0,.72)), url("${paginaPortadaUrl}") center/cover`
                       : `linear-gradient(135deg, ${paginaColorPrincipal}, #09090b)`,
                   }}
                 >
-                  <div className="relative z-10 flex h-full items-end gap-3">
+                  <div className="relative z-10 flex h-full items-end gap-2 sm:gap-3">
                     {paginaLogoUrl && (
                       <img
                         src={paginaLogoUrl}
                         alt="Logo"
-                        className="h-14 w-14 shrink-0 rounded-xl border border-white/20 bg-white object-cover shadow-lg"
+                        className="h-10 w-10 shrink-0 rounded-lg border border-white/20 bg-white object-cover shadow-lg sm:h-14 sm:w-14 sm:rounded-xl"
                       />
                     )}
 
                     <div className="min-w-0 pb-1">
-                      <p className="text-xs font-medium uppercase tracking-[0.16em] text-white/70">
+                      <p className="text-[9px] font-medium uppercase tracking-[0.12em] text-white/70 sm:text-xs sm:tracking-[0.16em]">
                         {rubro ||
                           "Tu negocio"}
                       </p>
 
-                      <h3 className="mt-1 truncate text-2xl font-bold">
+                      <h3 className="mt-0.5 truncate text-lg font-bold sm:mt-1 sm:text-2xl">
                         {paginaTitulo ||
                           nombre ||
                           "Tu negocio"}
@@ -2723,19 +2723,19 @@ export default function ConfigurarAgentePage() {
                   </div>
                 </div>
 
-                <div className="p-5">
-                  <p className="text-base font-semibold leading-6 text-slate-900 dark:text-white">
+                <div className="p-3 sm:p-5">
+                  <p className="text-xs font-semibold leading-5 text-slate-900 dark:text-white sm:text-base sm:leading-6">
                     {paginaSubtitulo ||
                       "Agregá un texto principal para destacar tu negocio."}
                   </p>
 
                   {paginaTextoSecundario && (
-                    <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-zinc-400">
+                    <p className="mt-1.5 text-[11px] leading-5 text-slate-600 dark:text-zinc-400 sm:mt-2 sm:text-sm sm:leading-6">
                       {paginaTextoSecundario}
                     </p>
                   )}
 
-                  <div className="mt-5 grid gap-2">
+                  <div className="mt-3 grid grid-cols-2 gap-1.5 sm:mt-5 sm:grid-cols-1 sm:gap-2">
                     {paginaMostrarHorarios &&
                       horarios && (
                         <PreviewDato
@@ -2783,19 +2783,19 @@ export default function ConfigurarAgentePage() {
                       backgroundColor:
                         paginaColorPrincipal,
                     }}
-                    className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white"
+                    className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-white sm:mt-5 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-3 sm:text-sm"
                   >
                     Contactar
                   </button>
                 </div>
               </div>
 
-              <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900">
-                <p className="text-xs text-slate-500 dark:text-zinc-500">
+              <div className="mt-3 rounded-lg border border-slate-200 bg-white p-2.5 dark:border-zinc-800 dark:bg-zinc-900 sm:mt-4 sm:rounded-xl sm:p-3">
+                <p className="text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:text-xs">
                   URL
                 </p>
 
-                <p className="mt-1 break-all text-sm font-medium text-slate-800 dark:text-zinc-200">
+                <p className="mt-0.5 break-all text-[11px] font-medium text-slate-800 dark:text-zinc-200 sm:mt-1 sm:text-sm">
                   {urlPublica ||
                     "/negocio/mi-negocio"}
                 </p>
@@ -2818,7 +2818,7 @@ export default function ConfigurarAgentePage() {
                     "_blank",
                   );
                 }}
-                className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800"
+                className="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 sm:mt-3 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-3 sm:text-sm"
               >
                 <ExternalLink className="h-4 w-4" />
                 Abrir página
@@ -2833,7 +2833,7 @@ export default function ConfigurarAgentePage() {
         </Card>
 
         {error && (
-          <Card className="border-red-200 bg-red-50 p-4 dark:border-red-500/20 dark:bg-red-500/10">
+          <Card className="border-red-200 bg-red-50 p-3 dark:border-red-500/20 dark:bg-red-500/10 sm:p-4">
             <p className="text-sm text-red-700 dark:text-red-400">
               {error}
             </p>
@@ -2841,15 +2841,15 @@ export default function ConfigurarAgentePage() {
         )}
 
         {mensaje && (
-          <Card className="border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/10">
+          <Card className="border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/10 sm:p-4">
             <p className="text-sm text-emerald-700 dark:text-emerald-400">
               {mensaje}
             </p>
           </Card>
         )}
 
-        <Card className="sticky bottom-4 z-20 flex flex-col gap-4 border-slate-200 bg-white/95 p-5 shadow-2xl backdrop-blur sm:flex-row sm:items-center sm:justify-between dark:border-zinc-700/80 dark:bg-zinc-900/95">
-          <div>
+        <Card className="sticky bottom-2 z-20 border-slate-200 bg-white/95 p-2.5 shadow-2xl backdrop-blur sm:bottom-4 sm:flex sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-5 dark:border-zinc-700/80 dark:bg-zinc-900/95">
+          <div className="hidden sm:block">
             <p className="text-sm font-medium text-slate-950 dark:text-white">
               Mi página
             </p>
@@ -2859,22 +2859,25 @@ export default function ConfigurarAgentePage() {
             </p>
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="grid grid-cols-3 gap-1.5 sm:flex sm:flex-row sm:gap-3">
             <Button
               type="button"
               variant="secondary"
+              className="min-w-0 px-2 py-2 text-[10px] sm:px-4 sm:py-2.5 sm:text-sm"
               onClick={() =>
                 router.push(
                   `/empresas/${empresaId}/catalogo`,
                 )
               }
             >
-              Servicios y productos
+              <span className="sm:hidden">Catálogo</span>
+              <span className="hidden sm:inline">Servicios y productos</span>
             </Button>
 
             <Button
               type="button"
               variant="secondary"
+              className="min-w-0 px-2 py-2 text-[10px] sm:px-4 sm:py-2.5 sm:text-sm"
               disabled={!paginaSlug}
               onClick={() => {
                 if (!paginaSlug) {
@@ -2887,16 +2890,23 @@ export default function ConfigurarAgentePage() {
                 );
               }}
             >
-              Ver página pública
+              <span className="sm:hidden">Ver página</span>
+              <span className="hidden sm:inline">Ver página pública</span>
             </Button>
 
             <Button
               type="submit"
+              className="min-w-0 px-2 py-2 text-[10px] sm:px-4 sm:py-2.5 sm:text-sm"
               disabled={guardando}
             >
-              {guardando
-                ? "Guardando..."
-                : "Guardar cambios"}
+              {guardando ? (
+                "Guardando..."
+              ) : (
+                <>
+                  <span className="sm:hidden">Guardar</span>
+                  <span className="hidden sm:inline">Guardar cambios</span>
+                </>
+              )}
             </Button>
           </div>
         </Card>
@@ -2915,14 +2925,14 @@ function SectionHeader({
   right?: React.ReactNode;
 }) {
   return (
-    <div className="border-b border-slate-200 px-6 py-5 dark:border-zinc-800">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <div className="border-b border-slate-200 px-4 py-3 dark:border-zinc-800 sm:px-6 sm:py-5">
+      <div className="flex items-start justify-between gap-2 sm:flex-wrap sm:gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-slate-950 dark:text-white">
+          <h2 className="text-sm font-semibold text-slate-950 dark:text-white sm:text-lg">
             {title}
           </h2>
 
-          <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
+          <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-sm sm:leading-normal">
             {description}
           </p>
         </div>
@@ -2953,19 +2963,19 @@ function ImagenUploader({
   aspectClass: string;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-zinc-800 dark:bg-zinc-950/50">
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-2.5 dark:border-zinc-800 dark:bg-zinc-950/50 sm:rounded-2xl sm:p-4">
       <div>
-        <p className="text-sm font-medium text-slate-950 dark:text-white">
+        <p className="text-[11px] font-medium text-slate-950 dark:text-white sm:text-sm">
           {titulo}
         </p>
-        <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
+        <p className="mt-0.5 line-clamp-2 text-[9px] leading-3.5 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs sm:leading-normal">
           {descripcion}
         </p>
       </div>
 
       {imagenUrl ? (
         <div
-          className={`relative mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 ${aspectClass}`}
+          className={`relative mt-2.5 overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 sm:mt-4 sm:rounded-xl ${aspectClass}`}
         >
           <img
             src={imagenUrl}
@@ -2976,7 +2986,7 @@ function ImagenUploader({
           <button
             type="button"
             onClick={onQuitar}
-            className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-lg bg-black/70 text-white transition hover:bg-red-600"
+            className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-md bg-black/70 text-white transition hover:bg-red-600 sm:right-2 sm:top-2 sm:h-8 sm:w-8 sm:rounded-lg"
             aria-label={`Quitar ${titulo}`}
           >
             <Trash2 className="h-4 w-4" />
@@ -2984,14 +2994,14 @@ function ImagenUploader({
         </div>
       ) : (
         <div
-          className={`mt-4 flex items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white/60 p-4 dark:border-zinc-700 dark:bg-zinc-900/40 ${aspectClass}`}
+          className={`mt-2.5 flex items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white/60 p-2.5 dark:border-zinc-700 dark:bg-zinc-900/40 sm:mt-4 sm:rounded-xl sm:p-4 ${aspectClass}`}
         >
           <ImageIcon className="h-7 w-7 text-slate-400 dark:text-zinc-600" />
         </div>
       )}
 
       <label
-        className={`mt-4 inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 ${
+        className={`mt-2.5 inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-[10px] font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 sm:mt-4 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm ${
           cargando
             ? "pointer-events-none opacity-50"
             : ""
@@ -3044,15 +3054,15 @@ function ToggleOpcion({
 }) {
   return (
     <label
-      className={`flex items-center justify-between gap-4 rounded-xl border p-4 ${
+      className={`flex items-center justify-between gap-2 rounded-lg border p-2.5 sm:gap-4 sm:rounded-xl sm:p-4 ${
         disabled
           ? "cursor-not-allowed border-slate-200 bg-slate-100/70 opacity-70 dark:border-zinc-800 dark:bg-zinc-950/30"
           : "cursor-pointer border-slate-200 bg-slate-50 dark:border-zinc-800 dark:bg-zinc-950/50"
       }`}
     >
       <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="text-sm font-medium text-slate-950 dark:text-white">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          <p className="text-[11px] font-medium leading-4 text-slate-950 dark:text-white sm:text-sm sm:leading-normal">
             {titulo}
           </p>
 
@@ -3064,7 +3074,7 @@ function ToggleOpcion({
             )}
         </div>
 
-        <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
+        <p className="mt-0.5 line-clamp-2 text-[9px] leading-3.5 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs sm:leading-normal">
           {descripcion}
         </p>
       </div>
@@ -3078,7 +3088,7 @@ function ToggleOpcion({
             e.target.checked,
           )
         }
-        className="h-5 w-5 shrink-0 accent-blue-500 disabled:cursor-not-allowed"
+        className="h-4 w-4 shrink-0 accent-blue-500 disabled:cursor-not-allowed sm:h-5 sm:w-5"
       />
     </label>
   );
@@ -3092,12 +3102,12 @@ function PreviewDato({
   valor: string;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-950">
-      <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400 dark:text-zinc-600">
+    <div className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 dark:border-zinc-800 dark:bg-zinc-950 sm:rounded-xl sm:px-3 sm:py-2.5">
+      <p className="text-[8px] font-medium uppercase tracking-wide text-slate-400 dark:text-zinc-600 sm:text-[11px]">
         {titulo}
       </p>
 
-      <p className="mt-1 line-clamp-2 text-sm text-slate-700 dark:text-zinc-300">
+      <p className="mt-0.5 line-clamp-2 text-[10px] text-slate-700 dark:text-zinc-300 sm:mt-1 sm:text-sm">
         {valor}
       </p>
     </div>
@@ -3118,20 +3128,20 @@ function TextArea({
   ...props
 }: TextAreaProps) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5 sm:space-y-2">
       <label
         htmlFor={id}
-        className="block text-sm font-medium text-slate-700 dark:text-zinc-200"
+        className="block text-xs font-medium text-slate-700 dark:text-zinc-200 sm:text-sm"
       >
         {label}
       </label>
 
       <textarea
         id={id}
-        rows={4}
+        rows={3}
         className={[
-          "w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900",
-          "text-sm text-slate-900 placeholder:text-slate-400 dark:text-white dark:placeholder:text-zinc-500",
+          "w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2.5 dark:border-zinc-700 dark:bg-zinc-900 sm:rounded-xl sm:px-4 sm:py-3",
+          "text-xs text-slate-900 placeholder:text-slate-400 dark:text-white dark:placeholder:text-zinc-500 sm:text-sm",
           "transition-colors duration-200",
           "focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20",
           className,
@@ -3142,7 +3152,7 @@ function TextArea({
       />
 
       {helperText && (
-        <p className="text-sm text-slate-500 dark:text-zinc-500">
+        <p className="text-xs text-slate-500 dark:text-zinc-500 sm:text-sm">
           {helperText}
         </p>
       )}

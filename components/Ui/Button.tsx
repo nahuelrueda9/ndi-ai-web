@@ -45,9 +45,9 @@ const sizeClasses: Record<
   ButtonSize,
   string
 > = {
-  sm: "h-9 px-3 text-sm",
-  md: "h-10 px-4 text-sm",
-  lg: "h-12 px-5 text-base",
+  sm: "h-8 px-2.5 text-[11px] sm:h-9 sm:px-3 sm:text-sm",
+  md: "h-9 px-3 text-xs sm:h-10 sm:px-4 sm:text-sm",
+  lg: "h-10 px-4 text-sm sm:h-12 sm:px-5 sm:text-base",
 };
 
 export default function Button({
@@ -65,7 +65,7 @@ export default function Button({
       type={type}
       disabled={disabled}
       className={[
-        "inline-flex items-center justify-center gap-2 rounded-xl font-medium",
+        "inline-flex items-center justify-center gap-1.5 rounded-lg font-medium sm:gap-2 sm:rounded-xl",
         "transition duration-200",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
         "focus-visible:ring-offset-white dark:focus-visible:ring-offset-zinc-950",

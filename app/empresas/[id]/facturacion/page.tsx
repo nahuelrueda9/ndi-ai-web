@@ -407,11 +407,11 @@ export default function FacturacionPage() {
 
   if (cargando) {
     return (
-      <main className="mx-auto max-w-[1500px] px-4 py-4 text-slate-950 dark:text-white sm:px-6">
-        <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <main className="mx-auto max-w-[1500px] px-3 py-3 text-slate-950 dark:text-white sm:px-6 sm:py-4">
+        <div className="rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-2xl sm:p-10">
           <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
 
-          <p className="mt-4 text-sm text-slate-600 dark:text-zinc-400">
+          <p className="mt-2 text-xs text-slate-600 dark:text-zinc-400 sm:mt-4 sm:text-sm">
             Verificando acceso y cargando facturación...
           </p>
         </div>
@@ -424,8 +424,8 @@ export default function FacturacionPage() {
     !empresaId
   ) {
     return (
-      <main className="mx-auto max-w-[1500px] px-4 py-4 text-slate-950 dark:text-white sm:px-6">
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
+      <main className="mx-auto max-w-[1500px] px-3 py-3 text-slate-950 dark:text-white sm:px-6 sm:py-4">
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300 sm:rounded-2xl sm:p-6">
           {error ||
             "No se pudo cargar la empresa."}
         </div>
@@ -583,33 +583,33 @@ export default function FacturacionPage() {
       : 0;
 
   return (
-    <main className="mx-auto max-w-[1500px] px-4 py-4 text-slate-950 dark:text-white sm:px-6">
-      <p className="text-xs font-medium text-blue-600 dark:text-blue-400">
+    <main className="mx-auto max-w-[1500px] px-3 py-3 text-slate-950 dark:text-white sm:px-6 sm:py-4">
+      <p className="text-[10px] font-medium text-blue-600 dark:text-blue-400 sm:text-xs">
         {empresa.nombre ||
           empresa.name ||
           "Empresa"}
       </p>
 
-      <div className="mt-1 flex flex-wrap items-end justify-between gap-3">
+      <div className="mt-0.5 flex items-end justify-between gap-2 sm:mt-1 sm:flex-wrap sm:gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-950 dark:text-white">
+          <h1 className="text-xl font-bold text-slate-950 dark:text-white sm:text-2xl">
             Facturación
           </h1>
 
-          <p className="mt-1 max-w-2xl text-xs text-slate-600 dark:text-zinc-400">
+          <p className="mt-0.5 max-w-xl text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:mt-1 sm:max-w-2xl sm:text-xs sm:leading-normal">
             Revisá tu plan, mantenimiento mensual y pagos de NDI AI.
           </p>
         </div>
 
         <Link
           href={`/empresas/${empresaId}/planes`}
-          className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-500"
+          className="shrink-0 rounded-lg bg-blue-600 px-3 py-2 text-[10px] font-semibold text-white transition hover:bg-blue-500 sm:px-4 sm:text-xs"
         >
           Ver planes
         </Link>
       </div>
 
-      <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-4 sm:gap-3 md:grid-cols-2 xl:grid-cols-4">
         <Card
           titulo="Plan actual"
           valor={nombrePlanVisible}
@@ -672,36 +672,36 @@ export default function FacturacionPage() {
       </div>
 
       {tuvoSuscripcion || suscripcionActiva ? (
-      <section className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="border-b border-slate-200 p-4 dark:border-zinc-800">
-          <div className="flex flex-wrap items-start justify-between gap-3">
+      <section className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:mt-4 sm:rounded-2xl">
+        <div className="border-b border-slate-200 p-3 dark:border-zinc-800 sm:p-4">
+          <div className="flex items-start justify-between gap-2 sm:flex-wrap sm:gap-3">
             <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-xl font-bold text-slate-950 dark:text-white">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <h2 className="text-base font-bold text-slate-950 dark:text-white sm:text-xl">
                   {nombrePlan}
                 </h2>
 
                 {plan ===
                   "business" && (
-                  <span className="rounded-full border border-violet-200 bg-violet-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-violet-700 dark:border-violet-500/20 dark:bg-violet-500/10 dark:text-violet-300">
+                  <span className="rounded-full border border-violet-200 bg-violet-50 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wide text-violet-700 dark:border-violet-500/20 dark:bg-violet-500/10 dark:text-violet-300 sm:px-2.5 sm:text-[10px]">
                     Precio lanzamiento
                   </span>
                 )}
               </div>
 
-              <p className="mt-1 text-xs text-slate-600 dark:text-zinc-400">
+              <p className="mt-0.5 text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:mt-1 sm:text-xs sm:leading-normal">
                 {suscripcionActiva
                   ? "Tu plan actual dentro de NDI AI."
                   : "Último plan contratado. Podés renovarlo desde Planes."}
               </p>
             </div>
 
-            <div className="text-left sm:text-right">
-              <p className="text-xs text-slate-500 dark:text-zinc-500">
+            <div className="shrink-0 text-right">
+              <p className="text-[9px] text-slate-500 dark:text-zinc-500 sm:text-xs">
                 Precio de alta
               </p>
 
-              <p className="mt-0.5 text-xl font-bold text-slate-950 dark:text-white">
+              <p className="mt-0.5 text-base font-bold text-slate-950 dark:text-white sm:text-xl">
                 {formatearPrecio(
                   typeof empresa.subscriptionInitialPrice === "number" &&
                   empresa.subscriptionInitialPrice > 0
@@ -710,7 +710,7 @@ export default function FacturacionPage() {
                 )}
               </p>
 
-              <p className="mt-0.5 text-xs font-semibold text-blue-600 dark:text-blue-400">
+              <p className="mt-0.5 text-[9px] font-semibold text-blue-600 dark:text-blue-400 sm:text-xs">
                 +{" "}
                 {formatearPrecio(
                   mensualContratado,
@@ -721,13 +721,13 @@ export default function FacturacionPage() {
           </div>
         </div>
 
-        <div className="grid gap-4 p-4 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="grid gap-3 p-3 sm:gap-4 sm:p-4 lg:grid-cols-[1.2fr_0.8fr]">
           <div>
-            <h3 className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:text-zinc-500">
+            <h3 className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-zinc-500 sm:text-[10px] sm:tracking-[0.14em]">
               Incluido en tu plan
             </h3>
 
-            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            <div className="mt-2 grid grid-cols-2 gap-1.5 sm:mt-3 sm:gap-2">
               {BENEFICIOS[
                 plan
               ].map(
@@ -736,13 +736,13 @@ export default function FacturacionPage() {
                     key={
                       beneficio
                     }
-                    className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-950"
+                    className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 dark:border-zinc-800 dark:bg-zinc-950 sm:gap-2 sm:rounded-xl sm:px-3 sm:py-2.5"
                   >
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+                    <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[9px] font-bold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300 sm:h-5 sm:w-5 sm:text-[11px]">
                       ✓
                     </span>
 
-                    <p className="text-xs font-medium text-slate-700 dark:text-zinc-300">
+                    <p className="text-[9px] font-medium leading-3.5 text-slate-700 dark:text-zinc-300 sm:text-xs sm:leading-normal">
                       {
                         beneficio
                       }
@@ -753,12 +753,12 @@ export default function FacturacionPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 dark:border-zinc-800 dark:bg-zinc-950">
-            <p className="text-xs font-semibold text-slate-950 dark:text-white">
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-2.5 dark:border-zinc-800 dark:bg-zinc-950 sm:rounded-xl sm:p-3.5">
+            <p className="text-[10px] font-semibold text-slate-950 dark:text-white sm:text-xs">
               Cómo funciona el cobro
             </p>
 
-            <div className="mt-2 space-y-2 text-xs leading-5 text-slate-600 dark:text-zinc-400">
+            <div className="mt-1.5 space-y-1.5 text-[9px] leading-4 text-slate-600 dark:text-zinc-400 sm:mt-2 sm:space-y-2 sm:text-xs sm:leading-5">
               <p>
                 <strong className="text-slate-900 dark:text-zinc-200">
                   Alta:
@@ -775,7 +775,7 @@ export default function FacturacionPage() {
 
               {plan ===
                 "business" && (
-                <p className="rounded-lg border border-violet-200 bg-violet-50 p-2.5 text-[11px] leading-4 text-violet-800 dark:border-violet-500/20 dark:bg-violet-500/10 dark:text-violet-200">
+                <p className="rounded-md border border-violet-200 bg-violet-50 p-2 text-[9px] leading-3.5 text-violet-800 dark:border-violet-500/20 dark:bg-violet-500/10 dark:text-violet-200 sm:rounded-lg sm:p-2.5 sm:text-[11px] sm:leading-4">
                   <strong>
                     Precio lanzamiento:
                   </strong>{" "}
@@ -787,18 +787,18 @@ export default function FacturacionPage() {
         </div>
       </section>
       ) : (
-        <section className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-white p-5 text-center shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
-          <h2 className="text-xl font-bold text-slate-950 dark:text-white">
+        <section className="mt-3 rounded-xl border border-dashed border-slate-300 bg-white p-4 text-center shadow-sm dark:border-zinc-700 dark:bg-zinc-900 sm:mt-4 sm:rounded-2xl sm:p-5">
+          <h2 className="text-base font-bold text-slate-950 dark:text-white sm:text-xl">
             Todavía no tenés un plan activo
           </h2>
 
-          <p className="mx-auto mt-2 max-w-2xl text-xs leading-5 text-slate-600 dark:text-zinc-400">
+          <p className="mx-auto mt-1.5 max-w-2xl text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:mt-2 sm:text-xs sm:leading-5">
             Elegí Página Simple, Página Completa o Business IA para activar las funciones de tu negocio.
           </p>
 
           <Link
             href={`/empresas/${empresaId}/planes`}
-            className="mt-4 inline-flex rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-500"
+            className="mt-3 inline-flex rounded-lg bg-blue-600 px-3 py-2 text-[10px] font-semibold text-white transition hover:bg-blue-500 sm:mt-4 sm:px-4 sm:text-xs"
           >
             Elegir plan
           </Link>
@@ -808,18 +808,18 @@ export default function FacturacionPage() {
       {suscripcionActiva &&
       plan ===
       "business" ? (
-        <section className="mt-4">
+        <section className="mt-3 sm:mt-4">
           <div>
-            <h2 className="text-base font-semibold text-slate-950 dark:text-white">
+            <h2 className="text-sm font-semibold text-slate-950 dark:text-white sm:text-base">
               Uso del asistente IA
             </h2>
 
-            <p className="mt-0.5 text-xs text-slate-500 dark:text-zinc-500">
+            <p className="mt-0.5 text-[10px] text-slate-500 dark:text-zinc-500 sm:text-xs">
               Consumo del mes actual incluido en Business IA.
             </p>
           </div>
 
-          <div className="mt-3 grid gap-3 lg:grid-cols-2">
+          <div className="mt-2 grid grid-cols-2 gap-2 sm:mt-3 sm:gap-3 lg:grid-cols-2">
             <UsoCard
               titulo="Consultas al asistente"
               usadas={
@@ -848,14 +848,14 @@ export default function FacturacionPage() {
           </div>
         </section>
       ) : (
-        <section className="mt-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="flex flex-wrap items-center justify-between gap-5">
+        <section className="mt-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:mt-4 sm:rounded-xl sm:p-4">
+          <div className="flex items-center justify-between gap-3 sm:flex-wrap sm:gap-5">
             <div>
-              <h2 className="text-base font-semibold text-slate-950 dark:text-white">
+              <h2 className="text-sm font-semibold text-slate-950 dark:text-white sm:text-base">
                 Asistente IA
               </h2>
 
-              <p className="mt-2 max-w-2xl text-sm text-slate-500 dark:text-zinc-500">
+              <p className="mt-1 max-w-2xl text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-2 sm:text-sm sm:leading-normal">
                 {plan === "business" && tuvoSuscripcion && !suscripcionActiva
                   ? "Tu Business IA no está activo. Renovalo para volver a usar el asistente y su consumo mensual."
                   : "El asistente inteligente y su consumo mensual forman parte de Business IA."}
@@ -864,7 +864,7 @@ export default function FacturacionPage() {
 
             <Link
               href={`/empresas/${empresaId}/planes`}
-              className="rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              className="shrink-0 rounded-lg border border-slate-300 px-3 py-2 text-[10px] font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 sm:rounded-xl sm:px-5 sm:py-3 sm:text-sm"
             >
               {plan === "business" && tuvoSuscripcion
                 ? "Renovar Business IA"
@@ -874,20 +874,20 @@ export default function FacturacionPage() {
         </section>
       )}
 
-      <section className="mt-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="text-base font-semibold text-slate-950 dark:text-white">
+      <section className="mt-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:mt-4 sm:rounded-xl sm:p-4">
+        <h2 className="text-sm font-semibold text-slate-950 dark:text-white sm:text-base">
           Último pago
         </h2>
 
         {empresa.mercadopagoPaymentId ? (
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-500">
+          <div className="mt-2 grid grid-cols-2 gap-2 sm:mt-3 sm:gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-md border border-slate-200 bg-slate-50 p-2 dark:border-zinc-800 dark:bg-zinc-950 sm:rounded-lg sm:p-3">
+              <p className="text-[8px] font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-500 sm:text-[10px]">
                 Estado
               </p>
 
               <p
-                className={`mt-1 text-sm font-semibold ${
+                className={`mt-0.5 text-[11px] font-semibold sm:mt-1 sm:text-sm ${
                   empresa.mercadopagoPaymentStatus ===
                     "approved"
                     ? "text-emerald-600 dark:text-emerald-400"
@@ -898,12 +898,12 @@ export default function FacturacionPage() {
               </p>
             </div>
 
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-500">
+            <div className="rounded-md border border-slate-200 bg-slate-50 p-2 dark:border-zinc-800 dark:bg-zinc-950 sm:rounded-lg sm:p-3">
+              <p className="text-[8px] font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-500 sm:text-[10px]">
                 Importe
               </p>
 
-              <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-zinc-200">
+              <p className="mt-0.5 text-[11px] font-semibold text-slate-900 dark:text-zinc-200 sm:mt-1 sm:text-sm">
                 {montoUltimoPago}{" "}
                 <span className="text-xs font-normal text-slate-500 dark:text-zinc-500">
                   {monedaUltimoPago}
@@ -911,12 +911,12 @@ export default function FacturacionPage() {
               </p>
             </div>
 
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-500">
+            <div className="rounded-md border border-slate-200 bg-slate-50 p-2 dark:border-zinc-800 dark:bg-zinc-950 sm:rounded-lg sm:p-3">
+              <p className="text-[8px] font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-500 sm:text-[10px]">
                 Aprobado
               </p>
 
-              <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-zinc-200">
+              <p className="mt-0.5 text-[11px] font-semibold text-slate-900 dark:text-zinc-200 sm:mt-1 sm:text-sm">
                 {fechaUltimoPago
                   ? formatearFecha(
                       fechaUltimoPago,
@@ -925,33 +925,33 @@ export default function FacturacionPage() {
               </p>
             </div>
 
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-500">
+            <div className="rounded-md border border-slate-200 bg-slate-50 p-2 dark:border-zinc-800 dark:bg-zinc-950 sm:rounded-lg sm:p-3">
+              <p className="text-[8px] font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-500 sm:text-[10px]">
                 ID Mercado Pago
               </p>
 
-              <p className="mt-1 break-all text-xs font-medium text-slate-900 dark:text-zinc-200">
+              <p className="mt-0.5 break-all text-[9px] font-medium text-slate-900 dark:text-zinc-200 sm:mt-1 sm:text-xs">
                 {empresa.mercadopagoPaymentId}
               </p>
             </div>
           </div>
         ) : (
-          <div className="mt-3 rounded-lg border border-dashed border-slate-300 p-5 text-center dark:border-zinc-700">
-            <p className="font-medium text-slate-700 dark:text-zinc-300">
+          <div className="mt-2 rounded-lg border border-dashed border-slate-300 p-4 text-center dark:border-zinc-700 sm:mt-3 sm:p-5">
+            <p className="text-xs font-medium text-slate-700 dark:text-zinc-300 sm:text-base">
               Todavía no hay pagos registrados.
             </p>
 
-            <p className="mt-2 text-sm text-slate-500 dark:text-zinc-500">
+            <p className="mt-1 text-[10px] text-slate-500 dark:text-zinc-500 sm:mt-2 sm:text-sm">
               Cuando haya un pago asociado a esta empresa va a aparecer acá.
             </p>
           </div>
         )}
       </section>
 
-      <div className="mt-8 flex flex-wrap gap-4">
+      <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-8 sm:flex sm:flex-wrap sm:gap-4">
         <Link
           href={`/empresas/${empresaId}/planes`}
-          className="rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-500"
+          className="rounded-lg bg-blue-600 px-3 py-2 text-center text-xs font-semibold text-white transition hover:bg-blue-500 sm:rounded-xl sm:px-6 sm:py-3 sm:text-base"
         >
           {suscripcionActiva
             ? "Ver planes"
@@ -962,7 +962,7 @@ export default function FacturacionPage() {
 
         <Link
           href={`/empresas/${empresaId}/dashboard`}
-          className="rounded-xl border border-slate-300 px-6 py-3 font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+          className="rounded-lg border border-slate-300 px-3 py-2 text-center text-xs font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 sm:rounded-xl sm:px-6 sm:py-3 sm:text-base"
         >
           Volver al inicio
         </Link>
@@ -985,16 +985,16 @@ function Card({
   compacto?: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-      <p className="text-sm text-slate-600 dark:text-zinc-400">
+    <div className="rounded-lg border border-slate-200 bg-white p-2.5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-xl sm:p-3.5">
+      <p className="text-[9px] leading-3 text-slate-600 dark:text-zinc-400 sm:text-sm sm:leading-normal">
         {titulo}
       </p>
 
       <h2
         className={`mt-1 font-bold ${
           compacto
-            ? "text-lg"
-            : "text-xl"
+            ? "text-sm sm:text-lg"
+            : "text-base sm:text-xl"
         } ${
           estado
             ? "text-emerald-600 dark:text-emerald-400"
@@ -1004,7 +1004,7 @@ function Card({
         {valor}
       </h2>
 
-      <p className="mt-2 text-xs text-slate-500 dark:text-zinc-500">
+      <p className="mt-1 line-clamp-2 text-[9px] leading-3.5 text-slate-500 dark:text-zinc-500 sm:mt-2 sm:text-xs sm:leading-normal">
         {descripcion}
       </p>
     </div>
@@ -1029,14 +1029,14 @@ function UsoCard({
     );
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="flex items-start justify-between gap-3">
+    <div className="rounded-lg border border-slate-200 bg-white p-2.5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-xl sm:p-3.5">
+      <div className="flex items-start justify-between gap-2 sm:gap-3">
         <div>
-          <h3 className="font-semibold text-slate-950 dark:text-white">
+          <h3 className="text-[11px] font-semibold leading-4 text-slate-950 dark:text-white sm:text-base sm:leading-normal">
             {titulo}
           </h3>
 
-          <p className="mt-0.5 text-xs text-slate-500 dark:text-zinc-500">
+          <p className="mt-0.5 text-[10px] text-slate-500 dark:text-zinc-500 sm:text-xs">
             {restantes.toLocaleString(
               "es-AR",
             )}{" "}
@@ -1044,7 +1044,7 @@ function UsoCard({
           </p>
         </div>
 
-        <span className="text-sm font-medium text-slate-700 dark:text-zinc-300">
+        <span className="shrink-0 text-[10px] font-medium text-slate-700 dark:text-zinc-300 sm:text-sm">
           {usadas.toLocaleString(
             "es-AR",
           )}{" "}
@@ -1055,7 +1055,7 @@ function UsoCard({
         </span>
       </div>
 
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-zinc-800">
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-zinc-800 sm:mt-3 sm:h-2">
         <div
           className={
             porcentaje >= 100

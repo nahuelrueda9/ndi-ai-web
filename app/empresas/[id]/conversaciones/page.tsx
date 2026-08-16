@@ -480,13 +480,13 @@ const estadisticas = useMemo(() => {
 
   if (!empresaId) {
     return (
-      <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
-        <Card className="border-red-200 bg-red-50 p-6 dark:border-red-500/20 dark:bg-red-500/10">
-          <h1 className="text-lg font-semibold text-slate-950 dark:text-white">
+      <section className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-8 sm:py-8">
+        <Card className="border-red-200 bg-red-50 p-4 dark:border-red-500/20 dark:bg-red-500/10 sm:p-6">
+          <h1 className="text-base font-semibold text-slate-950 dark:text-white sm:text-lg">
             No se pudo abrir Consultas
           </h1>
 
-          <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+          <p className="mt-1.5 text-xs text-red-600 dark:text-red-400 sm:mt-2 sm:text-sm">
             No se encontró el ID de la empresa en la dirección.
           </p>
         </Card>
@@ -498,16 +498,16 @@ const estadisticas = useMemo(() => {
   }
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
-      <header className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
+    <section className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-8 sm:py-8">
+      <header className="mb-4 flex items-end justify-between gap-3 sm:mb-8 sm:flex-col sm:items-stretch sm:gap-5 lg:flex-row lg:items-center">
         <div>
-          <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
+          <p className="text-[10px] font-medium text-blue-600 dark:text-blue-400 sm:text-sm">
             Actividad de clientes
           </p>
 
-          <div className="mt-2 flex flex-wrap items-center gap-3">
+          <div className="mt-0.5 flex flex-wrap items-center gap-1.5 sm:mt-2 sm:gap-3">
             <h1
-              className="text-3xl font-bold tracking-tight"
+              className="text-xl font-bold tracking-tight sm:text-3xl"
               style={{ color: "var(--foreground)" }}
             >
               Consultas
@@ -518,7 +518,7 @@ const estadisticas = useMemo(() => {
             </Badge>
           </div>
 
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
+          <p className="mt-1 max-w-xl text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:mt-2 sm:max-w-2xl sm:text-sm sm:leading-6">
             Revisá las consultas que llegan desde tu página inteligente,
             el asistente web y los formularios del negocio.
           </p>
@@ -532,60 +532,60 @@ const estadisticas = useMemo(() => {
         </Button>
       </header>
 
-<div className="mb-6 grid gap-4 md:grid-cols-5">
-  <Card className="p-5">
-    <p className="text-xs text-slate-500 dark:text-zinc-500">
+<div className="mb-3 grid grid-cols-5 gap-1.5 sm:mb-6 sm:gap-4 md:grid-cols-5">
+  <Card className="p-2 sm:p-5">
+    <p className="text-[8px] leading-3 text-slate-500 dark:text-zinc-500 sm:text-xs sm:leading-normal">
       Consultas
     </p>
 
-    <p className="mt-2 text-3xl font-bold text-slate-950 dark:text-white">
+    <p className="mt-0.5 text-lg font-bold text-slate-950 dark:text-white sm:mt-2 sm:text-3xl">
       {estadisticas.total}
     </p>
   </Card>
 
-  <Card className="p-5">
-    <p className="text-xs text-slate-500 dark:text-zinc-500">
+  <Card className="p-2 sm:p-5">
+    <p className="text-[8px] leading-3 text-slate-500 dark:text-zinc-500 sm:text-xs sm:leading-normal">
       Abiertas
     </p>
 
-    <p className="mt-2 text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+    <p className="mt-0.5 text-lg font-bold text-emerald-600 dark:text-emerald-400 sm:mt-2 sm:text-3xl">
       {estadisticas.abiertas}
     </p>
   </Card>
 
-  <Card className="p-5">
-    <p className="text-xs text-slate-500 dark:text-zinc-500">
+  <Card className="p-2 sm:p-5">
+    <p className="text-[8px] leading-3 text-slate-500 dark:text-zinc-500 sm:text-xs sm:leading-normal">
       Resueltas
     </p>
 
-    <p className="mt-2 text-3xl font-bold text-red-600 dark:text-red-400">
+    <p className="mt-0.5 text-lg font-bold text-red-600 dark:text-red-400 sm:mt-2 sm:text-3xl">
       {estadisticas.cerradas}
     </p>
   </Card>
 
-  <Card className="p-5">
-    <p className="text-xs text-slate-500 dark:text-zinc-500">
+  <Card className="p-2 sm:p-5">
+    <p className="text-[8px] leading-3 text-slate-500 dark:text-zinc-500 sm:text-xs sm:leading-normal">
       Atendidas por IA
     </p>
 
-    <p className="mt-2 text-3xl font-bold text-blue-600 dark:text-blue-400">
+    <p className="mt-0.5 text-lg font-bold text-blue-600 dark:text-blue-400 sm:mt-2 sm:text-3xl">
       {estadisticas.ia}
     </p>
   </Card>
 
-  <Card className="p-5">
-    <p className="text-xs text-slate-500 dark:text-zinc-500">
+  <Card className="p-2 sm:p-5">
+    <p className="text-[8px] leading-3 text-slate-500 dark:text-zinc-500 sm:text-xs sm:leading-normal">
       Atendidas por humano
     </p>
 
-    <p className="mt-2 text-3xl font-bold text-amber-500 dark:text-yellow-400">
+    <p className="mt-0.5 text-lg font-bold text-amber-500 dark:text-yellow-400 sm:mt-2 sm:text-3xl">
       {estadisticas.humano}
     </p>
   </Card>
 </div>
 
-      <Card className="mb-6 p-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+      <Card className="mb-3 p-3 sm:mb-6 sm:p-4">
+        <div className="flex flex-col gap-2 sm:gap-3 lg:flex-row lg:items-center">
           <div className="flex-1">
             <Input
               id="buscarConversacion"
@@ -595,7 +595,7 @@ const estadisticas = useMemo(() => {
             />
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-3 gap-1.5 sm:flex sm:flex-wrap sm:gap-2">
             <Button
               size="sm"
               variant={filtro === "todas" ? "primary" : "ghost"}
@@ -624,32 +624,32 @@ const estadisticas = useMemo(() => {
       </Card>
 
       {error && (
-        <Card className="mb-6 border-red-200 bg-red-50 p-4 dark:border-red-500/20 dark:bg-red-500/10">
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        <Card className="mb-3 border-red-200 bg-red-50 p-3 dark:border-red-500/20 dark:bg-red-500/10 sm:mb-6 sm:p-4">
+          <p className="text-xs text-red-600 dark:text-red-400 sm:text-sm">{error}</p>
         </Card>
       )}
 
       {loading ? (
-        <Card className="p-10 text-center">
-          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
+        <Card className="p-6 text-center sm:p-10">
+          <div className="mx-auto mb-2 h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500 sm:mb-4 sm:h-8 sm:w-8" />
 
-          <p className="font-medium text-slate-950 dark:text-white">
+          <p className="text-xs font-medium text-slate-950 dark:text-white sm:text-base">
             Cargando consultas...
           </p>
         </Card>
       ) : conversacionesFiltradas.length === 0 ? (
-        <Card className="border-dashed p-10 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-500/10 text-2xl">
+        <Card className="border-dashed p-6 text-center sm:p-10">
+          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-lg sm:h-14 sm:w-14 sm:rounded-2xl sm:text-2xl">
             💬
           </div>
 
-          <h2 className="mt-5 text-xl font-semibold text-slate-950 dark:text-white">
+          <h2 className="mt-3 text-base font-semibold text-slate-950 dark:text-white sm:mt-5 sm:text-xl">
             {conversaciones.length === 0
               ? "Todavía no hay consultas"
               : "No encontramos resultados"}
           </h2>
 
-          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500 dark:text-zinc-500">
+          <p className="mx-auto mt-1.5 max-w-md text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-2 sm:text-sm sm:leading-6">
             {conversaciones.length === 0
               ? "Cuando alguien use tu página, el asistente o un formulario, la consulta aparecerá acá automáticamente."
               : "Probá con otra búsqueda o cambiá el filtro seleccionado."}
@@ -689,9 +689,9 @@ const estadisticas = useMemo(() => {
       );
     }
   }}
-  className="grid w-full cursor-pointer gap-4 px-5 py-5 text-left transition hover:bg-slate-50 dark:hover:bg-zinc-800/40 md:grid-cols-[minmax(0,1.25fr)_minmax(0,1.5fr)_120px_155px_105px_110px] md:items-center md:px-6"
+  className="grid w-full cursor-pointer grid-cols-[minmax(0,1fr)_auto] gap-x-2 gap-y-1.5 px-3 py-3 text-left transition hover:bg-slate-50 dark:hover:bg-zinc-800/40 sm:px-5 sm:py-5 md:grid-cols-[minmax(0,1.25fr)_minmax(0,1.5fr)_120px_155px_105px_110px] md:items-center md:gap-4 md:px-6"
 >
-                  <div className="flex min-w-0 items-center gap-3">
+                  <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                     <Avatar name={nombreVisitante} size="sm" />
 
                     <button
@@ -700,7 +700,7 @@ const estadisticas = useMemo(() => {
     evento.stopPropagation();
     cambiarFavorita(conversacion);
   }}
-  className="shrink-0 text-xl text-amber-400 transition hover:scale-110"
+  className="shrink-0 text-base text-amber-400 transition hover:scale-110 sm:text-xl"
   aria-label={
     conversacion.favorita
       ? "Quitar de favoritas"
@@ -710,12 +710,12 @@ const estadisticas = useMemo(() => {
   {conversacion.favorita ? "★" : "☆"}
 </button>
 
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-slate-950 dark:text-white">
+                    <div className="col-span-2 min-w-0 pl-9 sm:pl-0 md:col-span-1">
+                      <p className="truncate text-[11px] font-medium text-slate-950 dark:text-white sm:text-sm">
                         {nombreVisitante}
                       </p>
 
-                      <p className="mt-1 text-xs text-slate-600 dark:text-zinc-500">
+                      <p className="mt-0.5 text-[9px] text-slate-600 dark:text-zinc-500 sm:mt-1 sm:text-xs">
                         {conversacion.cantidadMensajes ?? 0} mensajes · ID{" "}
                         {conversacion.id.slice(0, 8)}
                       </p>
@@ -723,12 +723,12 @@ const estadisticas = useMemo(() => {
                   </div>
 
                   <div className="min-w-0">
-                    <p className="truncate text-sm text-slate-800 dark:text-zinc-300">
+                    <p className="truncate text-[10px] text-slate-800 dark:text-zinc-300 sm:text-sm">
                       {conversacion.ultimoMensaje ||
                         "Consulta sin mensajes"}
                     </p>
 
-                    <p className="mt-1 text-xs text-slate-600 dark:text-zinc-500">
+                    <p className="mt-0.5 text-[9px] text-slate-600 dark:text-zinc-500 sm:mt-1 sm:text-xs">
                       Respondido por{" "}
                       {conversacion.atendidoPor === "humano"
                         ? "una persona"
@@ -736,7 +736,7 @@ const estadisticas = useMemo(() => {
                     </p>
                   </div>
 
-                  <div>
+                  <div className="self-center">
                     <Badge variant="info">
                       {obtenerOrigenConsulta(
                         conversacion,
@@ -744,8 +744,8 @@ const estadisticas = useMemo(() => {
                     </Badge>
                   </div>
 
-                  <div>
-                    <p className="text-sm text-slate-700 dark:text-zinc-400">
+                  <div className="self-center">
+                    <p className="text-[9px] text-slate-700 dark:text-zinc-400 sm:text-sm">
                       {formatDate(
                         conversacion.updatedAt ||
                           conversacion.createdAt
@@ -753,7 +753,7 @@ const estadisticas = useMemo(() => {
                     </p>
                   </div>
 
-<div>
+<div className="self-center">
   <Badge
     variant={
       conversacion.nivelInteres === "alto"
@@ -771,7 +771,7 @@ const estadisticas = useMemo(() => {
   </Badge>
 </div>
 
-<div className="flex items-center justify-end gap-3">
+<div className="flex items-center justify-end gap-1.5 sm:gap-3">
   <Badge
     variant={
       conversacion.estado === "cerrada"
@@ -791,7 +791,7 @@ const estadisticas = useMemo(() => {
       evento.stopPropagation();
       void eliminarConversacion(conversacion);
     }}
-    className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-red-500/10 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50 dark:text-zinc-500 dark:hover:text-red-400"
+    className="flex h-7 w-7 items-center justify-center rounded-md text-slate-500 transition hover:bg-red-500/10 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50 dark:text-zinc-500 dark:hover:text-red-400 sm:h-8 sm:w-8 sm:rounded-lg"
     title="Eliminar consulta"
   >
     🗑️

@@ -1117,27 +1117,27 @@ export default function AgendaPage() {
 
   if (agendaHabilitada === false) {
     return (
-      <section className="mx-auto w-full max-w-4xl px-5 py-12 sm:px-8">
-        <Card className="border-cyan-200 bg-cyan-50 p-8 text-center sm:p-12 dark:border-cyan-500/20 dark:bg-cyan-500/5">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-cyan-100 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-400">
-            <CalendarDays className="h-8 w-8" />
+      <section className="mx-auto w-full max-w-4xl px-3 py-5 sm:px-8 sm:py-12">
+        <Card className="border-cyan-200 bg-cyan-50 p-5 text-center sm:p-12 dark:border-cyan-500/20 dark:bg-cyan-500/5">
+          <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-cyan-100 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-400 sm:h-16 sm:w-16 sm:rounded-2xl">
+            <CalendarDays className="h-5 w-5 sm:h-8 sm:w-8" />
           </div>
 
-          <p className="mt-6 text-sm font-semibold uppercase tracking-[0.18em] text-cyan-700 dark:text-cyan-400">
+          <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-cyan-700 dark:text-cyan-400 sm:mt-6 sm:text-sm sm:tracking-[0.18em]">
             Función Pro
           </p>
 
-          <h1 className="mt-3 text-3xl font-bold text-slate-950 dark:text-white">
+          <h1 className="mt-1.5 text-xl font-bold text-slate-950 dark:text-white sm:mt-3 sm:text-3xl">
             {tituloAgenda}
           </h1>
 
-          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
+          <p className="mx-auto mt-2 max-w-xl text-[11px] leading-5 text-slate-600 dark:text-zinc-400 sm:mt-3 sm:text-sm sm:leading-6">
             La gestión de {pluralAgenda} está disponible en los planes que incluyen agenda.
           </p>
 
           <Button
             type="button"
-            className="mt-7"
+            className="mt-4 sm:mt-7"
             onClick={() =>
               router.push(
                 `/empresas/${empresaId}/planes`
@@ -1152,18 +1152,18 @@ export default function AgendaPage() {
   }
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
-      <header className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
+    <section className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-8 sm:py-8">
+      <header className="mb-4 flex items-end justify-between gap-3 sm:mb-8 sm:flex-col sm:items-stretch sm:gap-5 lg:flex-row lg:items-center">
         <div>
-          <p className="text-sm font-medium text-cyan-700 dark:text-cyan-400">
+          <p className="text-[10px] font-medium text-cyan-700 dark:text-cyan-400 sm:text-sm">
             Organización comercial
           </p>
 
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">
+          <h1 className="mt-0.5 text-xl font-bold tracking-tight text-slate-950 dark:text-white sm:mt-2 sm:text-3xl">
             {tituloAgenda}
           </h1>
 
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
+          <p className="mt-1 max-w-xl text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:mt-2 sm:max-w-2xl sm:text-sm sm:leading-6">
             {usaReservas
               ? "Administrá reservas, confirmaciones y seguimiento desde un solo lugar."
               : "Administrá citas, confirmaciones y seguimientos desde un solo lugar."}
@@ -1174,12 +1174,12 @@ export default function AgendaPage() {
           type="button"
           onClick={() => abrirNuevoTurno()}
         >
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="mr-1 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" />
           {usaReservas ? "Nueva reserva" : "Nuevo turno"}
         </Button>
       </header>
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-3 grid grid-cols-2 gap-2 sm:mb-6 sm:gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <ResumenCard
           titulo={usaReservas ? "Reservas totales" : "Turnos totales"}
           valor={resumen.total}
@@ -1211,11 +1211,11 @@ export default function AgendaPage() {
         />
       </div>
 
-      <Card className="mb-6 overflow-hidden">
-        <div className="flex flex-col justify-between gap-4 border-b border-slate-200 p-5 dark:border-zinc-800 lg:flex-row lg:items-center">
+      <Card className="mb-3 overflow-hidden sm:mb-6">
+        <div className="flex flex-col justify-between gap-2.5 border-b border-slate-200 p-3 dark:border-zinc-800 sm:gap-4 sm:p-5 lg:flex-row lg:items-center">
           <div>
-            <div className="flex flex-wrap items-center gap-3">
-              <h2 className="text-lg font-semibold text-slate-950 dark:text-white">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              <h2 className="text-sm font-semibold text-slate-950 dark:text-white sm:text-lg">
                 Disponibilidad para reservas online
               </h2>
 
@@ -1232,17 +1232,17 @@ export default function AgendaPage() {
               </Badge>
             </div>
 
-            <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
+            <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-sm sm:leading-normal">
               Definí qué días y horarios puede elegir un cliente desde la página pública.
             </p>
           </div>
 
-          <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950/50">
+          <label className="flex cursor-pointer items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950/50 sm:gap-3 sm:rounded-xl sm:px-4 sm:py-3">
             <div>
-              <p className="text-sm font-medium text-slate-950 dark:text-white">
+              <p className="text-[11px] font-medium text-slate-950 dark:text-white sm:text-sm">
                 Permitir reservas online
               </p>
-              <p className="mt-0.5 text-xs text-slate-500 dark:text-zinc-500">
+              <p className="mt-0.5 text-[9px] leading-3.5 text-slate-500 dark:text-zinc-500 sm:text-xs sm:leading-normal">
                 Los clientes verán solamente horarios libres.
               </p>
             </div>
@@ -1256,16 +1256,16 @@ export default function AgendaPage() {
                   activa: evento.target.checked,
                 }))
               }
-              className="h-5 w-5 accent-blue-600"
+              className="h-4 w-4 accent-blue-600 sm:h-5 sm:w-5"
             />
           </label>
         </div>
 
-        <div className="p-5">
-          <div className="mb-5 max-w-xs">
+        <div className="p-3 sm:p-5">
+          <div className="mb-3 max-w-xs sm:mb-5">
             <label
               htmlFor="intervaloTurnos"
-              className="mb-2 block text-sm font-medium text-slate-700 dark:text-zinc-300"
+              className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-zinc-300 sm:mb-2 sm:text-sm"
             >
               Intervalo entre horarios ofrecidos
             </label>
@@ -1281,7 +1281,7 @@ export default function AgendaPage() {
                   ),
                 }))
               }
-              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
             >
               {[15, 30, 45, 60].map((minutos) => (
                 <option key={minutos} value={minutos}>
@@ -1291,16 +1291,16 @@ export default function AgendaPage() {
             </select>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {DIAS_CONFIG.map((dia) => {
               const config = agendaConfig.dias[dia.clave];
 
               return (
                 <div
                   key={dia.clave}
-                  className="grid gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-zinc-800 dark:bg-zinc-950/40 lg:grid-cols-[180px_1fr_1fr_1fr_1fr] lg:items-end"
+                  className="grid grid-cols-2 gap-2 rounded-lg border border-slate-200 bg-slate-50 p-2.5 dark:border-zinc-800 dark:bg-zinc-950/40 sm:gap-4 sm:rounded-2xl sm:p-4 lg:grid-cols-[180px_1fr_1fr_1fr_1fr] lg:items-end"
                 >
-                  <label className="flex cursor-pointer items-center gap-3 lg:pb-2">
+                  <label className="col-span-2 flex cursor-pointer items-center gap-2 border-b border-slate-200 pb-2 dark:border-zinc-800 sm:gap-3 lg:col-span-1 lg:border-b-0 lg:pb-2">
                     <input
                       type="checkbox"
                       checked={config.activo}
@@ -1311,10 +1311,10 @@ export default function AgendaPage() {
                           evento.target.checked
                         )
                       }
-                      className="h-5 w-5 accent-blue-600"
+                      className="h-4 w-4 accent-blue-600 sm:h-5 sm:w-5"
                     />
 
-                    <span className="font-medium text-slate-950 dark:text-white">
+                    <span className="text-xs font-medium text-slate-950 dark:text-white sm:text-base">
                       {dia.nombre}
                     </span>
                   </label>
@@ -1375,8 +1375,8 @@ export default function AgendaPage() {
             })}
           </div>
 
-          <div className="mt-5 flex flex-col justify-between gap-3 border-t border-slate-200 pt-5 dark:border-zinc-800 sm:flex-row sm:items-center">
-            <p className="text-xs leading-5 text-slate-500 dark:text-zinc-500">
+          <div className="mt-3 flex flex-col justify-between gap-2 border-t border-slate-200 pt-3 dark:border-zinc-800 sm:mt-5 sm:gap-3 sm:pt-5 sm:flex-row sm:items-center">
+            <p className="text-[9px] leading-4 text-slate-500 dark:text-zinc-500 sm:text-xs sm:leading-5">
               {usaReservas
                 ? "Las reservas ya ocupadas y los horarios de descanso se eliminan automáticamente de la disponibilidad pública."
                 : "Los turnos ya ocupados y los horarios de descanso se eliminan automáticamente de la disponibilidad pública."}
@@ -1396,25 +1396,25 @@ export default function AgendaPage() {
       </Card>
 
       {mensaje && (
-        <Card className="mb-6 border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/10">
-          <p className="text-sm text-emerald-700 dark:text-emerald-300">
+        <Card className="mb-3 border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/10 sm:mb-6 sm:p-4">
+          <p className="text-xs text-emerald-700 dark:text-emerald-300 sm:text-sm">
             {mensaje}
           </p>
         </Card>
       )}
 
       {error && (
-        <Card className="mb-6 border-red-200 bg-red-50 p-4 dark:border-red-500/20 dark:bg-red-500/10">
-          <p className="text-sm text-red-700 dark:text-red-400">
+        <Card className="mb-3 border-red-200 bg-red-50 p-3 dark:border-red-500/20 dark:bg-red-500/10 sm:mb-6 sm:p-4">
+          <p className="text-xs text-red-700 dark:text-red-400 sm:text-sm">
             {error}
           </p>
         </Card>
       )}
 
       {mostrandoFormulario && (
-        <Card className="mb-6 p-6">
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-slate-950 dark:text-white">
+        <Card className="mb-3 p-4 sm:mb-6 sm:p-6">
+          <div className="mb-3 sm:mb-6">
+            <h2 className="text-base font-semibold text-slate-950 dark:text-white sm:text-xl">
               {editandoId
                 ? `Editar ${singularAgenda}`
                 : usaReservas
@@ -1422,16 +1422,16 @@ export default function AgendaPage() {
                   : "Nuevo turno"}
             </h2>
 
-            <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
+            <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-sm sm:leading-normal">
               Completá los datos básicos de la cita.
             </p>
           </div>
 
           <form
             onSubmit={guardarTurno}
-            className="space-y-5"
+            className="space-y-3 sm:space-y-5"
           >
-            <div className="grid gap-5 md:grid-cols-2">
+            <div className="grid gap-3 sm:gap-5 md:grid-cols-2">
               <Input
                 id="nombreCliente"
                 label="Nombre del cliente"
@@ -1446,10 +1446,10 @@ export default function AgendaPage() {
               />
 
               {serviciosCatalogo.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-1.5 sm:space-y-2">
                   <label
                     htmlFor="servicio"
-                    className="block text-sm font-medium text-slate-700 dark:text-zinc-300"
+                    className="block text-xs font-medium text-slate-700 dark:text-zinc-300 sm:text-sm"
                   >
                     Servicio
                   </label>
@@ -1462,7 +1462,7 @@ export default function AgendaPage() {
                         evento.target.value
                       )
                     }
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white"
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
                   >
                     <option value="">
                       Seleccioná un servicio
@@ -1575,14 +1575,14 @@ export default function AgendaPage() {
             <div>
               <label
                 htmlFor="notas"
-                className="mb-2 block text-sm font-medium text-slate-700 dark:text-zinc-300"
+                className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-zinc-300 sm:mb-2 sm:text-sm"
               >
                 Notas opcionales
               </label>
 
               <textarea
                 id="notas"
-                rows={4}
+                rows={3}
                 maxLength={1000}
                 value={formulario.notas}
                 onChange={(evento) =>
@@ -1596,11 +1596,11 @@ export default function AgendaPage() {
                     ? "Información adicional sobre la reserva..."
                     : "Información adicional sobre el turno..."
                 }
-                className="w-full resize-none rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white dark:placeholder:text-zinc-600"
+                className="w-full resize-none rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-xs text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white dark:placeholder:text-zinc-600 sm:rounded-xl sm:px-4 sm:py-3 sm:text-sm"
               />
             </div>
 
-            <div className="flex flex-col justify-end gap-3 border-t border-slate-200 pt-5 dark:border-zinc-800 sm:flex-row">
+            <div className="flex justify-end gap-2 border-t border-slate-200 pt-3 dark:border-zinc-800 sm:gap-3 sm:pt-5">
               <Button
                 type="button"
                 variant="secondary"
@@ -1631,20 +1631,20 @@ export default function AgendaPage() {
         </Card>
       )}
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
+      <div className="grid gap-3 sm:gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
         <Card className="overflow-hidden">
-          <div className="flex flex-col justify-between gap-4 border-b border-slate-200 p-5 dark:border-zinc-800 sm:flex-row sm:items-center">
+          <div className="flex items-center justify-between gap-2 border-b border-slate-200 p-3 dark:border-zinc-800 sm:gap-4 sm:p-5 sm:flex-row sm:items-center">
             <div>
-              <h2 className="text-lg font-semibold text-slate-950 dark:text-white">
+              <h2 className="text-sm font-semibold text-slate-950 dark:text-white sm:text-lg">
                 {formatearMes(mesActual)}
               </h2>
 
-              <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
+              <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-sm sm:leading-normal">
                 Seleccioná un día para ver sus turnos.
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
               <Button
                 type="button"
                 size="sm"
@@ -1678,7 +1678,7 @@ export default function AgendaPage() {
             {DIAS_SEMANA.map((dia) => (
               <div
                 key={dia}
-                className="px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300"
+                className="px-0.5 py-1.5 text-center text-[8px] font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300 sm:px-2 sm:py-3 sm:text-xs"
               >
                 {dia}
               </div>
@@ -1723,7 +1723,7 @@ export default function AgendaPage() {
                     abrirNuevoTurno(fechaISO)
                   }
                   className={[
-                    "relative min-h-24 border-b border-r border-blue-200 p-2 text-left transition-colors dark:border-blue-500/20 sm:min-h-28 sm:p-3",
+                    "relative min-h-14 border-b border-r border-blue-200 p-1 text-left transition-colors dark:border-blue-500/20 sm:min-h-28 sm:p-3",
                     dia.perteneceAlMes
                        ? "bg-white dark:bg-zinc-900/30"
                        : "bg-blue-50/50 dark:bg-zinc-950/70",
@@ -1734,7 +1734,7 @@ export default function AgendaPage() {
                 >
                   <span
                     className={[
-                      "inline-flex h-7 min-w-7 items-center justify-center rounded-lg px-1 text-sm",
+                      "inline-flex h-5 min-w-5 items-center justify-center rounded-md px-0.5 text-[10px] sm:h-7 sm:min-w-7 sm:rounded-lg sm:px-1 sm:text-sm",
                       esHoy
                          ? "bg-blue-600 font-bold text-white shadow-sm"
                          : dia.perteneceAlMes
@@ -1746,13 +1746,13 @@ export default function AgendaPage() {
                   </span>
 
                   {turnosDelDia.length > 0 && (
-                    <div className="mt-2 space-y-1">
+                    <div className="mt-1 space-y-0.5 sm:mt-2 sm:space-y-1">
                       {turnosDelDia
                         .slice(0, 2)
                         .map((turno) => (
                           <div
                             key={turno.id}
-                            className="truncate rounded-md border border-blue-100 bg-blue-50 px-2 py-1 text-[10px] font-medium text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300 sm:text-xs"
+                            className="truncate rounded border border-blue-100 bg-blue-50 px-0.5 py-0.5 text-[7px] font-medium leading-3 text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300 sm:rounded-md sm:px-2 sm:py-1 sm:text-xs sm:leading-normal"
                           >
                             {turno.tipoReserva ===
                             "alojamiento"
@@ -1766,7 +1766,7 @@ export default function AgendaPage() {
                         ))}
 
                       {turnosDelDia.length > 2 && (
-                        <p className="px-1 text-[10px] text-slate-500 dark:text-zinc-500">
+                        <p className="px-0.5 text-[7px] text-slate-500 dark:text-zinc-500 sm:px-1 sm:text-[10px]">
                           +{turnosDelDia.length - 2} más
                         </p>
                       )}
@@ -1779,16 +1779,16 @@ export default function AgendaPage() {
         </Card>
 
         <Card className="overflow-hidden">
-          <div className="border-b border-slate-200 p-5 dark:border-zinc-800">
-            <div className="flex items-start justify-between gap-4">
+          <div className="border-b border-slate-200 p-3 dark:border-zinc-800 sm:p-5">
+            <div className="flex items-start justify-between gap-2 sm:gap-4">
               <div>
-                <h2 className="font-semibold text-slate-950 dark:text-white">
+                <h2 className="text-xs font-semibold text-slate-950 dark:text-white sm:text-base">
                   {usaReservas
                     ? "Próximas reservas"
                     : "Próximos turnos"}
                 </h2>
 
-                <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
+                <p className="mt-0.5 text-[10px] text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs">
                   {turnosFiltrados.length}{" "}
                   {turnosFiltrados.length === 1
                     ? `${singularAgenda} programada`
@@ -1799,7 +1799,7 @@ export default function AgendaPage() {
 
             </div>
 
-            <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-1">
+            <div className="mt-2 flex items-center gap-1.5 overflow-x-auto pb-1 sm:mt-4 sm:gap-2">
               <Filter className="h-4 w-4 shrink-0 text-slate-500 dark:text-zinc-600" />
 
               {(
@@ -1819,7 +1819,7 @@ export default function AgendaPage() {
                     setFiltroEstado(estado)
                   }
                   className={[
-                    "shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium transition",
+                    "shrink-0 rounded-md px-2 py-1 text-[9px] font-medium transition sm:rounded-lg sm:px-3 sm:py-1.5 sm:text-xs",
                     filtroEstado === estado
                       ? "bg-blue-600 text-white"
                       : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-950 dark:bg-zinc-900 dark:text-zinc-500 dark:hover:text-white",
@@ -1833,9 +1833,9 @@ export default function AgendaPage() {
             </div>
           </div>
 
-          <div className="max-h-[760px] overflow-y-auto p-4">
+          <div className="max-h-[520px] overflow-y-auto p-2.5 sm:max-h-[760px] sm:p-4">
             {cargando ? (
-              <div className="py-12 text-center">
+              <div className="py-6 text-center sm:py-12">
                 <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-cyan-600 dark:border-zinc-700 dark:border-t-cyan-500" />
 
                 <p className="mt-4 text-sm text-slate-500 dark:text-zinc-500">
@@ -1843,16 +1843,16 @@ export default function AgendaPage() {
                 </p>
               </div>
             ) : turnosFiltrados.length === 0 ? (
-              <div className="py-12 text-center">
-                <CalendarDays className="mx-auto h-10 w-10 text-slate-300 dark:text-zinc-700" />
+              <div className="py-6 text-center sm:py-12">
+                <CalendarDays className="mx-auto h-7 w-7 text-slate-300 dark:text-zinc-700 sm:h-10 sm:w-10" />
 
-                <h3 className="mt-4 font-semibold text-slate-950 dark:text-white">
+                <h3 className="mt-2 text-sm font-semibold text-slate-950 dark:text-white sm:mt-4 sm:text-base">
                   {usaReservas
                     ? "No hay reservas próximas"
                     : "No hay turnos próximos"}
                 </h3>
 
-                <p className="mt-2 text-sm text-slate-500 dark:text-zinc-500">
+                <p className="mt-1 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-2 sm:text-sm sm:leading-normal">
                   {usaReservas
                     ? "Las próximas reservas aparecerán acá ordenadas por fecha."
                     : "Los próximos turnos aparecerán acá ordenados por fecha."}
@@ -1860,19 +1860,19 @@ export default function AgendaPage() {
 
                 <Button
                   type="button"
-                  className="mt-5"
+                  className="mt-3 sm:mt-5"
                   onClick={() =>
                     abrirNuevoTurno(
                       fechaSeleccionada
                     )
                   }
                 >
-                  <Plus className="mr-2 h-4 w-4" />
+                  <Plus className="mr-1 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" />
                   {usaReservas ? "Crear reserva" : "Crear turno"}
                 </Button>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {turnosFiltrados.map((turno) => (
                   <TurnoCard
                     key={turno.id}
@@ -1913,10 +1913,10 @@ function TurnoCard({
   onEliminar: (turno: Turno) => void;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-zinc-800 dark:bg-zinc-950/50">
-      <div className="flex items-start justify-between gap-3">
+    <div className="rounded-lg border border-slate-200 bg-slate-50 p-2.5 dark:border-zinc-800 dark:bg-zinc-950/50 sm:rounded-2xl sm:p-4">
+      <div className="flex items-start justify-between gap-2 sm:gap-3">
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             <p className="font-semibold text-slate-950 dark:text-white">
               {turno.tipoReserva ===
               "alojamiento"
@@ -1936,11 +1936,11 @@ function TurnoCard({
             </Badge>
           </div>
 
-          <h3 className="mt-3 truncate font-medium text-slate-950 dark:text-white">
+          <h3 className="mt-1.5 truncate text-[11px] font-medium text-slate-950 dark:text-white sm:mt-3 sm:text-base">
             {turno.nombreCliente}
           </h3>
 
-          <p className="mt-1 text-sm text-slate-600 dark:text-zinc-400">
+          <p className="mt-0.5 text-[10px] text-slate-600 dark:text-zinc-400 sm:mt-1 sm:text-sm">
             {turno.servicio}
           </p>
         </div>
@@ -1951,7 +1951,7 @@ function TurnoCard({
               type="button"
               disabled={procesando}
               onClick={() => onEditar(turno)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-blue-50 hover:text-blue-600 disabled:opacity-50 dark:text-zinc-600 dark:hover:bg-blue-500/10 dark:hover:text-blue-400"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-slate-500 transition hover:bg-blue-50 hover:text-blue-600 disabled:opacity-50 dark:text-zinc-600 dark:hover:bg-blue-500/10 dark:hover:text-blue-400 sm:h-8 sm:w-8 sm:rounded-lg"
               title="Editar turno"
             >
               <Pencil className="h-4 w-4" />
@@ -1962,7 +1962,7 @@ function TurnoCard({
             type="button"
             disabled={procesando}
             onClick={() => onEliminar(turno)}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50 dark:text-zinc-600 dark:hover:bg-red-500/10 dark:hover:text-red-400"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-slate-500 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50 dark:text-zinc-600 dark:hover:bg-red-500/10 dark:hover:text-red-400 sm:h-8 sm:w-8 sm:rounded-lg"
             title="Eliminar turno"
           >
             <Trash2 className="h-4 w-4" />
@@ -1970,7 +1970,7 @@ function TurnoCard({
         </div>
       </div>
 
-      <div className="mt-4 grid gap-2 text-xs text-slate-500 dark:text-zinc-500">
+      <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1 text-[9px] text-slate-500 dark:text-zinc-500 sm:mt-4 sm:grid-cols-1 sm:gap-2 sm:text-xs">
         {turno.tipoReserva ===
         "alojamiento" ? (
           <>
@@ -2038,13 +2038,13 @@ function TurnoCard({
         )}
 
         {turno.notas && (
-          <p className="rounded-lg bg-white p-3 leading-5 text-slate-600 dark:bg-zinc-900 dark:text-zinc-400">
+          <p className="col-span-2 rounded-md bg-white p-2 leading-4 text-slate-600 dark:bg-zinc-900 dark:text-zinc-400 sm:col-span-1 sm:rounded-lg sm:p-3 sm:leading-5">
             {turno.notas}
           </p>
         )}
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2 border-t border-slate-200 pt-4 dark:border-zinc-800">
+      <div className="mt-2 flex flex-wrap gap-1.5 border-t border-slate-200 pt-2 dark:border-zinc-800 sm:mt-4 sm:gap-2 sm:pt-4">
         {turno.estado !== "confirmado" && (
           <AccionEstado
             texto="Confirmar"
@@ -2134,7 +2134,7 @@ function AccionEstado({
       disabled={disabled}
       onClick={onClick}
       className={[
-        "rounded-lg border px-3 py-2 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-50",
+        "rounded-md border px-2 py-1.5 text-[9px] font-medium transition disabled:cursor-not-allowed disabled:opacity-50 sm:rounded-lg sm:px-3 sm:py-2 sm:text-xs",
         danger
           ? "border-red-500/20 text-red-400 hover:bg-red-500/10"
           : "border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white",
@@ -2158,7 +2158,7 @@ function HorarioCampo({
 }) {
   return (
     <div>
-      <label className="mb-2 block text-xs font-medium text-slate-500 dark:text-zinc-500">
+      <label className="mb-1 block text-[9px] font-medium text-slate-500 dark:text-zinc-500 sm:mb-2 sm:text-xs">
         {label}
       </label>
 
@@ -2169,7 +2169,7 @@ function HorarioCampo({
         onChange={(evento) =>
           onChange(evento.target.value)
         }
-        className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+        className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-[11px] text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white sm:rounded-xl sm:px-3 sm:py-2.5 sm:text-sm"
       />
     </div>
   );
@@ -2185,18 +2185,18 @@ function ResumenCard({
   icono: React.ReactNode;
 }) {
   return (
-    <Card className="p-5">
+    <Card className="p-3 sm:p-5">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-500 dark:text-zinc-500">
+        <p className="text-[10px] text-slate-500 dark:text-zinc-500 sm:text-sm">
           {titulo}
         </p>
 
-        <div className="text-cyan-700 dark:text-cyan-400">
+        <div className="scale-75 text-cyan-700 dark:text-cyan-400 sm:scale-100">
           {icono}
         </div>
       </div>
 
-      <p className="mt-3 text-3xl font-bold text-slate-950 dark:text-white">
+      <p className="mt-1 text-2xl font-bold text-slate-950 dark:text-white sm:mt-3 sm:text-3xl">
         {valor}
       </p>
     </Card>

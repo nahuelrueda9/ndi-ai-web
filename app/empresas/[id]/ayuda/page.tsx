@@ -103,7 +103,7 @@ export default function AyudaPage() {
       ],
       ruta: "",
       boton: "Ir a Mi página",
-      icono: <Globe2 className="h-5 w-5" />,
+      icono: <Globe2 className="h-4 w-4 sm:h-5 sm:w-5" />,
       disponibilidad: "todos",
     },
     {
@@ -119,7 +119,7 @@ export default function AyudaPage() {
       ],
       ruta: "catalogo",
       boton: "Servicios y productos",
-      icono: <Package className="h-5 w-5" />,
+      icono: <Package className="h-4 w-4 sm:h-5 sm:w-5" />,
       disponibilidad: "todos",
     },
     {
@@ -135,7 +135,7 @@ export default function AyudaPage() {
       ],
       ruta: "agenda",
       boton: "Abrir Agenda",
-      icono: <CalendarDays className="h-5 w-5" />,
+      icono: <CalendarDays className="h-4 w-4 sm:h-5 sm:w-5" />,
       disponibilidad: "completa",
     },
     {
@@ -151,7 +151,7 @@ export default function AyudaPage() {
       ],
       ruta: "presupuestos",
       boton: "Abrir Presupuestos",
-      icono: <FileText className="h-5 w-5" />,
+      icono: <FileText className="h-4 w-4 sm:h-5 sm:w-5" />,
       disponibilidad: "completa",
     },
     {
@@ -165,7 +165,7 @@ export default function AyudaPage() {
         "Consultorios y barberías pueden administrar turnos.",
         "Tiendas aprovechan el catálogo ampliado con hasta 3 imágenes por producto.",
       ],
-      icono: <Plug className="h-5 w-5" />,
+      icono: <Plug className="h-4 w-4 sm:h-5 sm:w-5" />,
       disponibilidad: "completa",
     },
     {
@@ -181,7 +181,7 @@ export default function AyudaPage() {
       ],
       ruta: "configuracion",
       boton: "Configurar Asistente IA",
-      icono: <Bot className="h-5 w-5" />,
+      icono: <Bot className="h-4 w-4 sm:h-5 sm:w-5" />,
       disponibilidad: "business",
     },
     {
@@ -197,7 +197,7 @@ export default function AyudaPage() {
       ],
       ruta: "conocimiento",
       boton: "Base de conocimiento",
-      icono: <BookOpen className="h-5 w-5" />,
+      icono: <BookOpen className="h-4 w-4 sm:h-5 sm:w-5" />,
       disponibilidad: "business",
     },
     {
@@ -213,7 +213,7 @@ export default function AyudaPage() {
       ],
       ruta: "probar",
       boton: "Probar asistente",
-      icono: <Sparkles className="h-5 w-5" />,
+      icono: <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />,
       disponibilidad: "business",
     },
     {
@@ -229,7 +229,7 @@ export default function AyudaPage() {
       ],
       ruta: "widget",
       boton: "Abrir Widget web",
-      icono: <Code2 className="h-5 w-5" />,
+      icono: <Code2 className="h-4 w-4 sm:h-5 sm:w-5" />,
       disponibilidad: "business",
     },
     {
@@ -245,15 +245,15 @@ export default function AyudaPage() {
       ],
       ruta: "estadisticas",
       boton: "Ver Estadísticas",
-      icono: <BarChart3 className="h-5 w-5" />,
+      icono: <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" />,
       disponibilidad: "todos",
     },
   ];
 
   if (!empresaId) {
     return (
-      <section className="mx-auto w-full max-w-4xl px-5 py-10 sm:px-8">
-        <Card className="border-red-200 bg-red-50 p-6 dark:border-red-500/20 dark:bg-red-500/10">
+      <section className="mx-auto w-full max-w-4xl px-3 py-5 sm:px-8 sm:py-10">
+        <Card className="border-red-200 bg-red-50 p-4 dark:border-red-500/20 dark:bg-red-500/10 sm:p-6">
           <p className="text-red-700 dark:text-red-300">
             No se encontró la empresa.
           </p>
@@ -263,45 +263,45 @@ export default function AyudaPage() {
   }
 
   return (
-    <section className="mx-auto w-full max-w-6xl px-5 py-8 text-foreground sm:px-8">
-      <header className="mb-8">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400">
-          <CircleHelp className="h-6 w-6" />
+    <section className="mx-auto w-full max-w-6xl px-3 py-4 text-foreground sm:px-8 sm:py-8">
+      <header className="mb-4 sm:mb-8">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 sm:h-12 sm:w-12 sm:rounded-2xl">
+          <CircleHelp className="h-4 w-4 sm:h-6 sm:w-6" />
         </div>
 
-        <p className="mt-5 text-sm font-medium text-blue-700 dark:text-blue-400">
+        <p className="mt-2 text-[10px] font-medium text-blue-700 dark:text-blue-400 sm:mt-5 sm:text-sm">
           Centro de ayuda
         </p>
 
         <h1
-          className="mt-2 text-3xl font-bold tracking-tight"
+          className="mt-0.5 text-xl font-bold tracking-tight sm:mt-2 sm:text-3xl"
           style={{ color: "var(--foreground)" }}
         >
           Cómo usar NDI AI
         </h1>
 
-        <p className="mt-3 max-w-3xl text-sm font-medium leading-6 text-slate-700 dark:text-zinc-300">
+        <p className="mt-1 max-w-2xl text-[10px] font-medium leading-4 text-slate-700 dark:text-zinc-300 sm:mt-3 sm:max-w-3xl sm:text-sm sm:leading-6">
           Seguí esta guía para preparar tu página inteligente,
           cargar lo que ofrecés y activar las funciones incluidas
           en tu plan.
         </p>
       </header>
 
-      <Card className="mb-8 border-blue-200 bg-blue-50 p-6 dark:border-blue-500/20 dark:bg-blue-500/5">
-        <div className="flex gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400">
-            <Sparkles className="h-5 w-5" />
+      <Card className="mb-4 border-blue-200 bg-blue-50 p-3 dark:border-blue-500/20 dark:bg-blue-500/5 sm:mb-8 sm:p-6">
+        <div className="flex gap-2.5 sm:gap-4">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 sm:h-10 sm:w-10 sm:rounded-xl">
+            <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
 
           <div>
             <h2
-              className="font-semibold"
+              className="text-xs font-semibold sm:text-base"
               style={{ color: "var(--foreground)" }}
             >
               La idea principal
             </h2>
 
-            <p className="mt-1 text-sm leading-6 text-slate-700 dark:text-zinc-300">
+            <p className="mt-0.5 text-[10px] leading-4 text-slate-700 dark:text-zinc-300 sm:mt-1 sm:text-sm sm:leading-6">
               NDI AI te permite tener una página profesional para tu
               negocio, mostrar servicios y productos y, según tu plan,
               recibir presupuestos, gestionar turnos, reservas o pedidos
@@ -311,7 +311,7 @@ export default function AyudaPage() {
         </div>
       </Card>
 
-      <div className="space-y-5">
+      <div className="space-y-2.5 sm:space-y-5">
         {pasos.map((paso) => {
           const etiqueta =
             etiquetaDisponibilidad(
@@ -321,29 +321,29 @@ export default function AyudaPage() {
           return (
             <Card
               key={paso.numero}
-              className="p-6"
+              className="p-3 sm:p-6"
             >
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                <div className="flex gap-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400">
+              <div className="flex flex-col gap-2.5 sm:gap-5 lg:flex-row lg:items-start lg:justify-between">
+                <div className="flex gap-2.5 sm:gap-4">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 sm:h-11 sm:w-11 sm:rounded-2xl">
                     {paso.icono}
                   </div>
 
                   <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-600 dark:text-zinc-500">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                      <span className="text-[8px] font-semibold uppercase tracking-[0.12em] text-slate-600 dark:text-zinc-500 sm:text-xs sm:tracking-[0.16em]">
                         Paso {paso.numero}
                       </span>
 
                       <span
-                        className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${etiqueta.clase}`}
+                        className={`rounded-full border px-1.5 py-0.5 text-[8px] font-medium sm:px-2 sm:text-[11px] ${etiqueta.clase}`}
                       >
                         {etiqueta.texto}
                       </span>
                     </div>
 
                     <h2
-                      className="mt-1 text-xl font-semibold"
+                      className="mt-0.5 text-sm font-semibold sm:mt-1 sm:text-xl"
                       style={{
                         color: "var(--foreground)",
                       }}
@@ -351,18 +351,18 @@ export default function AyudaPage() {
                       {paso.titulo}
                     </h2>
 
-                    <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700 dark:text-zinc-300">
+                    <p className="mt-1 max-w-2xl text-[10px] leading-4 text-slate-700 dark:text-zinc-300 sm:mt-2 sm:text-sm sm:leading-6">
                       {paso.descripcion}
                     </p>
 
-                    <div className="mt-4 space-y-2">
+                    <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1 sm:mt-4 sm:block sm:space-y-2">
                       {paso.detalles.map(
                         (detalle) => (
                           <div
                             key={detalle}
-                            className="flex gap-2 text-sm text-slate-700 dark:text-zinc-300"
+                            className="flex gap-1.5 text-[9px] leading-3.5 text-slate-700 dark:text-zinc-300 sm:gap-2 sm:text-sm sm:leading-normal"
                           >
-                            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                            <CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0 text-emerald-500 sm:h-4 sm:w-4" />
                             <span>{detalle}</span>
                           </div>
                         ),
@@ -376,7 +376,7 @@ export default function AyudaPage() {
                     <Button
                       type="button"
                       variant="secondary"
-                      className="shrink-0"
+                      className="shrink-0 self-start"
                       onClick={() =>
                         router.push(
                           paso.ruta
@@ -394,25 +394,25 @@ export default function AyudaPage() {
         })}
       </div>
 
-      <div className="mt-8 grid gap-5 lg:grid-cols-2">
-        <Card className="p-6">
-          <div className="flex items-center gap-3">
+      <div className="mt-4 grid gap-2.5 sm:mt-8 sm:gap-5 lg:grid-cols-2">
+        <Card className="p-3 sm:p-6">
+          <div className="flex items-center gap-2 sm:gap-3">
             <CreditCard className="h-5 w-5 text-violet-700 dark:text-violet-400" />
 
             <h2
-              className="text-lg font-semibold"
+              className="text-sm font-semibold sm:text-lg"
               style={{ color: "var(--foreground)" }}
             >
               Qué incluye cada plan
             </h2>
           </div>
 
-          <div className="mt-5 space-y-5 text-sm leading-6 text-slate-700 dark:text-zinc-300">
+          <div className="mt-2.5 space-y-2.5 text-[10px] leading-4 text-slate-700 dark:text-zinc-300 sm:mt-5 sm:space-y-5 sm:text-sm sm:leading-6">
             <div>
               <p className="font-semibold text-slate-950 dark:text-white">
                 Página Simple
               </p>
-              <p className="mt-1">
+              <p className="mt-0.5 sm:mt-1">
                 Página pública, catálogo básico de servicios y productos,
                 hasta 1 imagen por elemento, horarios, ubicación, contacto,
                 WhatsApp directo, redes sociales y estadísticas básicas.
@@ -423,7 +423,7 @@ export default function AyudaPage() {
               <p className="font-semibold text-slate-950 dark:text-white">
                 Página Completa
               </p>
-              <p className="mt-1">
+              <p className="mt-0.5 sm:mt-1">
                 Todo lo anterior más catálogo ampliado con hasta 3 imágenes,
                 presupuestos, QR, Agenda, turnos o reservas, funciones
                 específicas por rubro y estadísticas avanzadas.
@@ -434,7 +434,7 @@ export default function AyudaPage() {
               <p className="font-semibold text-slate-950 dark:text-white">
                 Business IA
               </p>
-              <p className="mt-1">
+              <p className="mt-0.5 sm:mt-1">
                 Todo Página Completa más Asistente IA, Base de
                 conocimiento, consultas guardadas, Widget web,
                 atención humana y página sin marca NDI AI.
@@ -444,7 +444,7 @@ export default function AyudaPage() {
 
           <Button
             type="button"
-            className="mt-5"
+            className="mt-3 sm:mt-5"
             onClick={() =>
               router.push(
                 `/empresas/${empresaId}/planes`,
@@ -455,19 +455,19 @@ export default function AyudaPage() {
           </Button>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-3">
+        <Card className="p-3 sm:p-6">
+          <div className="flex items-center gap-2 sm:gap-3">
             <ShieldCheck className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
 
             <h2
-              className="text-lg font-semibold"
+              className="text-sm font-semibold sm:text-lg"
               style={{ color: "var(--foreground)" }}
             >
               Renovación y facturación
             </h2>
           </div>
 
-          <div className="mt-4 space-y-3 text-sm leading-6 text-slate-700 dark:text-zinc-300">
+          <div className="mt-2.5 space-y-2 text-[10px] leading-4 text-slate-700 dark:text-zinc-300 sm:mt-4 sm:space-y-3 sm:text-sm sm:leading-6">
             <p>
               La contratación inicial incluye la puesta en marcha
               más la primera mensualidad.
@@ -498,7 +498,7 @@ export default function AyudaPage() {
           <Button
             type="button"
             variant="secondary"
-            className="mt-5"
+            className="mt-3 sm:mt-5"
             onClick={() =>
               router.push(
                 `/empresas/${empresaId}/facturacion`,
@@ -510,16 +510,16 @@ export default function AyudaPage() {
         </Card>
       </div>
 
-      <Card className="mt-8 border-amber-200 bg-amber-50 p-6 dark:border-amber-500/20 dark:bg-amber-500/5">
+      <Card className="mt-4 border-amber-200 bg-amber-50 p-3 dark:border-amber-500/20 dark:bg-amber-500/5 sm:mt-8 sm:p-6">
         <div className="flex gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 sm:h-10 sm:w-10 sm:rounded-xl">
             <Plug className="h-5 w-5" />
           </div>
 
           <div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
               <h2
-                className="font-semibold"
+                className="text-xs font-semibold sm:text-base"
                 style={{
                   color: "var(--foreground)",
                 }}
@@ -527,12 +527,12 @@ export default function AyudaPage() {
                 WhatsApp, Instagram y Facebook / Messenger
               </h2>
 
-              <span className="rounded-full border border-amber-200 bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300">
+              <span className="rounded-full border border-amber-200 bg-amber-100 px-2 py-0.5 text-[9px] font-semibold text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300 sm:px-2.5 sm:py-1 sm:text-xs">
                 Próximamente
               </span>
             </div>
 
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-700 dark:text-zinc-300">
+            <p className="mt-1 max-w-3xl text-[10px] leading-4 text-slate-700 dark:text-zinc-300 sm:mt-2 sm:text-sm sm:leading-6">
               Las integraciones automáticas con estos canales todavía
               no forman parte del servicio activo. No necesitás
               configurar Meta para usar la página inteligente de NDI AI.
@@ -543,69 +543,69 @@ export default function AyudaPage() {
         </div>
       </Card>
 
-      <div className="mt-8 grid gap-5 lg:grid-cols-2">
-        <Card className="p-6">
-          <div className="flex items-center gap-3">
+      <div className="mt-4 grid gap-2.5 sm:mt-8 sm:gap-5 lg:grid-cols-2">
+        <Card className="p-3 sm:p-6">
+          <div className="flex items-center gap-2 sm:gap-3">
             <FileText className="h-5 w-5 text-blue-700 dark:text-blue-400" />
 
             <h2
-              className="text-lg font-semibold"
+              className="text-sm font-semibold sm:text-lg"
               style={{ color: "var(--foreground)" }}
             >
               Información legal
             </h2>
           </div>
 
-          <p className="mt-3 text-sm leading-6 text-slate-700 dark:text-zinc-300">
+          <p className="mt-1.5 text-[10px] leading-4 text-slate-700 dark:text-zinc-300 sm:mt-3 sm:text-sm sm:leading-6">
             Podés consultar las condiciones generales del servicio y
             cómo NDI AI trata los datos personales.
           </p>
 
-          <div className="mt-5 flex flex-wrap gap-3">
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-5 sm:flex sm:flex-wrap sm:gap-3">
             <Link
               href="/terminos"
-              className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-200 dark:hover:bg-zinc-800"
+              className="rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-center text-[9px] font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-200 dark:hover:bg-zinc-800 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
             >
               Términos y Condiciones
             </Link>
 
             <Link
               href="/privacidad"
-              className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-200 dark:hover:bg-zinc-800"
+              className="rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-center text-[9px] font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-200 dark:hover:bg-zinc-800 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
             >
               Política de Privacidad
             </Link>
           </div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-3">
+        <Card className="p-3 sm:p-6">
+          <div className="flex items-center gap-2 sm:gap-3">
             <CircleHelp className="h-5 w-5 text-violet-700 dark:text-violet-400" />
 
             <h2
-              className="text-lg font-semibold"
+              className="text-sm font-semibold sm:text-lg"
               style={{ color: "var(--foreground)" }}
             >
               Soporte
             </h2>
           </div>
 
-          <p className="mt-3 text-sm leading-6 text-slate-700 dark:text-zinc-300">
+          <p className="mt-1.5 text-[10px] leading-4 text-slate-700 dark:text-zinc-300 sm:mt-3 sm:text-sm sm:leading-6">
             Si algo no funciona como esperás, anotá qué estabas
             intentando hacer, qué mensaje apareció y, si es posible,
             guardá una captura de pantalla. Esa información facilita
             mucho la resolución del problema.
           </p>
 
-          <p className="mt-3 text-sm leading-6 text-slate-700 dark:text-zinc-300">
+          <p className="mt-1.5 text-[10px] leading-4 text-slate-700 dark:text-zinc-300 sm:mt-3 sm:text-sm sm:leading-6">
             Utilizá el canal de soporte que NDI AI te haya informado
             al momento de la contratación.
           </p>
         </Card>
       </div>
 
-      <Card className="mt-8 border-slate-200 bg-white p-6 shadow-sm dark:border-zinc-700/80 dark:bg-zinc-900">
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+      <Card className="mt-4 border-slate-200 bg-white p-3 shadow-sm dark:border-zinc-700/80 dark:bg-zinc-900 sm:mt-8 sm:p-6">
+        <div className="flex items-center justify-between gap-2 sm:gap-4 sm:flex-row sm:items-center">
           <div>
             <h2
               className="font-semibold"
@@ -614,7 +614,7 @@ export default function AyudaPage() {
               ¿No sabés por dónde empezar?
             </h2>
 
-            <p className="mt-1 text-sm text-slate-700 dark:text-zinc-300">
+            <p className="mt-0.5 text-[10px] leading-4 text-slate-700 dark:text-zinc-300 sm:mt-1 sm:text-sm sm:leading-normal">
               Empezá por Mi página, cargá la información básica del
               negocio y después seguí los pasos de esta guía.
             </p>

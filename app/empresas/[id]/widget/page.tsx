@@ -631,11 +631,11 @@ export default function WidgetPage() {
 
   if (cargando) {
     return (
-      <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
-        <Card className="p-10 text-center">
-          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
+      <section className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-8 sm:py-8">
+        <Card className="p-6 text-center sm:p-10">
+          <div className="mx-auto mb-2 h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500 sm:mb-4 sm:h-8 sm:w-8" />
 
-          <p className="font-medium text-slate-950 dark:text-white">
+          <p className="text-xs font-medium text-slate-950 dark:text-white sm:text-base">
             Cargando widget...
           </p>
         </Card>
@@ -648,13 +648,13 @@ export default function WidgetPage() {
     !nombreEmpresa
   ) {
     return (
-      <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
-        <Card className="border-red-200 bg-red-50 p-8 text-center dark:border-red-500/20 dark:bg-red-500/10">
-          <p className="text-sm text-red-700 dark:text-red-300">
+      <section className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-8 sm:py-8">
+        <Card className="border-red-200 bg-red-50 p-5 text-center dark:border-red-500/20 dark:bg-red-500/10 sm:p-8">
+          <p className="text-xs text-red-700 dark:text-red-300 sm:text-sm">
             {error}
           </p>
 
-          <div className="mt-5">
+          <div className="mt-3 sm:mt-5">
             <Button
               variant="secondary"
               onClick={() =>
@@ -681,27 +681,27 @@ export default function WidgetPage() {
 
   if (widgetHabilitado === false) {
     return (
-      <section className="mx-auto w-full max-w-4xl px-5 py-12 sm:px-8">
-        <Card className="border-violet-200 bg-violet-50 p-8 text-center sm:p-12 dark:border-violet-500/20 dark:bg-violet-500/5">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-100 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400">
-            <span className="text-2xl">✦</span>
+      <section className="mx-auto w-full max-w-4xl px-3 py-5 sm:px-8 sm:py-12">
+        <Card className="border-violet-200 bg-violet-50 p-5 text-center sm:p-12 dark:border-violet-500/20 dark:bg-violet-500/5">
+          <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 sm:h-16 sm:w-16 sm:rounded-2xl">
+            <span className="text-lg sm:text-2xl">✦</span>
           </div>
 
-          <p className="mt-6 text-sm font-semibold uppercase tracking-[0.18em] text-violet-700 dark:text-violet-400">
+          <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-violet-700 dark:text-violet-400 sm:mt-6 sm:text-sm sm:tracking-[0.18em]">
             Exclusivo de Business IA
           </p>
 
-          <h1 className="mt-3 text-3xl font-bold text-slate-950 dark:text-white">
+          <h1 className="mt-1.5 text-xl font-bold text-slate-950 dark:text-white sm:mt-3 sm:text-3xl">
             Widget web
           </h1>
 
-          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
+          <p className="mx-auto mt-2 max-w-xl text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:mt-3 sm:text-sm sm:leading-6">
             El chat con IA para instalar en sitios web está disponible únicamente con Business IA y una suscripción activa.
           </p>
 
           <Button
             type="button"
-            className="mt-7"
+            className="mt-4 sm:mt-7"
             onClick={() =>
               router.push(
                 `/empresas/${empresaId}/planes`,
@@ -716,15 +716,15 @@ export default function WidgetPage() {
   }
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
-      <header className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
+    <section className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-8 sm:py-8">
+      <header className="mb-4 flex items-end justify-between gap-2 sm:mb-8 sm:flex-col sm:items-stretch sm:gap-5 lg:flex-row lg:items-end">
         <div>
-          <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
+          <p className="text-[10px] font-medium text-blue-600 dark:text-blue-400 sm:text-sm">
             {nombreEmpresa}
           </p>
 
-          <div className="mt-2 flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight text-slate-950 dark:text-white">
+          <div className="mt-0.5 flex flex-wrap items-center gap-1.5 sm:mt-2 sm:gap-3">
+            <h1 className="text-xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-3xl">
               Widget web
             </h1>
 
@@ -741,7 +741,7 @@ export default function WidgetPage() {
             </Badge>
           </div>
 
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
+          <p className="mt-1 max-w-xl text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:mt-2 sm:max-w-2xl sm:text-sm sm:leading-6">
             Personalizá el chat que verá el cliente
             e instalalo en cualquier sitio web con un solo script.
           </p>
@@ -760,45 +760,45 @@ export default function WidgetPage() {
       </header>
 
       {error && (
-        <Card className="mb-6 border-red-200 bg-red-50 p-4 dark:border-red-500/20 dark:bg-red-500/10">
-          <p className="text-sm text-red-700 dark:text-red-300">
+        <Card className="mb-3 border-red-200 bg-red-50 p-3 dark:border-red-500/20 dark:bg-red-500/10 sm:mb-6 sm:p-4">
+          <p className="text-xs text-red-700 dark:text-red-300 sm:text-sm">
             {error}
           </p>
         </Card>
       )}
 
       {mensaje && (
-        <Card className="mb-6 border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/10">
-          <p className="text-sm text-emerald-700 dark:text-emerald-300">
+        <Card className="mb-3 border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/10 sm:mb-6 sm:p-4">
+          <p className="text-xs text-emerald-700 dark:text-emerald-300 sm:text-sm">
             {mensaje}
           </p>
         </Card>
       )}
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
-        <div className="space-y-6">
+      <div className="grid gap-3 sm:gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
+        <div className="space-y-3 sm:space-y-6">
           <form
             onSubmit={
               guardarApariencia
             }
           >
-            <Card className="p-6">
-              <div className="mb-6">
-                <h2 className="text-lg font-semibold text-slate-950 dark:text-white">
+            <Card className="p-3 sm:p-6">
+              <div className="mb-3 sm:mb-6">
+                <h2 className="text-sm font-semibold text-slate-950 dark:text-white sm:text-lg">
                   Apariencia del chat
                 </h2>
 
-                <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-zinc-500">
+                <p className="mt-0.5 text-[10px] leading-4 text-slate-600 dark:text-zinc-500 sm:mt-1 sm:text-sm sm:leading-6">
                   Estos cambios afectan tanto al widget instalado como
                   al chat que usás dentro de tu página inteligente.
                 </p>
               </div>
 
-              <div className="grid gap-5 md:grid-cols-2">
+              <div className="grid grid-cols-2 gap-2 sm:gap-5 md:grid-cols-2">
                 <div>
                   <label
                     htmlFor="nombreBot"
-                    className="mb-2 block text-sm font-medium text-slate-700 dark:text-zinc-300"
+                    className="mb-1 block text-[10px] font-medium text-slate-700 dark:text-zinc-300 sm:mb-2 sm:text-sm"
                   >
                     Nombre visible
                   </label>
@@ -825,7 +825,7 @@ export default function WidgetPage() {
                 <div>
                   <label
                     htmlFor="textoPlaceholder"
-                    className="mb-2 block text-sm font-medium text-slate-700 dark:text-zinc-300"
+                    className="mb-1 block text-[10px] font-medium text-slate-700 dark:text-zinc-300 sm:mb-2 sm:text-sm"
                   >
                     Texto del campo
                   </label>
@@ -849,10 +849,10 @@ export default function WidgetPage() {
                   />
                 </div>
 
-                <div className="md:col-span-2">
+                <div className="col-span-2">
                   <label
                     htmlFor="mensajeBienvenida"
-                    className="mb-2 block text-sm font-medium text-slate-700 dark:text-zinc-300"
+                    className="mb-1 block text-[10px] font-medium text-slate-700 dark:text-zinc-300 sm:mb-2 sm:text-sm"
                   >
                     Mensaje de bienvenida
                   </label>
@@ -873,19 +873,19 @@ export default function WidgetPage() {
                       setMensaje("");
                     }}
                     placeholder="¡Hola! ¿En qué puedo ayudarte?"
-                    className="w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white dark:placeholder:text-zinc-700"
+                    className="w-full resize-y rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-[10px] leading-4 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white dark:placeholder:text-zinc-700 sm:rounded-xl sm:px-4 sm:py-3 sm:text-sm sm:leading-6"
                   />
                 </div>
 
                 <div>
                   <label
                     htmlFor="colorPrincipal"
-                    className="mb-2 block text-sm font-medium text-slate-700 dark:text-zinc-300"
+                    className="mb-1 block text-[10px] font-medium text-slate-700 dark:text-zinc-300 sm:mb-2 sm:text-sm"
                   >
                     Color principal
                   </label>
 
-                  <div className="flex gap-3">
+                  <div className="flex gap-1.5 sm:gap-3">
                     <input
                       id="colorPrincipal"
                       type="color"
@@ -901,7 +901,7 @@ export default function WidgetPage() {
                         );
                         setMensaje("");
                       }}
-                      className="h-11 w-14 cursor-pointer rounded-xl border border-slate-300 bg-white p-1 dark:border-zinc-800 dark:bg-zinc-950"
+                      className="h-9 w-11 cursor-pointer rounded-lg border border-slate-300 bg-white p-1 dark:border-zinc-800 dark:bg-zinc-950 sm:h-11 sm:w-14 sm:rounded-xl"
                     />
 
                     <Input
@@ -924,7 +924,7 @@ export default function WidgetPage() {
                 <div>
                   <label
                     htmlFor="tema"
-                    className="mb-2 block text-sm font-medium text-slate-700 dark:text-zinc-300"
+                    className="mb-1 block text-[10px] font-medium text-slate-700 dark:text-zinc-300 sm:mb-2 sm:text-sm"
                   >
                     Tema
                   </label>
@@ -941,7 +941,7 @@ export default function WidgetPage() {
                       );
                       setMensaje("");
                     }}
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white"
+                    className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-[10px] text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
                   >
                     <option value="oscuro">
                       Oscuro
@@ -956,7 +956,7 @@ export default function WidgetPage() {
                 <div>
                   <label
                     htmlFor="posicion"
-                    className="mb-2 block text-sm font-medium text-slate-700 dark:text-zinc-300"
+                    className="mb-1 block text-[10px] font-medium text-slate-700 dark:text-zinc-300 sm:mb-2 sm:text-sm"
                   >
                     Posición
                   </label>
@@ -975,7 +975,7 @@ export default function WidgetPage() {
                       );
                       setMensaje("");
                     }}
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white"
+                    className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-[10px] text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
                   >
                     <option value="derecha">
                       Derecha
@@ -1009,7 +1009,7 @@ export default function WidgetPage() {
                       );
                       setMensaje("");
                     }}
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white"
+                    className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-[10px] text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
                   >
                     <option value="redondo">
                       Redondo
@@ -1021,13 +1021,13 @@ export default function WidgetPage() {
                   </select>
                 </div>
 
-                <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 md:col-span-2 dark:border-zinc-800 dark:bg-zinc-950/60">
+                <label className="col-span-2 flex cursor-pointer items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 p-2.5 dark:border-zinc-800 dark:bg-zinc-950/60 sm:gap-4 sm:rounded-xl sm:p-4">
                   <div>
-                    <p className="text-sm font-medium text-slate-950 dark:text-white">
+                    <p className="text-[10px] font-medium text-slate-950 dark:text-white sm:text-sm">
                       Mostrar “Creado con NDI AI”
                     </p>
 
-                    <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-zinc-600">
+                    <p className="mt-0.5 text-[9px] leading-4 text-slate-500 dark:text-zinc-600 sm:mt-1 sm:text-xs sm:leading-5">
                       Controla la marca visible debajo del chat.
                     </p>
                   </div>
@@ -1046,13 +1046,13 @@ export default function WidgetPage() {
                       );
                       setMensaje("");
                     }}
-                    className="h-5 w-5 accent-blue-500"
+                    className="h-4 w-4 accent-blue-500 sm:h-5 sm:w-5"
                   />
                 </label>
               </div>
 
-              <div className="mt-6 flex flex-col gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-between dark:border-zinc-800">
-                <p className="text-sm text-slate-500 dark:text-zinc-500">
+              <div className="mt-3 flex items-center justify-between gap-2 border-t border-slate-200 pt-3 sm:mt-6 sm:gap-3 sm:pt-5 dark:border-zinc-800">
+                <p className="text-[9px] text-slate-500 dark:text-zinc-500 sm:text-sm">
                   {hayCambios
                     ? "Tenés cambios pendientes."
                     : "La apariencia está actualizada."}
@@ -1075,14 +1075,14 @@ export default function WidgetPage() {
             </Card>
           </form>
 
-          <Card className="p-6">
-            <div className="flex items-start justify-between gap-4">
+          <Card className="p-3 sm:p-6">
+            <div className="flex items-start justify-between gap-2 sm:gap-4">
               <div>
-                <h2 className="text-lg font-semibold text-slate-950 dark:text-white">
+                <h2 className="text-sm font-semibold text-slate-950 dark:text-white sm:text-lg">
                   Código de instalación
                 </h2>
 
-                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-zinc-400">
+                <p className="mt-1 text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:mt-2 sm:text-sm sm:leading-6">
                   Pegalo antes del cierre de la etiqueta{" "}
                   <code className="rounded bg-slate-100 px-1.5 py-0.5 text-slate-700 dark:bg-zinc-950 dark:text-zinc-300">
                     body
@@ -1091,13 +1091,13 @@ export default function WidgetPage() {
                 </p>
               </div>
 
-              <span className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-500">
+              <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[9px] font-medium text-slate-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-500 sm:rounded-lg sm:px-3 sm:py-1.5 sm:text-xs">
                 SCRIPT
               </span>
             </div>
 
-            <div className="mt-5 overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950">
-              <pre className="max-h-72 overflow-auto p-4 text-sm leading-6 text-zinc-300">
+            <div className="mt-2.5 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 sm:mt-5 sm:rounded-xl">
+              <pre className="max-h-40 overflow-auto p-2.5 text-[9px] leading-4 text-zinc-300 sm:max-h-72 sm:p-4 sm:text-sm sm:leading-6">
                 <code>
                   {
                     codigoInstalacion
@@ -1106,8 +1106,8 @@ export default function WidgetPage() {
               </pre>
             </div>
 
-            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="break-all text-xs text-slate-500 dark:text-zinc-600">
+            <div className="mt-2.5 flex items-center justify-between gap-2 sm:mt-4 sm:gap-3">
+              <p className="min-w-0 truncate text-[9px] text-slate-500 dark:text-zinc-600 sm:break-all sm:text-xs">
                 Empresa: {empresaId}
               </p>
 
@@ -1122,12 +1122,12 @@ export default function WidgetPage() {
             </div>
           </Card>
 
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold text-slate-950 dark:text-white">
+          <Card className="p-3 sm:p-6">
+            <h2 className="text-sm font-semibold text-slate-950 dark:text-white sm:text-lg">
               Cómo instalarlo
             </h2>
 
-            <div className="mt-5 space-y-4">
+            <div className="mt-2.5 grid grid-cols-3 gap-2 sm:mt-5 sm:block sm:space-y-4">
               <Paso
                 numero="1"
                 titulo="Copiá el código"
@@ -1147,8 +1147,8 @@ export default function WidgetPage() {
               />
             </div>
 
-            <div className="mt-5 rounded-xl border border-blue-500/20 bg-blue-500/10 p-4">
-              <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
+            <div className="mt-3 rounded-lg border border-blue-500/20 bg-blue-500/10 p-2.5 sm:mt-5 sm:rounded-xl sm:p-4">
+              <p className="text-[10px] leading-4 font-medium text-blue-700 dark:text-blue-300 sm:text-sm sm:leading-normal">
                 También podés usar el asistente directamente en la página inteligente de NDI AI sin instalar este script.
               </p>
             </div>
@@ -1156,36 +1156,36 @@ export default function WidgetPage() {
         </div>
 
         <aside className="xl:sticky xl:top-8 xl:self-start">
-          <Card className="p-5">
+          <Card className="p-3 sm:p-5">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="font-semibold text-slate-950 dark:text-white">
+                <h2 className="text-xs font-semibold text-slate-950 dark:text-white sm:text-base">
                   Vista previa
                 </h2>
 
-                <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
+                <p className="mt-0.5 text-[9px] text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs">
                   Los cambios se ven acá antes de guardarlos.
                 </p>
               </div>
 
-              <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-500">
+              <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[9px] font-medium text-slate-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-500 sm:px-2.5 sm:py-1 sm:text-[11px]">
                 En vivo
               </span>
             </div>
 
-            <div className="relative mt-5 min-h-[580px] overflow-hidden rounded-2xl border border-slate-200 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_transparent_38%),linear-gradient(to_bottom,_#18181b,_#09090b)] dark:border-zinc-800">
-              <div className="absolute inset-x-5 top-5">
-                <div className="h-3 w-28 rounded-full bg-zinc-800" />
-                <div className="mt-3 h-2.5 w-44 rounded-full bg-zinc-800/70" />
-                <div className="mt-2 h-2.5 w-36 rounded-full bg-zinc-800/50" />
+            <div className="relative mt-2.5 min-h-[390px] overflow-hidden rounded-xl border border-slate-200 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_transparent_38%),linear-gradient(to_bottom,_#18181b,_#09090b)] dark:border-zinc-800 sm:mt-5 sm:min-h-[580px] sm:rounded-2xl">
+              <div className="absolute inset-x-3 top-3 sm:inset-x-5 sm:top-5">
+                <div className="h-2 w-20 rounded-full bg-zinc-800 sm:h-3 sm:w-28" />
+                <div className="mt-2 h-2 w-32 rounded-full bg-zinc-800/70 sm:mt-3 sm:h-2.5 sm:w-44" />
+                <div className="mt-1.5 h-2 w-28 rounded-full bg-zinc-800/50 sm:mt-2 sm:h-2.5 sm:w-36" />
               </div>
 
               <div
-                className={`absolute bottom-24 w-[calc(100%-2rem)] overflow-hidden rounded-2xl border shadow-2xl ${
+                className={`absolute bottom-16 w-[calc(100%-1rem)] overflow-hidden rounded-xl border shadow-2xl sm:bottom-24 sm:w-[calc(100%-2rem)] sm:rounded-2xl ${
                   posicion ===
                   "derecha"
-                    ? "right-4"
-                    : "left-4"
+                    ? "right-2 sm:right-4"
+                    : "left-2 sm:left-4"
                 } ${
                   tema ===
                   "oscuro"
@@ -1194,30 +1194,30 @@ export default function WidgetPage() {
                 }`}
               >
                 <div
-                  className="flex items-center gap-3 px-5 py-4 text-white"
+                  className="flex items-center gap-2 px-3 py-2.5 text-white sm:gap-3 sm:px-5 sm:py-4"
                   style={{
                     backgroundColor:
                       colorPrincipal,
                   }}
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 sm:h-10 sm:w-10">
                     ✦
                   </div>
 
                   <div>
-                    <p className="font-semibold">
+                    <p className="text-[11px] font-semibold sm:text-base">
                       {nombreBot ||
                         "Asistente virtual"}
                     </p>
 
-                    <p className="text-xs text-white/80">
+                    <p className="text-[9px] text-white/80 sm:text-xs">
                       En línea ahora
                     </p>
                   </div>
                 </div>
 
                 <div
-                  className={`space-y-4 p-4 ${
+                  className={`space-y-2 p-2.5 sm:space-y-4 sm:p-4 ${
                     tema ===
                     "oscuro"
                       ? "bg-zinc-950"
@@ -1225,7 +1225,7 @@ export default function WidgetPage() {
                   }`}
                 >
                   <div
-                    className={`max-w-[85%] rounded-2xl rounded-bl-md px-4 py-3 text-sm ${
+                    className={`max-w-[85%] rounded-xl rounded-bl-md px-3 py-2 text-[10px] leading-4 sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm sm:leading-normal ${
                       tema ===
                       "oscuro"
                         ? "bg-zinc-900 text-zinc-300"
@@ -1237,7 +1237,7 @@ export default function WidgetPage() {
                   </div>
 
                   <div
-                    className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 ${
+                    className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-2 sm:gap-2 sm:rounded-xl sm:px-3 sm:py-2.5 ${
                       tema ===
                       "oscuro"
                         ? "border-zinc-800 bg-zinc-900"
@@ -1245,7 +1245,7 @@ export default function WidgetPage() {
                     }`}
                   >
                     <span
-                      className={`flex-1 truncate text-xs ${
+                      className={`flex-1 truncate text-[9px] sm:text-xs ${
                         tema ===
                         "oscuro"
                           ? "text-zinc-600"
@@ -1257,7 +1257,7 @@ export default function WidgetPage() {
                     </span>
 
                     <div
-                      className="flex h-8 w-8 items-center justify-center rounded-lg text-white"
+                      className="flex h-7 w-7 items-center justify-center rounded-md text-white sm:h-8 sm:w-8 sm:rounded-lg"
                       style={{
                         backgroundColor:
                           colorPrincipal,
@@ -1269,7 +1269,7 @@ export default function WidgetPage() {
 
                   {mostrarMarca && (
                     <p
-                      className={`text-center text-[10px] ${
+                      className={`text-center text-[8px] sm:text-[10px] ${
                         tema ===
                         "oscuro"
                           ? "text-zinc-600"
@@ -1285,16 +1285,16 @@ export default function WidgetPage() {
               <button
                 type="button"
                 aria-label="Abrir vista previa del chat"
-                className={`absolute bottom-4 flex h-14 w-14 items-center justify-center text-xl text-white shadow-xl ${
+                className={`absolute bottom-2 flex h-10 w-10 items-center justify-center text-sm text-white shadow-xl sm:bottom-4 sm:h-14 sm:w-14 sm:text-xl ${
                   posicion ===
                   "derecha"
-                    ? "right-4"
-                    : "left-4"
+                    ? "right-2 sm:right-4"
+                    : "left-2 sm:left-4"
                 } ${
                   formaBoton ===
                   "redondo"
                     ? "rounded-full"
-                    : "rounded-2xl"
+                    : "rounded-lg sm:rounded-2xl"
                 }`}
                 style={{
                   backgroundColor:
@@ -1321,17 +1321,17 @@ function Paso({
   descripcion: string;
 }) {
   return (
-    <div className="flex gap-4">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
+    <div className="flex flex-col gap-1.5 sm:flex-row sm:gap-4">
+      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[9px] font-bold text-white sm:h-8 sm:w-8 sm:text-sm">
         {numero}
       </div>
 
       <div>
-        <p className="text-sm font-semibold text-slate-950 dark:text-white">
+        <p className="text-[10px] font-semibold text-slate-950 dark:text-white sm:text-sm">
           {titulo}
         </p>
 
-        <p className="mt-1 text-sm leading-6 text-slate-500 dark:text-zinc-500">
+        <p className="mt-0.5 text-[8px] leading-3 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-sm sm:leading-6">
           {descripcion}
         </p>
       </div>

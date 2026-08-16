@@ -17,11 +17,11 @@ export default function Input({
   ...props
 }: InputProps) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5 sm:space-y-2">
       {label && (
         <label
           htmlFor={id}
-          className="text-sm font-medium text-slate-700 dark:text-zinc-300"
+          className="text-xs font-medium text-slate-700 dark:text-zinc-300 sm:text-sm"
         >
           {label}
         </label>
@@ -30,8 +30,8 @@ export default function Input({
       <input
         id={id}
         className={[
-          "w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5",
-          "text-sm text-slate-900 placeholder:text-slate-400",
+          "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 sm:rounded-xl sm:px-4 sm:py-2.5",
+          "text-xs text-slate-900 placeholder:text-slate-400 sm:text-sm",
           "transition-colors duration-200",
           "focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20",
           "dark:border-zinc-700 dark:bg-zinc-900",
@@ -47,11 +47,11 @@ export default function Input({
       />
 
       {error ? (
-        <p className="text-sm text-red-600 dark:text-red-400">
+        <p className="text-[11px] leading-4 text-red-600 dark:text-red-400 sm:text-sm sm:leading-normal">
           {error}
         </p>
       ) : helperText ? (
-        <p className="text-sm text-slate-500 dark:text-zinc-500">
+        <p className="text-[11px] leading-4 text-slate-500 dark:text-zinc-500 sm:text-sm sm:leading-normal">
           {helperText}
         </p>
       ) : null}

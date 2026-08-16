@@ -492,11 +492,11 @@ export default function ProbarAgentePage() {
 
   if (cargandoPagina) {
     return (
-      <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
-        <Card className="p-10 text-center">
-          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-t-blue-500" />
+      <section className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-8 sm:py-8">
+        <Card className="p-6 text-center sm:p-10">
+          <div className="mx-auto mb-2 h-6 w-6 animate-spin rounded-full border-2 border-zinc-700 border-t-blue-500 sm:mb-4 sm:h-8 sm:w-8" />
 
-          <p className="font-medium text-white">
+          <p className="text-xs font-medium text-white sm:text-base">
             Cargando agente...
           </p>
         </Card>
@@ -506,11 +506,11 @@ export default function ProbarAgentePage() {
 
   if (error && !empresa) {
     return (
-      <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
-        <Card className="border-red-500/20 bg-red-500/10 p-8 text-center">
-          <p className="font-medium text-red-300">{error}</p>
+      <section className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-8 sm:py-8">
+        <Card className="border-red-500/20 bg-red-500/10 p-5 text-center sm:p-8">
+          <p className="text-xs font-medium text-red-300 sm:text-base">{error}</p>
 
-          <div className="mt-5">
+          <div className="mt-3 sm:mt-5">
             <Button
               variant="secondary"
               onClick={() => router.push("/empresas")}
@@ -524,22 +524,22 @@ export default function ProbarAgentePage() {
   }
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
-      <header className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
+    <section className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-8 sm:py-8">
+      <header className="mb-4 flex items-end justify-between gap-2 sm:mb-8 sm:flex-col sm:items-stretch sm:gap-5 lg:flex-row lg:items-center">
         <div>
-          <p className="text-sm font-medium text-blue-400">
+          <p className="text-[10px] font-medium text-blue-400 sm:text-sm">
             Playground del agente
           </p>
 
-          <div className="mt-2 flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight text-white">
+          <div className="mt-0.5 flex flex-wrap items-center gap-1.5 sm:mt-2 sm:gap-3">
+            <h1 className="text-xl font-bold tracking-tight text-white sm:text-3xl">
               Probar agente de {empresa?.nombre || "la empresa"}
             </h1>
 
             <Badge variant="success">Agente conectado</Badge>
           </div>
 
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
+          <p className="mt-1 max-w-xl text-[10px] leading-4 text-zinc-400 sm:mt-2 sm:max-w-2xl sm:text-sm sm:leading-6">
             Simulá una conversación real y comprobá cómo responde el agente
             con la configuración y la información cargada.
           </p>
@@ -553,17 +553,17 @@ export default function ProbarAgentePage() {
         </Button>
       </header>
 
-      <div className="grid gap-6 xl:grid-cols-[300px_minmax(0,1fr)]">
-        <aside className="space-y-6">
+      <div className="grid gap-3 sm:gap-6 xl:grid-cols-[300px_minmax(0,1fr)]">
+        <aside className="space-y-3 sm:space-y-6">
           <Card className="overflow-hidden">
-            <div className="border-b border-zinc-800 p-5">
-              <div className="flex items-center justify-between gap-3">
+            <div className="border-b border-zinc-800 p-3 sm:p-5">
+              <div className="flex items-center justify-between gap-2 sm:gap-3">
                 <div>
-                  <p className="font-semibold text-white">
+                  <p className="text-xs font-semibold text-white sm:text-base">
                     Conversaciones
                   </p>
 
-                  <p className="mt-1 text-xs text-zinc-600">
+                  <p className="mt-0.5 text-[9px] text-zinc-600 sm:mt-1 sm:text-xs">
                     {conversaciones.length} guardadas en este navegador
                   </p>
                 </div>
@@ -572,30 +572,30 @@ export default function ProbarAgentePage() {
                   type="button"
                   onClick={nuevaConversacion}
                   disabled={cargandoConversacion || enviando}
-                  className="inline-flex h-9 shrink-0 items-center gap-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-3 text-xs font-semibold text-blue-300 transition hover:border-blue-400/50 hover:bg-blue-500/15 hover:text-blue-200 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-blue-500/30 bg-blue-500/10 px-2.5 text-[9px] font-semibold text-blue-300 transition hover:border-blue-400/50 hover:bg-blue-500/15 hover:text-blue-200 disabled:cursor-not-allowed disabled:opacity-50 sm:h-9 sm:gap-2 sm:rounded-xl sm:px-3 sm:text-xs"
                 >
-                  <Plus className="h-4 w-4" />
+                  <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   <span>Nueva</span>
                 </button>
               </div>
             </div>
 
-            <div className="max-h-[360px] overflow-y-auto p-3">
+            <div className="max-h-[220px] overflow-y-auto p-2 sm:max-h-[360px] sm:p-3">
               {conversaciones.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-zinc-800 p-5 text-center">
-                  <p className="text-sm text-zinc-500">
+                <div className="rounded-lg border border-dashed border-zinc-800 p-3 text-center sm:rounded-xl sm:p-5">
+                  <p className="text-[10px] text-zinc-500 sm:text-sm">
                     Todavía no hay conversaciones.
                   </p>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-1.5 sm:space-y-2">
                   {conversaciones.map((conversacion, index) => {
                     const activa = chatId === conversacion.id;
 
                     return (
                       <div
                         key={conversacion.id}
-                        className={`group flex items-center gap-2 rounded-xl border p-1.5 transition ${
+                        className={`group flex items-center gap-1.5 rounded-lg border p-1 transition sm:gap-2 sm:rounded-xl sm:p-1.5 ${
                           activa
                             ? "border-blue-500/40 bg-blue-500/10"
                             : "border-transparent hover:border-zinc-800 hover:bg-zinc-900"
@@ -607,10 +607,10 @@ export default function ProbarAgentePage() {
                             seleccionarConversacion(conversacion.id)
                           }
                           disabled={enviando}
-                          className="min-w-0 flex-1 rounded-lg px-2.5 py-2 text-left disabled:cursor-not-allowed"
+                          className="min-w-0 flex-1 rounded-md px-2 py-1.5 text-left disabled:cursor-not-allowed sm:rounded-lg sm:px-2.5 sm:py-2"
                         >
                           <p
-                            className={`truncate text-sm font-medium ${
+                            className={`truncate text-[10px] font-medium sm:text-sm ${
                               activa ? "text-blue-300" : "text-zinc-300"
                             }`}
                           >
@@ -618,7 +618,7 @@ export default function ProbarAgentePage() {
                               `Conversación ${index + 1}`}
                           </p>
 
-                          <p className="mt-1 text-xs text-zinc-600">
+                          <p className="mt-0.5 text-[8px] text-zinc-600 sm:mt-1 sm:text-xs">
                             {activa
                               ? "Conversación activa"
                               : "Abrir historial"}
@@ -636,9 +636,9 @@ export default function ProbarAgentePage() {
                             solicitarEliminarConversacion(conversacion)
                           }
                           disabled={enviando}
-                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-zinc-600 opacity-70 transition hover:bg-red-500/10 hover:text-red-400 group-hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-30"
+                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-zinc-600 opacity-70 transition hover:bg-red-500/10 hover:text-red-400 group-hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-30 sm:h-9 sm:w-9 sm:rounded-lg"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         </button>
                       </div>
                     );
@@ -648,22 +648,22 @@ export default function ProbarAgentePage() {
             </div>
           </Card>
 
-          <Card className="p-5">
-            <div className="flex items-center gap-3">
+          <Card className="p-3 sm:p-5">
+            <div className="flex items-center gap-2 sm:gap-3">
               <Avatar name={nombreAgente} size="md" />
 
               <div className="min-w-0">
-                <p className="truncate font-semibold text-white">
+                <p className="truncate text-[11px] font-semibold text-white sm:text-base">
                   {nombreAgente}
                 </p>
 
-                <p className="truncate text-xs text-zinc-500">
+                <p className="truncate text-[9px] text-zinc-500 sm:text-xs">
                   {rolAgente}
                 </p>
               </div>
             </div>
 
-            <div className="mt-5 space-y-3 border-t border-zinc-800 pt-5">
+            <div className="mt-3 grid grid-cols-2 gap-2 border-t border-zinc-800 pt-3 sm:mt-5 sm:block sm:space-y-3 sm:pt-5">
               <DatoAgente
                 etiqueta="Base de conocimiento"
                 valor={`${cantidadConocimientos} registros`}
@@ -679,12 +679,12 @@ export default function ProbarAgentePage() {
             </div>
           </Card>
 
-          <Card className="p-5">
-            <p className="text-sm font-semibold text-white">
+          <Card className="p-3 sm:p-5">
+            <p className="text-xs font-semibold text-white sm:text-sm">
               Consejos para probar
             </p>
 
-            <div className="mt-4 space-y-3 text-sm leading-6 text-zinc-500">
+            <div className="mt-2 grid grid-cols-3 gap-2 text-[9px] leading-4 text-zinc-500 sm:mt-4 sm:block sm:space-y-3 sm:text-sm sm:leading-6">
               <p>Probá preguntas sobre precios, servicios y horarios.</p>
               <p>Hacé una consulta que no esté en la base para ver cómo reacciona.</p>
               <p>Simulá una conversación larga para comprobar la memoria.</p>
@@ -692,20 +692,20 @@ export default function ProbarAgentePage() {
           </Card>
         </aside>
 
-        <Card className="flex min-h-[720px] flex-col overflow-hidden">
-          <div className="flex flex-col justify-between gap-4 border-b border-zinc-800 p-5 sm:flex-row sm:items-center">
-            <div className="flex min-w-0 items-center gap-3">
+        <Card className="flex min-h-[500px] flex-col overflow-hidden sm:min-h-[720px]">
+          <div className="flex items-center justify-between gap-2 border-b border-zinc-800 p-3 sm:gap-4 sm:p-5 sm:flex-row sm:items-center">
+            <div className="flex min-w-0 items-center gap-2 sm:gap-3">
               <Avatar name={nombreAgente} size="md" />
 
               <div className="min-w-0">
-                <p className="truncate font-semibold text-white">
+                <p className="truncate text-[11px] font-semibold text-white sm:text-base">
                   {tituloConversacionActual}
                 </p>
 
-                <div className="mt-1 flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-green-500" />
+                <div className="mt-0.5 flex items-center gap-1.5 sm:mt-1 sm:gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-green-500 sm:h-2 sm:w-2" />
 
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-[9px] text-zinc-500 sm:text-xs">
                     {nombreAgente} está disponible
                   </p>
                 </div>
@@ -722,35 +722,35 @@ export default function ProbarAgentePage() {
             </Button>
           </div>
 
-          <div className="flex-1 overflow-y-auto bg-zinc-950/40 p-4 sm:p-6">
+          <div className="flex-1 overflow-y-auto bg-zinc-950/40 p-3 sm:p-6">
             {cargandoConversacion ? (
-              <div className="flex h-full min-h-[480px] items-center justify-center">
+              <div className="flex h-full min-h-[300px] items-center justify-center sm:min-h-[480px]">
                 <div className="text-center">
-                  <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-t-blue-500" />
+                  <div className="mx-auto mb-2 h-6 w-6 animate-spin rounded-full border-2 border-zinc-700 border-t-blue-500 sm:mb-4 sm:h-8 sm:w-8" />
 
-                  <p className="text-sm text-zinc-500">
+                  <p className="text-[10px] text-zinc-500 sm:text-sm">
                     Cargando conversación...
                   </p>
                 </div>
               </div>
             ) : mensajes.length === 0 ? (
-              <div className="flex h-full min-h-[480px] items-center justify-center text-center">
-                <div className="max-w-md">
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-blue-500/10">
+              <div className="flex h-full min-h-[300px] items-center justify-center text-center sm:min-h-[480px]">
+                <div className="max-w-sm sm:max-w-md">
+                  <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-blue-500/10 sm:h-16 sm:w-16 sm:rounded-3xl">
                     <Avatar name={nombreAgente} size="lg" />
                   </div>
 
-                  <h2 className="mt-6 text-xl font-semibold text-white">
+                  <h2 className="mt-3 text-base font-semibold text-white sm:mt-6 sm:text-xl">
                     Empezá una conversación
                   </h2>
 
-                  <p className="mt-2 text-sm leading-6 text-zinc-500">
+                  <p className="mt-1 text-[10px] leading-4 text-zinc-500 sm:mt-2 sm:text-sm sm:leading-6">
                     Escribí una consulta como si fueras un cliente real. El
                     agente responderá usando su configuración y la base de
                     conocimiento.
                   </p>
 
-                  <div className="mt-6 flex flex-wrap justify-center gap-2">
+                  <div className="mt-3 grid grid-cols-3 gap-1.5 sm:mt-6 sm:flex sm:flex-wrap sm:justify-center sm:gap-2">
                     {[
                       "¿Qué servicios ofrecen?",
                       "¿Cuáles son sus horarios?",
@@ -763,7 +763,7 @@ export default function ProbarAgentePage() {
                           setMensaje(sugerencia);
                           textareaRef.current?.focus();
                         }}
-                        className="rounded-full border border-zinc-800 bg-zinc-900 px-4 py-2 text-xs text-zinc-400 transition hover:border-blue-500/40 hover:text-zinc-200"
+                        className="rounded-lg border border-zinc-800 bg-zinc-900 px-2 py-1.5 text-[8px] leading-3 text-zinc-400 transition hover:border-blue-500/40 hover:text-zinc-200 sm:rounded-full sm:px-4 sm:py-2 sm:text-xs sm:leading-normal"
                       >
                         {sugerencia}
                       </button>
@@ -772,26 +772,26 @@ export default function ProbarAgentePage() {
                 </div>
               </div>
             ) : (
-              <div className="mx-auto max-w-3xl space-y-6">
+              <div className="mx-auto max-w-3xl space-y-3 sm:space-y-6">
                 {mensajes.map((item, index) => {
                   const esUsuario = item.role === "user";
 
                   return (
                     <div
                       key={`${item.role}-${index}`}
-                      className={`flex gap-3 ${
+                      className={`flex gap-2 sm:gap-3 ${
                         esUsuario ? "justify-end" : "justify-start"
                       }`}
                     >
                       {!esUsuario && (
-                        <div className="mt-1 shrink-0">
+                        <div className="mt-0.5 shrink-0 sm:mt-1">
                           <Avatar name={nombreAgente} size="sm" />
                         </div>
                       )}
 
-                      <div className="group max-w-[88%]">
+                      <div className="group max-w-[90%] sm:max-w-[88%]">
                         <div
-                          className={`rounded-2xl px-4 py-3 text-sm leading-7 sm:px-5 ${
+                          className={`rounded-xl px-3 py-2 text-[10px] leading-5 sm:rounded-2xl sm:px-5 sm:py-3 sm:text-sm sm:leading-7 ${
                             esUsuario
                               ? "rounded-br-md bg-blue-600 text-white"
                               : "rounded-bl-md border border-zinc-800 bg-zinc-900 text-zinc-100"
@@ -803,7 +803,7 @@ export default function ProbarAgentePage() {
                         </div>
 
                         <div
-                          className={`mt-2 flex items-center gap-3 text-xs text-zinc-600 ${
+                          className={`mt-1 flex items-center gap-2 text-[8px] text-zinc-600 sm:mt-2 sm:gap-3 sm:text-xs ${
                             esUsuario ? "justify-end" : "justify-start"
                           }`}
                         >
@@ -826,7 +826,7 @@ export default function ProbarAgentePage() {
                       </div>
 
                       {esUsuario && (
-                        <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold text-white">
+                        <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-[8px] font-semibold text-white sm:mt-1 sm:h-8 sm:w-8 sm:text-xs">
                           Tú
                         </div>
                       )}
@@ -835,14 +835,14 @@ export default function ProbarAgentePage() {
                 })}
 
                 {enviando && (
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-2 sm:gap-3">
                     <Avatar name={nombreAgente} size="sm" />
 
-                    <div className="rounded-2xl rounded-bl-md border border-zinc-800 bg-zinc-900 px-5 py-4">
+                    <div className="rounded-xl rounded-bl-md border border-zinc-800 bg-zinc-900 px-3 py-2.5 sm:rounded-2xl sm:px-5 sm:py-4">
                       <div className="flex items-center gap-1.5">
-                        <span className="h-2 w-2 animate-bounce rounded-full bg-zinc-500 [animation-delay:-0.3s]" />
-                        <span className="h-2 w-2 animate-bounce rounded-full bg-zinc-500 [animation-delay:-0.15s]" />
-                        <span className="h-2 w-2 animate-bounce rounded-full bg-zinc-500" />
+                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-500 [animation-delay:-0.3s] sm:h-2 sm:w-2" />
+                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-500 [animation-delay:-0.15s] sm:h-2 sm:w-2" />
+                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-500 sm:h-2 sm:w-2" />
                       </div>
                     </div>
                   </div>
@@ -854,13 +854,13 @@ export default function ProbarAgentePage() {
           </div>
 
           {error && (
-            <div className="mx-4 mt-4 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300 sm:mx-6">
+            <div className="mx-3 mt-2 rounded-lg border border-red-500/20 bg-red-500/10 p-2.5 text-[10px] text-red-300 sm:mx-6 sm:mt-4 sm:rounded-xl sm:p-4 sm:text-sm">
               {error}
             </div>
           )}
 
-          <div className="border-t border-zinc-800 p-4 sm:p-5">
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-3 transition focus-within:border-blue-500">
+          <div className="border-t border-zinc-800 p-3 sm:p-5">
+            <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-2.5 transition focus-within:border-blue-500 sm:rounded-2xl sm:p-3">
               <textarea
                 ref={textareaRef}
                 value={mensaje}
@@ -870,11 +870,11 @@ export default function ProbarAgentePage() {
                 maxLength={4000}
                 placeholder="Escribí un mensaje como si fueras un cliente..."
                 disabled={enviando || cargandoConversacion}
-                className="w-full resize-none bg-transparent px-1 py-1 text-sm leading-6 text-white outline-none placeholder:text-zinc-700 disabled:cursor-not-allowed"
+                className="w-full resize-none bg-transparent px-1 py-1 text-[11px] leading-5 text-white outline-none placeholder:text-zinc-700 disabled:cursor-not-allowed sm:text-sm sm:leading-6"
               />
 
-              <div className="mt-3 flex flex-col justify-between gap-3 border-t border-zinc-900 pt-3 sm:flex-row sm:items-center">
-                <div className="flex items-center gap-3 text-xs text-zinc-600">
+              <div className="mt-2 flex items-center justify-between gap-2 border-t border-zinc-900 pt-2 sm:mt-3 sm:gap-3 sm:pt-3 sm:flex-row sm:items-center">
+                <div className="flex min-w-0 items-center gap-2 text-[8px] text-zinc-600 sm:gap-3 sm:text-xs">
                   <span>Enter para enviar</span>
                   <span>Shift + Enter para otra línea</span>
                   <span>{mensaje.length}/4000</span>
@@ -897,7 +897,7 @@ export default function ProbarAgentePage() {
       </div>
 
       {conversacionAEliminar && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-4">
           <button
             type="button"
             aria-label="Cerrar confirmación"
@@ -905,26 +905,26 @@ export default function ProbarAgentePage() {
             className="absolute inset-0 bg-black/70 backdrop-blur-sm"
           />
 
-          <div className="relative z-10 w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl shadow-black/50">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-500/10 text-red-400">
-              <Trash2 className="h-5 w-5" />
+          <div className="relative z-10 w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-950 p-4 shadow-2xl shadow-black/50 sm:rounded-2xl sm:p-6">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-500/10 text-red-400 sm:h-11 sm:w-11 sm:rounded-xl">
+              <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
 
-            <h2 className="mt-5 text-lg font-semibold text-white">
+            <h2 className="mt-3 text-base font-semibold text-white sm:mt-5 sm:text-lg">
               ¿Eliminar esta conversación de prueba?
             </h2>
 
-            <p className="mt-2 text-sm leading-6 text-zinc-500">
+            <p className="mt-1 text-[10px] leading-4 text-zinc-500 sm:mt-2 sm:text-sm sm:leading-6">
               Se eliminará el historial “{conversacionAEliminar.titulo}” de
               este navegador. Esta acción no se puede deshacer.
             </p>
 
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-4 flex justify-end gap-2 sm:mt-6 sm:gap-3">
               <button
                 type="button"
                 onClick={cancelarEliminarConversacion}
                 disabled={eliminandoConversacion}
-                className="rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-zinc-300 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-[10px] font-semibold text-zinc-300 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
               >
                 Cancelar
               </button>
@@ -933,9 +933,9 @@ export default function ProbarAgentePage() {
                 type="button"
                 onClick={eliminarConversacion}
                 disabled={eliminandoConversacion}
-                className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-2 text-[10px] font-semibold text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 {eliminandoConversacion ? "Eliminando..." : "Eliminar"}
               </button>
             </div>
@@ -993,11 +993,11 @@ function DatoAgente({
 }) {
   return (
     <div>
-      <p className="text-xs uppercase tracking-wide text-zinc-600">
+      <p className="text-[8px] uppercase tracking-wide text-zinc-600 sm:text-xs">
         {etiqueta}
       </p>
 
-      <p className="mt-1 line-clamp-2 text-sm text-zinc-300">
+      <p className="mt-0.5 line-clamp-2 text-[9px] leading-4 text-zinc-300 sm:mt-1 sm:text-sm sm:leading-normal">
         {valor}
       </p>
     </div>

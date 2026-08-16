@@ -1990,7 +1990,8 @@ export default async function NegocioPage({
       {/* CTA MÓVIL FIJO */}
       {puedeMostrarReserva ||
       mostrarContacto ||
-      mostrarWhatsApp ? (
+      mostrarWhatsApp ||
+      puedeUsarAsistenteIA ? (
         <div
           className={`fixed inset-x-0 bottom-0 z-50 border-t px-2 py-1.5 backdrop-blur-xl sm:hidden ${
             esClaro
@@ -1998,7 +1999,11 @@ export default async function NegocioPage({
               : "border-white/10 bg-zinc-950/90"
           }`}
         >
-          <div className="mx-auto flex max-w-md gap-1.5">
+          <div
+            className={`mx-auto flex max-w-md gap-1.5 ${
+              puedeUsarAsistenteIA ? "pr-[46px]" : ""
+            }`}
+          >
             {puedeMostrarReserva ||
             mostrarContacto ? (
               <a
@@ -2029,31 +2034,32 @@ export default async function NegocioPage({
               </a>
             ) : null}
 
-            {mostrarWhatsApp && (
-              <a
-                href={whatsappUrl}
-                data-analytics-event="whatsapp_click"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Abrir WhatsApp"
-                className={`inline-flex h-9 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-lg transition hover:bg-emerald-500 ${
-                  puedeMostrarReserva ||
-                  mostrarContacto
-                    ? "w-9 shrink-0"
-                    : "flex-1 gap-2 px-4"
-                }`}
-              >
-                <MessageCircle className="h-4 w-4" />
-                {!(
-                  puedeMostrarReserva ||
-                  mostrarContacto
-                ) && (
-                  <span className="text-xs font-semibold">
-                    WhatsApp
-                  </span>
-                )}
-              </a>
-            )}
+            {mostrarWhatsApp &&
+              !puedeUsarAsistenteIA && (
+                <a
+                  href={whatsappUrl}
+                  data-analytics-event="whatsapp_click"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Abrir WhatsApp"
+                  className={`inline-flex h-9 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-lg transition hover:bg-emerald-500 ${
+                    puedeMostrarReserva ||
+                    mostrarContacto
+                      ? "w-9 shrink-0"
+                      : "flex-1 gap-2 px-4"
+                  }`}
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  {!(
+                    puedeMostrarReserva ||
+                    mostrarContacto
+                  ) && (
+                    <span className="text-xs font-semibold">
+                      WhatsApp
+                    </span>
+                  )}
+                </a>
+              )}
           </div>
         </div>
       ) : null}
@@ -2063,6 +2069,7 @@ export default async function NegocioPage({
         <Script
           src="/widget.js"
           data-empresa-id={documento.id}
+          data-mobile-dock="true"
           strategy="afterInteractive"
         />
       )}

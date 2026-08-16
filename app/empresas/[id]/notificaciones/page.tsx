@@ -1,23 +1,14 @@
 "use client";
 
-import type { ComponentType } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useParams } from "next/navigation";
 import {
   Bell,
-  Bot,
   CheckCheck,
   CircleAlert,
   MessageCircle,
   Sparkles,
   UserRound,
-  X,
 } from "lucide-react";
-import {
-  onAuthStateChanged,
-  signOut,
-  type User,
-} from "firebase/auth";
+import { useEffect, useMemo, useState } from "react";
 import {
   collection,
   doc,
@@ -27,16 +18,11 @@ import {
   serverTimestamp,
   Timestamp,
   updateDoc,
-  where,
   writeBatch,
 } from "firebase/firestore";
+import { useParams, useRouter } from "next/navigation";
 
-import { auth, db } from "@/lib/firebase";
-
-interface Empresa {
-  id: string;
-  nombre: string;
-}
+import { db } from "@/lib/firebase";
 
 type TipoNotificacion =
   | "mensaje"
@@ -45,10 +31,8 @@ type TipoNotificacion =
   | "plan"
   | "sistema";
 
-interface Notificacion {
+type Notificacion = {
   id: string;
-  empresaId: string;
-  empresaNombre: string;
   tipo?: TipoNotificacion;
   titulo?: string;
   descripcion?: string;
@@ -58,430 +42,127 @@ interface Notificacion {
   url?: string;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
-}
+};
 
-interface ToastNotification {
-  id: string;
-  empresaId: string;
-  empresaNombre: string;
-  titulo: string;
-  mensaje: string;
-  url?: string;
-  chatId?: string;
-}
-
-export default function Header() {
+export default function NotificacionesPage() {
   const params = useParams();
+  const router = useRouter();
+
   const parametroEmpresa = params.id ?? params.empresaId;
 
-  const empresaActualId = Array.isArray(parametroEmpresa)
+  const empresaId = Array.isArray(parametroEmpresa)
     ? parametroEmpresa[0]
     : (parametroEmpresa as string | undefined);
 
-  const [user, setUser] = useState<User | null>(null);
-  const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
-  const [menuAbierto, setMenuAbierto] = useState(false);
+  const [cargando, setCargando] = useState(true);
   const [procesando, setProcesando] = useState(false);
-  const [toast, setToast] = useState<ToastNotification | null>(null);
-
-  const notificacionesPorEmpresaRef = useRef<
-    Record<string, Notificacion[]>
-  >({});
-
-  const unsubscribesRef = useRef<Record<string, () => void>>({});
-  const empresasInicializadasRef = useRef<Set<string>>(new Set());
-  const notificacionesConocidasRef = useRef<Set<string>>(new Set());
-
-  const toastTimeoutRef = useRef<
-    ReturnType<typeof setTimeout> | null
-  >(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(
-      auth,
-      (currentUser) => {
-        setUser(currentUser);
-      }
-    );
-
-    return () => unsubscribeAuth();
-  }, []);
-
-  useEffect(() => {
-    if (!user) {
-      setEmpresas([]);
-      setNotificaciones([]);
+    if (!empresaId) {
+      setError("No se encontró la empresa.");
+      setCargando(false);
       return;
     }
 
-    const empresasQuery = query(
-      collection(db, "companies"),
-      where("userId", "==", user.uid),
+    const notificacionesQuery = query(
+      collection(
+        db,
+        "companies",
+        empresaId,
+        "notifications"
+      ),
       orderBy("createdAt", "desc")
     );
 
-    const combinarNotificaciones = () => {
-      const todas = Object.values(
-        notificacionesPorEmpresaRef.current
-      ).flat();
-
-      todas.sort((a, b) => {
-        const fechaA =
-          a.createdAt?.toMillis() ||
-          a.updatedAt?.toMillis() ||
-          0;
-
-        const fechaB =
-          b.createdAt?.toMillis() ||
-          b.updatedAt?.toMillis() ||
-          0;
-
-        return fechaB - fechaA;
-      });
-
-      setNotificaciones(todas);
-    };
-
-    const unsubscribeEmpresas = onSnapshot(
-      empresasQuery,
+    const cancelar = onSnapshot(
+      notificacionesQuery,
       (snapshot) => {
-        const nuevasEmpresas = snapshot.docs.map(
-          (documento) => ({
-            id: documento.id,
-            ...(documento.data() as Omit<Empresa, "id">),
-          })
-        );
+        const datos = snapshot.docs.map((documento) => ({
+          id: documento.id,
+          ...(documento.data() as Omit<Notificacion, "id">),
+        }));
 
-        setEmpresas(nuevasEmpresas);
-
-        const idsActuales = new Set(
-          nuevasEmpresas.map((empresa) => empresa.id)
-        );
-
-        Object.entries(unsubscribesRef.current).forEach(
-          ([empresaId, unsubscribe]) => {
-            if (idsActuales.has(empresaId)) {
-              return;
-            }
-
-            unsubscribe();
-
-            delete unsubscribesRef.current[empresaId];
-            delete notificacionesPorEmpresaRef.current[
-              empresaId
-            ];
-
-            empresasInicializadasRef.current.delete(
-              empresaId
-            );
-          }
-        );
-
-        nuevasEmpresas.forEach((empresa) => {
-          if (unsubscribesRef.current[empresa.id]) {
-            return;
-          }
-
-          const notificacionesQuery = query(
-            collection(
-              db,
-              "companies",
-              empresa.id,
-              "notifications"
-            ),
-            orderBy("createdAt", "desc")
-          );
-
-          unsubscribesRef.current[empresa.id] = onSnapshot(
-            notificacionesQuery,
-            (notificacionesSnapshot) => {
-              const nuevasNotificaciones =
-                notificacionesSnapshot.docs.map(
-                  (documento) => {
-                    const data = documento.data() as Omit<
-                      Notificacion,
-                      "id" | "empresaId" | "empresaNombre"
-                    >;
-
-                    return {
-                      id: documento.id,
-                      empresaId: empresa.id,
-                      empresaNombre: empresa.nombre,
-                      ...data,
-                    };
-                  }
-                );
-
-              const esPrimeraCarga =
-                !empresasInicializadasRef.current.has(
-                  empresa.id
-                );
-
-              nuevasNotificaciones.forEach(
-                (notificacion) => {
-                  const clave = `${notificacion.empresaId}-${notificacion.id}`;
-
-                  if (
-                    !esPrimeraCarga &&
-                    !notificacionesConocidasRef.current.has(
-                      clave
-                    )
-                  ) {
-                    mostrarNuevaNotificacion(
-                      notificacion
-                    );
-                  }
-
-                  notificacionesConocidasRef.current.add(
-                    clave
-                  );
-                }
-              );
-
-              empresasInicializadasRef.current.add(
-                empresa.id
-              );
-
-              notificacionesPorEmpresaRef.current[
-                empresa.id
-              ] = nuevasNotificaciones;
-
-              combinarNotificaciones();
-            },
-            (error) => {
-              console.error(
-                `Error al escuchar notificaciones de ${empresa.nombre}:`,
-                error
-              );
-            }
-          );
-        });
-
-        if (nuevasEmpresas.length === 0) {
-          setNotificaciones([]);
-          notificacionesPorEmpresaRef.current = {};
-        }
+        setNotificaciones(datos);
+        setError("");
+        setCargando(false);
       },
-      (error) => {
+      (firebaseError) => {
         console.error(
-          "Error al cargar empresas en el header:",
-          error
+          "Error al cargar notificaciones:",
+          firebaseError
         );
+
+        setError("No se pudieron cargar las notificaciones.");
+        setCargando(false);
       }
     );
 
-    return () => {
-      unsubscribeEmpresas();
+    return () => cancelar();
+  }, [empresaId]);
 
-      Object.values(
-        unsubscribesRef.current
-      ).forEach((unsubscribe) => unsubscribe());
-
-      unsubscribesRef.current = {};
-      notificacionesPorEmpresaRef.current = {};
-      empresasInicializadasRef.current.clear();
-      notificacionesConocidasRef.current.clear();
-    };
-  }, [user]);
-
-  useEffect(() => {
-    return () => {
-      if (toastTimeoutRef.current) {
-        clearTimeout(toastTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  const notificacionesNoLeidas = useMemo(
+  const noLeidas = useMemo(
     () =>
       notificaciones.filter(
         (notificacion) => !notificacion.leida
-      ),
+      ).length,
     [notificaciones]
   );
-
-  const notificacionesRecientes =
-    notificaciones.slice(0, 6);
-
-  function mostrarNuevaNotificacion(
-    notificacion: Notificacion
-  ) {
-    reproducirSonido();
-
-    const nuevaNotificacion: ToastNotification = {
-      id: `${notificacion.empresaId}-${notificacion.id}`,
-      empresaId: notificacion.empresaId,
-      empresaNombre: notificacion.empresaNombre,
-      titulo:
-        notificacion.titulo || "Nueva notificación",
-      mensaje:
-        notificacion.descripcion ||
-        "Se registró una nueva actividad.",
-      url: notificacion.url,
-      chatId: notificacion.chatId,
-    };
-
-    setToast(nuevaNotificacion);
-
-    if (toastTimeoutRef.current) {
-      clearTimeout(toastTimeoutRef.current);
-    }
-
-    toastTimeoutRef.current = setTimeout(() => {
-      setToast(null);
-    }, 5000);
-
-    if (
-      "Notification" in window &&
-      Notification.permission === "granted" &&
-      document.hidden
-    ) {
-      const navegador = new Notification(
-        nuevaNotificacion.titulo,
-        {
-          body: `${notificacion.empresaNombre}: ${nuevaNotificacion.mensaje}`,
-        }
-      );
-
-      navegador.onclick = () => {
-        window.focus();
-
-        abrirRutaNotificacion({
-          empresaId: notificacion.empresaId,
-          url: notificacion.url,
-          chatId: notificacion.chatId,
-        });
-      };
-    }
-  }
-
-  function reproducirSonido() {
-    try {
-      const AudioContextClass =
-        window.AudioContext ||
-        (
-          window as typeof window & {
-            webkitAudioContext?: typeof AudioContext;
-          }
-        ).webkitAudioContext;
-
-      if (!AudioContextClass) {
-        return;
-      }
-
-      const audioContext = new AudioContextClass();
-      const oscillator =
-        audioContext.createOscillator();
-      const gain = audioContext.createGain();
-
-      oscillator.type = "sine";
-
-      oscillator.frequency.setValueAtTime(
-        720,
-        audioContext.currentTime
-      );
-
-      oscillator.frequency.exponentialRampToValueAtTime(
-        940,
-        audioContext.currentTime + 0.14
-      );
-
-      gain.gain.setValueAtTime(
-        0.0001,
-        audioContext.currentTime
-      );
-
-      gain.gain.exponentialRampToValueAtTime(
-        0.12,
-        audioContext.currentTime + 0.02
-      );
-
-      gain.gain.exponentialRampToValueAtTime(
-        0.0001,
-        audioContext.currentTime + 0.22
-      );
-
-      oscillator.connect(gain);
-      gain.connect(audioContext.destination);
-
-      oscillator.start();
-      oscillator.stop(
-        audioContext.currentTime + 0.23
-      );
-    } catch (error) {
-      console.error(
-        "No se pudo reproducir el sonido:",
-        error
-      );
-    }
-  }
 
   async function marcarComoLeida(
     notificacion: Notificacion
   ) {
-    try {
-      if (!notificacion.leida) {
-        await updateDoc(
-          doc(
-            db,
-            "companies",
-            notificacion.empresaId,
-            "notifications",
-            notificacion.id
-          ),
-          {
-            leida: true,
-            leidaAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-          }
-        );
-      }
+    if (!empresaId || notificacion.leida) {
+      abrirNotificacion(notificacion);
+      return;
+    }
 
-      setMenuAbierto(false);
-      abrirRutaNotificacion(notificacion);
-    } catch (error) {
-      console.error(
-        "No se pudo marcar la notificación:",
-        error
+    try {
+      await updateDoc(
+        doc(
+          db,
+          "companies",
+          empresaId,
+          "notifications",
+          notificacion.id
+        ),
+        {
+          leida: true,
+          leidaAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        }
       );
+
+      abrirNotificacion(notificacion);
+    } catch (firebaseError) {
+      console.error(
+        "Error al marcar notificación:",
+        firebaseError
+      );
+
+      setError("No se pudo actualizar la notificación.");
     }
   }
 
-  async function marcarTodoComoLeido() {
-    if (
-      notificacionesNoLeidas.length === 0 ||
-      procesando
-    ) {
+  async function marcarTodasComoLeidas() {
+    if (!empresaId || noLeidas === 0 || procesando) {
       return;
     }
 
     setProcesando(true);
+    setError("");
 
     try {
-      const bloques: Notificacion[][] = [];
+      const batch = writeBatch(db);
 
-      for (
-        let indice = 0;
-        indice < notificacionesNoLeidas.length;
-        indice += 400
-      ) {
-        bloques.push(
-          notificacionesNoLeidas.slice(
-            indice,
-            indice + 400
-          )
-        );
-      }
-
-      for (const bloque of bloques) {
-        const batch = writeBatch(db);
-
-        bloque.forEach((notificacion) => {
+      notificaciones
+        .filter((notificacion) => !notificacion.leida)
+        .forEach((notificacion) => {
           const referencia = doc(
             db,
             "companies",
-            notificacion.empresaId,
+            empresaId,
             "notifications",
             notificacion.id
           );
@@ -493,317 +174,198 @@ export default function Header() {
           });
         });
 
-        await batch.commit();
-      }
-    } catch (error) {
+      await batch.commit();
+    } catch (firebaseError) {
       console.error(
-        "No se pudieron marcar las notificaciones:",
-        error
+        "Error al marcar todas como leídas:",
+        firebaseError
+      );
+
+      setError(
+        "No se pudieron marcar todas las notificaciones."
       );
     } finally {
       setProcesando(false);
     }
   }
 
-  async function solicitarPermisoNotificaciones() {
-    if (!("Notification" in window)) {
+  function abrirNotificacion(
+    notificacion: Notificacion
+  ) {
+    if (notificacion.url) {
+      router.push(notificacion.url);
       return;
     }
 
-    if (Notification.permission === "default") {
-      await Notification.requestPermission();
-    }
-  }
-
-  function abrirMenu() {
-    setMenuAbierto((estadoActual) => !estadoActual);
-    void solicitarPermisoNotificaciones();
-  }
-
-  function abrirRutaNotificacion({
-    empresaId,
-    url,
-    chatId,
-  }: {
-    empresaId: string;
-    url?: string;
-    chatId?: string;
-  }) {
-    if (url) {
-      window.location.href = url;
-      return;
-    }
-
-    if (chatId) {
-      window.location.href =
-        `/empresas/${empresaId}/conversaciones/${chatId}`;
-      return;
-    }
-
-    window.location.href =
-      `/empresas/${empresaId}/notificaciones`;
-  }
-
-  async function cerrarSesion() {
-    try {
-      await signOut(auth);
-      window.location.href = "/login";
-    } catch (error) {
-      console.error(
-        "No se pudo cerrar la sesión:",
-        error
+    if (notificacion.chatId && empresaId) {
+      router.push(
+        `/empresas/${empresaId}/conversaciones/${notificacion.chatId}`
       );
     }
   }
 
-  return (
-    <>
-      <header className="sticky top-0 z-40 border-b border-zinc-800 bg-zinc-950/90 px-4 py-4 backdrop-blur sm:px-6">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div>
-            <p className="text-sm text-zinc-500">
-              NDI AI
-            </p>
+  if (cargando) {
+    return (
+      <main className="mx-auto max-w-7xl p-3 text-white sm:p-6">
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6 text-center sm:rounded-2xl sm:p-10">
+          <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-zinc-700 border-t-blue-500 sm:h-8 sm:w-8" />
 
-            <h1 className="font-semibold text-white">
-              Panel de administración
-            </h1>
+          <p className="mt-2 text-xs text-zinc-400 sm:mt-4 sm:text-sm">
+            Cargando notificaciones...
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="mx-auto max-w-7xl p-3 text-white sm:p-6">
+      <div className="flex items-center justify-between gap-2 sm:gap-5 sm:flex-row sm:items-center">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/10 sm:h-12 sm:w-12 sm:rounded-2xl">
+            <Bell className="h-4 w-4 text-blue-400 sm:h-6 sm:w-6" />
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="relative">
+          <div>
+            <h1 className="text-xl font-bold sm:text-3xl">
+              Notificaciones
+            </h1>
+
+            <p className="mt-0.5 text-[10px] text-zinc-400 sm:mt-1 sm:text-base">
+              Actividad reciente de tu empresa.
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={marcarTodasComoLeidas}
+          disabled={noLeidas === 0 || procesando}
+          className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-zinc-700 px-2.5 py-2 text-[9px] font-semibold text-zinc-300 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-3 sm:text-sm"
+        >
+          <CheckCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+
+          {procesando
+            ? "Actualizando..."
+            : "Marcar todas como leídas"}
+        </button>
+      </div>
+
+      <div className="mt-3 grid grid-cols-3 gap-2 sm:mt-8 sm:gap-4 sm:grid-cols-3">
+        <ResumenCard
+          titulo="Total"
+          valor={notificaciones.length}
+        />
+
+        <ResumenCard
+          titulo="Sin leer"
+          valor={noLeidas}
+        />
+
+        <ResumenCard
+          titulo="Leídas"
+          valor={notificaciones.length - noLeidas}
+        />
+      </div>
+
+      {error && (
+        <div className="mt-3 rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-300 sm:mt-6 sm:rounded-2xl sm:p-4 sm:text-sm">
+          {error}
+        </div>
+      )}
+
+      <div className="mt-3 space-y-2 sm:mt-8 sm:space-y-4">
+        {notificaciones.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-zinc-700 bg-zinc-900/50 p-6 text-center sm:rounded-2xl sm:p-12">
+            <Bell className="mx-auto h-7 w-7 text-zinc-700 sm:h-10 sm:w-10" />
+
+            <h2 className="mt-2 text-sm font-semibold sm:mt-4 sm:text-lg">
+              Todavía no hay notificaciones
+            </h2>
+
+            <p className="mx-auto mt-1 max-w-md text-[10px] leading-4 text-zinc-500 sm:mt-2 sm:text-sm sm:leading-6">
+              Los nuevos mensajes, solicitudes de atención
+              humana y eventos importantes aparecerán acá.
+            </p>
+          </div>
+        ) : (
+          notificaciones.map((item) => {
+            const Icono = obtenerIcono(item.tipo);
+
+            return (
               <button
+                key={item.id}
                 type="button"
-                aria-label="Notificaciones"
-                onClick={abrirMenu}
-                className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-400 transition hover:border-zinc-700 hover:text-white"
+                onClick={() => marcarComoLeida(item)}
+                className={[
+                  "flex w-full items-start gap-2.5 rounded-xl border p-3 text-left transition sm:gap-4 sm:rounded-2xl sm:p-5",
+                  item.leida
+                    ? "border-zinc-800 bg-zinc-900 hover:bg-zinc-800/70"
+                    : "border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/15",
+                ].join(" ")}
               >
-                <Bell className="h-5 w-5" />
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-950 sm:h-11 sm:w-11 sm:rounded-xl">
+                  <Icono className="h-4 w-4 text-blue-400 sm:h-5 sm:w-5" />
+                </div>
 
-                {notificacionesNoLeidas.length > 0 && (
-                  <span className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-2 ring-zinc-950">
-                    {notificacionesNoLeidas.length > 99
-                      ? "99+"
-                      : notificacionesNoLeidas.length}
-                  </span>
-                )}
-              </button>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2 sm:flex-row sm:items-center">
+                    <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+                      <h2 className="truncate text-[11px] font-semibold text-white sm:text-base">
+                        {item.titulo || "Notificación"}
+                      </h2>
 
-              {menuAbierto && (
-                <>
-                  <button
-                    type="button"
-                    aria-label="Cerrar notificaciones"
-                    onClick={() => setMenuAbierto(false)}
-                    className="fixed inset-0 z-40 cursor-default"
-                  />
-
-                  <div className="absolute right-0 z-50 mt-3 w-[min(92vw,390px)] overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl shadow-black/50">
-                    <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-4">
-                      <div>
-                        <p className="font-semibold text-white">
-                          Notificaciones
-                        </p>
-
-                        <p className="mt-1 text-xs text-zinc-500">
-                          {notificacionesNoLeidas.length === 0
-                            ? "No tenés notificaciones nuevas"
-                            : `${notificacionesNoLeidas.length} sin leer`}
-                        </p>
-                      </div>
-
-                      {notificacionesNoLeidas.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            void marcarTodoComoLeido()
-                          }
-                          disabled={procesando}
-                          className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium text-blue-400 transition hover:bg-blue-500/10 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          <CheckCheck className="h-4 w-4" />
-
-                          {procesando
-                            ? "Actualizando..."
-                            : "Marcar leídas"}
-                        </button>
+                      {!item.leida && (
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-blue-400 sm:h-2 sm:w-2" />
                       )}
                     </div>
 
-                    {notificacionesRecientes.length === 0 ? (
-                      <div className="px-5 py-10 text-center">
-                        <Bell className="mx-auto h-8 w-8 text-zinc-700" />
-
-                        <p className="mt-3 text-sm font-medium text-white">
-                          Todavía no hay notificaciones
-                        </p>
-
-                        <p className="mt-1 text-xs text-zinc-500">
-                          La actividad importante aparecerá acá.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="max-h-[420px] overflow-y-auto">
-                        {notificacionesRecientes.map(
-                          (notificacion) => {
-                            const Icono =
-                              obtenerIcono(
-                                notificacion.tipo
-                              );
-
-                            return (
-                              <button
-                                key={`${notificacion.empresaId}-${notificacion.id}`}
-                                type="button"
-                                onClick={() =>
-                                  void marcarComoLeida(
-                                    notificacion
-                                  )
-                                }
-                                className="flex w-full gap-3 border-b border-zinc-900 px-4 py-4 text-left transition last:border-b-0 hover:bg-zinc-900/70"
-                              >
-                                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400">
-                                  <Icono className="h-4 w-4" />
-                                </div>
-
-                                <div className="min-w-0 flex-1">
-                                  <div className="flex items-center justify-between gap-3">
-                                    <p className="truncate text-sm font-medium text-white">
-                                      {notificacion.titulo ||
-                                        "Notificación"}
-                                    </p>
-
-                                    {!notificacion.leida && (
-                                      <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" />
-                                    )}
-                                  </div>
-
-                                  <p className="mt-1 text-[11px] font-medium text-blue-400">
-                                    {
-                                      notificacion.empresaNombre
-                                    }
-                                  </p>
-
-                                  <p className="mt-1 line-clamp-2 text-xs leading-5 text-zinc-400">
-                                    {notificacion.descripcion ||
-                                      "Nueva actividad registrada."}
-                                  </p>
-
-                                  <p className="mt-2 text-[11px] text-zinc-600">
-                                    {formatearFecha(
-                                      notificacion.createdAt ||
-                                        notificacion.updatedAt
-                                    )}
-                                  </p>
-                                </div>
-                              </button>
-                            );
-                          }
-                        )}
-                      </div>
-                    )}
-
-                    {empresaActualId && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMenuAbierto(false);
-
-                          window.location.href =
-                            `/empresas/${empresaActualId}/notificaciones`;
-                        }}
-                        className="w-full border-t border-zinc-800 px-4 py-3 text-center text-sm font-medium text-blue-400 transition hover:bg-zinc-900"
-                      >
-                        Ver todas las notificaciones
-                      </button>
-                    )}
+                    <span className="shrink-0 text-[9px] text-zinc-500 sm:text-xs">
+                      {formatearFecha(item.createdAt)}
+                    </span>
                   </div>
-                </>
-              )}
-            </div>
 
-            <div className="flex items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
-                <Bot className="h-4 w-4 text-white" />
-              </div>
+                  <p className="mt-1 line-clamp-2 whitespace-pre-wrap text-[10px] leading-4 text-zinc-400 sm:mt-2 sm:line-clamp-none sm:text-sm sm:leading-6">
+                    {item.descripcion ||
+                      "Sin descripción disponible."}
+                  </p>
 
-              <div className="hidden min-w-0 sm:block">
-                <p className="max-w-48 truncate text-sm font-medium text-white">
-                  {user?.email ?? "Usuario"}
-                </p>
-
-                <div className="mt-0.5 flex items-center gap-2 text-xs">
-                  <span className="text-zinc-500">
-                    {empresas.length > 0
-                      ? `${empresas.length} agente${
-                          empresas.length === 1
-                            ? ""
-                            : "s"
-                        } disponible${
-                          empresas.length === 1
-                            ? ""
-                            : "s"
-                        }`
-                      : "Listo para configurar"}
-                  </span>
-
-                  <span className="text-zinc-700">
-                    •
-                  </span>
-
-                  <button
-                    type="button"
-                    onClick={cerrarSesion}
-                    className="font-medium text-red-400 transition hover:text-red-300"
-                  >
-                    Cerrar sesión
-                  </button>
+                  {(item.url || item.chatId) && (
+                    <p className="mt-1.5 text-[9px] font-medium text-blue-400 sm:mt-3 sm:text-xs">
+                      Abrir detalle →
+                    </p>
+                  )}
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {toast && (
-        <div className="fixed right-4 top-24 z-[70] w-[calc(100%-2rem)] max-w-sm overflow-hidden rounded-2xl border border-blue-500/30 bg-zinc-950 shadow-2xl shadow-black/60">
-          <div className="flex gap-3 p-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white">
-              <Bell className="h-5 w-5" />
-            </div>
-
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-white">
-                {toast.titulo}
-              </p>
-
-              <p className="mt-1 text-xs font-medium text-blue-400">
-                {toast.empresaNombre}
-              </p>
-
-              <p className="mt-1 line-clamp-2 text-sm leading-5 text-zinc-400">
-                {toast.mensaje}
-              </p>
-            </div>
-
-            <button
-              type="button"
-              aria-label="Cerrar aviso"
-              onClick={() => setToast(null)}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-zinc-900 hover:text-white"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      )}
-    </>
+              </button>
+            );
+          })
+        )}
+      </div>
+    </main>
   );
 }
 
-function obtenerIcono(
-  tipo?: TipoNotificacion
-): ComponentType<{ className?: string }> {
+function ResumenCard({
+  titulo,
+  valor,
+}: {
+  titulo: string;
+  valor: number;
+}) {
+  return (
+    <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-2.5 sm:rounded-2xl sm:p-5">
+      <p className="text-[9px] text-zinc-500 sm:text-sm">
+        {titulo}
+      </p>
+
+      <p className="mt-0.5 text-xl font-bold text-white sm:mt-2 sm:text-3xl">
+        {valor}
+      </p>
+    </div>
+  );
+}
+
+function obtenerIcono(tipo?: TipoNotificacion) {
   if (tipo === "mensaje") {
     return MessageCircle;
   }
@@ -823,8 +385,8 @@ function obtenerIcono(
   return Bell;
 }
 
-function formatearFecha(timestamp?: Timestamp) {
-  if (!timestamp) {
+function formatearFecha(fecha?: Timestamp) {
+  if (!fecha) {
     return "Sin fecha";
   }
 
@@ -833,5 +395,5 @@ function formatearFecha(timestamp?: Timestamp) {
     month: "short",
     hour: "2-digit",
     minute: "2-digit",
-  }).format(timestamp.toDate());
+  }).format(fecha.toDate());
 }

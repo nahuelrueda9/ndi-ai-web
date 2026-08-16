@@ -1175,7 +1175,7 @@ export default function Header() {
                     className="fixed inset-0 z-40 cursor-default"
                   />
 
-                  <div className="absolute right-0 z-50 mt-3 w-[min(92vw,390px)] overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl shadow-black/10 dark:border-zinc-800 dark:bg-zinc-950 dark:shadow-black/50">
+                  <div className="fixed left-3 right-3 top-[84px] z-50 max-h-[calc(100dvh-100px)] overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl shadow-black/10 dark:border-zinc-800 dark:bg-zinc-950 dark:shadow-black/50 sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-3 sm:w-[min(92vw,390px)] sm:max-h-none">
                     <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-4 dark:border-zinc-800">
                       <div>
                         <p className="font-semibold text-zinc-950 dark:text-white">
@@ -1220,7 +1220,7 @@ export default function Header() {
                         </p>
                       </div>
                     ) : (
-                      <div className="max-h-[420px] overflow-y-auto">
+                      <div className="max-h-[calc(100dvh-225px)] overflow-y-auto overscroll-contain sm:max-h-[420px]">
                         {notificacionesRecientes.map(
                           (notificacion) => {
                             const Icono =

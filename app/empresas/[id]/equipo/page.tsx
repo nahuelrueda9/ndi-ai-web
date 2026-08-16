@@ -953,27 +953,27 @@ export default function EquipoPage() {
     !equipoHabilitado
   ) {
     return (
-      <section className="mx-auto w-full max-w-4xl px-5 py-12 sm:px-8">
-        <Card className="border-emerald-200 bg-emerald-50 p-8 text-center sm:p-12 dark:border-emerald-500/20 dark:bg-emerald-500/5">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
-            <Users className="h-8 w-8" />
+      <section className="mx-auto w-full max-w-4xl px-3 py-5 sm:px-8 sm:py-12">
+        <Card className="border-emerald-200 bg-emerald-50 p-5 text-center sm:p-12 dark:border-emerald-500/20 dark:bg-emerald-500/5">
+          <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 sm:h-16 sm:w-16 sm:rounded-2xl">
+            <Users className="h-5 w-5 sm:h-8 sm:w-8" />
           </div>
 
-          <p className="mt-6 text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-400">
+          <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-emerald-700 dark:text-emerald-400 sm:mt-6 sm:text-sm sm:tracking-[0.18em]">
             Función Pro
           </p>
 
-          <h1 className="mt-3 text-3xl font-bold text-slate-950 dark:text-white">
+          <h1 className="mt-1.5 text-xl font-bold text-slate-950 dark:text-white sm:mt-3 sm:text-3xl">
             Equipo
           </h1>
 
-          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
+          <p className="mx-auto mt-2 max-w-xl text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:mt-3 sm:text-sm sm:leading-6">
             La gestión de operadores, supervisores e invitaciones está disponible en los planes Pro y Empresa.
           </p>
 
           <Button
             type="button"
-            className="mt-7"
+            className="mt-4 sm:mt-7"
             onClick={() =>
               router.push(
                 `/empresas/${empresaId}/planes`
@@ -988,18 +988,18 @@ export default function EquipoPage() {
   }
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
-      <header className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
+    <section className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-8 sm:py-8">
+      <header className="mb-4 flex items-end justify-between gap-2 sm:mb-8 sm:flex-col sm:items-stretch sm:gap-5 lg:flex-row lg:items-center">
         <div>
-          <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+          <p className="text-[10px] font-medium text-emerald-700 dark:text-emerald-400 sm:text-sm">
             Gestión de usuarios
           </p>
 
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">
+          <h1 className="mt-0.5 text-xl font-bold tracking-tight text-slate-950 dark:text-white sm:mt-2 sm:text-3xl">
             Equipo
           </h1>
 
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
+          <p className="mt-1 max-w-xl text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:mt-2 sm:max-w-2xl sm:text-sm sm:leading-6">
             Administrá operadores,
             supervisores y permisos de tu
             empresa.
@@ -1016,7 +1016,7 @@ export default function EquipoPage() {
             setMensaje("");
           }}
         >
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="mr-1 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" />
 
           {mostrandoFormulario
             ? "Cancelar"
@@ -1024,7 +1024,7 @@ export default function EquipoPage() {
         </Button>
       </header>
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-3 grid grid-cols-2 gap-2 sm:mb-6 sm:gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <ResumenCard
           titulo="Miembros"
           valor={resumen.total}
@@ -1059,18 +1059,18 @@ export default function EquipoPage() {
       </div>
 
       {mensaje && (
-        <Card className="mb-6 border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/10">
-          <p className="text-sm text-emerald-700 dark:text-emerald-300">
+        <Card className="mb-3 border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/10 sm:mb-6 sm:p-4">
+          <p className="text-xs text-emerald-700 dark:text-emerald-300 sm:text-sm">
             {mensaje}
           </p>
 
           {enlaceNuevo && (
-            <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-2 flex flex-col gap-2 sm:mt-4 sm:flex-row sm:gap-3">
               <input
                 value={enlaceNuevo}
                 readOnly
                 aria-label="Enlace de invitación"
-                className="min-w-0 flex-1 rounded-xl border border-emerald-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none dark:border-emerald-500/20 dark:bg-zinc-950 dark:text-zinc-300"
+                className="min-w-0 flex-1 rounded-lg border border-emerald-200 bg-white px-3 py-2 text-[10px] text-slate-700 outline-none dark:border-emerald-500/20 dark:bg-zinc-950 dark:text-zinc-300 sm:rounded-xl sm:px-4 sm:py-3 sm:text-sm"
                 onFocus={(evento) =>
                   evento.currentTarget.select()
                 }
@@ -1102,21 +1102,21 @@ export default function EquipoPage() {
       )}
 
       {error && (
-        <Card className="mb-6 border-red-200 bg-red-50 p-4 dark:border-red-500/20 dark:bg-red-500/10">
-          <p className="text-sm text-red-700 dark:text-red-400">
+        <Card className="mb-3 border-red-200 bg-red-50 p-3 dark:border-red-500/20 dark:bg-red-500/10 sm:mb-6 sm:p-4">
+          <p className="text-xs text-red-700 dark:text-red-400 sm:text-sm">
             {error}
           </p>
         </Card>
       )}
 
       {mostrandoFormulario && (
-        <Card className="mb-6 p-6">
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-slate-950 dark:text-white">
+        <Card className="mb-3 p-3 sm:mb-6 sm:p-6">
+          <div className="mb-3 sm:mb-6">
+            <h2 className="text-base font-semibold text-slate-950 dark:text-white sm:text-xl">
               Invitar miembro
             </h2>
 
-            <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
+            <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-sm sm:leading-normal">
               Se generará un enlace seguro,
               válido durante 7 días. Después
               podés copiarlo y enviarlo por
@@ -1126,9 +1126,9 @@ export default function EquipoPage() {
 
           <form
             onSubmit={crearInvitacion}
-            className="space-y-5"
+            className="space-y-3 sm:space-y-5"
           >
-            <div className="grid gap-5 md:grid-cols-2">
+            <div className="grid grid-cols-2 gap-2 sm:gap-5 md:grid-cols-2">
               <Input
                 id="emailMiembro"
                 label="Email"
@@ -1146,7 +1146,7 @@ export default function EquipoPage() {
               <div>
                 <label
                   htmlFor="rolMiembro"
-                  className="mb-2 block text-sm font-medium text-slate-700 dark:text-zinc-300"
+                  className="mb-1 block text-[10px] font-medium text-slate-700 dark:text-zinc-300 sm:mb-2 sm:text-sm"
                 >
                   Rol
                 </label>
@@ -1161,7 +1161,7 @@ export default function EquipoPage() {
                         .value as RolEquipo
                     )
                   }
-                  className="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white"
+                  className="h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 text-[10px] text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white sm:h-12 sm:rounded-xl sm:px-4 sm:text-sm"
                 >
                   <option value="operador">
                     Operador
@@ -1178,7 +1178,7 @@ export default function EquipoPage() {
               </div>
             </div>
 
-            <div className="grid gap-3 md:grid-cols-3">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 md:grid-cols-3">
               {(
                 Object.keys(
                   ROLES
@@ -1187,24 +1187,24 @@ export default function EquipoPage() {
                 <div
                   key={rol}
                   className={[
-                    "rounded-xl border p-4",
+                    "rounded-lg border p-2 sm:rounded-xl sm:p-4",
                     formulario.rol === rol
                       ? "border-emerald-300 bg-emerald-50 shadow-sm dark:border-emerald-500/40 dark:bg-emerald-500/10"
                       : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-zinc-800 dark:bg-zinc-950/40 dark:hover:border-zinc-700 dark:hover:bg-zinc-900/60",
                   ].join(" ")}
                 >
-                  <p className="font-medium text-slate-950 dark:text-white">
+                  <p className="text-[10px] font-medium text-slate-950 dark:text-white sm:text-base">
                     {ROLES[rol].nombre}
                   </p>
 
-                  <p className="mt-2 text-sm leading-5 text-slate-500 dark:text-zinc-500">
+                  <p className="mt-1 text-[8px] leading-3 text-slate-500 dark:text-zinc-500 sm:mt-2 sm:text-sm sm:leading-5">
                     {ROLES[rol].descripcion}
                   </p>
                 </div>
               ))}
             </div>
 
-            <div className="flex flex-col justify-end gap-3 border-t border-slate-200 pt-5 dark:border-zinc-800 sm:flex-row">
+            <div className="grid grid-cols-2 gap-2 border-t border-slate-200 pt-3 dark:border-zinc-800 sm:flex sm:justify-end sm:gap-3 sm:pt-5">
               <Button
                 type="button"
                 variant="secondary"
@@ -1236,17 +1236,17 @@ export default function EquipoPage() {
 
       {invitacionesPendientes.length >
         0 && (
-        <Card className="mb-6 overflow-hidden">
-          <div className="border-b border-slate-200 px-5 py-4 dark:border-zinc-800 sm:px-6">
-            <div className="flex items-center gap-3">
-              <Mail className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+        <Card className="mb-3 overflow-hidden sm:mb-6">
+          <div className="border-b border-slate-200 px-3 py-2.5 dark:border-zinc-800 sm:px-6 sm:py-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Mail className="h-4 w-4 text-amber-600 dark:text-amber-400 sm:h-5 sm:w-5" />
 
               <div>
                 <h2 className="font-semibold text-slate-950 dark:text-white">
                   Invitaciones pendientes
                 </h2>
 
-                <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
+                <p className="mt-0.5 text-[9px] text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs">
                   {
                     invitacionesPendientes.length
                   }{" "}
@@ -1261,14 +1261,14 @@ export default function EquipoPage() {
               (invitacion) => (
                 <div
                   key={invitacion.id}
-                  className="flex flex-col justify-between gap-4 px-5 py-4 sm:flex-row sm:items-center sm:px-6"
+                  className="flex items-center justify-between gap-2 px-3 py-2.5 sm:flex-row sm:items-center sm:px-6 sm:py-4"
                 >
                   <div className="min-w-0">
-                    <p className="truncate font-medium text-slate-950 dark:text-white">
+                    <p className="truncate text-[10px] font-medium text-slate-950 dark:text-white sm:text-base">
                       {invitacion.email}
                     </p>
 
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <div className="mt-1 flex flex-wrap items-center gap-1 sm:mt-2 sm:gap-2">
                       <Badge
                         variant={
                           ROLES[
@@ -1289,7 +1289,7 @@ export default function EquipoPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex shrink-0 flex-wrap items-center gap-1 sm:gap-2">
                     {invitacion.invitationUrl ? (
                       <Button
                         type="button"
@@ -1315,7 +1315,7 @@ export default function EquipoPage() {
                           : "Copiar enlace"}
                       </Button>
                     ) : (
-                      <span className="text-xs text-slate-500 dark:text-zinc-500">
+                      <span className="max-w-[150px] text-[9px] leading-3.5 text-slate-500 dark:text-zinc-500 sm:max-w-none sm:text-xs sm:leading-normal">
                         Invitación antigua sin
                         enlace. Cancelala y creá
                         una nueva.
@@ -1347,24 +1347,24 @@ export default function EquipoPage() {
       )}
 
       {cargando ? (
-        <Card className="p-10 text-center">
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-emerald-600 dark:border-zinc-700 dark:border-t-emerald-500" />
+        <Card className="p-6 text-center sm:p-10">
+          <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-emerald-600 dark:border-zinc-700 dark:border-t-emerald-500 sm:h-8 sm:w-8" />
 
-          <p className="mt-4 text-sm text-slate-600 dark:text-zinc-400">
+          <p className="mt-2 text-xs text-slate-600 dark:text-zinc-400 sm:mt-4 sm:text-sm">
             Cargando equipo...
           </p>
         </Card>
       ) : miembros.length === 0 ? (
-        <Card className="border-dashed p-12 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
-            <Users className="h-7 w-7" />
+        <Card className="border-dashed p-6 text-center sm:p-12">
+          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 sm:h-14 sm:w-14 sm:rounded-2xl">
+            <Users className="h-5 w-5 sm:h-7 sm:w-7" />
           </div>
 
-          <h2 className="mt-5 text-xl font-semibold text-slate-950 dark:text-white">
+          <h2 className="mt-3 text-base font-semibold text-slate-950 dark:text-white sm:mt-5 sm:text-xl">
             Todavía no hay miembros
           </h2>
 
-          <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500 dark:text-zinc-500">
+          <p className="mx-auto mt-1 max-w-lg text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-2 sm:text-sm sm:leading-6">
             Invitá operadores y
             supervisores para trabajar en
             conjunto.
@@ -1372,38 +1372,38 @@ export default function EquipoPage() {
 
           <Button
             type="button"
-            className="mt-6"
+            className="mt-3 sm:mt-6"
             onClick={() =>
               setMostrandoFormulario(true)
             }
           >
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="mr-1 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" />
             Invitar primer miembro
           </Button>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-2 sm:space-y-4">
           {miembros.map((miembro) => (
             <Card
               key={miembro.id}
-              className="p-5 sm:p-6"
+              className="p-3 sm:p-6"
             >
-              <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
-                <div className="flex min-w-0 items-center gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+              <div className="flex flex-col justify-between gap-2.5 sm:gap-5 lg:flex-row lg:items-center">
+                <div className="flex min-w-0 items-center gap-2.5 sm:gap-4">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 sm:h-12 sm:w-12 sm:rounded-2xl">
                     {miembro.rol ===
                     "administrador" ? (
-                      <Crown className="h-6 w-6" />
+                      <Crown className="h-4 w-4 sm:h-6 sm:w-6" />
                     ) : miembro.rol ===
                       "supervisor" ? (
-                      <ShieldCheck className="h-6 w-6" />
+                      <ShieldCheck className="h-4 w-4 sm:h-6 sm:w-6" />
                     ) : (
-                      <UserRound className="h-6 w-6" />
+                      <UserRound className="h-4 w-4 sm:h-6 sm:w-6" />
                     )}
                   </div>
 
                   <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex shrink-0 flex-wrap items-center gap-1 sm:gap-2">
                       <h2 className="truncate font-semibold text-slate-950 dark:text-white">
                         {miembro.nombre ||
                           miembro.email}
@@ -1424,11 +1424,11 @@ export default function EquipoPage() {
                       </Badge>
                     </div>
 
-                    <p className="mt-1 truncate text-sm text-slate-500 dark:text-zinc-500">
+                    <p className="mt-0.5 truncate text-[9px] text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-sm">
                       {miembro.email}
                     </p>
 
-                    <div className="mt-2">
+                    <div className="mt-1 sm:mt-2">
                       <Badge
                         variant={
                           ROLES[miembro.rol]
@@ -1459,7 +1459,7 @@ export default function EquipoPage() {
                           .value as RolEquipo
                       )
                     }
-                    className="h-10 rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-blue-500 disabled:opacity-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300"
+                    className="h-8 rounded-lg border border-slate-300 bg-white px-2 text-[10px] text-slate-700 outline-none transition focus:border-blue-500 disabled:opacity-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300 sm:h-10 sm:rounded-xl sm:px-3 sm:text-sm"
                   >
                     <option value="operador">
                       Operador
@@ -1509,7 +1509,7 @@ export default function EquipoPage() {
                     onClick={() =>
                       eliminarMiembro(miembro)
                     }
-                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300 text-slate-500 transition hover:border-red-300 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:text-zinc-500 dark:hover:border-red-500/30 dark:hover:bg-red-500/10 dark:hover:text-red-400"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-300 text-slate-500 transition hover:border-red-300 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:text-zinc-500 dark:hover:border-red-500/30 dark:hover:bg-red-500/10 dark:hover:text-red-400 sm:h-10 sm:w-10 sm:rounded-xl"
                     title="Eliminar miembro"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -1521,16 +1521,16 @@ export default function EquipoPage() {
         </div>
       )}
 
-      <Card className="mt-6 border-blue-200 bg-blue-50 p-5 dark:border-blue-500/20 dark:bg-blue-500/5">
-        <div className="flex gap-3">
-          <Link2 className="mt-0.5 h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400" />
+      <Card className="mt-3 border-blue-200 bg-blue-50 p-3 dark:border-blue-500/20 dark:bg-blue-500/5 sm:mt-6 sm:p-5">
+        <div className="flex gap-2 sm:gap-3">
+          <Link2 className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400 sm:h-5 sm:w-5" />
 
           <div>
-            <p className="font-medium text-slate-950 dark:text-white">
+            <p className="text-[10px] font-medium text-slate-950 dark:text-white sm:text-base">
               Invitaciones reales activadas
             </p>
 
-            <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-zinc-400">
+            <p className="mt-0.5 text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:mt-1 sm:text-sm sm:leading-6">
               Cada enlace es personal, vence
               a los 7 días y solo puede ser
               aceptado por el correo invitado.
@@ -1554,9 +1554,9 @@ function ResumenCard({
   icono: React.ReactNode;
 }) {
   return (
-    <Card className="p-5">
+    <Card className="p-2.5 sm:p-5">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-500 dark:text-zinc-500">
+        <p className="text-[9px] text-slate-500 dark:text-zinc-500 sm:text-sm">
           {titulo}
         </p>
 
@@ -1565,7 +1565,7 @@ function ResumenCard({
         </div>
       </div>
 
-      <p className="mt-3 text-3xl font-bold text-slate-950 dark:text-white">
+      <p className="mt-1 text-xl font-bold text-slate-950 dark:text-white sm:mt-3 sm:text-3xl">
         {valor}
       </p>
     </Card>

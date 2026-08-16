@@ -903,7 +903,7 @@ export default function CatalogoPage() {
 
   if (loading) {
     return (
-      <section className="mx-auto w-full max-w-[1800px] px-4 py-5 sm:px-6 lg:px-7">
+      <section className="mx-auto w-full max-w-[1800px] px-3 py-3 sm:px-6 sm:py-5 lg:px-7">
         <Card className="p-10 text-center">
           <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
 
@@ -917,7 +917,7 @@ export default function CatalogoPage() {
 
   if (!autorizado) {
     return (
-      <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
+      <section className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-8 sm:py-8">
         <Card className="p-8 text-center">
           <h1 className="text-xl font-semibold">
             No pudimos abrir el catálogo
@@ -932,20 +932,20 @@ export default function CatalogoPage() {
   }
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
-      <header className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+    <section className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-8 sm:py-8">
+      <header className="mb-3 flex items-end justify-between gap-2 sm:mb-5 sm:flex-row sm:items-center sm:gap-3">
         <div>
-          <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
+          <p className="text-[11px] font-medium text-blue-600 dark:text-blue-400 sm:text-sm">
             Página del negocio
           </p>
 
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-950 dark:text-white">
+          <h1 className="mt-0.5 text-xl font-bold tracking-tight text-slate-950 dark:text-white sm:mt-1 sm:text-2xl">
             {esRestaurante
               ? "Servicios y carta"
               : "Servicios y productos"}
           </h1>
 
-          <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-500 dark:text-zinc-400">
+          <p className="mt-0.5 max-w-xl text-[10px] leading-4 text-slate-500 dark:text-zinc-400 sm:mt-1 sm:max-w-2xl sm:text-xs sm:leading-5">
             Cargá lo que ofrece tu negocio. Después
             aparecerá automáticamente en la página
             pública.
@@ -963,7 +963,7 @@ export default function CatalogoPage() {
             }
           }}
         >
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="mr-1 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" />
 
           {mostrarFormulario
             ? "Cancelar"
@@ -972,21 +972,21 @@ export default function CatalogoPage() {
       </header>
 
       {!puedeUsarCatalogo && (
-        <Card className="mb-4 border-amber-500/20 bg-amber-500/10 p-4">
-          <div className="flex items-start gap-3">
+        <Card className="mb-3 border-amber-500/20 bg-amber-500/10 p-3 sm:mb-4 sm:p-4">
+          <div className="flex items-start gap-2.5 sm:gap-3">
             <Lock className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
 
             <div>
-              <p className="font-semibold text-slate-950 dark:text-white">
+              <p className="text-xs font-semibold text-slate-950 dark:text-white sm:text-base">
                 Necesitás un plan activo
               </p>
 
-              <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-zinc-400">
+              <p className="mt-1 text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:text-sm sm:leading-6">
                 Activá uno de los planes de NDI AI para cargar y administrar los servicios de tu negocio.
               </p>
 
               <Button
-                className="mt-4"
+                className="mt-2.5 sm:mt-4"
                 variant="secondary"
                 onClick={() =>
                   router.push(
@@ -1003,18 +1003,18 @@ export default function CatalogoPage() {
 
       {puedeUsarCatalogo &&
         !puedeUsarProductos && (
-          <Card className="mb-4 border-blue-500/20 bg-blue-500/10 p-4">
-            <div className="flex items-start gap-3">
+          <Card className="mb-3 border-blue-500/20 bg-blue-500/10 p-3 sm:mb-4 sm:p-4">
+            <div className="flex items-start gap-2.5 sm:gap-3">
               <Package className="mt-0.5 h-5 w-5 shrink-0 text-blue-500" />
 
               <div>
-                <p className="font-semibold text-slate-950 dark:text-white">
+                <p className="text-xs font-semibold text-slate-950 dark:text-white sm:text-base">
                   {esRestaurante
                     ? "Carta básica incluida en Página Simple"
                     : "Catálogo básico incluido en Página Simple"}
                 </p>
 
-                <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-zinc-400">
+                <p className="mt-1 text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:text-sm sm:leading-6">
                   Podés cargar nombre, descripción, precio y 1 imagen por elemento.
                   Página Completa habilita hasta 3 imágenes y las funciones avanzadas.
                 </p>
@@ -1023,7 +1023,7 @@ export default function CatalogoPage() {
           </Card>
         )}
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-3">
+      <div className="mb-3 grid grid-cols-3 gap-2 sm:mb-4 sm:gap-3">
         <ResumenCard
           titulo="Total"
           valor={items.length}
@@ -1048,9 +1048,9 @@ export default function CatalogoPage() {
       </div>
 
       {mostrarFormulario && (
-        <Card className="mb-5 overflow-hidden">
-          <div className="border-b border-slate-200 px-5 py-3.5 dark:border-zinc-800">
-            <h2 className="text-lg font-semibold">
+        <Card className="mb-3 overflow-hidden sm:mb-5">
+          <div className="border-b border-slate-200 px-4 py-2.5 dark:border-zinc-800 sm:px-5 sm:py-3.5">
+            <h2 className="text-sm font-semibold sm:text-lg">
               {editandoId
                 ? "Editar elemento"
                 : "Nuevo elemento"}
@@ -1059,10 +1059,10 @@ export default function CatalogoPage() {
 
           <form
             onSubmit={guardarItem}
-            className="grid gap-4 p-5 md:grid-cols-2"
+            className="grid gap-3 p-4 sm:gap-4 sm:p-5 md:grid-cols-2"
           >
-            <div className="space-y-2">
-              <label className="block text-sm font-medium">
+            <div className="space-y-1.5 sm:space-y-2">
+              <label className="block text-xs font-medium sm:text-sm">
                 Tipo
               </label>
 
@@ -1073,7 +1073,7 @@ export default function CatalogoPage() {
                     event.target.value as TipoItem,
                   )
                 }
-                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
               >
                 <option value="servicio">
                   Servicio
@@ -1087,7 +1087,7 @@ export default function CatalogoPage() {
               </select>
 
               {!puedeUsarProductos && (
-                <p className="text-xs leading-5 text-slate-500 dark:text-zinc-500">
+                <p className="text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:text-xs sm:leading-5">
                   Página Simple incluye catálogo básico con 1 imagen por elemento.
                 </p>
               )}
@@ -1125,8 +1125,8 @@ export default function CatalogoPage() {
 
             {esRestaurante &&
               tipo === "producto" && (
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <label className="block text-xs font-medium sm:text-sm">
                     Categoría de la carta
                   </label>
 
@@ -1137,7 +1137,7 @@ export default function CatalogoPage() {
                         event.target.value,
                       )
                     }
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
                   >
                     <option value="entrada">
                       Entradas
@@ -1153,7 +1153,7 @@ export default function CatalogoPage() {
                     </option>
                   </select>
 
-                  <p className="text-xs leading-5 text-slate-500 dark:text-zinc-500">
+                  <p className="text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:text-xs sm:leading-5">
                     Se usará para ordenar automáticamente la carta pública.
                   </p>
                 </div>
@@ -1188,7 +1188,7 @@ export default function CatalogoPage() {
                   />
 
                   <div className="md:col-span-2 -mt-2">
-                    <p className="text-xs leading-5 text-slate-500 dark:text-zinc-500">
+                    <p className="text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:text-xs sm:leading-5">
                       Separá cada opción con una coma. Ejemplo: S, M, L, XL.
                     </p>
                   </div>
@@ -1198,7 +1198,7 @@ export default function CatalogoPage() {
             {esTienda &&
               tipo === "producto" &&
               !puedeUsarProductos && (
-                <div className="md:col-span-2 rounded-xl border border-blue-500/20 bg-blue-500/10 px-4 py-3">
+                <div className="rounded-lg border border-blue-500/20 bg-blue-500/10 px-3 py-2.5 sm:rounded-xl sm:px-4 sm:py-3 md:col-span-2">
                   <p className="text-xs leading-5 text-slate-600 dark:text-zinc-400">
                     Los talles, colores y variantes están disponibles desde Página Completa.
                   </p>
@@ -1220,30 +1220,30 @@ export default function CatalogoPage() {
             )}
 
             <div className="md:col-span-2">
-              <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="mb-2 flex items-center justify-between gap-2 sm:mb-3 sm:gap-3">
                 <div>
-                  <p className="text-sm font-medium">
+                  <p className="text-xs font-medium sm:text-sm">
                     Imágenes
                   </p>
-                  <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
+                  <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs">
                     {limiteImagenes === 1
                       ? "Opcional · 1 imagen · JPG, PNG o WEBP · Máximo 5 MB."
                       : "Opcional · Hasta 3 imágenes · JPG, PNG o WEBP · Máximo 5 MB por imagen."}
                   </p>
                 </div>
 
-                <span className="text-xs font-medium text-slate-500 dark:text-zinc-500">
+                <span className="text-[10px] font-medium text-slate-500 dark:text-zinc-500 sm:text-xs">
                   {imagenes.length > limiteImagenes
                     ? `${limiteImagenes} visible / ${imagenes.length} guardadas`
                     : `${imagenes.length}/${limiteImagenes}`}
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
                 {imagenes.map((url, indice) => (
                   <div
                     key={`${url}-${indice}`}
-                    className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 dark:border-zinc-800 dark:bg-zinc-950"
+                    className="relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-slate-100 dark:border-zinc-800 dark:bg-zinc-950 sm:aspect-[4/3] sm:rounded-2xl"
                   >
                     <img
                       src={url}
@@ -1262,14 +1262,14 @@ export default function CatalogoPage() {
                         )
                       }
                       disabled={subiendoImagen}
-                      className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-xl bg-black/70 text-white backdrop-blur transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="absolute right-1.5 top-1.5 inline-flex h-6 w-6 items-center justify-center rounded-md bg-black/70 text-white backdrop-blur transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60 sm:right-2 sm:top-2 sm:h-8 sm:w-8 sm:rounded-xl"
                       aria-label={`Quitar imagen ${indice + 1}`}
                     >
                       <X className="h-4 w-4" />
                     </button>
 
                     {indice === 0 && (
-                      <span className="absolute bottom-2 left-2 rounded-lg bg-black/70 px-2 py-1 text-[10px] font-semibold text-white backdrop-blur">
+                      <span className="absolute bottom-1.5 left-1.5 rounded-md bg-black/70 px-1.5 py-0.5 text-[8px] font-semibold text-white backdrop-blur sm:bottom-2 sm:left-2 sm:rounded-lg sm:px-2 sm:py-1 sm:text-[10px]">
                         Principal
                       </span>
                     )}
@@ -1278,7 +1278,7 @@ export default function CatalogoPage() {
 
                 {imagenes.length < limiteImagenes && (
                   <label
-                    className={`flex aspect-[4/3] cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed px-4 text-center transition ${
+                    className={`flex aspect-square cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed px-2 text-center transition sm:aspect-[4/3] sm:rounded-2xl sm:px-4 ${
                       subiendoImagen
                         ? "cursor-wait border-blue-400 bg-blue-50 dark:border-blue-500/50 dark:bg-blue-500/10"
                         : "border-slate-300 bg-slate-50 hover:border-blue-400 hover:bg-blue-50 dark:border-zinc-700 dark:bg-zinc-950 dark:hover:border-blue-500/50 dark:hover:bg-blue-500/10"
@@ -1287,21 +1287,21 @@ export default function CatalogoPage() {
                     {subiendoImagen ? (
                       <>
                         <div className="h-7 w-7 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
-                        <p className="mt-2 text-xs font-medium">
+                        <p className="mt-1 text-[10px] font-medium sm:mt-2 sm:text-xs">
                           Subiendo...
                         </p>
                       </>
                     ) : (
                       <>
-                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-500">
-                          <ImageIcon className="h-5 w-5" />
+                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500 sm:h-10 sm:w-10 sm:rounded-2xl">
+                          <ImageIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                         </div>
 
-                        <p className="mt-2 text-xs font-medium">
+                        <p className="mt-1 text-[10px] font-medium sm:mt-2 sm:text-xs">
                           Agregar imagen
                         </p>
 
-                        <p className="mt-1 text-[10px] text-slate-500 dark:text-zinc-500">
+                        <p className="mt-0.5 text-[8px] text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-[10px]">
                           {imagenes.length + 1} de {limiteImagenes}
                         </p>
                       </>
@@ -1333,7 +1333,7 @@ export default function CatalogoPage() {
                 )}
               </div>
 
-              <p className="mt-2 text-[11px] leading-5 text-slate-400 dark:text-zinc-600">
+              <p className="mt-1.5 text-[9px] leading-4 text-slate-400 dark:text-zinc-600 sm:mt-2 sm:text-[11px] sm:leading-5">
                 {limiteImagenes === 1
                   ? "La imagen será la portada del elemento. Con Página Completa podés cargar hasta 3 fotos."
                   : "La primera imagen será la portada. En la página pública el cliente podrá deslizar entre las fotos."}
@@ -1343,24 +1343,24 @@ export default function CatalogoPage() {
             <div className="md:col-span-2">
               <label
                 htmlFor="descripcion"
-                className="mb-2 block text-sm font-medium"
+                className="mb-1.5 block text-xs font-medium sm:mb-2 sm:text-sm"
               >
                 Descripción
               </label>
 
               <textarea
                 id="descripcion"
-                rows={4}
+                rows={3}
                 value={descripcion}
                 onChange={(event) =>
                   setDescripcion(event.target.value)
                 }
                 placeholder="Explicá brevemente qué incluye."
-                className="w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+                className="w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-xs text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white sm:rounded-xl sm:px-4 sm:py-3 sm:text-sm"
               />
             </div>
 
-            <div className="flex justify-end gap-3 md:col-span-2">
+            <div className="flex justify-end gap-2 sm:gap-3 md:col-span-2">
               <Button
                 type="button"
                 variant="secondary"
@@ -1391,48 +1391,48 @@ export default function CatalogoPage() {
       )}
 
       {error && (
-        <Card className="mb-6 border-red-500/20 bg-red-500/10 p-4">
-          <p className="text-sm text-red-500">
+        <Card className="mb-3 border-red-500/20 bg-red-500/10 p-3 sm:mb-6 sm:p-4">
+          <p className="text-xs text-red-500 sm:text-sm">
             {error}
           </p>
         </Card>
       )}
 
       {mensaje && (
-        <Card className="mb-6 border-emerald-500/20 bg-emerald-500/10 p-4">
-          <p className="text-sm text-emerald-500">
+        <Card className="mb-3 border-emerald-500/20 bg-emerald-500/10 p-3 sm:mb-6 sm:p-4">
+          <p className="text-xs text-emerald-500 sm:text-sm">
             {mensaje}
           </p>
         </Card>
       )}
 
       {items.length === 0 ? (
-        <Card className="border-dashed p-12 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-500">
-            <Package className="h-7 w-7" />
+        <Card className="border-dashed p-6 text-center sm:p-12">
+          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500 sm:h-14 sm:w-14 sm:rounded-2xl">
+            <Package className="h-5 w-5 sm:h-7 sm:w-7" />
           </div>
 
-          <h2 className="mt-5 text-xl font-semibold">
+          <h2 className="mt-3 text-base font-semibold sm:mt-5 sm:text-xl">
             Todavía no cargaste nada
           </h2>
 
-          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500 dark:text-zinc-500">
+          <p className="mx-auto mt-1.5 max-w-md text-[11px] leading-5 text-slate-500 dark:text-zinc-500 sm:mt-2 sm:text-sm sm:leading-6">
             {esRestaurante
               ? "Agregá el primer servicio o elemento de la carta."
               : "Agregá el primer servicio o producto de este negocio."}
           </p>
 
           <Button
-            className="mt-6"
+            className="mt-4 sm:mt-6"
             disabled={!puedeUsarCatalogo}
             onClick={() => setMostrarFormulario(true)}
           >
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="mr-1 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" />
             Agregar primero
           </Button>
         </Card>
       ) : (
-        <div className="space-y-7">
+        <div className="space-y-4 sm:space-y-7">
           <SeccionCatalogo
             titulo="Servicios"
             descripcion="Servicios que ofrece el negocio."
@@ -1477,19 +1477,19 @@ function ResumenCard({
   icono: React.ReactNode;
 }) {
   return (
-    <Card className="p-3.5">
+    <Card className="p-2.5 sm:p-3.5">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs text-slate-500 dark:text-zinc-400">
+          <p className="text-[9px] text-slate-500 dark:text-zinc-400 sm:text-xs">
             {titulo}
           </p>
 
-          <p className="mt-1 text-2xl font-bold">
+          <p className="mt-0.5 text-xl font-bold sm:mt-1 sm:text-2xl">
             {valor}
           </p>
         </div>
 
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500 sm:h-9 sm:w-9 sm:rounded-xl">
           {icono}
         </div>
       </div>
@@ -1542,17 +1542,17 @@ function SeccionCatalogo({
 
   return (
     <div>
-      <div className="mb-3">
-        <h2 className="text-lg font-bold">
+      <div className="mb-2 sm:mb-3">
+        <h2 className="text-base font-bold sm:text-lg">
           {titulo}
         </h2>
 
-        <p className="mt-0.5 text-xs text-slate-500 dark:text-zinc-500">
+        <p className="mt-0.5 text-[10px] text-slate-500 dark:text-zinc-500 sm:text-xs">
           {descripcion}
         </p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
         {items.map((item) => (
           <Card
             key={item.id}
@@ -1563,7 +1563,7 @@ function SeccionCatalogo({
                 item.imagenes[0]) ||
               item.imagenUrl
             ) && (
-              <div className="relative h-32 overflow-hidden border-b border-slate-200 bg-slate-100 dark:border-zinc-800 dark:bg-zinc-950 xl:h-28">
+              <div className="relative h-24 overflow-hidden border-b border-slate-200 bg-slate-100 dark:border-zinc-800 dark:bg-zinc-950 sm:h-32 xl:h-28">
                 <img
                   src={
                     (Array.isArray(item.imagenes) &&
@@ -1577,7 +1577,7 @@ function SeccionCatalogo({
 
                 {Array.isArray(item.imagenes) &&
                   item.imagenes.length > 1 && (
-                    <span className="absolute bottom-2 right-2 rounded-md bg-black/70 px-2 py-0.5 text-[10px] font-semibold text-white backdrop-blur">
+                    <span className="absolute bottom-1.5 right-1.5 rounded-md bg-black/70 px-1.5 py-0.5 text-[8px] font-semibold text-white backdrop-blur sm:bottom-2 sm:right-2 sm:px-2 sm:text-[10px]">
                       {Math.min(
                         item.imagenes.length,
                         3,
@@ -1587,11 +1587,11 @@ function SeccionCatalogo({
               </div>
             )}
 
-            <div className="flex flex-1 flex-col p-3.5">
+            <div className="flex flex-1 flex-col p-2.5 sm:p-3.5">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <h3 className="line-clamp-2 text-sm font-semibold leading-5">
+                  <div className="flex flex-wrap items-center gap-1 sm:gap-1.5">
+                    <h3 className="line-clamp-2 text-[11px] font-semibold leading-4 sm:text-sm sm:leading-5">
                       {item.nombre}
                     </h3>
 
@@ -1619,21 +1619,21 @@ function SeccionCatalogo({
                   </div>
 
                   {item.descripcion && (
-                    <p className="mt-2 line-clamp-2 text-xs leading-4 text-slate-500 dark:text-zinc-400">
+                    <p className="mt-1 line-clamp-2 text-[9px] leading-3.5 text-slate-500 dark:text-zinc-400 sm:mt-2 sm:text-xs sm:leading-4">
                       {item.descripcion}
                     </p>
                   )}
                 </div>
               </div>
 
-              <div className="mt-auto flex flex-wrap gap-2 pt-3">
+              <div className="mt-auto flex flex-wrap gap-1.5 pt-2 sm:gap-2 sm:pt-3">
                 {item.precio > 0 && (
-                  <div className="rounded-lg bg-slate-100 px-2.5 py-1.5 dark:bg-zinc-950">
-                    <p className="text-[10px] text-slate-500">
+                  <div className="rounded-md bg-slate-100 px-2 py-1 dark:bg-zinc-950 sm:rounded-lg sm:px-2.5 sm:py-1.5">
+                    <p className="text-[8px] text-slate-500 sm:text-[10px]">
                       Precio
                     </p>
 
-                    <p className="text-xs font-semibold">
+                    <p className="text-[10px] font-semibold sm:text-xs">
                       ${item.precio.toLocaleString("es-AR")}
                     </p>
                   </div>
@@ -1641,12 +1641,12 @@ function SeccionCatalogo({
 
                 {item.tipo === "servicio" &&
                   Boolean(item.duracionMinutos) && (
-                    <div className="rounded-lg bg-slate-100 px-2.5 py-1.5 dark:bg-zinc-950">
-                      <p className="text-[10px] text-slate-500">
+                    <div className="rounded-md bg-slate-100 px-2 py-1 dark:bg-zinc-950 sm:rounded-lg sm:px-2.5 sm:py-1.5">
+                      <p className="text-[8px] text-slate-500 sm:text-[10px]">
                         Duración
                       </p>
 
-                      <p className="text-xs font-semibold">
+                      <p className="text-[10px] font-semibold sm:text-xs">
                         {item.duracionMinutos} min
                       </p>
                     </div>
@@ -1654,20 +1654,20 @@ function SeccionCatalogo({
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-1.5 border-t border-slate-200 p-2.5 dark:border-zinc-800">
+            <div className="grid grid-cols-3 gap-1 border-t border-slate-200 p-2 dark:border-zinc-800 sm:gap-1.5 sm:p-2.5">
               <button
                 type="button"
                 onClick={() => onEditar(item)}
-                className="inline-flex items-center justify-center gap-1 rounded-lg border border-slate-300 px-2 py-1.5 text-[11px] transition hover:bg-slate-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+                className="inline-flex items-center justify-center gap-0.5 rounded-md border border-slate-300 px-1 py-1.5 text-[9px] transition hover:bg-slate-100 dark:border-zinc-700 dark:hover:bg-zinc-800 sm:gap-1 sm:rounded-lg sm:px-2 sm:text-[11px]"
               >
-                <Pencil className="h-3.5 w-3.5" />
+                <Pencil className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 Editar
               </button>
 
               <button
                 type="button"
                 onClick={() => onEstado(item)}
-                className="rounded-lg border border-slate-300 px-2 py-1.5 text-[11px] transition hover:bg-slate-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+                className="rounded-md border border-slate-300 px-1 py-1.5 text-[9px] transition hover:bg-slate-100 dark:border-zinc-700 dark:hover:bg-zinc-800 sm:rounded-lg sm:px-2 sm:text-[11px]"
               >
                 {item.activo ? "Ocultar" : "Activar"}
               </button>
@@ -1675,9 +1675,9 @@ function SeccionCatalogo({
               <button
                 type="button"
                 onClick={() => onEliminar(item)}
-                className="inline-flex items-center justify-center gap-1 rounded-lg border border-red-500/20 px-2 py-1.5 text-[11px] text-red-500 transition hover:bg-red-500/10"
+                className="inline-flex items-center justify-center gap-0.5 rounded-md border border-red-500/20 px-1 py-1.5 text-[9px] text-red-500 transition hover:bg-red-500/10 sm:gap-1 sm:rounded-lg sm:px-2 sm:text-[11px]"
               >
-                <Trash2 className="h-3.5 w-3.5" />
+                <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 Eliminar
               </button>
             </div>

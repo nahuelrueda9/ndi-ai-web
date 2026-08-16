@@ -478,11 +478,11 @@ export default function PlanesPage() {
 
   if (cargando) {
     return (
-      <section className="mx-auto w-full max-w-[1500px] px-4 py-4 sm:px-6">
-        <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <section className="mx-auto w-full max-w-[1500px] px-3 py-3 sm:px-6 sm:py-4">
+        <div className="rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-2xl sm:p-10">
           <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
 
-          <p className="mt-4 text-sm text-slate-600 dark:text-zinc-400">
+          <p className="mt-2 text-xs text-slate-600 dark:text-zinc-400 sm:mt-4 sm:text-sm">
             Cargando planes...
           </p>
         </div>
@@ -496,8 +496,8 @@ export default function PlanesPage() {
   ) {
     if (error) {
       return (
-        <section className="mx-auto w-full max-w-[1500px] px-4 py-4 sm:px-6">
-          <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
+        <section className="mx-auto w-full max-w-[1500px] px-3 py-3 sm:px-6 sm:py-4">
+          <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300 sm:rounded-2xl sm:px-5 sm:py-4 sm:text-sm">
             {error}
           </div>
         </section>
@@ -750,40 +750,40 @@ export default function PlanesPage() {
   }
 
   return (
-    <section className="mx-auto w-full max-w-[1500px] px-4 py-4 sm:px-6">
-      <header className="mb-4">
-        <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
+    <section className="mx-auto w-full max-w-[1500px] px-3 py-3 sm:px-6 sm:py-4">
+      <header className="mb-3 sm:mb-4">
+        <p className="text-[10px] font-medium text-blue-600 dark:text-blue-400 sm:text-sm">
           Planes
         </p>
 
-        <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-950 dark:text-white">
+        <h1 className="mt-0.5 text-xl font-bold tracking-tight text-slate-950 dark:text-white sm:mt-1 sm:text-2xl">
           Elegí tu versión de NDI AI
         </h1>
 
-        <p className="mt-1 max-w-3xl text-xs leading-5 text-slate-600 dark:text-zinc-400">
+        <p className="mt-0.5 max-w-3xl text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:mt-1 sm:text-xs sm:leading-5">
           Todos los planes son pagos e incluyen la puesta en marcha de tu página más un mantenimiento mensual para mantener el servicio funcionando.
         </p>
 
         {!suscripcionActiva && (
-          <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-xs text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200">
+          <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] leading-4 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200 sm:mt-3 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-xs sm:leading-normal">
             Esta empresa todavía no tiene un plan activo. Al elegir uno vas a pagar la puesta en marcha + el primer mes mediante Mercado Pago.
           </div>
         )}
       </header>
 
       {error && (
-        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
+        <div className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[10px] text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300 sm:mb-4 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-xs">
           {error}
         </div>
       )}
 
       {mensaje && (
-        <div className="mb-4 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-xs text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300">
+        <div className="mb-3 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-[10px] text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300 sm:mb-4 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-xs">
           {mensaje}
         </div>
       )}
 
-      <div className="grid items-stretch gap-4 lg:grid-cols-3">
+      <div className="grid items-stretch gap-3 sm:gap-4 lg:grid-cols-3">
         {PLANES.map(
           (plan) => {
             const esActual =
@@ -808,7 +808,7 @@ export default function PlanesPage() {
                   plan.id
                 }
                 className={[
-                  "relative flex flex-col rounded-2xl border bg-white p-4 text-slate-950 shadow-sm transition-colors dark:bg-zinc-900 dark:text-white",
+                  "relative flex flex-col rounded-xl border bg-white p-3 text-slate-950 shadow-sm transition-colors dark:bg-zinc-900 dark:text-white sm:rounded-2xl sm:p-4",
                   plan.destacado
                     ? "border-blue-500 shadow-xl shadow-blue-500/10 dark:shadow-blue-950/20"
                     : plan.lanzamiento
@@ -819,7 +819,7 @@ export default function PlanesPage() {
                 {plan.etiqueta && (
                   <span
                     className={[
-                      "absolute -top-2.5 left-4 rounded-full px-2.5 py-0.5 text-[10px] font-semibold text-white",
+                      "absolute -top-2 left-3 rounded-full px-2 py-0.5 text-[8px] font-semibold text-white sm:-top-2.5 sm:left-4 sm:px-2.5 sm:text-[10px]",
                       plan.lanzamiento
                         ? "bg-violet-600"
                         : plan.destacado
@@ -835,15 +835,15 @@ export default function PlanesPage() {
                   </span>
                 )}
 
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start justify-between gap-2 sm:gap-3">
                   <div>
-                    <h2 className="text-xl font-bold text-slate-950 dark:text-white">
+                    <h2 className="text-base font-bold text-slate-950 dark:text-white sm:text-xl">
                       {
                         plan.nombre
                       }
                     </h2>
 
-                    <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-zinc-400">
+                    <p className="mt-0.5 text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:mt-1 sm:text-xs sm:leading-5">
                       {
                         plan.descripcion
                       }
@@ -851,24 +851,24 @@ export default function PlanesPage() {
                   </div>
 
                   {esActual && (
-                    <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+                    <span className="shrink-0 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[8px] font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 sm:px-2 sm:text-[10px]">
                       Plan actual
                     </span>
                   )}
                 </div>
 
-                <div className="mt-4">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-zinc-500">
+                <div className="mt-2.5 sm:mt-4">
+                  <p className="text-[8px] font-semibold uppercase tracking-[0.1em] text-slate-500 dark:text-zinc-500 sm:text-[10px] sm:tracking-[0.12em]">
                     Puesta en marcha
                   </p>
 
-                  <p className="mt-0.5 text-2xl font-bold text-slate-950 dark:text-white">
+                  <p className="mt-0.5 text-xl font-bold text-slate-950 dark:text-white sm:text-2xl">
                     {formatearPrecio(
                       precios.inicial,
                     )}
                   </p>
 
-                  <p className="mt-1 text-xs font-semibold text-blue-600 dark:text-blue-400">
+                  <p className="mt-0.5 text-[10px] font-semibold text-blue-600 dark:text-blue-400 sm:mt-1 sm:text-xs">
                     +{" "}
                     {formatearPrecio(
                       precios.mensual,
@@ -877,13 +877,13 @@ export default function PlanesPage() {
                   </p>
 
                   {plan.lanzamiento && (
-                    <p className="mt-2 rounded-lg border border-violet-200 bg-violet-50 p-2 text-[10px] leading-4 text-violet-800 dark:border-violet-500/20 dark:bg-violet-500/10 dark:text-violet-200">
+                    <p className="mt-1.5 rounded-md border border-violet-200 bg-violet-50 p-1.5 text-[9px] leading-3.5 text-violet-800 dark:border-violet-500/20 dark:bg-violet-500/10 dark:text-violet-200 sm:mt-2 sm:rounded-lg sm:p-2 sm:text-[10px] sm:leading-4">
                       Conservás el precio mensual de lanzamiento mientras mantengas activa tu suscripción.
                     </p>
                   )}
                 </div>
 
-                <div className="mt-4 flex-1 space-y-1.5">
+                <div className="mt-2.5 grid flex-1 grid-cols-2 gap-x-2 gap-y-1 sm:mt-4 sm:block sm:space-y-1.5">
                   {plan.funciones.map(
                     (
                       funcion,
@@ -892,7 +892,7 @@ export default function PlanesPage() {
                         key={
                           funcion
                         }
-                        className="flex items-start gap-2 text-[11px] leading-4 text-slate-700 dark:text-zinc-300"
+                        className="flex items-start gap-1 text-[9px] leading-3.5 text-slate-700 dark:text-zinc-300 sm:gap-2 sm:text-[11px] sm:leading-4"
                       >
                         <span className="text-emerald-500">
                           ✓
@@ -922,7 +922,7 @@ export default function PlanesPage() {
                     )
                   }
                   className={[
-                    "mt-4 w-full rounded-lg px-4 py-2.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
+                    "mt-3 w-full rounded-lg px-3 py-2 text-[10px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 sm:mt-4 sm:px-4 sm:py-2.5 sm:text-xs",
                     plan.destacado
                       ? "bg-blue-600 text-white hover:bg-blue-500"
                       : plan.lanzamiento
@@ -951,15 +951,15 @@ export default function PlanesPage() {
         )}
       </div>
 
-      <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_auto]">
-        <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div className="mt-3 grid gap-2 sm:mt-4 sm:gap-3 lg:grid-cols-[1fr_auto]">
+        <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-xl sm:p-3.5">
+          <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <p className="font-medium text-slate-950 dark:text-white">
+              <p className="text-xs font-medium text-slate-950 dark:text-white sm:text-base">
                 Tu suscripción
               </p>
 
-              <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1.5 text-xs text-slate-600 dark:text-zinc-400">
+              <div className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-1 text-[10px] text-slate-600 dark:text-zinc-400 sm:mt-2 sm:flex sm:flex-wrap sm:gap-x-6 sm:gap-y-1.5 sm:text-xs">
                 <p>
                   Plan:{" "}
                   <span className="font-semibold text-slate-950 dark:text-white">
@@ -1030,7 +1030,7 @@ export default function PlanesPage() {
                   onClick={
                     renovarPlan
                   }
-                  className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                  className="w-full rounded-lg bg-blue-600 px-3 py-2 text-[10px] font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:px-4 sm:py-2.5 sm:text-xs"
                 >
                   {procesandoRenovacion
                     ? "Abriendo Mercado Pago..."
@@ -1040,7 +1040,7 @@ export default function PlanesPage() {
                 </button>
 
                 {suscripcionActiva && (
-                  <p className="mt-1 max-w-xs text-[10px] leading-4 text-slate-500 dark:text-zinc-500">
+                  <p className="mt-1 max-w-xs text-[9px] leading-3.5 text-slate-500 dark:text-zinc-500 sm:text-[10px] sm:leading-4">
                     Si renovás antes del vencimiento, se suman 30 días sin perder los días que ya tenés pagos.
                   </p>
                 )}
@@ -1056,7 +1056,7 @@ export default function PlanesPage() {
               `/empresas/${empresaId}/facturacion`,
             )
           }
-          className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-[10px] font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 sm:rounded-xl sm:px-4 sm:py-3 sm:text-xs"
         >
           Volver a facturación
         </button>
