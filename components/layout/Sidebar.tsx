@@ -35,7 +35,6 @@ import {
   Package,
   ShoppingBag,
   Plug,
-  Menu,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -494,6 +493,24 @@ export default function Sidebar() {
   }, [pathname]);
 
   useEffect(() => {
+    function abrirMenuDesdeHeader() {
+      setMenuMobileAbierto(true);
+    }
+
+    window.addEventListener(
+      "ndi-ai:open-mobile-sidebar",
+      abrirMenuDesdeHeader,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "ndi-ai:open-mobile-sidebar",
+        abrirMenuDesdeHeader,
+      );
+    };
+  }, []);
+
+  useEffect(() => {
     if (
       cargandoRol ||
       !rol ||
@@ -559,19 +576,6 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* BOTÓN MOBILE */}
-      <button
-        type="button"
-        onClick={() =>
-          setMenuMobileAbierto(true)
-        }
-        className="fixed bottom-5 left-4 z-[70] inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-xl transition hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 md:hidden"
-        aria-label="Abrir menú del negocio"
-      >
-        <Menu className="h-4 w-4" />
-        Menú
-      </button>
-
       {/* OVERLAY MOBILE */}
       {menuMobileAbierto && (
         <button

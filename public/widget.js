@@ -65,6 +65,8 @@
   });
 
   function aplicarTamano() {
+    var esMobile = window.innerWidth <= 520;
+
     var esChatCompleto =
       anchoSolicitado > 350 &&
       altoSolicitado > 300;
@@ -72,7 +74,14 @@
     iframe.style.maxWidth = "100vw";
     iframe.style.maxHeight = "100dvh";
 
-    if (esChatCompleto && window.innerWidth <= 520) {
+    if (esMobile && !esChatCompleto) {
+      iframe.style.bottom =
+        "calc(84px + env(safe-area-inset-bottom, 0px))";
+    } else {
+      iframe.style.bottom = "0";
+    }
+
+    if (esChatCompleto && esMobile) {
       iframe.style.width = "100vw";
       iframe.style.height = "100dvh";
       return;
