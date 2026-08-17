@@ -96,6 +96,7 @@ interface Empresa {
 
     colorPrincipal?: string;
     tema?: TemaPagina;
+    tipografia?: string;
 
     logoUrl?: string;
     portadaUrl?: string;
@@ -246,6 +247,11 @@ export default function ConfigurarAgentePage() {
     paginaTema,
     setPaginaTema,
   ] = useState<TemaPagina>("oscuro");
+
+  const [
+    paginaTipografia,
+    setPaginaTipografia,
+  ] = useState("inter");
 
   const [
     paginaLogoUrl,
@@ -637,6 +643,10 @@ export default function ConfigurarAgentePage() {
             setPaginaLogoUrl(
               empresa.paginaPublica
                 ?.logoUrl || "",
+            );
+
+            setPaginaTipografia(
+              empresa.paginaPublica?.tipografia || "inter"
             );
 
             setPaginaPortadaUrl(
@@ -1448,6 +1458,9 @@ export default function ConfigurarAgentePage() {
         "paginaPublica.tema":
           paginaTema,
 
+        "paginaPublica.tipografia":
+          paginaTipografia,
+
         "paginaPublica.logoUrl":
           paginaLogoUrl,
 
@@ -2230,6 +2243,32 @@ export default function ConfigurarAgentePage() {
                   />
                 </div>
               </div>
+
+              {/* NUEVO: Selector de Tipografía */}
+              <div className="space-y-1.5 sm:space-y-2">
+                <label
+                  htmlFor="paginaTipografia"
+                  className="block text-xs font-medium text-slate-700 dark:text-zinc-200 sm:text-sm"
+                >
+                  Tipografía
+                </label>
+                <select
+                  id="paginaTipografia"
+                  value={paginaTipografia}
+                  onChange={(e) => setPaginaTipografia(e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-xs text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white sm:rounded-xl sm:px-4 sm:py-3 sm:text-sm"
+                >
+                  <option value="inter">Inter — Moderna y limpia</option>
+                  <option value="poppins">Poppins — Moderna y amigable</option>
+                  <option value="montserrat">Montserrat — Fuerte y comercial</option>
+                  <option value="manrope">Manrope — Premium y minimalista</option>
+                  <option value="dm-sans">DM Sans — Simple y equilibrada</option>
+                  <option value="playfair">Playfair Display — Elegante</option>
+                  <option value="lora">Lora — Editorial y cálida</option>
+                  <option value="oswald">Oswald — Urbana y llamativa</option>
+                </select>
+              </div>
+              {/* FIN NUEVO */}
 
               <label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/50 sm:gap-4 sm:rounded-xl sm:p-4">
                 <div>

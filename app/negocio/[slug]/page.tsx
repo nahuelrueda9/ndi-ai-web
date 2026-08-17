@@ -32,6 +32,7 @@ import ContactoForm from "./ContactForm";
 import PublicAnalytics from "./PublicAnalytics";
 import CompartirPagina from "./CompartirPagina";
 import PresupuestoFormulario from "./PresupuestoFormulario";
+import { fontMap } from "@/lib/fonts";
 
 export const dynamic = "force-dynamic";
 
@@ -72,6 +73,7 @@ interface Empresa {
     textoSecundario?: string;
     colorPrincipal?: string;
     tema?: "oscuro" | "claro";
+    tipografia?: string;
     logoUrl?: string;
     portadaUrl?: string;
     galeria?: string[];
@@ -707,6 +709,9 @@ export default async function NegocioPage({
       ? "border-slate-200 bg-slate-50"
       : "border-zinc-800 bg-zinc-900/40";
 
+  const nombreTipografia = pagina.tipografia || "inter";
+  const selectedFont = fontMap[nombreTipografia] || fontMap['inter'];
+
   return (
     <main
       className={`min-h-screen scroll-smooth pb-16 sm:pb-0 ${
@@ -733,7 +738,7 @@ export default async function NegocioPage({
               <img
                 src={logoUrl}
                 alt={`Logo de ${nombre}`}
-                className="h-9 w-9 shrink-0 rounded-xl border border-white/10 bg-white object-cover shadow-lg sm:h-11 sm:w-11 sm:rounded-2xl"
+                className="h-12 w-12 shrink-0 rounded-xl bg-transparent object-contain sm:h-16 sm:w-auto sm:max-w-[120px]"
               />
             ) : (
               <div
@@ -920,7 +925,7 @@ export default async function NegocioPage({
                 <img
                   src={logoUrl}
                   alt={`Logo de ${nombre}`}
-                  className="h-14 w-14 rounded-2xl border border-white/15 bg-white object-cover shadow-2xl sm:h-20 sm:w-20 sm:rounded-3xl"
+                  className="h-20 w-auto max-w-[120px] rounded-2xl bg-transparent object-contain shadow-2xl sm:h-28 sm:max-w-[180px] sm:rounded-3xl lg:h-24 lg:max-w-[160px]"
                 />
               )}
 
