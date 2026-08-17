@@ -80,22 +80,33 @@
     colorScheme: "normal",
   });
 
+  function esChatCompletoActual() {
+    return (
+      anchoSolicitado > 350 &&
+      altoSolicitado > 300
+    );
+  }
+
   function aplicarTamano() {
     var esMobile =
       window.innerWidth <= 520;
 
     var esChatCompleto =
-      anchoSolicitado > 350 &&
-      altoSolicitado > 300;
+      esChatCompletoActual();
 
     iframe.style.maxWidth = "100vw";
     iframe.style.maxHeight = "100dvh";
 
     /*
-     * En la página pública mobile,
-     * el asistente compacto ocupa
-     * el lugar del botón de WhatsApp
-     * dentro de la barra inferior.
+     * Mobile:
+     * el widget cerrado se integra dentro de la barra
+     * inferior de acciones, ocupando el lugar visual
+     * del antiguo botón de WhatsApp.
+     *
+     * El iframe tiene un poco más de área para evitar
+     * que el botón interno quede recortado, pero se
+     * desplaza hacia abajo para que no sobresalga
+     * por encima de la barra.
      */
     if (
       usarDockMobile &&
@@ -103,18 +114,22 @@
       !esChatCompleto
     ) {
       iframe.style.left = "auto";
-      iframe.style.right = "4px";
+      iframe.style.right = "0";
       iframe.style.bottom =
-        "calc(4px + env(safe-area-inset-bottom, 0px))";
-      iframe.style.width = "72px";
-      iframe.style.height = "72px";
+        "calc(-10px + env(safe-area-inset-bottom, 0px))";
+
+      iframe.style.width = "64px";
+      iframe.style.height = "64px";
+
+      iframe.style.maxWidth = "64px";
+      iframe.style.maxHeight = "64px";
 
       return;
     }
 
     /*
      * Al abrir el chat en celular,
-     * vuelve a ocupar toda la pantalla.
+     * ocupa toda la pantalla.
      */
     if (
       esChatCompleto &&
@@ -127,13 +142,20 @@
       iframe.style.width = "100vw";
       iframe.style.height = "100dvh";
 
+      iframe.style.maxWidth = "100vw";
+      iframe.style.maxHeight = "100dvh";
+
       return;
     }
 
     /*
      * Escritorio / funcionamiento normal.
      */
+    iframe.style.left = "auto";
     iframe.style.bottom = "0";
+
+    iframe.style.maxWidth = "100vw";
+    iframe.style.maxHeight = "100dvh";
 
     iframe.style.width =
       Math.min(
@@ -198,18 +220,17 @@
             : "right";
 
         /*
-         * En mobile con dock,
-         * siempre queda a la derecha.
+         * Cuando está integrado en la barra mobile,
+         * no dejamos que el mensaje de posición
+         * lo vuelva a convertir en un botón flotante.
          */
         if (
           usarDockMobile &&
-          window.innerWidth <= 520
+          window.innerWidth <= 520 &&
+          !esChatCompletoActual()
         ) {
-          iframe.style.left =
-            "auto";
-
-          iframe.style.right =
-            "8px";
+          iframe.style.left = "auto";
+          iframe.style.right = "0";
         } else {
           iframe.style.left =
             posicion === "left"
