@@ -719,6 +719,7 @@ export default async function NegocioPage({
           ? "bg-white text-slate-950"
           : "bg-zinc-950 text-white"
       }`}
+      style={selectedFont.style}
     >
       <PublicAnalytics slug={slug} />
       {/* HEADER */}
