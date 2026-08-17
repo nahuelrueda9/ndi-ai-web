@@ -482,6 +482,13 @@ export default async function NegocioPage({
   const logoUrl =
     pagina.logoUrl?.trim() || "";
 
+  // MAGIA: Si el tema es claro y subieron un logo oscuro, lo usamos para el header. Si no, usamos el normal.
+  const esClaro =
+    pagina.tema === "claro";
+
+  const logoOscuroUrl = pagina.logoOscuroUrl?.trim() || "";
+  const logoParaHeader = esClaro && logoOscuroUrl ? logoOscuroUrl : logoUrl;
+
   const portadaUrl =
     pagina.portadaUrl?.trim() || "";
 
@@ -701,9 +708,6 @@ export default async function NegocioPage({
       "sin_marca_ndi",
     );
 
-  const esClaro =
-    pagina.tema === "claro";
-
   const claseTextoSecundario =
     esClaro
       ? "text-slate-600"
@@ -740,6 +744,21 @@ export default async function NegocioPage({
             href="#inicio"
             className="flex min-w-0 items-center gap-2.5 sm:gap-3"
           >
+            {logoParaHeader && mostrarLogoHeader ? (
+              <img
+                src={logoParaHeader}
+                alt={`Logo de ${nombre}`}
+                className="h-8 w-auto max-w-[80px] shrink-0 bg-transparent object-contain sm:h-10 sm:max-w-[120px]"
+              />
+            ) : !logoParaHeader && mostrarLogoHeader ? (
+              <div
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white shadow-lg sm:h-11 sm:w-11 sm:rounded-2xl"
+                style={{ backgroundColor: colorPrincipal }}
+              >
+                <Globe2 className="h-5 w-5" />
+              </div>
+            ) : null}
+
             {logoUrl && mostrarLogoHeader ? (
               <img
                 src={logoUrl}
