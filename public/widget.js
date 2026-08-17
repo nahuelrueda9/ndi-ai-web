@@ -103,13 +103,11 @@
       !esChatCompleto
     ) {
       iframe.style.left = "auto";
-      iframe.style.right = "8px";
-
+      iframe.style.right = "4px";
       iframe.style.bottom =
-        "calc(6px + env(safe-area-inset-bottom, 0px))";
-
-      iframe.style.width = "42px";
-      iframe.style.height = "42px";
+        "calc(4px + env(safe-area-inset-bottom, 0px))";
+      iframe.style.width = "72px";
+      iframe.style.height = "72px";
 
       return;
     }
