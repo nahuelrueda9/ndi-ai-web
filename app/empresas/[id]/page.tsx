@@ -99,6 +99,7 @@ interface Empresa {
     tipografia?: string;
 
     logoUrl?: string;
+    logoOscuroUrl?: string;
     portadaUrl?: string;
     galeria?: string[];
 
@@ -265,6 +266,11 @@ export default function ConfigurarAgentePage() {
   ] = useState("");
 
   const [
+    paginaLogoOscuroUrl,
+    setPaginaLogoOscuroUrl,
+  ] = useState("");
+
+  const [
     paginaPortadaUrl,
     setPaginaPortadaUrl,
   ] = useState("");
@@ -278,7 +284,7 @@ export default function ConfigurarAgentePage() {
     subiendoImagen,
     setSubiendoImagen,
   ] = useState<
-    "logo" | "portada" | "galeria" | null
+    "logo" | "logoOscuro" | "portada" | "galeria" | null
   >(null);
 
   const [
@@ -655,6 +661,10 @@ export default function ConfigurarAgentePage() {
                 ?.logoUrl || "",
             );
 
+            setPaginaLogoOscuroUrl(
+              empresa.paginaPublica?.logoOscuroUrl || "",
+            );
+
             setPaginaTipografia(
               empresa.paginaPublica?.tipografia || "inter"
             );
@@ -918,7 +928,7 @@ export default function ConfigurarAgentePage() {
 
   const subirImagenPagina = async (
     archivo: File,
-    tipo: "logo" | "portada" | "galeria",
+    tipo: "logo" | "logoOscuro" | "portada" | "galeria",
   ) => {
     if (!user || !empresaId) {
       return;
@@ -1102,6 +1112,8 @@ export default function ConfigurarAgentePage() {
 
       if (tipo === "logo") {
         setPaginaLogoUrl(url);
+      } else if (tipo === "logoOscuro") {
+        setPaginaLogoOscuroUrl(url);
       } else if (
         tipo === "portada"
       ) {
@@ -1473,6 +1485,9 @@ export default function ConfigurarAgentePage() {
 
         "paginaPublica.logoUrl":
           paginaLogoUrl,
+
+        "paginaPublica.logoOscuroUrl":
+          paginaLogoOscuroUrl,
 
         "paginaPublica.portadaUrl":
           paginaPortadaUrl,
@@ -2007,7 +2022,7 @@ export default function ConfigurarAgentePage() {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-2">
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-3">
                   <ImagenUploader
                     titulo="Logo del negocio"
                     descripcion="PNG, JPG o WebP · máximo 5 MB · recomendado 512 × 512 px."
@@ -2022,6 +2037,18 @@ export default function ConfigurarAgentePage() {
                     onQuitar={() =>
                       setPaginaLogoUrl("")
                     }
+                    aspectClass="aspect-square max-w-[180px]"
+                  />
+
+                  <ImagenUploader
+                    titulo="Logo secundario (Oscuro)"
+                    descripcion="Opcional. Se usa en la barra superior cuando el tema de la página es Claro."
+                    imagenUrl={paginaLogoOscuroUrl}
+                    cargando={subiendoImagen === "logoOscuro"}
+                    onSeleccionar={(archivo) =>
+                      subirImagenPagina(archivo, "logoOscuro")
+                    }
+                    onQuitar={() => setPaginaLogoOscuroUrl("")}
                     aspectClass="aspect-square max-w-[180px]"
                   />
 

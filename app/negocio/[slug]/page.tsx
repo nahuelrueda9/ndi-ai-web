@@ -75,6 +75,7 @@ interface Empresa {
     tema?: "oscuro" | "claro";
     tipografia?: string;
     logoUrl?: string;
+    logoOscuroUrl?: string;
     portadaUrl?: string;
     galeria?: string[];
     mostrarWhatsApp?: boolean;
