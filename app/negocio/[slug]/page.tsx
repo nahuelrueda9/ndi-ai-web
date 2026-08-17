@@ -79,6 +79,7 @@ interface Empresa {
     galeria?: string[];
     mostrarWhatsApp?: boolean;
     mostrarEmail?: boolean;
+    mostrarLogoHeader?: boolean;
     mostrarDireccion?: boolean;
     mostrarHorarios?: boolean;
 
@@ -544,6 +545,9 @@ export default async function NegocioPage({
   const mostrarContacto =
     pagina.mostrarContacto !== false;
 
+  const mostrarLogoHeader =
+    pagina.mostrarLogoHeader !== false;  
+
   const direccionMapa =
     empresa.direccion?.trim() || "";
 
@@ -731,27 +735,24 @@ export default async function NegocioPage({
         }`}
       >
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2.5 sm:gap-5 sm:px-8 sm:py-3.5">
-          <a
+<a
             href="#inicio"
             className="flex min-w-0 items-center gap-2.5 sm:gap-3"
           >
-            {logoUrl ? (
+            {logoUrl && mostrarLogoHeader ? (
               <img
                 src={logoUrl}
                 alt={`Logo de ${nombre}`}
-                className="h-12 w-12 shrink-0 rounded-xl bg-transparent object-contain sm:h-16 sm:w-auto sm:max-w-[120px]"
+                className="h-8 w-auto max-w-[80px] shrink-0 bg-transparent object-contain sm:h-10 sm:max-w-[120px]"
               />
-            ) : (
+            ) : !logoUrl && mostrarLogoHeader ? (
               <div
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white shadow-lg sm:h-11 sm:w-11 sm:rounded-2xl"
-                style={{
-                  backgroundColor:
-                    colorPrincipal,
-                }}
+                style={{ backgroundColor: colorPrincipal }}
               >
                 <Globe2 className="h-5 w-5" />
               </div>
-            )}
+            ) : null}
 
             <div className="min-w-0">
               <p

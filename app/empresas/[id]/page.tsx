@@ -106,6 +106,7 @@ interface Empresa {
     mostrarEmail?: boolean;
     mostrarDireccion?: boolean;
     mostrarHorarios?: boolean;
+    mostrarLogoHeader?: boolean;
 
     mostrarServicios?: boolean;
     mostrarProductos?: boolean;
@@ -252,6 +253,11 @@ export default function ConfigurarAgentePage() {
     paginaTipografia,
     setPaginaTipografia,
   ] = useState("inter");
+
+  const [
+    paginaMostrarLogoHeader,
+    setPaginaMostrarLogoHeader,
+  ] = useState(true);
 
   const [
     paginaLogoUrl,
@@ -538,6 +544,10 @@ export default function ConfigurarAgentePage() {
               );
               return;
             }
+
+            setPaginaMostrarLogoHeader(
+              empresa.paginaPublica?.mostrarLogoHeader ?? true
+            );
 
             setNombre(
               empresa.nombre || "",
@@ -1518,6 +1528,9 @@ export default function ConfigurarAgentePage() {
         "paginaPublica.preguntasFrecuentes":
           paginaPreguntasFrecuentes,
 
+        "paginaPublica.mostrarLogoHeader":
+          paginaMostrarLogoHeader,  
+
         updatedAt:
           serverTimestamp(),
       };
@@ -2313,6 +2326,13 @@ export default function ConfigurarAgentePage() {
                     }
                   />
 
+                  <ToggleOpcion
+                    titulo="Logo en menú"
+                    descripcion="Mostrar el logo en la barra superior."
+                    checked={paginaMostrarLogoHeader}
+                    onChange={setPaginaMostrarLogoHeader}
+                  />
+                
                   <ToggleOpcion
                     titulo="Correo"
                     descripcion="Mostrar correo del negocio."
