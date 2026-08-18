@@ -759,21 +759,6 @@ export default async function NegocioPage({
               </div>
             ) : null}
 
-            {logoUrl && mostrarLogoHeader ? (
-              <img
-                src={logoUrl}
-                alt={`Logo de ${nombre}`}
-                className="h-8 w-auto max-w-[80px] shrink-0 bg-transparent object-contain sm:h-10 sm:max-w-[120px]"
-              />
-            ) : !logoUrl && mostrarLogoHeader ? (
-              <div
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white shadow-lg sm:h-11 sm:w-11 sm:rounded-2xl"
-                style={{ backgroundColor: colorPrincipal }}
-              >
-                <Globe2 className="h-5 w-5" />
-              </div>
-            ) : null}
-
             <div className="min-w-0">
               <p
                 className={`truncate text-[9px] uppercase tracking-[0.16em] sm:text-[11px] sm:tracking-[0.18em] ${
