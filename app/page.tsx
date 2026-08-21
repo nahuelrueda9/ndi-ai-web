@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -16,6 +17,8 @@ import {
   Sparkles,
   UserRoundCheck,
   Zap,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 const problemas = [
