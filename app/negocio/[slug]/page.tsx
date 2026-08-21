@@ -105,6 +105,12 @@ interface Empresa {
   };
 }
 
+interface VarianteProducto {
+  talle: string;
+  color: string;
+  stock: number;
+}
+
 interface CatalogoItem {
   id: string;
   tipo: "servicio" | "producto";
@@ -117,6 +123,9 @@ interface CatalogoItem {
   categoria?: string;
   talles?: string[];
   colores?: string[];
+  variantes?: VarianteProducto[];
+  stockGeneral?: number;
+  stockTotal?: number;
   activo?: boolean;
 }
 
@@ -287,7 +296,10 @@ export default async function NegocioPage({ params }: PageProps) {
   const puedeUsarTurnos = empresaTieneFuncion(empresa, "turnos");
   const puedeMostrarReservaGenerica = puedeUsarTurnos && servicios.length > 0 && !esRestaurante;
   const mostrarReservaMesa = esRestaurante && puedeUsarTurnos && pagina.mostrarReservasMesa === true;
-  const mostrarPedidosOnline = esRestaurante && puedeUsarProductos && pagina.mostrarPedidosOnline === true;
+  
+  // AHORA LOS PEDIDOS ONLINE FUNCIONAN TANTO PARA RESTAURANTES COMO PARA TIENDAS
+  const mostrarPedidosOnline = (esRestaurante || esTienda) && puedeUsarProductos && pagina.mostrarPedidosOnline === true;
+  
   const puedeMostrarReserva = puedeMostrarReservaGenerica || mostrarReservaMesa;
   const puedeUsarPresupuestos = empresaTieneFuncion(empresa, "presupuestos");
   const puedeUsarAsistenteIA = empresaTieneFuncion(empresa, "asistente_ia");
@@ -675,6 +687,7 @@ export default async function NegocioPage({ params }: PageProps) {
                 tema={esClaro ? "claro" : "oscuro"}
                 esAlojamiento={esAlojamiento}
                 imagenesMultiples={puedeUsarProductos}
+                pedidosHabilitados={mostrarPedidosOnline}
               />
             ))}
           </div>
@@ -720,6 +733,7 @@ export default async function NegocioPage({ params }: PageProps) {
                   esTienda={esTienda && puedeUsarProductos}
                   imagenesMultiples={puedeUsarProductos}
                   tema={esClaro ? "claro" : "oscuro"}
+                  pedidosHabilitados={mostrarPedidosOnline}
                 />
               ))}
             </div>
@@ -1150,6 +1164,7 @@ function CatalogoCard({
   esAlojamiento = false,
   esTienda = false,
   imagenesMultiples = false,
+  pedidosHabilitados = false,
 }: {
   item: CatalogoItem;
   color: string;
@@ -1164,6 +1179,7 @@ function CatalogoCard({
   esAlojamiento?: boolean;
   esTienda?: boolean;
   imagenesMultiples?: boolean;
+  pedidosHabilitados?: boolean;
 }) {
   const mensajeWhatsApp =
     esRestaurante && item.tipo === "producto"
@@ -1261,12 +1277,16 @@ function CatalogoCard({
                   imagenes: Array.isArray(item.imagenes) ? item.imagenes.filter((url): url is string => typeof url === "string") : [],
                   talles: Array.isArray(item.talles) ? item.talles.filter((talle): talle is string => typeof talle === "string" && talle.trim().length > 0) : [],
                   colores: Array.isArray(item.colores) ? item.colores.filter((colorItem): colorItem is string => typeof colorItem === "string" && colorItem.trim().length > 0) : [],
+                  variantes: Array.isArray(item.variantes) ? item.variantes : [],
+                  stockGeneral: item.stockGeneral || 0,
+                  stockTotal: item.stockTotal || 0,
                 }}
                 colorPrincipal={color}
                 tema={tema}
                 mostrarWhatsApp={mostrarWhatsApp}
                 whatsappUrl={whatsappUrl}
                 mostrarContacto={mostrarContacto}
+                pedidosHabilitados={pedidosHabilitados}
               />
             )}
 

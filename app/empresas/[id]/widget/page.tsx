@@ -1096,8 +1096,8 @@ export default function WidgetPage() {
               </span>
             </div>
 
-            <div className="mt-2.5 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 sm:mt-5 sm:rounded-xl">
-              <pre className="max-h-40 overflow-auto p-2.5 text-[9px] leading-4 text-zinc-300 sm:max-h-72 sm:p-4 sm:text-sm sm:leading-6">
+            <div className="mt-2.5 overflow-hidden rounded-lg border border-slate-200 bg-slate-900 dark:border-zinc-800 dark:bg-zinc-950 sm:mt-5 sm:rounded-xl">
+              <pre className="max-h-40 overflow-auto p-2.5 text-[9px] leading-4 text-zinc-100 dark:text-zinc-300 sm:max-h-72 sm:p-4 sm:text-sm sm:leading-6">
                 <code>
                   {
                     codigoInstalacion
@@ -1173,11 +1173,11 @@ export default function WidgetPage() {
               </span>
             </div>
 
-            <div className="relative mt-2.5 min-h-[390px] overflow-hidden rounded-xl border border-slate-200 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_transparent_38%),linear-gradient(to_bottom,_#18181b,_#09090b)] dark:border-zinc-800 sm:mt-5 sm:min-h-[580px] sm:rounded-2xl">
+            <div className="relative mt-2.5 min-h-[390px] overflow-hidden rounded-xl border border-slate-200 bg-slate-100 dark:border-zinc-800 dark:bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_transparent_38%),linear-gradient(to_bottom,_#18181b,_#09090b)] sm:mt-5 sm:min-h-[580px] sm:rounded-2xl">
               <div className="absolute inset-x-3 top-3 sm:inset-x-5 sm:top-5">
-                <div className="h-2 w-20 rounded-full bg-zinc-800 sm:h-3 sm:w-28" />
-                <div className="mt-2 h-2 w-32 rounded-full bg-zinc-800/70 sm:mt-3 sm:h-2.5 sm:w-44" />
-                <div className="mt-1.5 h-2 w-28 rounded-full bg-zinc-800/50 sm:mt-2 sm:h-2.5 sm:w-36" />
+                <div className="h-2 w-20 rounded-full bg-slate-300 dark:bg-zinc-800 sm:h-3 sm:w-28" />
+                <div className="mt-2 h-2 w-32 rounded-full bg-slate-200 dark:bg-zinc-800/70 sm:mt-3 sm:h-2.5 sm:w-44" />
+                <div className="mt-1.5 h-2 w-28 rounded-full bg-slate-200 dark:bg-zinc-800/50 sm:mt-2 sm:h-2.5 sm:w-36" />
               </div>
 
               <div
@@ -1189,8 +1189,8 @@ export default function WidgetPage() {
                 } ${
                   tema ===
                   "oscuro"
-                    ? "border-zinc-700 bg-zinc-950"
-                    : "border-zinc-200 bg-white"
+                    ? "border-zinc-700 bg-zinc-950 text-white"
+                    : "border-slate-200 bg-white text-slate-900"
                 }`}
               >
                 <div
@@ -1220,8 +1220,8 @@ export default function WidgetPage() {
                   className={`space-y-2 p-2.5 sm:space-y-4 sm:p-4 ${
                     tema ===
                     "oscuro"
-                      ? "bg-zinc-950"
-                      : "bg-zinc-50"
+                      ? "bg-zinc-950 text-zinc-100"
+                      : "bg-slate-50 text-slate-900"
                   }`}
                 >
                   <div
@@ -1229,7 +1229,7 @@ export default function WidgetPage() {
                       tema ===
                       "oscuro"
                         ? "bg-zinc-900 text-zinc-300"
-                        : "bg-white text-zinc-700 shadow-sm"
+                        : "bg-white text-slate-700 shadow-sm border border-slate-100"
                     }`}
                   >
                     {mensajeBienvenida ||
@@ -1240,16 +1240,16 @@ export default function WidgetPage() {
                     className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-2 sm:gap-2 sm:rounded-xl sm:px-3 sm:py-2.5 ${
                       tema ===
                       "oscuro"
-                        ? "border-zinc-800 bg-zinc-900"
-                        : "border-zinc-200 bg-white"
+                        ? "border-zinc-800 bg-zinc-900 text-white"
+                        : "border-slate-200 bg-white text-slate-900"
                     }`}
                   >
                     <span
                       className={`flex-1 truncate text-[9px] sm:text-xs ${
                         tema ===
                         "oscuro"
-                          ? "text-zinc-600"
-                          : "text-zinc-400"
+                          ? "text-zinc-500"
+                          : "text-slate-400"
                       }`}
                     >
                       {textoPlaceholder ||
@@ -1273,7 +1273,7 @@ export default function WidgetPage() {
                         tema ===
                         "oscuro"
                           ? "text-zinc-600"
-                          : "text-zinc-400"
+                          : "text-slate-400"
                       }`}
                     >
                       Creado con NDI AI

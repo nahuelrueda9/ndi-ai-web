@@ -60,6 +60,12 @@ interface Miembro {
   estado?: "activo" | "inactivo";
 }
 
+interface VarianteProducto {
+  talle: string;
+  color: string;
+  stock: number;
+}
+
 interface CatalogoItem {
   id: string;
   tipo: TipoItem;
@@ -72,6 +78,9 @@ interface CatalogoItem {
   categoria?: string;
   talles?: string[];
   colores?: string[];
+  variantes?: VarianteProducto[];
+  stockGeneral?: number;
+  stockTotal?: number;
   activo: boolean;
   createdAt?: Timestamp;
 }
@@ -118,10 +127,13 @@ export default function CatalogoPage() {
   const [duracion, setDuracion] = useState("");
   const [categoria, setCategoria] =
     useState("principal");
-  const [talles, setTalles] =
-    useState("");
-  const [colores, setColores] =
-    useState("");
+  
+  // Estados para variantes y stock
+  const [talles, setTalles] = useState("");
+  const [colores, setColores] = useState("");
+  const [stockGeneral, setStockGeneral] = useState("0");
+  const [stockVariantes, setStockVariantes] = useState<Record<string, number>>({});
+
   const [imagenes, setImagenes] =
     useState<string[]>([]);
   const [subiendoImagen, setSubiendoImagen] =
@@ -326,6 +338,46 @@ export default function CatalogoPage() {
   const limiteImagenes =
     puedeUsarProductos ? 3 : 1;
 
+  // Lógica para procesar y crear las combinaciones de talles y colores en tiempo real
+  const tallesNormalizados = useMemo(() => {
+    return talles
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean)
+      .filter((t, index, self) => self.indexOf(t) === index)
+      .slice(0, 20);
+  }, [talles]);
+
+  const coloresNormalizados = useMemo(() => {
+    return colores
+      .split(",")
+      .map((c) => c.trim())
+      .filter(Boolean)
+      .filter((c, index, self) => self.indexOf(c) === index)
+      .slice(0, 20);
+  }, [colores]);
+
+  const combinacionesVariantes = useMemo(() => {
+    const t = tallesNormalizados.length > 0 ? tallesNormalizados : [""];
+    const c = coloresNormalizados.length > 0 ? coloresNormalizados : [""];
+    
+    const combinaciones: Array<{ id: string; talle: string; color: string }> = [];
+
+    t.forEach((talle) => {
+      c.forEach((color) => {
+        if (talle || color) {
+          combinaciones.push({
+            id: `${talle}-${color}`,
+            talle,
+            color,
+          });
+        }
+      });
+    });
+
+    return combinaciones;
+  }, [tallesNormalizados, coloresNormalizados]);
+
   function limpiarFormulario() {
     setEditandoId(null);
     setTipo("servicio");
@@ -336,6 +388,8 @@ export default function CatalogoPage() {
     setCategoria("principal");
     setTalles("");
     setColores("");
+    setStockGeneral("0");
+    setStockVariantes({});
     setImagenes([]);
     setSubiendoImagen(false);
     setError("");
@@ -398,6 +452,16 @@ export default function CatalogoPage() {
             .join(", ")
         : "",
     );
+
+    setStockGeneral(String(item.stockGeneral || 0));
+
+    const mapStock: Record<string, number> = {};
+    if (Array.isArray(item.variantes)) {
+      item.variantes.forEach((v) => {
+        mapStock[`${v.talle}-${v.color}`] = v.stock;
+      });
+    }
+    setStockVariantes(mapStock);
 
     const imagenesGuardadas =
       Array.isArray(item.imagenes)
@@ -704,47 +768,23 @@ export default function CatalogoPage() {
       }
     }
 
-    const tallesNormalizados =
-      esTienda &&
-      tipo === "producto" &&
-      puedeUsarProductos
-        ? talles
-            .split(",")
-            .map((talle) =>
-              talle.trim(),
-            )
-            .filter(Boolean)
-            .filter(
-              (talle, indice, lista) =>
-                lista.indexOf(talle) ===
-                indice,
-            )
-            .slice(0, 20)
-        : [];
-
-    const coloresNormalizados =
-      esTienda &&
-      tipo === "producto" &&
-      puedeUsarProductos
-        ? colores
-            .split(",")
-            .map((color) =>
-              color.trim(),
-            )
-            .filter(Boolean)
-            .filter(
-              (color, indice, lista) =>
-                lista.indexOf(color) ===
-                indice,
-            )
-            .slice(0, 20)
-        : [];
-
     setGuardando(true);
     setError("");
     setMensaje("");
 
     try {
+      const variantesAGuardar = combinacionesVariantes.map((c) => ({
+        talle: c.talle,
+        color: c.color,
+        stock: stockVariantes[c.id] || 0,
+      }));
+
+      const stockGenNum = Number(stockGeneral) || 0;
+      const stockTotalFinal =
+        combinacionesVariantes.length > 0
+          ? variantesAGuardar.reduce((acc, curr) => acc + curr.stock, 0)
+          : stockGenNum;
+
       const datos = {
         tipo,
         nombre: nombre.trim(),
@@ -760,9 +800,22 @@ export default function CatalogoPage() {
             ? categoria
             : "",
         talles:
-          tallesNormalizados,
+          esTienda && tipo === "producto" && puedeUsarProductos
+            ? tallesNormalizados
+            : [],
         colores:
-          coloresNormalizados,
+          esTienda && tipo === "producto" && puedeUsarProductos
+            ? coloresNormalizados
+            : [],
+        variantes:
+          esTienda && tipo === "producto" && puedeUsarProductos
+            ? variantesAGuardar
+            : [],
+        stockGeneral:
+          tipo === "producto" && combinacionesVariantes.length === 0
+            ? stockGenNum
+            : 0,
+        stockTotal: tipo === "producto" ? stockTotalFinal : 0,
         imagenes:
           imagenes
             .filter(Boolean)
@@ -946,9 +999,8 @@ export default function CatalogoPage() {
           </h1>
 
           <p className="mt-0.5 max-w-xl text-[10px] leading-4 text-slate-500 dark:text-zinc-400 sm:mt-1 sm:max-w-2xl sm:text-xs sm:leading-5">
-            Cargá lo que ofrece tu negocio. Después
-            aparecerá automáticamente en la página
-            pública.
+            Cargá lo que ofrece tu negocio y el stock disponible. Después
+            aparecerá automáticamente en la página pública.
           </p>
         </div>
 
@@ -1016,7 +1068,7 @@ export default function CatalogoPage() {
 
                 <p className="mt-1 text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:text-sm sm:leading-6">
                   Podés cargar nombre, descripción, precio y 1 imagen por elemento.
-                  Página Completa habilita hasta 3 imágenes y las funciones avanzadas.
+                  Página Completa habilita hasta 3 imágenes, stock, talles y colores.
                 </p>
               </div>
             </div>
@@ -1105,7 +1157,7 @@ export default function CatalogoPage() {
                   ? "Ejemplo: Corte de cabello"
                   : esRestaurante
                     ? "Ejemplo: Milanesa napolitana"
-                    : "Ejemplo: Shampoo profesional"
+                    : "Ejemplo: Zapatillas Urban"
               }
               required
             />
@@ -1165,7 +1217,7 @@ export default function CatalogoPage() {
                 <>
                   <Input
                     id="talles"
-                    label="Talles"
+                    label="Talles (Opcional)"
                     value={talles}
                     onChange={(event) =>
                       setTalles(
@@ -1177,7 +1229,7 @@ export default function CatalogoPage() {
 
                   <Input
                     id="colores"
-                    label="Colores"
+                    label="Colores (Opcional)"
                     value={colores}
                     onChange={(event) =>
                       setColores(
@@ -1189,9 +1241,57 @@ export default function CatalogoPage() {
 
                   <div className="md:col-span-2 -mt-2">
                     <p className="text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:text-xs sm:leading-5">
-                      Separá cada opción con una coma. Ejemplo: S, M, L, XL.
+                      Separá cada opción con una coma.
                     </p>
                   </div>
+
+                  {/* MATRIZ DE STOCK DINÁMICA */}
+                  {combinacionesVariantes.length > 0 ? (
+                    <div className="md:col-span-2 mt-2 rounded-xl border border-slate-200 bg-slate-50 p-3.5 dark:border-zinc-800 dark:bg-zinc-950/50">
+                      <p className="mb-3 text-xs font-bold text-slate-900 dark:text-white sm:text-sm">
+                        Stock por variante
+                      </p>
+                      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                        {combinacionesVariantes.map((comb) => (
+                          <div
+                            key={comb.id}
+                            className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+                          >
+                            <span className="truncate text-[11px] font-medium text-slate-700 dark:text-zinc-300">
+                              {comb.talle && `Talle ${comb.talle}`}
+                              {comb.talle && comb.color && " · "}
+                              {comb.color}
+                            </span>
+                            <input
+                              type="number"
+                              min="0"
+                              value={stockVariantes[comb.id] || ""}
+                              onChange={(e) =>
+                                setStockVariantes((prev) => ({
+                                  ...prev,
+                                  [comb.id]: parseInt(e.target.value) || 0,
+                                }))
+                              }
+                              className="w-16 rounded-md border border-slate-300 bg-slate-50 px-2 py-1 text-center text-xs outline-none transition focus:border-blue-500 dark:border-zinc-600 dark:bg-zinc-950 dark:text-white"
+                              placeholder="0"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="md:col-span-2">
+                      <Input
+                        id="stockGeneral"
+                        label="Stock disponible (Unidades)"
+                        type="number"
+                        min="0"
+                        value={stockGeneral}
+                        onChange={(e) => setStockGeneral(e.target.value)}
+                        placeholder="Ej: 10"
+                      />
+                    </div>
+                  )}
                 </>
               )}
 
@@ -1200,10 +1300,23 @@ export default function CatalogoPage() {
               !puedeUsarProductos && (
                 <div className="rounded-lg border border-blue-500/20 bg-blue-500/10 px-3 py-2.5 sm:rounded-xl sm:px-4 sm:py-3 md:col-span-2">
                   <p className="text-xs leading-5 text-slate-600 dark:text-zinc-400">
-                    Los talles, colores y variantes están disponibles desde Página Completa.
+                    Los talles, colores y control de stock están disponibles desde Página Completa.
                   </p>
                 </div>
               )}
+
+            {/* PRODUCTO REGULAR SIN TALLES NI COLORES (EJ: RESTAURANTES) */}
+            {!esTienda && tipo === "producto" && puedeUsarProductos && (
+               <Input
+                 id="stockGeneral"
+                 label="Stock disponible (Opcional)"
+                 type="number"
+                 min="0"
+                 value={stockGeneral}
+                 onChange={(e) => setStockGeneral(e.target.value)}
+                 placeholder="Ej: 50"
+               />
+            )}
 
             {tipo === "servicio" && (
               <Input
@@ -1635,6 +1748,17 @@ function SeccionCatalogo({
 
                     <p className="text-[10px] font-semibold sm:text-xs">
                       ${item.precio.toLocaleString("es-AR")}
+                    </p>
+                  </div>
+                )}
+
+                {item.tipo === "producto" && item.stockTotal !== undefined && (
+                  <div className="rounded-md bg-slate-100 px-2 py-1 dark:bg-zinc-950 sm:rounded-lg sm:px-2.5 sm:py-1.5">
+                    <p className="text-[8px] text-slate-500 sm:text-[10px]">
+                      Stock
+                    </p>
+                    <p className="text-[10px] font-semibold sm:text-xs">
+                      {item.stockTotal} un.
                     </p>
                   </div>
                 )}
