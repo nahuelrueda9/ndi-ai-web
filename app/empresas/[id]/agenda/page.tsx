@@ -1211,190 +1211,6 @@ export default function AgendaPage() {
         />
       </div>
 
-      <Card className="mb-3 overflow-hidden sm:mb-6">
-        <div className="flex flex-col justify-between gap-2.5 border-b border-slate-200 p-3 dark:border-zinc-800 sm:gap-4 sm:p-5 lg:flex-row lg:items-center">
-          <div>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              <h2 className="text-sm font-semibold text-slate-950 dark:text-white sm:text-lg">
-                Disponibilidad para reservas online
-              </h2>
-
-              <Badge
-                variant={
-                  agendaConfig.activa
-                    ? "success"
-                    : "default"
-                }
-              >
-                {agendaConfig.activa
-                  ? "Reservas activas"
-                  : "Reservas desactivadas"}
-              </Badge>
-            </div>
-
-            <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-sm sm:leading-normal">
-              Definí qué días y horarios puede elegir un cliente desde la página pública.
-            </p>
-          </div>
-
-          <label className="flex cursor-pointer items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950/50 sm:gap-3 sm:rounded-xl sm:px-4 sm:py-3">
-            <div>
-              <p className="text-[11px] font-medium text-slate-950 dark:text-white sm:text-sm">
-                Permitir reservas online
-              </p>
-              <p className="mt-0.5 text-[9px] leading-3.5 text-slate-500 dark:text-zinc-500 sm:text-xs sm:leading-normal">
-                Los clientes verán solamente horarios libres.
-              </p>
-            </div>
-
-            <input
-              type="checkbox"
-              checked={agendaConfig.activa}
-              onChange={(evento) =>
-                setAgendaConfig((actual) => ({
-                  ...actual,
-                  activa: evento.target.checked,
-                }))
-              }
-              className="h-4 w-4 accent-blue-600 sm:h-5 sm:w-5"
-            />
-          </label>
-        </div>
-
-        <div className="p-3 sm:p-5">
-          <div className="mb-3 max-w-xs sm:mb-5">
-            <label
-              htmlFor="intervaloTurnos"
-              className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-zinc-300 sm:mb-2 sm:text-sm"
-            >
-              Intervalo entre horarios ofrecidos
-            </label>
-
-            <select
-              id="intervaloTurnos"
-              value={agendaConfig.intervaloMinutos}
-              onChange={(evento) =>
-                setAgendaConfig((actual) => ({
-                  ...actual,
-                  intervaloMinutos: Number(
-                    evento.target.value
-                  ),
-                }))
-              }
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
-            >
-              {[15, 30, 45, 60].map((minutos) => (
-                <option key={minutos} value={minutos}>
-                  Cada {minutos} minutos
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-2 sm:space-y-3">
-            {DIAS_CONFIG.map((dia) => {
-              const config = agendaConfig.dias[dia.clave];
-
-              return (
-                <div
-                  key={dia.clave}
-                  className="grid grid-cols-2 gap-2 rounded-lg border border-slate-200 bg-slate-50 p-2.5 dark:border-zinc-800 dark:bg-zinc-950/40 sm:gap-4 sm:rounded-2xl sm:p-4 lg:grid-cols-[180px_1fr_1fr_1fr_1fr] lg:items-end"
-                >
-                  <label className="col-span-2 flex cursor-pointer items-center gap-2 border-b border-slate-200 pb-2 dark:border-zinc-800 sm:gap-3 lg:col-span-1 lg:border-b-0 lg:pb-2">
-                    <input
-                      type="checkbox"
-                      checked={config.activo}
-                      onChange={(evento) =>
-                        actualizarDiaAgenda(
-                          dia.clave,
-                          "activo",
-                          evento.target.checked
-                        )
-                      }
-                      className="h-4 w-4 accent-blue-600 sm:h-5 sm:w-5"
-                    />
-
-                    <span className="text-xs font-medium text-slate-950 dark:text-white sm:text-base">
-                      {dia.nombre}
-                    </span>
-                  </label>
-
-                  <HorarioCampo
-                    label="Apertura"
-                    value={config.apertura}
-                    disabled={!config.activo}
-                    onChange={(valor) =>
-                      actualizarDiaAgenda(
-                        dia.clave,
-                        "apertura",
-                        valor
-                      )
-                    }
-                  />
-
-                  <HorarioCampo
-                    label="Cierre"
-                    value={config.cierre}
-                    disabled={!config.activo}
-                    onChange={(valor) =>
-                      actualizarDiaAgenda(
-                        dia.clave,
-                        "cierre",
-                        valor
-                      )
-                    }
-                  />
-
-                  <HorarioCampo
-                    label="Descanso desde"
-                    value={config.descansoInicio}
-                    disabled={!config.activo}
-                    onChange={(valor) =>
-                      actualizarDiaAgenda(
-                        dia.clave,
-                        "descansoInicio",
-                        valor
-                      )
-                    }
-                  />
-
-                  <HorarioCampo
-                    label="Descanso hasta"
-                    value={config.descansoFin}
-                    disabled={!config.activo}
-                    onChange={(valor) =>
-                      actualizarDiaAgenda(
-                        dia.clave,
-                        "descansoFin",
-                        valor
-                      )
-                    }
-                  />
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="mt-3 flex flex-col justify-between gap-2 border-t border-slate-200 pt-3 dark:border-zinc-800 sm:mt-5 sm:gap-3 sm:pt-5 sm:flex-row sm:items-center">
-            <p className="text-[9px] leading-4 text-slate-500 dark:text-zinc-500 sm:text-xs sm:leading-5">
-              {usaReservas
-                ? "Las reservas ya ocupadas y los horarios de descanso se eliminan automáticamente de la disponibilidad pública."
-                : "Los turnos ya ocupados y los horarios de descanso se eliminan automáticamente de la disponibilidad pública."}
-            </p>
-
-            <Button
-              type="button"
-              disabled={guardandoHorarios}
-              onClick={guardarConfiguracionHorarios}
-            >
-              {guardandoHorarios
-                ? "Guardando..."
-                : "Guardar horarios"}
-            </Button>
-          </div>
-        </div>
-      </Card>
-
       {mensaje && (
         <Card className="mb-3 border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/10 sm:mb-6 sm:p-4">
           <p className="text-xs text-emerald-700 dark:text-emerald-300 sm:text-sm">
@@ -1631,20 +1447,23 @@ export default function AgendaPage() {
         </Card>
       )}
 
-      <div className="grid gap-3 sm:gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
+      {/* VISTA PRINCIPAL: CALENDARIO AMPLIADO Y PANEL LATERAL */}
+      <div className="grid gap-4 sm:gap-6 xl:grid-cols-[minmax(0,1fr)_440px]">
+        
+        {/* CALENDARIO MEJORADO CON CELDAS MÁS CÓMODAS */}
         <Card className="overflow-hidden">
-          <div className="flex items-center justify-between gap-2 border-b border-slate-200 p-3 dark:border-zinc-800 sm:gap-4 sm:p-5 sm:flex-row sm:items-center">
+          <div className="flex items-center justify-between gap-2 border-b border-slate-200 p-4 dark:border-zinc-800 sm:p-6 sm:flex-row sm:items-center">
             <div>
-              <h2 className="text-sm font-semibold text-slate-950 dark:text-white sm:text-lg">
+              <h2 className="text-base font-bold text-slate-950 dark:text-white sm:text-xl">
                 {formatearMes(mesActual)}
               </h2>
 
-              <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-sm sm:leading-normal">
-                Seleccioná un día para ver sus turnos.
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-sm">
+                Hacé clic en un día para seleccionarlo o doble clic para agendar.
               </p>
             </div>
 
-            <div className="flex items-center gap-1 sm:gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <Button
                 type="button"
                 size="sm"
@@ -1678,7 +1497,7 @@ export default function AgendaPage() {
             {DIAS_SEMANA.map((dia) => (
               <div
                 key={dia}
-                className="px-0.5 py-1.5 text-center text-[8px] font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300 sm:px-2 sm:py-3 sm:text-xs"
+                className="py-2.5 text-center text-[10px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 sm:text-xs"
               >
                 {dia}
               </div>
@@ -1723,51 +1542,52 @@ export default function AgendaPage() {
                     abrirNuevoTurno(fechaISO)
                   }
                   className={[
-                    "relative min-h-14 border-b border-r border-blue-200 p-1 text-left transition-colors dark:border-blue-500/20 sm:min-h-28 sm:p-3",
+                    // Celdas notablemente más altas y espaciosas
+                    "relative min-h-[96px] border-b border-r border-slate-200 p-1.5 text-left transition-colors dark:border-zinc-800 sm:min-h-[130px] sm:p-2.5",
                     dia.perteneceAlMes
-                       ? "bg-white dark:bg-zinc-900/30"
-                       : "bg-blue-50/50 dark:bg-zinc-950/70",
+                      ? "bg-white dark:bg-zinc-900/40"
+                      : "bg-slate-50/70 dark:bg-zinc-950/60",
                     seleccionado
-                       ? "bg-blue-50 ring-2 ring-inset ring-blue-500 dark:bg-blue-500/10"
-                       : "hover:bg-blue-50/70 dark:hover:bg-zinc-800/40",
+                      ? "bg-blue-50/80 ring-2 ring-inset ring-blue-500 dark:bg-blue-500/15"
+                      : "hover:bg-slate-100/60 dark:hover:bg-zinc-800/40",
                   ].join(" ")}
                 >
                   <span
                     className={[
-                      "inline-flex h-5 min-w-5 items-center justify-center rounded-md px-0.5 text-[10px] sm:h-7 sm:min-w-7 sm:rounded-lg sm:px-1 sm:text-sm",
+                      "inline-flex h-6 min-w-6 items-center justify-center rounded-lg px-1 text-xs sm:h-7 sm:min-w-7 sm:text-sm",
                       esHoy
-                         ? "bg-blue-600 font-bold text-white shadow-sm"
-                         : dia.perteneceAlMes
-                         ? "font-semibold text-slate-950 dark:text-zinc-100"
-                         : "font-medium text-slate-400 dark:text-zinc-600",
+                        ? "bg-blue-600 font-bold text-white shadow-sm"
+                        : dia.perteneceAlMes
+                        ? "font-semibold text-slate-950 dark:text-zinc-100"
+                        : "font-medium text-slate-400 dark:text-zinc-600",
                     ].join(" ")}
                   >
                     {dia.fecha.getDate()}
                   </span>
 
                   {turnosDelDia.length > 0 && (
-                    <div className="mt-1 space-y-0.5 sm:mt-2 sm:space-y-1">
+                    <div className="mt-1.5 space-y-1 sm:mt-2">
                       {turnosDelDia
-                        .slice(0, 2)
+                        .slice(0, 3) // Mostramos hasta 3 eventos cómodos por celda
                         .map((turno) => (
                           <div
                             key={turno.id}
-                            className="truncate rounded border border-blue-100 bg-blue-50 px-0.5 py-0.5 text-[7px] font-medium leading-3 text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300 sm:rounded-md sm:px-2 sm:py-1 sm:text-xs sm:leading-normal"
+                            className="truncate rounded-md border border-blue-200 bg-blue-50 px-1.5 py-1 text-[9px] font-semibold leading-3 text-blue-700 shadow-2xs dark:border-blue-500/30 dark:bg-blue-500/15 dark:text-blue-300 sm:px-2 sm:py-1 sm:text-xs sm:leading-tight"
                           >
-                            {turno.tipoReserva ===
-                            "alojamiento"
-                              ? "Estadía"
-                              : turno.tipoReserva ===
-                                  "mesa"
+                            <span className="opacity-75">
+                              {turno.tipoReserva === "alojamiento"
+                                ? "Estadía"
+                                : turno.tipoReserva === "mesa"
                                 ? `Mesa ${turno.hora}`
-                                : turno.hora}{" "}
+                                : turno.hora}
+                            </span>{" "}
                             {turno.nombreCliente}
                           </div>
                         ))}
 
-                      {turnosDelDia.length > 2 && (
-                        <p className="px-0.5 text-[7px] text-slate-500 dark:text-zinc-500 sm:px-1 sm:text-[10px]">
-                          +{turnosDelDia.length - 2} más
+                      {turnosDelDia.length > 3 && (
+                        <p className="px-1 text-[9px] font-medium text-slate-500 dark:text-zinc-400 sm:text-[11px]">
+                          +{turnosDelDia.length - 3} más
                         </p>
                       )}
                     </div>
@@ -1778,29 +1598,29 @@ export default function AgendaPage() {
           </div>
         </Card>
 
-        <Card className="overflow-hidden">
-          <div className="border-b border-slate-200 p-3 dark:border-zinc-800 sm:p-5">
-            <div className="flex items-start justify-between gap-2 sm:gap-4">
+        {/* PANEL LATERAL DE PRÓXIMAS RESERVAS / TURNOS */}
+        <Card className="overflow-hidden flex flex-col">
+          <div className="border-b border-slate-200 p-4 dark:border-zinc-800 sm:p-5">
+            <div className="flex items-start justify-between gap-2">
               <div>
-                <h2 className="text-xs font-semibold text-slate-950 dark:text-white sm:text-base">
+                <h2 className="text-sm font-bold text-slate-950 dark:text-white sm:text-base">
                   {usaReservas
                     ? "Próximas reservas"
                     : "Próximos turnos"}
                 </h2>
 
-                <p className="mt-0.5 text-[10px] text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs">
+                <p className="mt-0.5 text-xs text-slate-500 dark:text-zinc-500">
                   {turnosFiltrados.length}{" "}
                   {turnosFiltrados.length === 1
                     ? `${singularAgenda} programada`
                     : `${pluralAgenda} programadas`}{" "}
-                  · ordenados por fecha
+                  · fecha seleccionada
                 </p>
               </div>
-
             </div>
 
-            <div className="mt-2 flex items-center gap-1.5 overflow-x-auto pb-1 sm:mt-4 sm:gap-2">
-              <Filter className="h-4 w-4 shrink-0 text-slate-500 dark:text-zinc-600" />
+            <div className="mt-3 flex items-center gap-1.5 overflow-x-auto pb-1.5 sm:mt-4 sm:gap-2">
+              <Filter className="h-4 w-4 shrink-0 text-slate-400" />
 
               {(
                 [
@@ -1819,10 +1639,10 @@ export default function AgendaPage() {
                     setFiltroEstado(estado)
                   }
                   className={[
-                    "shrink-0 rounded-md px-2 py-1 text-[9px] font-medium transition sm:rounded-lg sm:px-3 sm:py-1.5 sm:text-xs",
+                    "shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-medium transition sm:px-3 sm:py-1.5 sm:text-xs",
                     filtroEstado === estado
-                      ? "bg-blue-600 text-white"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-950 dark:bg-zinc-900 dark:text-zinc-500 dark:hover:text-white",
+                      ? "bg-blue-600 text-white font-semibold"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:text-white",
                   ].join(" ")}
                 >
                   {estado === "todos"
@@ -1833,46 +1653,38 @@ export default function AgendaPage() {
             </div>
           </div>
 
-          <div className="max-h-[520px] overflow-y-auto p-2.5 sm:max-h-[760px] sm:p-4">
+          <div className="max-h-[580px] flex-1 overflow-y-auto p-3 sm:max-h-[720px] sm:p-4">
             {cargando ? (
-              <div className="py-6 text-center sm:py-12">
+              <div className="py-12 text-center">
                 <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-cyan-600 dark:border-zinc-700 dark:border-t-cyan-500" />
-
-                <p className="mt-4 text-sm text-slate-500 dark:text-zinc-500">
-                  Cargando agenda...
-                </p>
+                <p className="mt-4 text-sm text-slate-500">Cargando agenda...</p>
               </div>
             ) : turnosFiltrados.length === 0 ? (
-              <div className="py-6 text-center sm:py-12">
-                <CalendarDays className="mx-auto h-7 w-7 text-slate-300 dark:text-zinc-700 sm:h-10 sm:w-10" />
-
-                <h3 className="mt-2 text-sm font-semibold text-slate-950 dark:text-white sm:mt-4 sm:text-base">
+              <div className="py-12 text-center">
+                <CalendarDays className="mx-auto h-10 w-10 text-slate-300 dark:text-zinc-700" />
+                <h3 className="mt-4 text-base font-semibold text-slate-950 dark:text-white">
                   {usaReservas
                     ? "No hay reservas próximas"
                     : "No hay turnos próximos"}
                 </h3>
-
-                <p className="mt-1 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-2 sm:text-sm sm:leading-normal">
-                  {usaReservas
-                    ? "Las próximas reservas aparecerán acá ordenadas por fecha."
-                    : "Los próximos turnos aparecerán acá ordenados por fecha."}
+                <p className="mt-2 text-sm text-slate-500 dark:text-zinc-500">
+                  Las citas aparecerán acá ordenadas por fecha.
                 </p>
-
                 <Button
                   type="button"
-                  className="mt-3 sm:mt-5"
+                  className="mt-5"
                   onClick={() =>
                     abrirNuevoTurno(
                       fechaSeleccionada
                     )
                   }
                 >
-                  <Plus className="mr-1 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" />
+                  <Plus className="mr-2 h-4 w-4" />
                   {usaReservas ? "Crear reserva" : "Crear turno"}
                 </Button>
               </div>
             ) : (
-              <div className="space-y-2 sm:space-y-3">
+              <div className="space-y-3">
                 {turnosFiltrados.map((turno) => (
                   <TurnoCard
                     key={turno.id}
@@ -1913,11 +1725,11 @@ function TurnoCard({
   onEliminar: (turno: Turno) => void;
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50 p-2.5 dark:border-zinc-800 dark:bg-zinc-950/50 sm:rounded-2xl sm:p-4">
-      <div className="flex items-start justify-between gap-2 sm:gap-3">
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 dark:border-zinc-800 dark:bg-zinc-950/50 sm:p-4">
+      <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-            <p className="font-semibold text-slate-950 dark:text-white">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-xs font-bold text-slate-900 dark:text-zinc-200">
               {turno.tipoReserva ===
               "alojamiento"
                 ? "Estadía"
@@ -1936,11 +1748,11 @@ function TurnoCard({
             </Badge>
           </div>
 
-          <h3 className="mt-1.5 truncate text-[11px] font-medium text-slate-950 dark:text-white sm:mt-3 sm:text-base">
+          <h3 className="mt-1.5 text-sm font-bold text-slate-950 dark:text-white sm:text-base">
             {turno.nombreCliente}
           </h3>
 
-          <p className="mt-0.5 text-[10px] text-slate-600 dark:text-zinc-400 sm:mt-1 sm:text-sm">
+          <p className="mt-0.5 text-xs text-slate-600 dark:text-zinc-400">
             {turno.servicio}
           </p>
         </div>
@@ -1951,7 +1763,7 @@ function TurnoCard({
               type="button"
               disabled={procesando}
               onClick={() => onEditar(turno)}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-slate-500 transition hover:bg-blue-50 hover:text-blue-600 disabled:opacity-50 dark:text-zinc-600 dark:hover:bg-blue-500/10 dark:hover:text-blue-400 sm:h-8 sm:w-8 sm:rounded-lg"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-blue-50 hover:text-blue-600 disabled:opacity-50 dark:text-zinc-500 dark:hover:bg-blue-500/10 dark:hover:text-blue-400"
               title="Editar turno"
             >
               <Pencil className="h-4 w-4" />
@@ -1962,7 +1774,7 @@ function TurnoCard({
             type="button"
             disabled={procesando}
             onClick={() => onEliminar(turno)}
-            className="flex h-7 w-7 items-center justify-center rounded-md text-slate-500 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50 dark:text-zinc-600 dark:hover:bg-red-500/10 dark:hover:text-red-400 sm:h-8 sm:w-8 sm:rounded-lg"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50 dark:text-zinc-500 dark:hover:bg-red-500/10 dark:hover:text-red-400"
             title="Eliminar turno"
           >
             <Trash2 className="h-4 w-4" />
@@ -1970,12 +1782,12 @@ function TurnoCard({
         </div>
       </div>
 
-      <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1 text-[9px] text-slate-500 dark:text-zinc-500 sm:mt-4 sm:grid-cols-1 sm:gap-2 sm:text-xs">
+      <div className="mt-3 grid gap-1.5 text-xs text-slate-600 dark:text-zinc-400 border-t border-slate-200/60 pt-3 dark:border-zinc-800/80">
         {turno.tipoReserva ===
         "alojamiento" ? (
           <>
             <p>
-              Entrada:{" "}
+              <strong>Entrada:</strong>{" "}
               {turno.fechaEntrada ||
                 turno.fecha}
               {turno.hora
@@ -1985,66 +1797,58 @@ function TurnoCard({
 
             {turno.fechaSalida && (
               <p>
-                Salida: {turno.fechaSalida}
+                <strong>Salida:</strong> {turno.fechaSalida}
               </p>
             )}
 
             {typeof turno.huespedes ===
               "number" && (
               <p>
-                Huéspedes: {turno.huespedes}
+                <strong>Huéspedes:</strong> {turno.huespedes}
               </p>
             )}
           </>
         ) : turno.tipoReserva ===
           "mesa" ? (
           <>
-            <p>
-              Fecha: {turno.fecha}
-            </p>
-            <p>
-              Horario: {turno.hora}
-            </p>
+            <p><strong>Fecha:</strong> {turno.fecha}</p>
+            <p><strong>Horario:</strong> {turno.hora}</p>
             {typeof turno.personas ===
               "number" && (
               <p>
-                Personas: {turno.personas}
+                <strong>Personas:</strong> {turno.personas}
               </p>
             )}
           </>
         ) : (
           <>
+            <p><strong>Fecha:</strong> {turno.fecha}</p>
+            <p><strong>Horario:</strong> {turno.hora}</p>
             <p>
-              Fecha: {turno.fecha}
-            </p>
-            <p>
-              Horario: {turno.hora}
-            </p>
-            <p>
-              Duración:{" "}
+              <strong>Duración:</strong>{" "}
               {turno.duracionMinutos} minutos
             </p>
           </>
         )}
 
         {turno.telefono && (
-          <p>Teléfono: {turno.telefono}</p>
+          <p><strong>Teléfono:</strong> {turno.telefono}</p>
         )}
 
         {turno.email && (
           <p className="break-all">
-            Email: {turno.email}
+            <strong>Email:</strong> {turno.email}
           </p>
         )}
 
         {turno.notas && (
-          <p className="col-span-2 rounded-md bg-white p-2 leading-4 text-slate-600 dark:bg-zinc-900 dark:text-zinc-400 sm:col-span-1 sm:rounded-lg sm:p-3 sm:leading-5">
+          <p className="mt-1 rounded-lg bg-white p-2.5 text-xs leading-relaxed text-slate-600 dark:bg-zinc-900 dark:text-zinc-300">
             {turno.notas}
           </p>
         )}
       </div>
 
-      <div className="mt-2 flex flex-wrap gap-1.5 border-t border-slate-200 pt-2 dark:border-zinc-800 sm:mt-4 sm:gap-2 sm:pt-4">
+      <div className="mt-3 flex flex-wrap gap-1.5 border-t border-slate-200/60 pt-3 dark:border-zinc-800/80">
         {turno.estado !== "confirmado" && (
           <AccionEstado
             texto="Confirmar"
@@ -2134,10 +1938,10 @@ function AccionEstado({
       disabled={disabled}
       onClick={onClick}
       className={[
-        "rounded-md border px-2 py-1.5 text-[9px] font-medium transition disabled:cursor-not-allowed disabled:opacity-50 sm:rounded-lg sm:px-3 sm:py-2 sm:text-xs",
+        "rounded-lg border px-2.5 py-1 text-[11px] font-medium transition disabled:cursor-not-allowed disabled:opacity-50",
         danger
-          ? "border-red-500/20 text-red-400 hover:bg-red-500/10"
-          : "border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white",
+          ? "border-red-500/20 text-red-500 hover:bg-red-50 dark:border-red-500/30 dark:text-red-400 dark:hover:bg-red-500/10"
+          : "border-slate-200 text-slate-700 hover:bg-slate-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800",
       ].join(" ")}
     >
       {texto}
@@ -2158,7 +1962,7 @@ function HorarioCampo({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-[9px] font-medium text-slate-500 dark:text-zinc-500 sm:mb-2 sm:text-xs">
+      <label className="mb-1 block text-[11px] font-medium text-slate-600 dark:text-zinc-400">
         {label}
       </label>
 
@@ -2169,7 +1973,7 @@ function HorarioCampo({
         onChange={(evento) =>
           onChange(evento.target.value)
         }
-        className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-[11px] text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white sm:rounded-xl sm:px-3 sm:py-2.5 sm:text-sm"
+        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-950 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white"
       />
     </div>
   );
@@ -2185,18 +1989,18 @@ function ResumenCard({
   icono: React.ReactNode;
 }) {
   return (
-    <Card className="p-3 sm:p-5">
+    <Card className="p-4 sm:p-5">
       <div className="flex items-center justify-between">
-        <p className="text-[10px] text-slate-500 dark:text-zinc-500 sm:text-sm">
+        <p className="text-xs text-slate-500 dark:text-zinc-400 sm:text-sm">
           {titulo}
         </p>
 
-        <div className="scale-75 text-cyan-700 dark:text-cyan-400 sm:scale-100">
+        <div className="text-cyan-700 dark:text-cyan-400">
           {icono}
         </div>
       </div>
 
-      <p className="mt-1 text-2xl font-bold text-slate-950 dark:text-white sm:mt-3 sm:text-3xl">
+      <p className="mt-2 text-2xl font-bold text-slate-950 dark:text-white sm:mt-3 sm:text-3xl">
         {valor}
       </p>
     </Card>
@@ -2360,32 +2164,6 @@ function formatearMes(fecha: Date) {
     {
       month: "long",
       year: "numeric",
-    }
-  ).format(fecha);
-
-  return texto.charAt(0).toUpperCase() +
-    texto.slice(1);
-}
-
-function formatearFechaSeleccionada(
-  fechaISO: string
-) {
-  const [anio, mes, dia] = fechaISO
-    .split("-")
-    .map(Number);
-
-  const fecha = new Date(
-    anio,
-    mes - 1,
-    dia
-  );
-
-  const texto = new Intl.DateTimeFormat(
-    "es-AR",
-    {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
     }
   ).format(fecha);
 

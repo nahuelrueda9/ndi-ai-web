@@ -25,6 +25,7 @@ import {
   Bot,
   Building2,
   CalendarDays,
+  Clock,
   Code2,
   CreditCard,
   FileText,
@@ -378,7 +379,14 @@ export default function Sidebar() {
             feature: "catalogo",
           },
           {
-            label: "Agenda",
+            label: "Horarios de atención",
+            ruta: "horarios",
+            icon: Clock,
+            roles: TODOS_LOS_ROLES,
+            feature: "turnos",
+          },
+          {
+            label: "Turnos y reservas",
             ruta: "agenda",
             icon: CalendarDays,
             roles: TODOS_LOS_ROLES,
