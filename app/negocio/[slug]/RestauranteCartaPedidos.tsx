@@ -14,10 +14,10 @@ type Producto = {
 };
 
 type Props = {
-  slug: string;
+  slug: string; // <-- Acá estaba el faltante que generaba el error
   productos: Producto[];
   colorPrincipal: string;
-  tema?: "oscuro" | "claro"; // Lo dejamos por compatibilidad de tipos
+  tema?: "oscuro" | "claro";
   pedidosHabilitados: boolean;
   whatsappUrl?: string;
   mostrarWhatsApp?: boolean;
@@ -77,7 +77,8 @@ export default function RestauranteCartaPedidos({
   slug,
   productos,
   colorPrincipal,
-  pedidosHabilitados,
+  tema = "oscuro",
+  pedidosHabilitados = false,
   whatsappUrl = "",
   mostrarWhatsApp = false,
 }: Props) {
@@ -92,9 +93,11 @@ export default function RestauranteCartaPedidos({
   const [error, setError] = useState("");
   const [exito, setExito] = useState<{ numero: string; total: number } | null>(null);
 
+  const claro = tema === "claro";
+
   useEffect(() => {
     try {
-      const guardado = window.localStorage.getItem(`ndi-carrito:${slug}`);
+      const guardado = window.localStorage.getItem(`ndi-carrito-resto:${slug}`);
       if (!guardado) return;
 
       const parsed = JSON.parse(guardado) as unknown;
@@ -110,7 +113,7 @@ export default function RestauranteCartaPedidos({
 
   useEffect(() => {
     try {
-      window.localStorage.setItem(`ndi-carrito:${slug}`, JSON.stringify(carrito));
+      window.localStorage.setItem(`ndi-carrito-resto:${slug}`, JSON.stringify(carrito));
     } catch {
       // localStorage no obligatorio
     }
@@ -201,8 +204,8 @@ export default function RestauranteCartaPedidos({
     }
   }
 
-  const claseCard = "border-slate-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900";
-  const claseSecundario = "text-slate-500 dark:text-zinc-400";
+  const claseCard = claro ? "border-slate-200 bg-white shadow-sm" : "border-zinc-800 bg-zinc-900 shadow-none";
+  const claseSecundario = claro ? "text-slate-500" : "text-zinc-400";
 
   return (
     <>
@@ -258,14 +261,16 @@ export default function RestauranteCartaPedidos({
                         <button
                           type="button"
                           onClick={() => setProductoDetalle(producto)}
-                          className="inline-flex flex-1 items-center justify-center rounded-xl border border-slate-300 px-3 py-2.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800 sm:text-sm"
+                          className={`inline-flex flex-1 items-center justify-center rounded-xl border px-3 py-2.5 text-xs font-semibold transition sm:text-sm ${
+                            claro ? "border-slate-300 text-slate-700 hover:bg-slate-50" : "border-zinc-700 text-zinc-200 hover:bg-zinc-800"
+                          }`}
                         >
                           Ver plato
                         </button>
 
                         {pedidosHabilitados ? (
                           itemCarrito ? (
-                            <div className="inline-flex flex-1 items-center justify-between rounded-xl border border-slate-200 dark:border-zinc-700">
+                            <div className={`inline-flex flex-1 items-center justify-between rounded-xl border ${claro ? "border-slate-200" : "border-zinc-700"}`}>
                               <button
                                 type="button"
                                 onClick={() => cambiarCantidad(producto.id, -1)}
@@ -310,8 +315,8 @@ export default function RestauranteCartaPedidos({
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/70 p-3 backdrop-blur-sm sm:p-6">
           <button type="button" aria-label="Cerrar detalle" className="absolute inset-0" onClick={() => setProductoDetalle(null)} />
 
-          <div className="relative z-10 max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-slate-200 bg-white text-slate-950 shadow-2xl dark:border-zinc-700 dark:bg-zinc-900 dark:text-white sm:rounded-3xl">
-            <div className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:px-5">
+          <div className={`relative z-10 max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl border shadow-2xl sm:rounded-3xl ${claro ? "border-slate-200 bg-white text-slate-950" : "border-zinc-700 bg-zinc-900 text-white"}`}>
+            <div className={`sticky top-0 z-20 flex items-center justify-between gap-3 border-b px-4 py-3 backdrop-blur sm:px-5 ${claro ? "border-slate-200 bg-white/95" : "border-zinc-800 bg-zinc-900/95"}`}>
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: colorPrincipal }}>Carta</p>
                 <h3 className="mt-0.5 text-base font-bold sm:text-lg">{productoDetalle.nombre}</h3>
@@ -319,7 +324,7 @@ export default function RestauranteCartaPedidos({
               <button
                 type="button"
                 onClick={() => setProductoDetalle(null)}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                className={`flex h-9 w-9 items-center justify-center rounded-full border transition ${claro ? "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100" : "border-zinc-700 bg-zinc-950 text-zinc-300 hover:bg-zinc-800"}`}
                 aria-label="Cerrar"
               >
                 <X className="h-4 w-4" />
@@ -346,14 +351,14 @@ export default function RestauranteCartaPedidos({
                 </p>
               )}
 
-              <div className="mt-5 flex flex-col gap-4 border-t border-slate-200 pt-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
+              <div className={`mt-5 flex flex-col gap-4 border-t pt-4 sm:flex-row sm:items-center sm:justify-between ${claro ? "border-slate-200" : "border-zinc-800"}`}>
                 <p className="text-xl font-bold sm:text-2xl" style={{ color: colorPrincipal }}>
                   {formatoPrecio(Math.max(0, Number(productoDetalle.precio || 0)))}
                 </p>
 
                 {pedidosHabilitados ? (
                   carrito.find((item) => item.id === productoDetalle.id) ? (
-                    <div className="inline-flex items-center justify-between rounded-xl border border-slate-200 dark:border-zinc-700">
+                    <div className={`inline-flex items-center justify-between rounded-xl border ${claro ? "border-slate-200" : "border-zinc-700"}`}>
                       <button
                         type="button"
                         onClick={() => cambiarCantidad(productoDetalle.id, -1)}
@@ -427,8 +432,8 @@ export default function RestauranteCartaPedidos({
         <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm">
           <button type="button" aria-label="Cerrar" className="absolute inset-0" onClick={() => { setCarritoAbierto(false); setExito(null); setError(""); setCheckoutAbierto(false); }} />
 
-          <div className="absolute bottom-0 right-0 top-0 flex w-full max-w-md flex-col border-l border-slate-200 bg-white text-slate-950 shadow-2xl dark:border-zinc-800 dark:bg-zinc-950 dark:text-white">
-            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-zinc-800">
+          <div className={`absolute bottom-0 right-0 top-0 flex w-full max-w-md flex-col border-l shadow-2xl ${claro ? "border-slate-200 bg-white text-slate-950" : "border-zinc-800 bg-zinc-950 text-white"}`}>
+            <div className={`flex items-center justify-between border-b px-5 py-4 ${claro ? "border-slate-200" : "border-zinc-800"}`}>
               <div>
                 <p className="text-lg font-bold">{exito ? "Pedido enviado" : checkoutAbierto ? "Confirmar pedido" : "Tu pedido"}</p>
                 {!exito && <p className={`mt-0.5 text-xs ${claseSecundario}`}>Retiro en el local</p>}
@@ -436,7 +441,7 @@ export default function RestauranteCartaPedidos({
               <button
                 type="button"
                 onClick={() => { setCarritoAbierto(false); setExito(null); setError(""); setCheckoutAbierto(false); }}
-                className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 transition hover:bg-slate-100 dark:border-zinc-800 dark:hover:bg-zinc-900"
+                className={`flex h-9 w-9 items-center justify-center rounded-xl border transition ${claro ? "border-slate-200 hover:bg-slate-100" : "border-zinc-800 hover:bg-zinc-900"}`}
               >
                 <X className="h-4 w-4" />
               </button>
@@ -467,7 +472,7 @@ export default function RestauranteCartaPedidos({
                   {!checkoutAbierto ? (
                     <div className="space-y-3">
                       {carrito.map((item) => (
-                        <div key={item.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-900">
+                        <div key={item.id} className={`rounded-2xl border p-3 ${claro ? "border-slate-200 bg-slate-50" : "border-zinc-800 bg-zinc-900"}`}>
                           <div className="flex gap-3">
                             {item.imagen && (
                               <img src={item.imagen} alt={item.nombre} className="h-16 w-16 shrink-0 rounded-xl object-cover" />
@@ -483,7 +488,7 @@ export default function RestauranteCartaPedidos({
                                 </button>
                               </div>
                               <div className="mt-3 flex items-center justify-between">
-                                <div className="inline-flex items-center rounded-xl border border-slate-200 bg-white dark:border-zinc-700 dark:bg-zinc-950">
+                                <div className={`inline-flex items-center rounded-xl border ${claro ? "border-slate-200 bg-white" : "border-zinc-700 bg-zinc-950"}`}>
                                   <button type="button" onClick={() => cambiarCantidad(item.id, -1)} className="flex h-8 w-8 items-center justify-center hover:opacity-70">
                                     <Minus className="h-3.5 w-3.5" />
                                   </button>
@@ -512,7 +517,7 @@ export default function RestauranteCartaPedidos({
                           onChange={(event) => setNombreCliente(event.target.value)}
                           maxLength={120}
                           placeholder="Tu nombre"
-                          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
+                          className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 ${claro ? "border-slate-300 bg-white" : "border-zinc-700 bg-zinc-900 text-white placeholder-zinc-500"}`}
                         />
                       </div>
                       <div>
@@ -523,7 +528,7 @@ export default function RestauranteCartaPedidos({
                           type="tel"
                           maxLength={60}
                           placeholder="+54..."
-                          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
+                          className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 ${claro ? "border-slate-300 bg-white" : "border-zinc-700 bg-zinc-900 text-white placeholder-zinc-500"}`}
                         />
                       </div>
                       <div>
@@ -534,7 +539,7 @@ export default function RestauranteCartaPedidos({
                           maxLength={1000}
                           rows={4}
                           placeholder="Ej.: sin cebolla, retirar después de las 21..."
-                          className="w-full resize-none rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
+                          className={`w-full resize-none rounded-xl border px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 ${claro ? "border-slate-300 bg-white" : "border-zinc-700 bg-zinc-900 text-white placeholder-zinc-500"}`}
                         />
                       </div>
                     </div>
@@ -543,7 +548,7 @@ export default function RestauranteCartaPedidos({
                   {error && <div className="mt-4 rounded-xl border border-red-500/20 bg-red-50 px-3 py-2.5 text-xs text-red-600 dark:bg-red-500/10 dark:text-red-400">{error}</div>}
                 </div>
 
-                <div className="border-t border-slate-200 p-5 dark:border-zinc-800">
+                <div className={`border-t p-5 ${claro ? "border-slate-200" : "border-zinc-800"}`}>
                   <div className="mb-4 flex items-center justify-between">
                     <span className={`text-sm ${claseSecundario}`}>Total</span>
                     <strong className="text-xl">{formatoPrecio(total)}</strong>
@@ -564,7 +569,7 @@ export default function RestauranteCartaPedidos({
                       <button
                         type="button"
                         onClick={() => { setCheckoutAbierto(false); setError(""); }}
-                        className="rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold transition hover:bg-slate-50 dark:border-zinc-700 dark:hover:bg-zinc-900"
+                        className={`rounded-xl border px-4 py-3 text-sm font-semibold transition ${claro ? "border-slate-300 hover:bg-slate-50" : "border-zinc-700 hover:bg-zinc-900"}`}
                       >
                         Volver
                       </button>
