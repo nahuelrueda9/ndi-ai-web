@@ -938,129 +938,6 @@ export default function AgendaPage() {
     }
   }
 
-  function actualizarDiaAgenda(
-    clave: string,
-    campo: keyof ConfigDiaAgenda,
-    valor: string | boolean
-  ) {
-    setAgendaConfig((actual) => ({
-      ...actual,
-      dias: {
-        ...actual.dias,
-        [clave]: {
-          ...actual.dias[clave],
-          [campo]: valor,
-        },
-      },
-    }));
-  }
-
-  async function guardarConfiguracionHorarios() {
-    if (!empresaId || guardandoHorarios) {
-      return;
-    }
-
-    setError("");
-    setMensaje("");
-
-    if (
-      !Number.isFinite(agendaConfig.intervaloMinutos) ||
-      agendaConfig.intervaloMinutos < 5 ||
-      agendaConfig.intervaloMinutos > 240
-    ) {
-      setError("Elegí un intervalo de turnos válido.");
-      return;
-    }
-
-    for (const dia of DIAS_CONFIG) {
-      const config = agendaConfig.dias[dia.clave];
-
-      if (!config?.activo) {
-        continue;
-      }
-
-      if (
-        !horaAgendaValida(config.apertura) ||
-        !horaAgendaValida(config.cierre) ||
-        convertirHoraAMinutos(config.apertura) >=
-          convertirHoraAMinutos(config.cierre)
-      ) {
-        setError(
-          `Revisá el horario de ${dia.nombre.toLowerCase()}.`
-        );
-        return;
-      }
-
-      const tieneInicioDescanso = Boolean(
-        config.descansoInicio
-      );
-      const tieneFinDescanso = Boolean(
-        config.descansoFin
-      );
-
-      if (tieneInicioDescanso !== tieneFinDescanso) {
-        setError(
-          `Completá ambos horarios de descanso de ${dia.nombre.toLowerCase()} o dejalos vacíos.`
-        );
-        return;
-      }
-
-      if (
-        tieneInicioDescanso &&
-        tieneFinDescanso
-      ) {
-        if (
-          !horaAgendaValida(config.descansoInicio) ||
-          !horaAgendaValida(config.descansoFin) ||
-          convertirHoraAMinutos(config.descansoInicio) >=
-            convertirHoraAMinutos(config.descansoFin) ||
-          convertirHoraAMinutos(config.descansoInicio) <
-            convertirHoraAMinutos(config.apertura) ||
-          convertirHoraAMinutos(config.descansoFin) >
-            convertirHoraAMinutos(config.cierre)
-        ) {
-          setError(
-            `Revisá el descanso de ${dia.nombre.toLowerCase()}.`
-          );
-          return;
-        }
-      }
-    }
-
-    setGuardandoHorarios(true);
-
-    try {
-      await updateDoc(
-        doc(
-          db,
-          "companies",
-          empresaId
-        ),
-        {
-          agendaConfig,
-          updatedAt: serverTimestamp(),
-        }
-      );
-
-      setMensaje(
-        agendaConfig.activa
-          ? "Horarios de reservas guardados y activados."
-          : "Horarios guardados. Las reservas online siguen desactivadas."
-      );
-    } catch (firebaseError) {
-      console.error(
-        "Error al guardar horarios de agenda:",
-        firebaseError
-      );
-
-      setError(
-        "No se pudieron guardar los horarios de reservas."
-      );
-    } finally {
-      setGuardandoHorarios(false);
-    }
-  }
-
   function cambiarMes(diferencia: number) {
     setMesActual((actual) => {
       const nuevoMes = new Date(
@@ -1450,7 +1327,7 @@ export default function AgendaPage() {
       {/* VISTA PRINCIPAL: CALENDARIO AMPLIADO Y PANEL LATERAL */}
       <div className="grid gap-4 sm:gap-6 xl:grid-cols-[minmax(0,1fr)_440px]">
         
-        {/* CALENDARIO MEJORADO CON CELDAS MÁS CÓMODAS */}
+        {/* CALENDARIO ADAPTABLE PARA MÓVIL Y ESCRITORIO */}
         <Card className="overflow-hidden">
           <div className="flex items-center justify-between gap-2 border-b border-slate-200 p-4 dark:border-zinc-800 sm:p-6 sm:flex-row sm:items-center">
             <div>
@@ -1497,7 +1374,7 @@ export default function AgendaPage() {
             {DIAS_SEMANA.map((dia) => (
               <div
                 key={dia}
-                className="py-2.5 text-center text-[10px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 sm:text-xs"
+                className="py-2 text-center text-[10px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 sm:py-2.5 sm:text-xs"
               >
                 {dia}
               </div>
@@ -1542,8 +1419,7 @@ export default function AgendaPage() {
                     abrirNuevoTurno(fechaISO)
                   }
                   className={[
-                    // Celdas notablemente más altas y espaciosas
-                    "relative min-h-[96px] border-b border-r border-slate-200 p-1.5 text-left transition-colors dark:border-zinc-800 sm:min-h-[130px] sm:p-2.5",
+                    "relative min-h-[72px] border-b border-r border-slate-200 p-1 text-left transition-colors dark:border-zinc-800 sm:min-h-[130px] sm:p-2.5",
                     dia.perteneceAlMes
                       ? "bg-white dark:bg-zinc-900/40"
                       : "bg-slate-50/70 dark:bg-zinc-950/60",
@@ -1554,7 +1430,7 @@ export default function AgendaPage() {
                 >
                   <span
                     className={[
-                      "inline-flex h-6 min-w-6 items-center justify-center rounded-lg px-1 text-xs sm:h-7 sm:min-w-7 sm:text-sm",
+                      "inline-flex h-5 min-w-5 items-center justify-center rounded-md px-1 text-[11px] sm:h-7 sm:min-w-7 sm:rounded-lg sm:text-sm",
                       esHoy
                         ? "bg-blue-600 font-bold text-white shadow-sm"
                         : dia.perteneceAlMes
@@ -1566,13 +1442,13 @@ export default function AgendaPage() {
                   </span>
 
                   {turnosDelDia.length > 0 && (
-                    <div className="mt-1.5 space-y-1 sm:mt-2">
+                    <div className="mt-1 space-y-0.5 sm:mt-2 sm:space-y-1">
                       {turnosDelDia
-                        .slice(0, 3) // Mostramos hasta 3 eventos cómodos por celda
+                        .slice(0, 2)
                         .map((turno) => (
                           <div
                             key={turno.id}
-                            className="truncate rounded-md border border-blue-200 bg-blue-50 px-1.5 py-1 text-[9px] font-semibold leading-3 text-blue-700 shadow-2xs dark:border-blue-500/30 dark:bg-blue-500/15 dark:text-blue-300 sm:px-2 sm:py-1 sm:text-xs sm:leading-tight"
+                            className="truncate rounded px-1 py-0.5 text-[8px] font-semibold leading-3 text-blue-700 bg-blue-50 border border-blue-200 dark:border-blue-500/30 dark:bg-blue-500/15 dark:text-blue-300 sm:rounded-md sm:px-2 sm:py-1 sm:text-xs sm:leading-tight"
                           >
                             <span className="opacity-75">
                               {turno.tipoReserva === "alojamiento"
@@ -1581,13 +1457,13 @@ export default function AgendaPage() {
                                 ? `Mesa ${turno.hora}`
                                 : turno.hora}
                             </span>{" "}
-                            {turno.nombreCliente}
+                            <span className="hidden sm:inline">{turno.nombreCliente}</span>
                           </div>
                         ))}
 
-                      {turnosDelDia.length > 3 && (
-                        <p className="px-1 text-[9px] font-medium text-slate-500 dark:text-zinc-400 sm:text-[11px]">
-                          +{turnosDelDia.length - 3} más
+                      {turnosDelDia.length > 2 && (
+                        <p className="px-0.5 text-[8px] font-medium text-slate-500 dark:text-zinc-400 sm:text-[11px]">
+                          +{turnosDelDia.length - 2} más
                         </p>
                       )}
                     </div>
@@ -1949,36 +1825,6 @@ function AccionEstado({
   );
 }
 
-function HorarioCampo({
-  label,
-  value,
-  disabled,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  disabled: boolean;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <div>
-      <label className="mb-1 block text-[11px] font-medium text-slate-600 dark:text-zinc-400">
-        {label}
-      </label>
-
-      <input
-        type="time"
-        value={value}
-        disabled={disabled}
-        onChange={(evento) =>
-          onChange(evento.target.value)
-        }
-        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-950 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white"
-      />
-    </div>
-  );
-}
-
 function ResumenCard({
   titulo,
   valor,
@@ -2040,10 +1886,6 @@ function normalizarAgendaConfig(
     ),
     dias,
   };
-}
-
-function horaAgendaValida(valor: string) {
-  return /^([01]\d|2[0-3]):[0-5]\d$/.test(valor);
 }
 
 function obtenerFechasEstadia(
