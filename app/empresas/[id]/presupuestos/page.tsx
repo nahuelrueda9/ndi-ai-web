@@ -1,177 +1,507 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
+import { useParams } from "next/navigation";
 import {
-  CheckCircle2,
-  Clock3,
-  FileText,
-  Loader2,
-  Mail,
-  Phone,
-  RotateCcw,
-} from "lucide-react";
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  Timestamp,
+  QueryDocumentSnapshot,
+  DocumentData,
+} from "firebase/firestore";
 import {
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
-import {
-  onAuthStateChanged,
-} from "firebase/auth";
-import {
-  useParams,
-  useRouter,
-} from "next/navigation";
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
+import { db } from "@/lib/firebase";
 import {
-  auth,
-} from "@/lib/firebase";
+  empresaTieneFuncion,
+  obtenerNombrePlan,
+  obtenerPlanEfectivo,
+  type PlanId,
+} from "@/lib/plans/planAccess";
 
-type EstadoPresupuesto =
-  | "nuevo"
-  | "contactado"
-  | "cerrado";
-
-type Presupuesto = {
-  id: string;
-  nombre: string;
-  email: string;
-  telefono: string;
-  mensaje: string;
-  estado: EstadoPresupuesto;
-  createdAt: string | null;
-  updatedAt: string | null;
+type ChatData = {
+  estado?: "abierta" | "cerrada";
+  atendidoPor?: "ia" | "humano";
+  humanoActivo?: boolean;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
 };
 
-type Filtro =
-  | "todos"
-  | EstadoPresupuesto;
-
-const ETIQUETA_ESTADO: Record<
-  EstadoPresupuesto,
-  string
-> = {
-  nuevo: "Nuevo",
-  contactado: "Contactado",
-  cerrado: "Cerrado",
+type MensajeData = {
+  role?: "user" | "assistant";
+  enviadoPor?: "cliente" | "ia" | "humano";
+  createdAt?: Timestamp;
 };
 
-function tiempoTranscurrido(valor: string | null) {
-  if (!valor) return "Recién";
-  const fecha = new Date(valor);
-  if (Number.isNaN(fecha.getTime())) return "Recién";
-  
-  const ahora = new Date();
-  const difMs = ahora.getTime() - fecha.getTime();
-  const difMinutos = Math.floor(difMs / 60000);
+type EventoPaginaData = {
+  tipo?:
+    | "page_view"
+    | "whatsapp_click"
+    | "lead_submit"
+    | "appointment_created";
+  visitanteId?: string;
+  createdAt?: Timestamp;
+};
 
-  if (difMinutos < 1) return "Recién";
-  if (difMinutos < 60) return `Hace ${difMinutos} min`;
-  
-  const difHoras = Math.floor(difMinutos / 60);
-  if (difHoras < 24) return `Hace ${difHoras} h`;
-  
-  const difDias = Math.floor(difHoras / 24);
-  if (difDias === 1) return "Ayer";
-  
-  return `Hace ${difDias} días`;
+type OrderData = {
+  total?: number;
+  createdAt?: Timestamp;
+};
+
+type EmpresaData = {
+  plan?: PlanId;
+  subscriptionStatus?: string;
+  subscriptionEndsAt?: unknown;
+};
+
+type ActividadDia = {
+  dia: string;
+  fechaClave: string;
+  visitas: number;
+  contactos: number;
+  reservas: number;
+  pedidos: number;
+};
+
+type EmbudoPagina = {
+  etapa: string;
+  cantidad: number;
+};
+
+type EstadisticasCalculadas = {
+  visitasPagina: number;
+  visitantesPagina: number;
+  contactosPagina: number;
+  reservasPagina: number;
+  clicsWhatsApp: number;
+  tasaContactoPagina: number;
+  tasaReservaPagina: number;
+
+  pedidosTotales: number;
+  ingresosTotales: number;
+
+  totalConsultas: number;
+  consultasSemana: number;
+  abiertas: number;
+  cerradas: number;
+  atendidasIA: number;
+  atendidasHumano: number;
+  tiempoRespuestaPromedio: number | null;
+
+  actividadPagina: ActividadDia[];
+  embudoPagina: EmbudoPagina[];
+};
+
+const ESTADISTICAS_INICIALES: EstadisticasCalculadas = {
+  visitasPagina: 0,
+  visitantesPagina: 0,
+  contactosPagina: 0,
+  reservasPagina: 0,
+  clicsWhatsApp: 0,
+  tasaContactoPagina: 0,
+  tasaReservaPagina: 0,
+
+  pedidosTotales: 0,
+  ingresosTotales: 0,
+
+  totalConsultas: 0,
+  consultasSemana: 0,
+  abiertas: 0,
+  cerradas: 0,
+  atendidasIA: 0,
+  atendidasHumano: 0,
+  tiempoRespuestaPromedio: null,
+
+  actividadPagina: [],
+  embudoPagina: [],
+};
+
+function formatoPrecio(valor: number) {
+  return new Intl.NumberFormat("es-AR", {
+    style: "currency",
+    currency: "ARS",
+    maximumFractionDigits: 0,
+  }).format(valor);
 }
 
-function fechaPresupuesto(valor: string | null) {
-  if (!valor) return "Recién recibido";
-  const fecha = new Date(valor);
-  if (Number.isNaN(fecha.getTime())) return "Recién recibido";
-
-  return fecha.toLocaleString("es-AR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+function obtenerInicioDelDia(fecha: Date) {
+  const resultado = new Date(fecha);
+  resultado.setHours(0, 0, 0, 0);
+  return resultado;
 }
 
-function claseEstado(estado: EstadoPresupuesto) {
-  if (estado === "nuevo") {
-    return "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400";
-  }
-  if (estado === "contactado") {
-    return "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400";
-  }
-  return "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400";
+function claveFecha(fecha: Date) {
+  const year = fecha.getFullYear();
+  const month = String(fecha.getMonth() + 1).padStart(2, "0");
+  const day = String(fecha.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }
 
-export default function PresupuestosPage() {
-  const params = useParams();
-  const router = useRouter();
+function formatearDia(fecha: Date) {
+  return new Intl.DateTimeFormat("es-AR", {
+    weekday: "short",
+  })
+    .format(fecha)
+    .replace(".", "");
+}
 
-  const parametroEmpresa = params.id ?? params.empresaId;
-  const empresaId = Array.isArray(parametroEmpresa) ? parametroEmpresa[0] : (parametroEmpresa as string | undefined);
-
-  const [cargando, setCargando] = useState(true);
-  const [cargandoAccion, setCargandoAccion] = useState("");
-  const [error, setError] = useState("");
-  const [presupuestos, setPresupuestos] = useState<Presupuesto[]>([]);
-  const [filtro, setFiltro] = useState<Filtro>("todos");
-
-  async function cargarPresupuestos(token: string) {
-    if (!empresaId) return;
-
-    const response = await fetch(
-      `/api/companies/${encodeURIComponent(empresaId)}/presupuestos`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        cache: "no-store",
-      },
+function obtenerTiempoPrimeraRespuesta(
+  mensajes: MensajeData[],
+): number | null {
+  const ordenados = mensajes
+    .filter((mensaje) => mensaje.createdAt)
+    .sort(
+      (a, b) =>
+        (a.createdAt?.toMillis() ?? 0) -
+        (b.createdAt?.toMillis() ?? 0),
     );
 
-    const data = await response.json().catch(() => ({}));
+  const indicePrimerCliente = ordenados.findIndex(
+    (mensaje) =>
+      mensaje.role === "user" ||
+      mensaje.enviadoPor === "cliente",
+  );
 
-    if (!response.ok) {
-      if (response.status === 401) {
-        router.replace("/login");
-        return;
-      }
-      if (response.status === 403 || response.status === 404) {
-        router.replace(`/empresas/${empresaId}/dashboard`);
-        return;
-      }
-      throw new Error(data?.error || "No se pudieron cargar los presupuestos.");
-    }
-
-    setPresupuestos(Array.isArray(data?.presupuestos) ? data.presupuestos : []);
+  if (indicePrimerCliente === -1) {
+    return null;
   }
 
+  const primerCliente = ordenados[indicePrimerCliente];
+
+  const primeraRespuesta = ordenados
+    .slice(indicePrimerCliente + 1)
+    .find(
+      (mensaje) =>
+        mensaje.role === "assistant" ||
+        mensaje.enviadoPor === "ia" ||
+        mensaje.enviadoPor === "humano",
+    );
+
+  if (
+    !primerCliente.createdAt ||
+    !primeraRespuesta?.createdAt
+  ) {
+    return null;
+  }
+
+  const diferencia =
+    primeraRespuesta.createdAt.toMillis() -
+    primerCliente.createdAt.toMillis();
+
+  if (diferencia < 0) {
+    return null;
+  }
+
+  return diferencia / 60000;
+}
+
+function formatearTiempoRespuesta(
+  minutos: number | null,
+) {
+  if (minutos === null) {
+    return "Sin datos";
+  }
+
+  if (minutos < 1) {
+    return "< 1 min";
+  }
+
+  if (minutos < 60) {
+    return `${Math.round(minutos)} min`;
+  }
+
+  const horas = minutos / 60;
+
+  if (horas < 24) {
+    return `${horas.toFixed(1)} h`;
+  }
+
+  return `${(horas / 24).toFixed(1)} días`;
+}
+
+export default function EstadisticasPage() {
+  const params = useParams();
+
+  const parametroEmpresa =
+    params.id ?? params.empresaId;
+
+  const empresaId = Array.isArray(parametroEmpresa)
+    ? parametroEmpresa[0]
+    : (parametroEmpresa as string | undefined);
+
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState("");
+
+  const [puedeVerBasicas, setPuedeVerBasicas] = useState(false);
+  const [puedeVerAvanzadas, setPuedeVerAvanzadas] = useState(false);
+  const [puedeVerIA, setPuedeVerIA] = useState(false);
+  const [puedeVerProductos, setPuedeVerProductos] = useState(false);
+  const [nombrePlan, setNombrePlan] = useState("");
+
+  const [estadisticas, setEstadisticas] =
+    useState<EstadisticasCalculadas>(
+      ESTADISTICAS_INICIALES,
+    );
+
   useEffect(() => {
-    if (!empresaId) return;
+    if (!empresaId) {
+      setCargando(false);
+      setError("No se encontró la empresa.");
+      return;
+    }
 
     let activo = true;
 
-    const cancelarAuth = onAuthStateChanged(auth, async (usuario) => {
-      if (!usuario) {
-        if (activo) router.replace("/login");
-        return;
-      }
-
-      if (activo) {
+    async function cargarEstadisticas() {
+      try {
         setCargando(true);
         setError("");
-      }
 
-      try {
-        const token = await usuario.getIdToken();
+        const empresaSnapshot = await getDoc(
+          doc(db, "companies", empresaId!),
+        );
+
+        if (!empresaSnapshot.exists()) {
+          throw new Error("La empresa no existe.");
+        }
+
+        const empresa = empresaSnapshot.data() as EmpresaData;
+
+        const accesoBasicas = empresaTieneFuncion(empresa, "estadisticas_basicas");
+        const accesoAvanzadas = empresaTieneFuncion(empresa, "estadisticas_avanzadas");
+        const accesoIA = empresaTieneFuncion(empresa, "asistente_ia");
+        const accesoProductos = empresaTieneFuncion(empresa, "productos");
+
+        if (!accesoBasicas) {
+          throw new Error("Tu plan actual no incluye estadísticas.");
+        }
+
+        if (activo) {
+          setPuedeVerBasicas(accesoBasicas);
+          setPuedeVerAvanzadas(accesoAvanzadas);
+          setPuedeVerIA(accesoIA);
+          setPuedeVerProductos(accesoProductos);
+          setNombrePlan(obtenerNombrePlan(obtenerPlanEfectivo(empresa)));
+        }
+
+        // Consultas individuales y protegidas para evitar crashes por permisos
+        let eventosPagina: EventoPaginaData[] = [];
+        try {
+          const eventosSnapshot = await getDocs(collection(db, "companies", empresaId!, "analyticsEvents"));
+          eventosPagina = eventosSnapshot.docs.map((d) => d.data() as EventoPaginaData);
+        } catch (err) {
+          console.warn("Analytics events bloqueados o no disponibles.", err);
+        }
+
+        let ordersDocs: OrderData[] = [];
+        if (accesoProductos) {
+          try {
+            const ordersSnapshot = await getDocs(collection(db, "companies", empresaId!, "orders"));
+            ordersDocs = ordersSnapshot.docs.map((d) => d.data() as OrderData);
+          } catch (err) {
+            console.warn("Orders bloqueadas o no disponibles.", err);
+          }
+        }
+
+        let chatsDocs: QueryDocumentSnapshot<DocumentData, DocumentData>[] = [];
+        if (accesoIA) {
+          try {
+            const chatsSnapshot = await getDocs(collection(db, "companies", empresaId!, "conversations"));
+            chatsDocs = chatsSnapshot.docs;
+          } catch (err) {
+            console.warn("Conversations bloqueadas o no disponibles.", err);
+          }
+        }
+
+        const hoy = obtenerInicioDelDia(new Date());
+
+        const actividadPagina: ActividadDia[] = Array.from(
+          { length: 7 },
+          (_, indice) => {
+            const fecha = new Date(hoy);
+            fecha.setDate(hoy.getDate() - (6 - indice));
+            return {
+              dia: formatearDia(fecha),
+              fechaClave: claveFecha(fecha),
+              visitas: 0,
+              contactos: 0,
+              reservas: 0,
+              pedidos: 0,
+            };
+          },
+        );
+
+        const visitantesPaginaSet = new Set<string>();
+        let visitasPagina = 0;
+        let contactosPagina = 0;
+        let reservasPagina = 0;
+        let clicsWhatsApp = 0;
+
+        eventosPagina.forEach((evento, indice) => {
+          if (evento.tipo === "page_view") {
+            visitasPagina += 1;
+            visitantesPaginaSet.add(evento.visitanteId?.trim() || `visita-${indice}`);
+          }
+
+          if (evento.tipo === "lead_submit") {
+            contactosPagina += 1;
+          }
+
+          if (evento.tipo === "appointment_created") {
+            reservasPagina += 1;
+          }
+
+          if (evento.tipo === "whatsapp_click") {
+            clicsWhatsApp += 1;
+          }
+
+          const fechaEvento = evento.createdAt?.toDate();
+          if (!fechaEvento) return;
+
+          const itemDia = actividadPagina.find(
+            (item) => item.fechaClave === claveFecha(fechaEvento),
+          );
+
+          if (!itemDia) return;
+
+          if (evento.tipo === "page_view") itemDia.visitas += 1;
+          if (evento.tipo === "lead_submit") itemDia.contactos += 1;
+          if (evento.tipo === "appointment_created") itemDia.reservas += 1;
+        });
+
+        // E-COMMERCE
+        let pedidosTotales = 0;
+        let ingresosTotales = 0;
+
+        ordersDocs.forEach((order) => {
+          pedidosTotales += 1;
+          ingresosTotales += (typeof order.total === "number" ? order.total : 0);
+
+          const fechaOrder = order.createdAt?.toDate();
+          if (fechaOrder) {
+            const itemDia = actividadPagina.find(
+              (item) => item.fechaClave === claveFecha(fechaOrder),
+            );
+            if (itemDia) {
+              itemDia.pedidos += 1;
+            }
+          }
+        });
+
+        const tasaContactoPagina =
+          visitasPagina > 0 ? (contactosPagina / visitasPagina) * 100 : 0;
+
+        const tasaReservaPagina =
+          visitasPagina > 0 ? (reservasPagina / visitasPagina) * 100 : 0;
+
+        let abiertas = 0;
+        let cerradas = 0;
+        let atendidasIA = 0;
+        let atendidasHumano = 0;
+        let consultasSemana = 0;
+
+        const resultadosMensajes = await Promise.all(
+          chatsDocs.map(async (chatDocumento) => {
+            const chat = chatDocumento.data() as ChatData;
+
+            if (chat.estado === "cerrada") {
+              cerradas += 1;
+            } else {
+              abiertas += 1;
+            }
+
+            if (chat.humanoActivo === true || chat.atendidoPor === "humano") {
+              atendidasHumano += 1;
+            } else {
+              atendidasIA += 1;
+            }
+
+            const fechaChat = chat.createdAt?.toDate() || chat.updatedAt?.toDate();
+
+            if (fechaChat) {
+              const diferencia = hoy.getTime() - obtenerInicioDelDia(fechaChat).getTime();
+              const dias = diferencia / (1000 * 60 * 60 * 24);
+              if (dias >= 0 && dias <= 6) {
+                consultasSemana += 1;
+              }
+            }
+
+            let mensajes: MensajeData[] = [];
+            try {
+              const mensajesSnapshot = await getDocs(
+                collection(db, "companies", empresaId!, "conversations", chatDocumento.id, "messages"),
+              );
+              mensajes = mensajesSnapshot.docs.map((d) => d.data() as MensajeData);
+            } catch (err) {}
+
+            return {
+              tiempoRespuesta: obtenerTiempoPrimeraRespuesta(mensajes),
+            };
+          }),
+        );
+
+        const tiemposRespuesta = resultadosMensajes
+          .map((resultado) => resultado.tiempoRespuesta)
+          .filter((tiempo): tiempo is number => typeof tiempo === "number");
+
+        const tiempoRespuestaPromedio =
+          tiemposRespuesta.length > 0
+            ? tiemposRespuesta.reduce((total, tiempo) => total + tiempo, 0) / tiemposRespuesta.length
+            : null;
+
         if (!activo) return;
-        await cargarPresupuestos(token);
-      } catch (cargarError) {
-        console.error("Error cargando presupuestos:", cargarError);
+
+        const embudoBase: EmbudoPagina[] = [
+          { etapa: "Visitas", cantidad: visitasPagina },
+          { etapa: "Contactos", cantidad: contactosPagina },
+        ];
+
+        if (accesoProductos) {
+          embudoBase.push({ etapa: "Pedidos", cantidad: pedidosTotales });
+        } else {
+          embudoBase.push({ etapa: "Reservas", cantidad: reservasPagina });
+        }
+
+        setEstadisticas({
+          visitasPagina,
+          visitantesPagina: visitantesPaginaSet.size,
+          contactosPagina,
+          reservasPagina,
+          clicsWhatsApp,
+          tasaContactoPagina,
+          tasaReservaPagina,
+          pedidosTotales,
+          ingresosTotales,
+          totalConsultas: chatsDocs.length,
+          consultasSemana,
+          abiertas,
+          cerradas,
+          atendidasIA,
+          atendidasHumano,
+          tiempoRespuestaPromedio,
+          actividadPagina,
+          embudoPagina: embudoBase,
+        });
+      } catch (requestError) {
+        console.error("Error al cargar estadísticas:", requestError);
         if (activo) {
           setError(
-            cargarError instanceof Error
-              ? cargarError.message
-              : "No se pudieron cargar los presupuestos.",
+            requestError instanceof Error
+              ? requestError.message
+              : "No se pudieron cargar las estadísticas."
           );
         }
       } finally {
@@ -179,371 +509,343 @@ export default function PresupuestosPage() {
           setCargando(false);
         }
       }
-    });
+    }
+
+    void cargarEstadisticas();
 
     return () => {
       activo = false;
-      cancelarAuth();
     };
-  }, [empresaId, router]);
+  }, [empresaId]);
 
-  const presupuestosFiltrados = useMemo(
-    () =>
-      presupuestos.filter(
-        (presupuesto) =>
-          filtro === "todos" || presupuesto.estado === filtro,
-      ),
-    [filtro, presupuestos],
-  );
+  const porcentajeIA = useMemo(() => {
+    if (estadisticas.totalConsultas === 0) return 0;
+    return (estadisticas.atendidasIA / estadisticas.totalConsultas) * 100;
+  }, [estadisticas.atendidasIA, estadisticas.totalConsultas]);
 
-  const contadores = useMemo(
-    () => ({
-      nuevos: presupuestos.filter((p) => p.estado === "nuevo").length,
-      contactados: presupuestos.filter((p) => p.estado === "contactado").length,
-      cerrados: presupuestos.filter((p) => p.estado === "cerrado").length,
-    }),
-    [presupuestos],
-  );
-
-  async function cambiarEstado(
-    presupuestoId: string,
-    estado: EstadoPresupuesto,
-  ) {
-    if (!empresaId || cargandoAccion) return;
-
-    const usuario = auth.currentUser;
-
-    if (!usuario) {
-      router.replace("/login");
-      return;
-    }
-
-    setCargandoAccion(presupuestoId);
-    setError("");
-
-    try {
-      const token = await usuario.getIdToken();
-
-      const response = await fetch(
-        `/api/companies/${encodeURIComponent(empresaId)}/presupuestos`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            presupuestoId,
-            estado,
-          }),
-        },
-      );
-
-      const data = await response.json().catch(() => ({}));
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          router.replace("/login");
-          return;
-        }
-        if (response.status === 403) {
-          router.replace(`/empresas/${empresaId}/dashboard`);
-          return;
-        }
-        throw new Error(data?.error || "No se pudo actualizar el presupuesto.");
-      }
-
-      setPresupuestos((actuales) =>
-        actuales.map((presupuesto) =>
-          presupuesto.id === presupuestoId
-            ? {
-                ...presupuesto,
-                estado,
-                updatedAt: new Date().toISOString(),
-              }
-            : presupuesto,
-        ),
-      );
-    } catch (actualizarError) {
-      console.error("Error actualizando presupuesto:", actualizarError);
-      setError(
-        actualizarError instanceof Error
-          ? actualizarError.message
-          : "No se pudo actualizar el presupuesto.",
-      );
-    } finally {
-      setCargandoAccion("");
-    }
-  }
+  const porcentajeHumano = useMemo(() => {
+    if (estadisticas.totalConsultas === 0) return 0;
+    return (estadisticas.atendidasHumano / estadisticas.totalConsultas) * 100;
+  }, [estadisticas.atendidasHumano, estadisticas.totalConsultas]);
 
   if (cargando) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader2 className="h-7 w-7 animate-spin text-blue-600 dark:text-blue-500" />
-      </div>
+      <main className="min-h-screen bg-background px-3 py-3 text-foreground transition-colors sm:px-6 sm:py-4">
+        <div className="mx-auto max-w-[1500px]">
+          <div className="rounded-lg border border-slate-200 bg-white p-4 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-xl sm:p-6">
+            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
+            <p className="mt-2 text-xs text-slate-600 dark:text-zinc-400 sm:mt-4 sm:text-sm">
+              Calculando estadísticas...
+            </p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="min-h-screen bg-background px-3 py-3 text-foreground transition-colors sm:px-6 sm:py-4">
+        <div className="mx-auto max-w-[1500px]">
+          <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300 sm:rounded-xl sm:p-4 sm:text-sm">
+            {error}
+          </div>
+        </div>
+      </main>
     );
   }
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-8 sm:py-8">
-      <div className="flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400 sm:text-xs">
-            Solicitudes comerciales
+    <main className="min-h-screen bg-background px-3 py-3 text-foreground transition-colors sm:px-6 sm:py-4">
+      <div className="mx-auto max-w-[1500px]">
+        <div className="mb-4 sm:mb-6">
+          <p className="text-[10px] font-medium text-blue-600 dark:text-blue-400 sm:text-xs">
+            Rendimiento de tu página
           </p>
-
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-3xl">
-            Presupuestos
+          <h1 className="mt-0.5 text-xl font-bold text-slate-950 dark:text-white sm:mt-1 sm:text-3xl">
+            Estadísticas
           </h1>
-
-          <p className="mt-1.5 max-w-xl text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:mt-2 sm:max-w-2xl sm:text-sm sm:leading-6">
-            Administrá las solicitudes de cotización recibidas desde la página pública.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-3 gap-2 sm:gap-3">
-          <Contador titulo="Nuevos" valor={contadores.nuevos} activo={filtro === "nuevo" || filtro === "todos"} />
-          <Contador titulo="Contactados" valor={contadores.contactados} activo={filtro === "contactado" || filtro === "todos"} />
-          <Contador titulo="Cerrados" valor={contadores.cerrados} activo={filtro === "cerrado" || filtro === "todos"} />
-        </div>
-      </div>
-
-      {error && (
-        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400 sm:mt-6">
-          {error}
-        </div>
-      )}
-
-      <div className="mt-4 flex gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-1 dark:border-zinc-800 dark:bg-zinc-900/50 sm:mt-8 sm:inline-flex [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {(
-          [
-            ["todos", "Todos"],
-            ["nuevo", "Nuevos"],
-            ["contactado", "Contactados"],
-            ["cerrado", "Cerrados"],
-          ] as [Filtro, string][]
-        ).map(([id, label]) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setFiltro(id)}
-            className={`shrink-0 rounded-lg px-4 py-2 text-xs font-semibold transition-all sm:px-5 sm:text-sm ${
-              filtro === id
-                ? "bg-white text-blue-700 shadow-sm dark:bg-zinc-800 dark:text-blue-400"
-                : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-800/50 dark:hover:text-white"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {presupuestosFiltrados.length === 0 ? (
-        <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center dark:border-zinc-800 dark:bg-zinc-950 sm:mt-6 sm:p-16">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-zinc-900 dark:text-zinc-600 sm:h-16 sm:w-16">
-            <FileText className="h-6 w-6 sm:h-8 sm:w-8" />
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5 sm:mt-2 sm:gap-2">
+            <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[9px] font-semibold text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300 sm:px-2.5 sm:text-[10px]">
+              {puedeVerIA
+                ? "Métricas Business IA"
+                : puedeVerAvanzadas
+                  ? "Estadísticas avanzadas"
+                  : "Estadísticas básicas"}
+            </span>
+            {nombrePlan && (
+              <span className="text-[10px] text-slate-500 dark:text-zinc-500 sm:text-xs">
+                {nombrePlan}
+              </span>
+            )}
           </div>
-
-          <h2 className="mt-4 text-base font-bold text-slate-950 dark:text-white sm:mt-5 sm:text-xl">
-            No hay presupuestos en esta vista
-          </h2>
-
-          <p className="mx-auto mt-2 max-w-sm text-xs leading-5 text-slate-500 dark:text-zinc-500 sm:mt-3 sm:text-sm sm:leading-6">
-            Cuando un cliente complete el formulario de solicitud de presupuesto en tu página pública, aparecerá acá.
+          <p className="mt-2 max-w-2xl text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:mt-3 sm:text-sm sm:leading-6">
+            {puedeVerIA
+              ? "Analizá el rendimiento de tu página, ventas online y la actividad del asistente."
+              : puedeVerAvanzadas
+                ? "Analizá visitas, conversiones, pedidos recibidos y evolución de tu tienda."
+                : "Consultá las métricas esenciales de tu página: visitas, personas alcanzadas y clics en WhatsApp."}
           </p>
         </div>
-      ) : (
-        <div className="mt-4 grid gap-3 sm:mt-6 sm:gap-5 xl:grid-cols-2">
-          {presupuestosFiltrados.map((presupuesto) => (
-            <PresupuestoCard
-              key={presupuesto.id}
-              presupuesto={presupuesto}
-              procesando={cargandoAccion === presupuesto.id}
-              onEstado={cambiarEstado}
+
+        {/* E-COMMERCE MODULE */}
+        {puedeVerProductos && puedeVerAvanzadas && (
+          <section className="mb-3 grid grid-cols-2 gap-2 sm:mb-4 sm:gap-3 lg:grid-cols-4">
+            <StatCardDestacada
+              titulo="Ingresos estimados"
+              valor={formatoPrecio(estadisticas.ingresosTotales)}
+              descripcion="A través de pedidos online"
+              variante="exito"
             />
-          ))}
-        </div>
-      )}
-    </section>
+            <StatCardDestacada
+              titulo="Pedidos recibidos"
+              valor={estadisticas.pedidosTotales}
+              descripcion="Procesados desde la web"
+              variante="primario"
+            />
+            <StatCardCompacta
+              titulo="Tasa de conversión"
+              valor={`${(estadisticas.visitasPagina > 0 ? (estadisticas.pedidosTotales / estadisticas.visitasPagina) * 100 : 0).toFixed(1)}%`}
+              descripcion="Pedidos sobre visitas"
+            />
+            <StatCardCompacta
+              titulo="Ticket promedio"
+              valor={formatoPrecio(estadisticas.pedidosTotales > 0 ? estadisticas.ingresosTotales / estadisticas.pedidosTotales : 0)}
+              descripcion="Gasto promedio por pedido"
+            />
+          </section>
+        )}
+
+        {/* TRÁFICO Y CONVERSIÓN GENÉRICA */}
+        {puedeVerBasicas && (
+          <section className="grid grid-cols-2 gap-2 sm:gap-3 xl:grid-cols-4">
+            <StatCardCompacta
+              titulo="Visitas totales"
+              valor={estadisticas.visitasPagina}
+              descripcion="A la página pública"
+            />
+            <StatCardCompacta
+              titulo="Visitantes únicos"
+              valor={estadisticas.visitantesPagina}
+              descripcion="Personas diferentes"
+            />
+            <StatCardCompacta
+              titulo="Formularios"
+              valor={estadisticas.contactosPagina}
+              descripcion="Consultas recibidas"
+            />
+            <StatCardCompacta
+              titulo="Clics en WhatsApp"
+              valor={estadisticas.clicsWhatsApp}
+              descripcion="Derivaciones directas"
+            />
+          </section>
+        )}
+
+        {/* GRÁFICOS AVANZADOS */}
+        {puedeVerAvanzadas && (
+          <section className="mt-3 grid gap-3 sm:mt-4 sm:gap-4 xl:grid-cols-[minmax(0,1.8fr)_minmax(300px,0.8fr)]">
+            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-2xl sm:p-5">
+              <div className="mb-4 sm:mb-6">
+                <h2 className="text-sm font-bold text-slate-950 dark:text-white sm:text-lg">
+                  Rendimiento de los últimos 7 días
+                </h2>
+                <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs sm:leading-5">
+                  Evolución de tráfico, contactos y {puedeVerProductos ? "pedidos" : "reservas"}.
+                </p>
+              </div>
+
+              <div className="h-56 w-full sm:h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={estadisticas.actividadPagina} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorVisitas" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="colorContactos" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="colorAccion" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                    <XAxis dataKey="dia" stroke="var(--muted)" tickLine={false} axisLine={false} tick={{ fontSize: 12 }} dy={10} />
+                    <YAxis allowDecimals={false} stroke="var(--muted)" tickLine={false} axisLine={false} tick={{ fontSize: 12 }} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: "12px", padding: "12px", boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)" }}
+                      labelStyle={{ color: "var(--foreground)", fontWeight: "bold", marginBottom: "8px" }}
+                      itemStyle={{ fontSize: "13px" }}
+                    />
+                    <Area type="monotone" dataKey="visitas" name="Visitas" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorVisitas)" activeDot={{ r: 6, strokeWidth: 0 }} />
+                    <Area type="monotone" dataKey="contactos" name="Contactos" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorContactos)" activeDot={{ r: 6, strokeWidth: 0 }} />
+                    {puedeVerProductos ? (
+                      <Area type="monotone" dataKey="pedidos" name="Pedidos" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorAccion)" activeDot={{ r: 6, strokeWidth: 0 }} />
+                    ) : (
+                      <Area type="monotone" dataKey="reservas" name="Reservas" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorAccion)" activeDot={{ r: 6, strokeWidth: 0 }} />
+                    )}
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-2xl sm:p-5">
+              <div className="mb-4 sm:mb-6">
+                <h2 className="text-sm font-bold text-slate-950 dark:text-white sm:text-lg">
+                  Embudo de conversión
+                </h2>
+                <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs sm:leading-5">
+                  Análisis del recorrido del cliente.
+                </p>
+              </div>
+
+              <div className="h-48 w-full sm:h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={estadisticas.embudoPagina} margin={{ top: 0, right: 0, left: -25, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                    <XAxis dataKey="etapa" stroke="var(--muted)" tickLine={false} axisLine={false} tick={{ fontSize: 12 }} dy={10} />
+                    <YAxis allowDecimals={false} stroke="var(--muted)" tickLine={false} axisLine={false} tick={{ fontSize: 12 }} />
+                    <Tooltip
+                      cursor={{ fill: "var(--border)", opacity: 0.4 }}
+                      contentStyle={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: "12px" }}
+                      labelStyle={{ color: "var(--foreground)", fontWeight: "bold" }}
+                    />
+                    <Bar dataKey="cantidad" name="Total" fill="#3b82f6" radius={[6, 6, 0, 0]} barSize={40} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ASISTENTE IA */}
+        {puedeVerIA && (
+          <section className="mt-3 sm:mt-4">
+            <div className="mb-2 sm:mb-3">
+              <h2 className="text-sm font-bold text-slate-950 dark:text-white sm:text-lg">
+                Actividad del Asistente Inteligente
+              </h2>
+              <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs sm:leading-5">
+                Control y métricas del chat dentro de tu página.
+              </p>
+            </div>
+
+            <div className="grid gap-3 sm:gap-4 xl:grid-cols-2">
+              <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-xl sm:p-5">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                  <Resumen titulo="Consultas totales" valor={estadisticas.totalConsultas} descripcion="Conversaciones del asistente" />
+                  <Resumen titulo="Últimos 7 días" valor={estadisticas.consultasSemana} descripcion="Consultas recientes" />
+                  <Resumen titulo="Abiertas" valor={estadisticas.abiertas} descripcion="Consultas activas" />
+                  <Resumen titulo="Resueltas" valor={estadisticas.cerradas} descripcion="Consultas cerradas" />
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-xl sm:p-5">
+                <div className="space-y-4 sm:space-y-6">
+                  <BarraProgreso titulo="Atendidas por IA automática" valor={estadisticas.atendidasIA} porcentaje={porcentajeIA} color="bg-blue-500" />
+                  <BarraProgreso titulo="Intervención humana" valor={estadisticas.atendidasHumano} porcentaje={porcentajeHumano} color="bg-violet-500" />
+                  
+                  <div className="pt-2">
+                    <Resumen
+                      titulo="Tiempo de primera respuesta"
+                      valor={formatearTiempoRespuesta(estadisticas.tiempoRespuestaPromedio)}
+                      descripcion="Promedio combinado (IA + Equipo)"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {!puedeVerAvanzadas && (
+          <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-500/20 dark:bg-blue-500/10 sm:mt-4 sm:rounded-xl sm:p-4">
+            <p className="text-xs font-semibold text-slate-950 dark:text-white sm:text-base">
+              Estadísticas básicas de Página Simple
+            </p>
+            <p className="mt-1 text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:text-xs sm:leading-5">
+              Página Completa o Business IA desbloquean el panel de E-commerce, ingresos generados, gráficos avanzados, embudos de conversión y estadísticas del asistente.
+            </p>
+          </div>
+        )}
+
+        <p className="mt-4 text-[9px] leading-4 text-slate-500 dark:text-zinc-600 sm:mt-6 sm:text-xs sm:text-center">
+          Las métricas se calculan en base a la actividad registrada en la página pública y el sistema de pedidos de este negocio.
+        </p>
+      </div>
+    </main>
   );
 }
 
-function Contador({
-  titulo,
-  valor,
-  activo,
-}: {
-  titulo: string;
-  valor: number;
-  activo: boolean;
-}) {
+function StatCardDestacada({ titulo, valor, descripcion, variante }: { titulo: string; valor: string | number; descripcion: string; variante: "primario" | "exito" }) {
+  const isExito = variante === "exito";
   return (
-    <div className={`min-w-0 rounded-xl border p-2.5 text-center transition-colors sm:min-w-28 sm:rounded-2xl sm:p-4 ${activo ? "border-slate-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900" : "border-transparent bg-transparent opacity-60"}`}>
-      <p className="text-xl font-bold text-slate-950 dark:text-white sm:text-3xl">
+    <div className={`rounded-xl border p-4 shadow-sm sm:rounded-2xl sm:p-5 ${isExito ? "border-emerald-200 bg-emerald-50 dark:border-emerald-500/20 dark:bg-emerald-500/10" : "border-blue-200 bg-blue-50 dark:border-blue-500/20 dark:bg-blue-500/10"}`}>
+      <p className={`text-[10px] font-semibold uppercase tracking-wider sm:text-xs ${isExito ? "text-emerald-700 dark:text-emerald-400" : "text-blue-700 dark:text-blue-400"}`}>
+        {titulo}
+      </p>
+      <p className={`mt-1.5 text-2xl font-black sm:mt-2 sm:text-3xl ${isExito ? "text-emerald-900 dark:text-emerald-300" : "text-blue-900 dark:text-blue-300"}`}>
         {valor}
       </p>
-      <p className="mt-0.5 text-[9px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs">
-        {titulo}
+      <p className={`mt-1 text-[9px] sm:mt-2 sm:text-xs ${isExito ? "text-emerald-600 dark:text-emerald-500" : "text-blue-600 dark:text-blue-500"}`}>
+        {descripcion}
       </p>
     </div>
   );
 }
 
-function PresupuestoCard({
-  presupuesto,
-  procesando,
-  onEstado,
-}: {
-  presupuesto: Presupuesto;
-  procesando: boolean;
-  onEstado: (id: string, estado: EstadoPresupuesto) => Promise<void>;
-}) {
+function StatCardCompacta({ titulo, valor, descripcion }: { titulo: string; valor: string | number; descripcion: string }) {
   return (
-    <article
-      className={`overflow-hidden rounded-2xl border bg-white transition-all dark:bg-zinc-950 sm:rounded-3xl ${
-        presupuesto.estado === "nuevo"
-          ? "border-blue-300 shadow-md ring-1 ring-blue-500/10 dark:border-blue-500/30"
-          : "border-slate-200 shadow-sm dark:border-zinc-800"
-      }`}
-    >
-      <div className="p-4 sm:p-6 lg:p-7">
-        <div className="flex items-start justify-between gap-3 sm:gap-4">
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              <h2 className="truncate text-base font-bold text-slate-950 dark:text-white sm:text-xl">
-                {presupuesto.nombre || "Cliente"}
-              </h2>
-
-              <span
-                className={`rounded-md px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider sm:px-2.5 sm:py-1 sm:text-[10px] ${claseEstado(
-                  presupuesto.estado,
-                )}`}
-              >
-                {ETIQUETA_ESTADO[presupuesto.estado]}
-              </span>
-            </div>
-
-            <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 sm:mt-2.5">
-              <p className="flex items-center gap-1.5 text-[10px] font-medium text-slate-500 dark:text-zinc-400 sm:text-xs">
-                <Clock3 className="h-3.5 w-3.5" />
-                <span className="font-semibold text-slate-700 dark:text-zinc-300">{tiempoTranscurrido(presupuesto.createdAt)}</span>
-                <span>({fechaPresupuesto(presupuesto.createdAt)})</span>
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-2 sm:mt-5">
-          {presupuesto.telefono && (
-            <a
-              href={`tel:${presupuesto.telefono}`}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 text-[11px] font-medium text-slate-700 transition hover:bg-slate-200 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 sm:rounded-xl sm:px-3.5 sm:py-2 sm:text-sm"
-            >
-              <Phone className="h-3.5 w-3.5 shrink-0" />
-              {presupuesto.telefono}
-            </a>
-          )}
-
-          {presupuesto.email && (
-            <a
-              href={`mailto:${presupuesto.email}`}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 text-[11px] font-medium text-slate-700 transition hover:bg-slate-200 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 sm:rounded-xl sm:px-3.5 sm:py-2 sm:text-sm"
-            >
-              <Mail className="h-3.5 w-3.5 shrink-0" />
-              {presupuesto.email}
-            </a>
-          )}
-        </div>
-
-        <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-3.5 dark:border-zinc-800/50 dark:bg-zinc-900/50 sm:mt-6 sm:rounded-2xl sm:p-5">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-500">
-            Detalle de la solicitud
-          </p>
-
-          <p className="mt-2 whitespace-pre-line break-words text-[11px] leading-relaxed text-slate-800 dark:text-zinc-300 sm:mt-3 sm:text-sm sm:leading-7">
-            {presupuesto.mensaje || "El cliente no dejó un mensaje adicional."}
-          </p>
-        </div>
-
-        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4 dark:border-zinc-800 sm:mt-6 sm:gap-3 sm:pt-6">
-          {presupuesto.estado === "nuevo" && (
-            <>
-              <Accion
-                icono={<Phone className="h-4 w-4 shrink-0" />}
-                texto="Marcar contactado"
-                disabled={procesando}
-                principal
-                onClick={() => void onEstado(presupuesto.id, "contactado")}
-              />
-
-              <Accion
-                icono={<CheckCircle2 className="h-4 w-4" />}
-                texto="Cerrar"
-                disabled={procesando}
-                onClick={() => void onEstado(presupuesto.id, "cerrado")}
-              />
-            </>
-          )}
-
-          {presupuesto.estado === "contactado" && (
-            <>
-              <Accion
-                icono={<CheckCircle2 className="h-4 w-4" />}
-                texto="Cerrar presupuesto"
-                disabled={procesando}
-                principal
-                onClick={() => void onEstado(presupuesto.id, "cerrado")}
-              />
-
-              <Accion
-                icono={<RotateCcw className="h-4 w-4" />}
-                texto="Volver a nuevo"
-                disabled={procesando}
-                onClick={() => void onEstado(presupuesto.id, "nuevo")}
-              />
-            </>
-          )}
-
-          {presupuesto.estado === "cerrado" && (
-            <Accion
-              icono={<RotateCcw className="h-4 w-4" />}
-              texto="Reabrir"
-              disabled={procesando}
-              onClick={() => void onEstado(presupuesto.id, "nuevo")}
-            />
-          )}
-        </div>
-      </div>
-    </article>
+    <div className="flex flex-col justify-center rounded-lg border border-slate-200 bg-white px-3 py-3 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-2xl sm:p-5">
+      <p className="text-[10px] font-medium text-slate-500 dark:text-zinc-400 sm:text-xs">
+        {titulo}
+      </p>
+      <p className="mt-1 text-xl font-bold leading-none text-slate-950 dark:text-white sm:mt-2 sm:text-2xl">
+        {valor}
+      </p>
+      <p className="mt-1.5 line-clamp-2 text-[9px] leading-tight text-slate-500 dark:text-zinc-500 sm:mt-2 sm:text-[11px]">
+        {descripcion}
+      </p>
+    </div>
   );
 }
 
-function Accion({
-  icono,
-  texto,
-  disabled,
-  onClick,
-  principal = false,
-}: {
-  icono: ReactNode;
-  texto: string;
-  disabled: boolean;
-  onClick: () => void;
-  principal?: boolean;
-}) {
+function Resumen({ titulo, valor, descripcion }: { titulo: string; valor: string | number; descripcion: string }) {
   return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[10px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm ${
-        principal
-          ? "bg-blue-600 text-white hover:bg-blue-500"
-          : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:bg-zinc-800"
-      }`}
-    >
-      {disabled ? <Loader2 className="h-4 w-4 animate-spin" /> : icono}
-      {texto}
-    </button>
+    <div className="rounded-lg border border-slate-200 bg-slate-50 p-2.5 dark:border-zinc-800 dark:bg-zinc-950 sm:rounded-xl sm:p-4">
+      <p className="text-[10px] font-medium text-slate-500 dark:text-zinc-400 sm:text-xs">
+        {titulo}
+      </p>
+      <p className="mt-0.5 text-lg font-bold text-slate-950 dark:text-white sm:mt-1 sm:text-2xl">
+        {valor}
+      </p>
+      <p className="mt-0.5 line-clamp-2 text-[9px] leading-snug text-slate-500 dark:text-zinc-500 sm:mt-1.5 sm:text-xs">
+        {descripcion}
+      </p>
+    </div>
+  );
+}
+
+function BarraProgreso({ titulo, valor, porcentaje, color = "bg-blue-500" }: { titulo: string; valor: number; porcentaje: number; color?: string }) {
+  return (
+    <div>
+      <div className="mb-1.5 flex items-center justify-between gap-2 sm:mb-2 sm:gap-3">
+        <p className="text-[10px] font-medium text-slate-700 dark:text-zinc-300 sm:text-sm">
+          {titulo}
+        </p>
+        <p className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 sm:text-xs">
+          {valor} <span className="font-normal opacity-70">({porcentaje.toFixed(1)}%)</span>
+        </p>
+      </div>
+      <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-zinc-800 sm:h-2.5">
+        <div
+          className={`h-full rounded-full transition-all duration-1000 ${color}`}
+          style={{ width: `${Math.min(100, Math.max(0, porcentaje))}%` }}
+        />
+      </div>
+    </div>
   );
 }
