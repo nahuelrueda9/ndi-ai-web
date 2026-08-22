@@ -360,21 +360,23 @@ export default function HorariosPage() {
             return (
               <div
                 key={dia.clave}
-                className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-zinc-800 dark:bg-zinc-950/40 lg:grid-cols-[200px_1fr_1fr_1fr_1fr] lg:items-center"
+                className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-zinc-800 dark:bg-zinc-950/40 sm:grid-cols-2 lg:grid-cols-[180px_1fr_1fr_1fr_1fr] lg:items-center"
               >
-                <label className="flex cursor-pointer items-center gap-3">
-                  <input
-                    type="checkbox"
-                    checked={config.activo}
-                    onChange={(e) =>
-                      actualizarDiaAgenda(dia.clave, "activo", e.target.checked)
-                    }
-                    className="h-5 w-5 accent-blue-600"
-                  />
-                  <span className="text-sm font-semibold text-slate-950 dark:text-white">
-                    {dia.nombre}
-                  </span>
-                </label>
+                <div className="sm:col-span-2 lg:col-span-1">
+                  <label className="flex cursor-pointer items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={config.activo}
+                      onChange={(e) =>
+                        actualizarDiaAgenda(dia.clave, "activo", e.target.checked)
+                      }
+                      className="h-5 w-5 accent-blue-600"
+                    />
+                    <span className="text-sm font-semibold text-slate-950 dark:text-white">
+                      {dia.nombre}
+                    </span>
+                  </label>
+                </div>
 
                 <HorarioCampo
                   label="Apertura"
