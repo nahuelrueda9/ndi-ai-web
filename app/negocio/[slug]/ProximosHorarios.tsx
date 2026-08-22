@@ -153,8 +153,20 @@ export default function ProximosHorarios({
   colorPrincipal,
   tema = "oscuro",
 }: Props) {
-  const esClaro =
-    tema === "claro";
+  // Detección dinámica del tema claro u oscuro del documento en tiempo real
+  const [esClaro, setEsClaro] = useState(tema === "claro");
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const actualizarTema = () => {
+      setEsClaro(!root.classList.contains("dark") && (tema === "claro" || !root.classList.contains("dark")));
+    };
+    actualizarTema();
+    
+    const observer = new MutationObserver(actualizarTema);
+    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, [tema]);
 
   const [
     horarios,
@@ -187,12 +199,6 @@ export default function ProximosHorarios({
       const horaActual =
         obtenerHoraActual();
 
-      /*
-       * Consultamos como máximo
-       * los próximos 7 días.
-       * Frenamos cuando tenemos
-       * 3 horarios reales.
-       */
       for (
         let i = 0;
         i < 7 &&
@@ -280,8 +286,7 @@ export default function ProximosHorarios({
             }
           }
         } catch {
-          // Si un día falla,
-          // seguimos probando.
+          // Continuar si falla un día
         }
       }
 
@@ -367,7 +372,7 @@ export default function ProximosHorarios({
                   }
                   className={`rounded-lg border px-2 py-1.5 text-[10px] font-semibold transition hover:-translate-y-0.5 sm:text-xs ${
                     esClaro
-                      ? "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"
+                      ? "border-slate-200 bg-slate-100 text-slate-800 hover:bg-slate-200"
                       : "border-zinc-700 bg-zinc-950 text-zinc-200 hover:bg-zinc-800"
                   }`}
                 >
