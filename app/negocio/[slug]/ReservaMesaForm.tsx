@@ -1,7 +1,7 @@
 "use client";
 
 import { Calendar, CheckCircle2, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Props = {
   slug: string;
@@ -22,7 +22,23 @@ export default function ReservaMesaForm({ slug, colorPrincipal, tema = "oscuro" 
   const [error, setError] = useState("");
   const [exito, setExito] = useState(false);
 
-  const claro = tema === "claro";
+  // Detección dinámica del tema claro u oscuro del documento
+  const [esClaro, setEsClaro] = useState(tema === "claro");
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const actualizarTema = () => {
+      setEsClaro(!root.classList.contains("dark") && (tema === "claro" || !root.classList.contains("dark")));
+    };
+    actualizarTema();
+    
+    const observer = new MutationObserver(actualizarTema);
+    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, [tema]);
+
+  const claro = esClaro;
+  const claseSecundario = claro ? "text-slate-400" : "text-zinc-500";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -90,7 +106,7 @@ export default function ReservaMesaForm({ slug, colorPrincipal, tema = "oscuro" 
 
   if (exito) {
     return (
-      <div className={`rounded-3xl border p-8 text-center sm:p-12 ${claro ? "border-slate-200 bg-white" : "border-zinc-800 bg-zinc-900"}`}>
+      <div className={`rounded-3xl border p-8 text-center sm:p-12 ${claro ? "border-slate-200 bg-white text-slate-950" : "border-zinc-800 bg-zinc-900 text-white"}`}>
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full" style={{ backgroundColor: `${colorPrincipal}18`, color: colorPrincipal }}>
           <CheckCircle2 className="h-8 w-8" />
         </div>
@@ -136,7 +152,7 @@ export default function ReservaMesaForm({ slug, colorPrincipal, tema = "oscuro" 
         Enviá tu solicitud y el restaurante podrá confirmarla desde su agenda.
       </p>
 
-      <div className="mt-4 rounded-xl border border-amber-500/20 bg-amber-500/10 p-3.5 text-xs text-amber-600 dark:text-amber-400">
+      <div className={`mt-4 rounded-xl border p-3.5 text-xs ${claro ? "border-amber-500/30 bg-amber-50 text-amber-800" : "border-amber-500/20 bg-amber-500/10 text-amber-400"}`}>
         La solicitud queda pendiente hasta que el restaurante la confirme.
       </div>
 
@@ -160,7 +176,7 @@ export default function ReservaMesaForm({ slug, colorPrincipal, tema = "oscuro" 
               type="date"
               value={fecha}
               onChange={(e) => setFecha(e.target.value)}
-              className={`${inputClase} [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert-[.5]`}
+              className={`${inputClase} [&::-webkit-calendar-picker-indicator]:filter ${claro ? "" : "[&::-webkit-calendar-picker-indicator]:invert"}`}
             />
           </div>
 
@@ -170,7 +186,7 @@ export default function ReservaMesaForm({ slug, colorPrincipal, tema = "oscuro" 
               type="time"
               value={hora}
               onChange={(e) => setHora(e.target.value)}
-              className={`${inputClase} [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert-[.5]`}
+              className={`${inputClase} [&::-webkit-calendar-picker-indicator]:filter ${claro ? "" : "[&::-webkit-calendar-picker-indicator]:invert"}`}
             />
           </div>
         </div>
@@ -205,7 +221,7 @@ export default function ReservaMesaForm({ slug, colorPrincipal, tema = "oscuro" 
         </div>
 
         <div>
-          <label className="mb-1.5 block text-xs font-medium">Correo <span className={claro ? "text-slate-400" : "text-zinc-500"}>(opcional si dejás teléfono)</span></label>
+          <label className="mb-1.5 block text-xs font-medium">Correo <span className={claseSecundario}>(opcional si dejás teléfono)</span></label>
           <input
             type="email"
             value={email}
@@ -217,7 +233,7 @@ export default function ReservaMesaForm({ slug, colorPrincipal, tema = "oscuro" 
         </div>
 
         <div>
-          <label className="mb-1.5 block text-xs font-medium">Nota <span className={claro ? "text-slate-400" : "text-zinc-500"}>(opcional)</span></label>
+          <label className="mb-1.5 block text-xs font-medium">Nota <span className={claseSecundario}>(opcional)</span></label>
           <textarea
             value={nota}
             onChange={(e) => setNota(e.target.value)}
