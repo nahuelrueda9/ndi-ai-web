@@ -4,6 +4,7 @@ import {
   ChevronLeft,
   ChevronRight,
   MessageCircle,
+  Mail,
   Minus,
   Plus,
   X,
@@ -44,7 +45,8 @@ type Props = {
   mostrarWhatsApp?: boolean;
   whatsappUrl?: string;
   mostrarContacto?: boolean;
-  pedidosHabilitados?: boolean; // Para futura integración con carrito global
+  pedidosHabilitados?: boolean;
+  onAgregarAlCarrito?: (seleccion: { cantidad: number; talle: string; color: string; stock: number }) => void;
 };
 
 function precioARS(valor?: number) {
@@ -75,6 +77,7 @@ export default function ProductoDetalleTienda({
   whatsappUrl = "",
   mostrarContacto = false,
   pedidosHabilitados = false,
+  onAgregarAlCarrito,
 }: Props) {
   const [abierto, setAbierto] = useState(false);
   const [imagenActiva, setImagenActiva] = useState(0);
@@ -104,7 +107,6 @@ export default function ProductoDetalleTienda({
 
   const variantes = producto.variantes || [];
 
-  // Lógica para determinar stock exacto
   const stockDisponible = useMemo(() => {
     const requiereTalle = talles.length > 0;
     const requiereColor = colores.length > 0;
@@ -131,7 +133,6 @@ export default function ProductoDetalleTienda({
     return producto.stockTotal || 0;
   }, [producto, talles.length, colores.length, talleSeleccionado, colorSeleccionado, variantes]);
 
-  // Funciones para saber si una opción está completamente agotada
   const isTalleAgotado = (t: string) => {
     if (variantes.length === 0) return false;
     if (!colorSeleccionado) {
@@ -148,7 +149,6 @@ export default function ProductoDetalleTienda({
     return !variantes.some((v) => v.talle === talleSeleccionado && v.color === c && v.stock > 0);
   };
 
-  // Resetea cantidad si se cambian opciones
   useEffect(() => {
     setCantidad(1);
   }, [talleSeleccionado, colorSeleccionado]);
@@ -184,8 +184,8 @@ export default function ProductoDetalleTienda({
     colorSeleccionado ? `Color: ${colorSeleccionado}` : "",
   ].filter(Boolean).join(" · ");
 
-  const mensajeBase = `Hola, me interesa encargar ${cantidad}x "${producto.nombre}"`;
-  const mensajePrecio = producto.precio ? ` (${precioARS(producto.precio * cantidad)})` : "";
+  const mensajeBase = `Hola, me interesa "${producto.nombre}"`;
+  const mensajePrecio = producto.precio ? ` (${precioARS(producto.precio)})` : "";
   const mensajeVariantes = detalleVariantes ? ` · ${detalleVariantes}` : "";
   const mensajeCompleto = `${mensajeBase}${mensajePrecio}${mensajeVariantes}. ¿Tienen disponibilidad?`;
 
@@ -389,8 +389,7 @@ export default function ProductoDetalleTienda({
                   </div>
                 )}
 
-                {/* SELECTOR DE CANTIDAD Y STOCK */}
-                {(!faltaSeleccion && !sinStock) && (
+                {(!faltaSeleccion && !sinStock && pedidosHabilitados) && (
                   <div className="mt-6 flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-900/50">
                     <div>
                       <p className={`text-[10px] font-semibold uppercase tracking-wider ${claro ? "text-slate-500" : "text-zinc-400"}`}>
@@ -425,11 +424,35 @@ export default function ProductoDetalleTienda({
                     </div>
                   </div>
                 )}
-
               </div>
 
               <div className="mt-7 lg:mt-auto lg:pt-8">
-                {enlaceWhatsApp ? (
+                {pedidosHabilitados ? (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      if (faltaSeleccion || sinStock) {
+                        e.preventDefault();
+                        return;
+                      }
+                      onAgregarAlCarrito?.({
+                        cantidad,
+                        talle: talleSeleccionado,
+                        color: colorSeleccionado,
+                        stock: stockDisponible,
+                      });
+                      setAbierto(false);
+                    }}
+                    className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-sm font-bold text-white shadow-lg transition ${
+                      faltaSeleccion || sinStock
+                        ? "bg-slate-300 dark:bg-zinc-800 cursor-not-allowed opacity-50"
+                        : "hover:brightness-110"
+                    }`}
+                    style={faltaSeleccion || sinStock ? undefined : { backgroundColor: colorPrincipal }}
+                  >
+                    {faltaSeleccion ? "Seleccioná opciones" : sinStock ? "Agotado" : "Agregar al carrito"}
+                  </button>
+                ) : enlaceWhatsApp ? (
                   <a
                     href={faltaSeleccion || sinStock ? "#" : enlaceWhatsApp}
                     target={faltaSeleccion || sinStock ? "_self" : "_blank"}
@@ -444,14 +467,10 @@ export default function ProductoDetalleTienda({
                       if (faltaSeleccion || sinStock) e.preventDefault();
                     }}
                   >
-                    {faltaSeleccion ? (
-                      "Seleccioná opciones"
-                    ) : sinStock ? (
-                      "Agotado"
-                    ) : (
+                    {faltaSeleccion ? "Seleccioná opciones" : sinStock ? "Agotado" : (
                       <>
                         <MessageCircle className="h-4 w-4" />
-                        Pedir por WhatsApp
+                        Consultar por WhatsApp
                       </>
                     )}
                   </a>
@@ -479,7 +498,9 @@ export default function ProductoDetalleTienda({
                     ? "Elegí el talle y/o color para verificar stock."
                     : sinStock 
                       ? "Esta combinación no tiene unidades disponibles por el momento."
-                      : "Las compras se coordinan directamente con el negocio."}
+                      : pedidosHabilitados 
+                        ? "Sumalo a tu carrito para enviarlo con tu pedido."
+                        : "Las compras se coordinan directamente con el negocio."}
                 </p>
               </div>
             </div>
