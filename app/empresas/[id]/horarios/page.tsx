@@ -360,9 +360,9 @@ export default function HorariosPage() {
             return (
               <div
                 key={dia.clave}
-                className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-zinc-800 dark:bg-zinc-950/40 sm:grid-cols-2 lg:grid-cols-[180px_1fr_1fr_1fr_1fr] lg:items-center"
+                className="grid grid-cols-2 gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-zinc-800 dark:bg-zinc-950/40 lg:grid-cols-[180px_1fr_1fr_1fr_1fr] lg:items-center"
               >
-                <div className="sm:col-span-2 lg:col-span-1">
+                <div className="col-span-2 lg:col-span-1">
                   <label className="flex cursor-pointer items-center gap-3">
                     <input
                       type="checkbox"
