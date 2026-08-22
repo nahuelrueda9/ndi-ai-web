@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageCircle, Minus, Plus, ShoppingBag, Trash2, X, Clock3, Mail } from "lucide-react";
+import { MessageCircle, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import ProductoDetalleTienda from "./ProductoDetalleTienda";
 
@@ -84,8 +84,23 @@ export default function TiendaCatalogoPedidos({
   const [notas, setNotas] = useState("");
   const [error, setError] = useState("");
   
-  const claro = tema === "claro";
-  const claseSecundario = "text-slate-500 dark:text-zinc-400";
+  // Detección dinámica del tema claro u oscuro del documento
+  const [esClaro, setEsClaro] = useState(tema === "claro");
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const actualizarTema = () => {
+      setEsClaro(!root.classList.contains("dark") && (tema === "claro" || !root.classList.contains("dark")));
+    };
+    actualizarTema();
+    
+    const observer = new MutationObserver(actualizarTema);
+    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, [tema]);
+
+  const claro = esClaro;
+  const claseSecundario = claro ? "text-slate-500" : "text-zinc-400";
 
   useEffect(() => {
     try {
@@ -177,10 +192,13 @@ export default function TiendaCatalogoPedidos({
     const url = `${whatsappUrl}?text=${encodeURIComponent(texto)}`;
     window.open(url, "_blank");
     
-    // Vaciar el carrito luego de enviar
     setCarrito([]);
     setCarritoAbierto(false);
   }
+
+  const estiloCard = claro
+    ? "border-slate-200 bg-white text-slate-950 shadow-sm"
+    : "border-zinc-800 bg-zinc-900 text-white shadow-none";
 
   return (
     <>
@@ -188,9 +206,9 @@ export default function TiendaCatalogoPedidos({
         {productos.map((producto) => {
           const imagenesItem = obtenerImagenes(producto);
           return (
-            <article key={producto.id} className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_14px_40px_rgba(0,0,0,0.08)] transition duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700 dark:hover:bg-zinc-900/90">
+            <article key={producto.id} className={`group flex h-full flex-col overflow-hidden rounded-2xl border transition duration-300 hover:-translate-y-1 hover:shadow-xl ${estiloCard}`}>
               {imagenesItem.length > 0 && (
-                <div className="relative aspect-[4/5] overflow-hidden border-b border-slate-200 bg-slate-100 dark:border-zinc-800 dark:bg-zinc-950 sm:aspect-[5/6] lg:aspect-[4/5]">
+                <div className={`relative aspect-[4/5] overflow-hidden border-b ${claro ? "border-slate-100 bg-slate-50" : "border-zinc-800 bg-zinc-950"} sm:aspect-[5/6] lg:aspect-[4/5]`}>
                   <div className="flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     {imagenesItem.map((url, indice) => (
                       <img key={`${url}-${indice}`} src={url} alt={`${producto.nombre} - foto ${indice + 1}`} loading="lazy" className="h-full w-full shrink-0 snap-center object-cover" />
@@ -200,15 +218,15 @@ export default function TiendaCatalogoPedidos({
               )}
 
               <div className="flex flex-1 flex-col p-3 sm:p-4">
-                <h3 className="line-clamp-2 text-[13px] font-semibold leading-[1.25] sm:text-base sm:leading-5">
+                <h3 className={`line-clamp-2 text-[13px] font-semibold leading-[1.25] sm:text-base sm:leading-5 ${claro ? "text-slate-900" : "text-white"}`}>
                   {producto.nombre}
                 </h3>
 
-                <div className="mt-3 flex flex-wrap items-end justify-between gap-2 border-t border-slate-200 pt-3 dark:border-zinc-800 sm:mt-4 sm:gap-3 sm:pt-4">
+                <div className={`mt-3 flex flex-wrap items-end justify-between gap-2 border-t pt-3 sm:mt-4 sm:gap-3 sm:pt-4 ${claro ? "border-slate-100" : "border-zinc-800"}`}>
                   <div>
                     {Boolean(producto.precio) && (
                       <>
-                        <p className="text-[10px] uppercase tracking-wide text-slate-500 dark:text-zinc-500 sm:text-xs">Precio</p>
+                        <p className={`text-[10px] uppercase tracking-wide sm:text-xs ${claseSecundario}`}>Precio</p>
                         <p className="mt-0.5 text-sm font-bold sm:mt-1 sm:text-lg" style={{ color: colorPrincipal }}>
                           {formatoPrecio(producto.precio || 0)}
                         </p>
@@ -221,7 +239,7 @@ export default function TiendaCatalogoPedidos({
                   <ProductoDetalleTienda
                     producto={producto}
                     colorPrincipal={colorPrincipal}
-                    tema={tema}
+                    tema={claro ? "claro" : "oscuro"}
                     mostrarWhatsApp={mostrarWhatsApp}
                     whatsappUrl={whatsappUrl}
                     mostrarContacto={mostrarContacto}
@@ -257,8 +275,8 @@ export default function TiendaCatalogoPedidos({
         <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm">
           <button type="button" aria-label="Cerrar" className="absolute inset-0" onClick={() => { setCarritoAbierto(false); setError(""); }} />
 
-          <div className="absolute bottom-0 right-0 top-0 flex w-full max-w-md flex-col border-l border-slate-200 bg-white text-slate-950 shadow-2xl dark:border-zinc-800 dark:bg-zinc-950 dark:text-white">
-            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-zinc-800">
+          <div className={`absolute bottom-0 right-0 top-0 flex w-full max-w-md flex-col border-l shadow-2xl ${claro ? "border-slate-200 bg-white text-slate-950" : "border-zinc-800 bg-zinc-950 text-white"}`}>
+            <div className={`flex items-center justify-between border-b px-5 py-4 ${claro ? "border-slate-200" : "border-zinc-800"}`}>
               <div>
                 <p className="text-lg font-bold">Tu pedido</p>
                 <p className={`mt-0.5 text-xs ${claseSecundario}`}>Completá tus datos para enviar por WhatsApp</p>
@@ -266,7 +284,7 @@ export default function TiendaCatalogoPedidos({
               <button
                 type="button"
                 onClick={() => { setCarritoAbierto(false); setError(""); }}
-                className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 transition hover:bg-slate-100 dark:border-zinc-800 dark:hover:bg-zinc-900"
+                className={`flex h-9 w-9 items-center justify-center rounded-xl border transition ${claro ? "border-slate-200 hover:bg-slate-100" : "border-zinc-800 hover:bg-zinc-900"}`}
               >
                 <X className="h-4 w-4" />
               </button>
@@ -275,7 +293,7 @@ export default function TiendaCatalogoPedidos({
             <div className="flex-1 overflow-y-auto p-5">
               <div className="space-y-3">
                 {carrito.map((item) => (
-                  <div key={item.idUnico} className="rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-900">
+                  <div key={item.idUnico} className={`rounded-2xl border p-3 ${claro ? "border-slate-200 bg-slate-50 text-slate-950" : "border-zinc-800 bg-zinc-900 text-white"}`}>
                     <div className="flex gap-3">
                       {item.imagen && (
                         <img src={item.imagen} alt={item.nombre} className="h-16 w-16 shrink-0 rounded-xl object-cover" />
@@ -296,7 +314,7 @@ export default function TiendaCatalogoPedidos({
                           </button>
                         </div>
                         <div className="mt-3 flex items-center justify-between">
-                          <div className="inline-flex items-center rounded-xl border border-slate-200 bg-white dark:border-zinc-700 dark:bg-zinc-950">
+                          <div className={`inline-flex items-center rounded-xl border ${claro ? "border-slate-200 bg-white text-slate-900" : "border-zinc-700 bg-zinc-950 text-white"}`}>
                             <button type="button" onClick={() => cambiarCantidad(item.idUnico, -1)} className="flex h-8 w-8 items-center justify-center hover:opacity-70">
                               <Minus className="h-3.5 w-3.5" />
                             </button>
@@ -314,7 +332,7 @@ export default function TiendaCatalogoPedidos({
               </div>
 
               {carrito.length > 0 && (
-                <div className="mt-6 space-y-4 border-t border-slate-200 pt-6 dark:border-zinc-800">
+                <div className={`mt-6 space-y-4 border-t pt-6 ${claro ? "border-slate-200" : "border-zinc-800"}`}>
                   <div>
                     <label className="mb-1.5 block text-xs font-medium">Nombre</label>
                     <input
@@ -322,7 +340,7 @@ export default function TiendaCatalogoPedidos({
                       onChange={(event) => setNombreCliente(event.target.value)}
                       maxLength={120}
                       placeholder="Tu nombre y apellido"
-                      className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
+                      className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 ${claro ? "border-slate-300 bg-white text-slate-950 placeholder-slate-400" : "border-zinc-700 bg-zinc-900 text-white placeholder-zinc-500"}`}
                     />
                   </div>
                   <div>
@@ -333,7 +351,7 @@ export default function TiendaCatalogoPedidos({
                       maxLength={1000}
                       rows={3}
                       placeholder="Ej.: ¿Tienen envíos a domicilio?"
-                      className="w-full resize-none rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
+                      className={`w-full resize-none rounded-xl border px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 ${claro ? "border-slate-300 bg-white text-slate-950 placeholder-slate-400" : "border-zinc-700 bg-zinc-900 text-white placeholder-zinc-500"}`}
                     />
                   </div>
                 </div>
@@ -342,7 +360,7 @@ export default function TiendaCatalogoPedidos({
               {error && <div className="mt-4 rounded-xl border border-red-500/20 bg-red-50 px-3 py-2.5 text-xs text-red-600 dark:bg-red-500/10 dark:text-red-400">{error}</div>}
             </div>
 
-            <div className="border-t border-slate-200 p-5 dark:border-zinc-800">
+            <div className={`border-t p-5 ${claro ? "border-slate-200" : "border-zinc-800"}`}>
               <div className="mb-4 flex items-center justify-between">
                 <span className={`text-sm ${claseSecundario}`}>Total del pedido</span>
                 <strong className="text-xl">{formatoPrecio(total)}</strong>
