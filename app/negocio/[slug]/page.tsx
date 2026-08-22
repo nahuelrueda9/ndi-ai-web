@@ -26,7 +26,7 @@ import ReservaAlojamientoForm from "./ReservaAlojamientoForm";
 import ReservaMesaForm from "./ReservaMesaForm";
 import ProximosHorarios from "./ProximosHorarios";
 import RestauranteCartaPedidos from "./RestauranteCartaPedidos";
-import ProductoDetalleTienda from "./ProductoDetalleTienda";
+import TiendaCatalogoPedidos from "./TiendaCatalogoPedidos";
 import AlojamientoDetalle from "./AlojamientoDetalle";
 import ContactoForm from "./ContactForm";
 import PublicAnalytics from "./PublicAnalytics";
@@ -297,8 +297,8 @@ export default async function NegocioPage({ params }: PageProps) {
   const puedeMostrarReservaGenerica = puedeUsarTurnos && servicios.length > 0 && !esRestaurante;
   const mostrarReservaMesa = esRestaurante && puedeUsarTurnos && pagina.mostrarReservasMesa === true;
   
-  // AHORA LOS PEDIDOS ONLINE FUNCIONAN TANTO PARA RESTAURANTES COMO PARA TIENDAS
-  const mostrarPedidosOnline = (esRestaurante || esTienda) && puedeUsarProductos && pagina.mostrarPedidosOnline === true;
+  // 🔥 FIX: Habilitamos el carrito de pedidos online para CUALQUIER negocio que tenga productos
+  const mostrarPedidosOnline = puedeUsarProductos && pagina.mostrarPedidosOnline === true;
   
   const puedeMostrarReserva = puedeMostrarReservaGenerica || mostrarReservaMesa;
   const puedeUsarPresupuestos = empresaTieneFuncion(empresa, "presupuestos");
@@ -694,7 +694,7 @@ export default async function NegocioPage({ params }: PageProps) {
         </section>
       )}
 
-      {/* PRODUCTOS / CARTA */}
+      {/* PRODUCTOS / CARTA / TIENDA */}
       {mostrarProductos && productos.length > 0 && (
         <section id="productos" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-10 sm:px-8 sm:py-20 lg:max-w-5xl lg:py-9">
           <div className="max-w-2xl">
@@ -720,23 +720,16 @@ export default async function NegocioPage({ params }: PageProps) {
               mostrarWhatsApp={mostrarWhatsApp}
             />
           ) : (
-            <div className="mt-5 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-4 md:grid-cols-2 lg:mt-5 lg:grid-cols-3 lg:gap-4">
-              {productos.map((producto) => (
-                <CatalogoCard
-                  key={producto.id}
-                  item={producto}
-                  color={colorPrincipal}
-                  puedeReservar={false}
-                  mostrarWhatsApp={mostrarWhatsApp}
-                  whatsappUrl={whatsappUrl}
-                  mostrarContacto={mostrarContacto}
-                  esTienda={esTienda && puedeUsarProductos}
-                  imagenesMultiples={puedeUsarProductos}
-                  tema={esClaro ? "claro" : "oscuro"}
-                  pedidosHabilitados={mostrarPedidosOnline}
-                />
-              ))}
-            </div>
+            <TiendaCatalogoPedidos
+              slug={slug}
+              productos={productos}
+              colorPrincipal={colorPrincipal}
+              tema={esClaro ? "claro" : "oscuro"}
+              pedidosHabilitados={mostrarPedidosOnline}
+              whatsappUrl={whatsappUrl}
+              mostrarWhatsApp={mostrarWhatsApp}
+              mostrarContacto={mostrarContacto}
+            />
           )}
         </section>
       )}
@@ -1248,7 +1241,7 @@ function CatalogoCard({
           <ProximosHorarios slug={slug} servicioId={item.id} colorPrincipal={color} tema={tema} />
         )}
 
-        {(puedeReservar || whatsappItemUrl || mostrarContacto || (esTienda && item.tipo === "producto") || (esAlojamiento && item.tipo === "servicio")) && (
+        {(puedeReservar || whatsappItemUrl || mostrarContacto || (esAlojamiento && item.tipo === "servicio")) && (
           <div className="mt-3 flex flex-wrap gap-1.5 sm:mt-4 sm:gap-2">
             {esAlojamiento && item.tipo === "servicio" && (
               <AlojamientoDetalle
@@ -1266,30 +1259,6 @@ function CatalogoCard({
               />
             )}
 
-            {esTienda && item.tipo === "producto" && (
-              <ProductoDetalleTienda
-                producto={{
-                  id: item.id,
-                  nombre: item.nombre,
-                  descripcion: item.descripcion || "",
-                  precio: typeof item.precio === "number" ? item.precio : 0,
-                  imagenUrl: item.imagenUrl || "",
-                  imagenes: Array.isArray(item.imagenes) ? item.imagenes.filter((url): url is string => typeof url === "string") : [],
-                  talles: Array.isArray(item.talles) ? item.talles.filter((talle): talle is string => typeof talle === "string" && talle.trim().length > 0) : [],
-                  colores: Array.isArray(item.colores) ? item.colores.filter((colorItem): colorItem is string => typeof colorItem === "string" && colorItem.trim().length > 0) : [],
-                  variantes: Array.isArray(item.variantes) ? item.variantes : [],
-                  stockGeneral: item.stockGeneral || 0,
-                  stockTotal: item.stockTotal || 0,
-                }}
-                colorPrincipal={color}
-                tema={tema}
-                mostrarWhatsApp={mostrarWhatsApp}
-                whatsappUrl={whatsappUrl}
-                mostrarContacto={mostrarContacto}
-                pedidosHabilitados={pedidosHabilitados}
-              />
-            )}
-
             {puedeReservar && !esAlojamiento && (
               <a
                 href={`#reservar-servicio-${encodeURIComponent(item.id)}`}
@@ -1301,7 +1270,7 @@ function CatalogoCard({
               </a>
             )}
 
-            {!puedeReservar && !esTienda && whatsappItemUrl && (
+            {!puedeReservar && whatsappItemUrl && (
               <a
                 href={whatsappItemUrl}
                 data-analytics-event="whatsapp_click"
@@ -1314,7 +1283,7 @@ function CatalogoCard({
               </a>
             )}
 
-            {!puedeReservar && !esTienda && !whatsappItemUrl && mostrarContacto && (
+            {!puedeReservar && !whatsappItemUrl && mostrarContacto && (
               <a
                 href="#contacto"
                 className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-semibold text-white transition hover:opacity-90 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm lg:px-3 lg:py-1.5 lg:text-xs"
