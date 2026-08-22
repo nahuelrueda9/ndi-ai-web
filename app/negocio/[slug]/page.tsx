@@ -315,8 +315,8 @@ export default async function NegocioPage({ params }: PageProps) {
   const puedeUsarTurnos = empresaTieneFuncion(empresa, "turnos");
   const puedeMostrarReservaGenerica = puedeUsarTurnos && servicios.length > 0 && !esRestaurante;
   const mostrarReservaMesa = esRestaurante && puedeUsarTurnos && pagina.mostrarReservasMesa === true;
-  
-  const mostrarPedidosOnline = puedeUsarProductos && pagina.mostrarPedidosOnline === true;
+
+  const mostrarPedidosOnline = puedeUsarProductos && productos.length > 0;
   
   const puedeMostrarReserva = puedeMostrarReservaGenerica || mostrarReservaMesa;
   const puedeUsarPresupuestos = empresaTieneFuncion(empresa, "presupuestos");

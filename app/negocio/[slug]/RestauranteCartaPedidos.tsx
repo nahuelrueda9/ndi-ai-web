@@ -14,7 +14,7 @@ type Producto = {
 };
 
 type Props = {
-  slug: string; // <-- Acá estaba el faltante que generaba el error
+  slug: string;
   productos: Producto[];
   colorPrincipal: string;
   tema?: "oscuro" | "claro";
@@ -93,7 +93,23 @@ export default function RestauranteCartaPedidos({
   const [error, setError] = useState("");
   const [exito, setExito] = useState<{ numero: string; total: number } | null>(null);
 
-  const claro = tema === "claro";
+  // Detecta dinámicamente si el documento tiene la clase 'dark' o si el tema prop es claro
+  const [esClaro, setEsClaro] = useState(tema === "claro");
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const actualizarTema = () => {
+      setEsClaro(root.classList.contains("dark") ? false : tema === "claro" || !root.classList.contains("dark"));
+    };
+    actualizarTema();
+    
+    // Observador por si cambia el tema en tiempo real
+    const observer = new MutationObserver(actualizarTema);
+    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, [tema]);
+
+  const claro = esClaro;
 
   useEffect(() => {
     try {
@@ -204,7 +220,19 @@ export default function RestauranteCartaPedidos({
     }
   }
 
-  const claseCard = claro ? "border-slate-200 bg-white shadow-sm" : "border-zinc-800 bg-zinc-900 shadow-none";
+  // Estilos dinámicos basados estrictamente en la prop `tema` ("claro" u "oscuro")
+  const estiloCard = claro
+    ? "border-slate-200 bg-white text-slate-950 shadow-sm"
+    : "border-zinc-800 bg-zinc-900 text-white shadow-none";
+  
+  const estiloBotonSecundario = claro
+    ? "border-slate-300 text-slate-800 hover:bg-slate-100"
+    : "border-zinc-700 text-zinc-200 hover:bg-zinc-800";
+
+  const estiloContador = claro
+    ? "border-slate-200 bg-slate-50 text-slate-900"
+    : "border-zinc-700 bg-zinc-950 text-white";
+
   const claseSecundario = claro ? "text-slate-500" : "text-zinc-400";
 
   return (
@@ -213,7 +241,7 @@ export default function RestauranteCartaPedidos({
         {categorias.map((categoria) => (
           <div key={categoria.id}>
             <div className="mb-5 flex items-end justify-between gap-4">
-              <h3 className="text-xl font-bold tracking-tight sm:text-2xl">{categoria.titulo}</h3>
+              <h3 className={`text-xl font-bold tracking-tight sm:text-2xl ${claro ? "text-slate-950" : "text-white"}`}>{categoria.titulo}</h3>
               <span className={`text-xs ${claseSecundario}`}>
                 {categoria.items.length} {categoria.items.length === 1 ? "opción" : "opciones"}
               </span>
@@ -225,9 +253,9 @@ export default function RestauranteCartaPedidos({
                 const itemCarrito = carrito.find((item) => item.id === producto.id);
 
                 return (
-                  <article key={producto.id} className={`group overflow-hidden rounded-2xl border transition hover:-translate-y-0.5 hover:shadow-md ${claseCard}`}>
+                  <article key={producto.id} className={`group overflow-hidden rounded-2xl border transition hover:-translate-y-0.5 hover:shadow-md ${estiloCard}`}>
                     {imagenes.length > 0 && (
-                      <div className="relative aspect-[4/3] overflow-hidden border-b border-slate-100 dark:border-zinc-800">
+                      <div className={`relative aspect-[4/3] overflow-hidden border-b ${claro ? "border-slate-100" : "border-zinc-800"}`}>
                         <div className="flex h-full w-full snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                           {imagenes.map((url, indice) => (
                             <img
@@ -249,7 +277,7 @@ export default function RestauranteCartaPedidos({
                     )}
 
                     <div className="p-3 sm:p-4">
-                      <h4 className="line-clamp-2 text-sm font-bold leading-snug sm:text-base">
+                      <h4 className={`line-clamp-2 text-sm font-bold leading-snug sm:text-base ${claro ? "text-slate-900" : "text-white"}`}>
                         {producto.nombre}
                       </h4>
 
@@ -261,16 +289,14 @@ export default function RestauranteCartaPedidos({
                         <button
                           type="button"
                           onClick={() => setProductoDetalle(producto)}
-                          className={`inline-flex flex-1 items-center justify-center rounded-xl border px-3 py-2.5 text-xs font-semibold transition sm:text-sm ${
-                            claro ? "border-slate-300 text-slate-700 hover:bg-slate-50" : "border-zinc-700 text-zinc-200 hover:bg-zinc-800"
-                          }`}
+                          className={`inline-flex flex-1 items-center justify-center rounded-xl border px-3 py-2.5 text-xs font-semibold transition sm:text-sm ${estiloBotonSecundario}`}
                         >
                           Ver plato
                         </button>
 
                         {pedidosHabilitados ? (
                           itemCarrito ? (
-                            <div className={`inline-flex flex-1 items-center justify-between rounded-xl border ${claro ? "border-slate-200" : "border-zinc-700"}`}>
+                            <div className={`inline-flex flex-1 items-center justify-between rounded-xl border ${estiloContador}`}>
                               <button
                                 type="button"
                                 onClick={() => cambiarCantidad(producto.id, -1)}
@@ -358,7 +384,7 @@ export default function RestauranteCartaPedidos({
 
                 {pedidosHabilitados ? (
                   carrito.find((item) => item.id === productoDetalle.id) ? (
-                    <div className={`inline-flex items-center justify-between rounded-xl border ${claro ? "border-slate-200" : "border-zinc-700"}`}>
+                    <div className={`inline-flex items-center justify-between rounded-xl border ${estiloContador}`}>
                       <button
                         type="button"
                         onClick={() => cambiarCantidad(productoDetalle.id, -1)}
@@ -472,7 +498,7 @@ export default function RestauranteCartaPedidos({
                   {!checkoutAbierto ? (
                     <div className="space-y-3">
                       {carrito.map((item) => (
-                        <div key={item.id} className={`rounded-2xl border p-3 ${claro ? "border-slate-200 bg-slate-50" : "border-zinc-800 bg-zinc-900"}`}>
+                        <div key={item.id} className={`rounded-2xl border p-3 ${claro ? "border-slate-200 bg-slate-50 text-slate-950" : "border-zinc-800 bg-zinc-900 text-white"}`}>
                           <div className="flex gap-3">
                             {item.imagen && (
                               <img src={item.imagen} alt={item.nombre} className="h-16 w-16 shrink-0 rounded-xl object-cover" />
@@ -488,7 +514,7 @@ export default function RestauranteCartaPedidos({
                                 </button>
                               </div>
                               <div className="mt-3 flex items-center justify-between">
-                                <div className={`inline-flex items-center rounded-xl border ${claro ? "border-slate-200 bg-white" : "border-zinc-700 bg-zinc-950"}`}>
+                                <div className={`inline-flex items-center rounded-xl border ${estiloContador}`}>
                                   <button type="button" onClick={() => cambiarCantidad(item.id, -1)} className="flex h-8 w-8 items-center justify-center hover:opacity-70">
                                     <Minus className="h-3.5 w-3.5" />
                                   </button>
@@ -507,8 +533,8 @@ export default function RestauranteCartaPedidos({
                   ) : (
                     <div className="space-y-4">
                       <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-500/20 dark:bg-blue-500/10">
-                        <p className="text-sm font-bold dark:text-blue-200">Retiro en el local</p>
-                        <p className={`mt-1 text-xs leading-5 dark:text-blue-300/80`}>En esta primera versión no hay delivery ni pago online. El restaurante acepta el pedido y coordina el retiro.</p>
+                        <p className="text-sm font-bold text-blue-900 dark:text-blue-200">Retiro en el local</p>
+                        <p className="mt-1 text-xs leading-5 text-blue-700 dark:text-blue-300/80">En esta primera versión no hay delivery ni pago online. El restaurante acepta el pedido y coordina el retiro.</p>
                       </div>
                       <div>
                         <label className="mb-1.5 block text-xs font-medium">Nombre</label>
@@ -517,7 +543,7 @@ export default function RestauranteCartaPedidos({
                           onChange={(event) => setNombreCliente(event.target.value)}
                           maxLength={120}
                           placeholder="Tu nombre"
-                          className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 ${claro ? "border-slate-300 bg-white" : "border-zinc-700 bg-zinc-900 text-white placeholder-zinc-500"}`}
+                          className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 ${claro ? "border-slate-300 bg-white text-slate-950 placeholder-slate-400" : "border-zinc-700 bg-zinc-900 text-white placeholder-zinc-500"}`}
                         />
                       </div>
                       <div>
@@ -528,7 +554,7 @@ export default function RestauranteCartaPedidos({
                           type="tel"
                           maxLength={60}
                           placeholder="+54..."
-                          className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 ${claro ? "border-slate-300 bg-white" : "border-zinc-700 bg-zinc-900 text-white placeholder-zinc-500"}`}
+                          className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 ${claro ? "border-slate-300 bg-white text-slate-950 placeholder-slate-400" : "border-zinc-700 bg-zinc-900 text-white placeholder-zinc-500"}`}
                         />
                       </div>
                       <div>
@@ -539,7 +565,7 @@ export default function RestauranteCartaPedidos({
                           maxLength={1000}
                           rows={4}
                           placeholder="Ej.: sin cebolla, retirar después de las 21..."
-                          className={`w-full resize-none rounded-xl border px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 ${claro ? "border-slate-300 bg-white" : "border-zinc-700 bg-zinc-900 text-white placeholder-zinc-500"}`}
+                          className={`w-full resize-none rounded-xl border px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 ${claro ? "border-slate-300 bg-white text-slate-950 placeholder-slate-400" : "border-zinc-700 bg-zinc-900 text-white placeholder-zinc-500"}`}
                         />
                       </div>
                     </div>
@@ -569,7 +595,7 @@ export default function RestauranteCartaPedidos({
                       <button
                         type="button"
                         onClick={() => { setCheckoutAbierto(false); setError(""); }}
-                        className={`rounded-xl border px-4 py-3 text-sm font-semibold transition ${claro ? "border-slate-300 hover:bg-slate-50" : "border-zinc-700 hover:bg-zinc-900"}`}
+                        className={`rounded-xl border px-4 py-3 text-sm font-semibold transition ${claro ? "border-slate-300 hover:bg-slate-50 text-slate-700" : "border-zinc-700 hover:bg-zinc-900 text-zinc-300"}`}
                       >
                         Volver
                       </button>

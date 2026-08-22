@@ -390,12 +390,12 @@ export default function ProductoDetalleTienda({
                 )}
 
                 {(!faltaSeleccion && !sinStock && pedidosHabilitados) && (
-                  <div className="mt-6 flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-900/50">
+                  <div className={`mt-6 flex items-center justify-between rounded-xl border p-3 ${claro ? "border-slate-200 bg-slate-50 text-slate-950" : "border-zinc-800 bg-zinc-900/50 text-white"}`}>
                     <div>
-                      <p className={`text-[10px] font-semibold uppercase tracking-wider ${claro ? "text-slate-500" : "text-zinc-400"}`}>
+                      <p className={`text-[10px] font-semibold uppercase tracking-wider ${claro ? "text-slate-600" : "text-zinc-300"}`}>
                         Cantidad
                       </p>
-                      <p className={`mt-0.5 text-[10px] ${claro ? "text-slate-400" : "text-zinc-500"}`}>
+                      <p className={`mt-0.5 text-[10px] ${claro ? "text-slate-500" : "text-zinc-400"}`}>
                         {stockDisponible} disponibles
                       </p>
                     </div>
@@ -405,18 +405,18 @@ export default function ProductoDetalleTienda({
                         type="button"
                         onClick={() => setCantidad((c) => Math.max(1, c - 1))}
                         className={`flex h-8 w-8 items-center justify-center rounded-lg border transition ${
-                          claro ? "border-slate-300 bg-white hover:bg-slate-100" : "border-zinc-700 bg-zinc-950 hover:bg-zinc-800"
+                          claro ? "border-slate-300 bg-white text-slate-900 hover:bg-slate-100" : "border-zinc-700 bg-zinc-950 text-white hover:bg-zinc-800"
                         }`}
                       >
                         <Minus className="h-4 w-4" />
                       </button>
-                      <span className="w-4 text-center text-sm font-bold">{cantidad}</span>
+                      <span className={`w-4 text-center text-sm font-bold ${claro ? "text-slate-950" : "text-white"}`}>{cantidad}</span>
                       <button
                         type="button"
                         disabled={cantidad >= stockDisponible}
                         onClick={() => setCantidad((c) => Math.min(stockDisponible, c + 1))}
                         className={`flex h-8 w-8 items-center justify-center rounded-lg border transition disabled:opacity-30 disabled:cursor-not-allowed ${
-                          claro ? "border-slate-300 bg-white hover:bg-slate-100" : "border-zinc-700 bg-zinc-950 hover:bg-zinc-800"
+                          claro ? "border-slate-300 bg-white text-slate-900 hover:bg-slate-100" : "border-zinc-700 bg-zinc-950 text-white hover:bg-zinc-800"
                         }`}
                       >
                         <Plus className="h-4 w-4" />
@@ -493,7 +493,7 @@ export default function ProductoDetalleTienda({
                   </a>
                 ) : null}
 
-                <p className={`mt-3 text-center text-[10px] leading-4 sm:text-[11px] sm:leading-5 ${claro ? "text-slate-400" : "text-zinc-600"}`}>
+                <p className={`mt-3 text-center text-[10px] leading-4 sm:text-[11px] sm:leading-5 ${claro ? "text-slate-500" : "text-zinc-400"}`}>
                   {faltaSeleccion 
                     ? "Elegí el talle y/o color para verificar stock."
                     : sinStock 
