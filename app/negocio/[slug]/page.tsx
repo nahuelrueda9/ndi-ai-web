@@ -127,6 +127,8 @@ interface CatalogoItem {
   stockGeneral?: number;
   stockTotal?: number;
   activo?: boolean;
+  createdAt?: any;
+  updatedAt?: any;
 }
 
 function normalizarUrlExterna(valor?: string) {
@@ -231,6 +233,7 @@ export default async function NegocioPage({ params }: PageProps) {
   const servicios = catalogo.filter((item) => item.tipo === "servicio");
   const productos = puedeUsarCatalogo ? catalogo.filter((item) => item.tipo === "producto") : [];
 
+  // Mapeos limpios (sin Firebase Timestamps) para pasar seguros al cliente
   const productosRestaurante = productos.map((producto) => ({
     id: producto.id,
     nombre: producto.nombre || "",
@@ -239,6 +242,22 @@ export default async function NegocioPage({ params }: PageProps) {
     imagenUrl: producto.imagenUrl || "",
     imagenes: Array.isArray(producto.imagenes) ? producto.imagenes.filter((url): url is string => typeof url === "string").slice(0, puedeUsarProductos ? 3 : 1) : [],
     categoria: producto.categoria || "",
+  }));
+
+  const productosTienda = productos.map((producto) => ({
+    id: producto.id,
+    tipo: producto.tipo || "producto",
+    nombre: producto.nombre || "",
+    descripcion: producto.descripcion || "",
+    precio: typeof producto.precio === "number" ? producto.precio : 0,
+    imagenUrl: producto.imagenUrl || "",
+    imagenes: Array.isArray(producto.imagenes) ? producto.imagenes.filter((url): url is string => typeof url === "string").slice(0, puedeUsarProductos ? 3 : 1) : [],
+    talles: Array.isArray(producto.talles) ? producto.talles : [],
+    colores: Array.isArray(producto.colores) ? producto.colores : [],
+    variantes: Array.isArray(producto.variantes) ? producto.variantes.map(v => ({ talle: v.talle, color: v.color, stock: v.stock })) : [],
+    stockGeneral: producto.stockGeneral || 0,
+    stockTotal: producto.stockTotal || 0,
+    activo: producto.activo ?? true,
   }));
 
   const catalogoPermitido = puedeUsarProductos ? catalogo : servicios;
@@ -297,7 +316,6 @@ export default async function NegocioPage({ params }: PageProps) {
   const puedeMostrarReservaGenerica = puedeUsarTurnos && servicios.length > 0 && !esRestaurante;
   const mostrarReservaMesa = esRestaurante && puedeUsarTurnos && pagina.mostrarReservasMesa === true;
   
-  // 🔥 FIX: Habilitamos el carrito de pedidos online para CUALQUIER negocio que tenga productos
   const mostrarPedidosOnline = puedeUsarProductos && pagina.mostrarPedidosOnline === true;
   
   const puedeMostrarReserva = puedeMostrarReservaGenerica || mostrarReservaMesa;
@@ -722,7 +740,7 @@ export default async function NegocioPage({ params }: PageProps) {
           ) : (
             <TiendaCatalogoPedidos
               slug={slug}
-              productos={productos}
+              productos={productosTienda}
               colorPrincipal={colorPrincipal}
               tema={esClaro ? "claro" : "oscuro"}
               pedidosHabilitados={mostrarPedidosOnline}
