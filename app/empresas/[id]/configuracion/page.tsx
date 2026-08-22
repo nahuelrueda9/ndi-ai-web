@@ -508,7 +508,6 @@ export default function ConfiguracionPage() {
               nuevaConfiguracion.idioma,
           },
 
-          // Compatibilidad con el motor actual de IA.
           personalidad:
             nuevaConfiguracion.personalidad,
           objetivo:
@@ -661,7 +660,7 @@ export default function ConfiguracionPage() {
 
   return (
     <section className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-8 sm:py-8">
-      <header className="mb-3 flex items-end justify-between gap-2 sm:mb-4 sm:flex-col sm:items-stretch sm:gap-3 lg:flex-row lg:items-center">
+      <header className="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-[10px] font-medium text-blue-600 dark:text-blue-400 sm:text-sm">
             {empresaNombre ||
@@ -686,15 +685,16 @@ export default function ConfiguracionPage() {
             </Badge>
           </div>
 
-          <p className="mt-0.5 max-w-xl text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:mt-1 sm:max-w-2xl sm:text-xs sm:leading-5">
+          <p className="mt-1 max-w-xl text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:mt-1.5 sm:max-w-2xl sm:text-xs sm:leading-5">
             Definí cómo se presenta, cómo responde y qué reglas debe respetar
             el asistente inteligente de tu negocio.
           </p>
         </div>
 
-        <div className="flex shrink-0 gap-1.5 sm:flex-wrap sm:gap-2">
+        <div className="flex flex-wrap gap-2 sm:shrink-0">
           <Button
             variant="secondary"
+            className="text-xs sm:text-sm"
             onClick={() =>
               router.push(
                 `/empresas/${empresaId}/conocimiento`,
@@ -706,6 +706,7 @@ export default function ConfiguracionPage() {
 
           <Button
             variant="secondary"
+            className="text-xs sm:text-sm"
             onClick={() =>
               router.push(
                 `/empresas/${empresaId}/probar`,
