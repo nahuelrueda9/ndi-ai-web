@@ -59,6 +59,15 @@ interface Empresa {
   descripcion?: string;
   direccion?: string;
   horarios?: string;
+  pagosConfig?: {
+    activoMercadoPago?: boolean;
+    linkMercadoPago?: string;
+    activoTransferencia?: boolean;
+    aliasCbu?: string;
+    titularCuenta?: string;
+    soloWhatsapp?: boolean;
+  };
+
 
   redesSociales?: {
     instagram?: string;
@@ -747,6 +756,7 @@ export default async function NegocioPage({ params }: PageProps) {
               whatsappUrl={whatsappUrl}
               mostrarWhatsApp={mostrarWhatsApp}
               mostrarContacto={mostrarContacto}
+              pagosConfig={empresa.pagosConfig}
             />
           )}
         </section>
