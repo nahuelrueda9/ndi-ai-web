@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageCircle, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
+import { CreditCard, MessageCircle, Minus, Plus, ShoppingBag, Trash2, Wallet, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import ProductoDetalleTienda from "./ProductoDetalleTienda";
 
@@ -39,6 +39,15 @@ type ItemCarritoTienda = {
   stockMaximo: number;
 };
 
+type PagosConfig = {
+  activoMercadoPago?: boolean;
+  linkMercadoPago?: string;
+  activoTransferencia?: boolean;
+  aliasCbu?: string;
+  titularCuenta?: string;
+  soloWhatsapp?: boolean;
+};
+
 type Props = {
   slug: string;
   productos: Producto[];
@@ -48,6 +57,7 @@ type Props = {
   whatsappUrl?: string;
   mostrarWhatsApp?: boolean;
   mostrarContacto?: boolean;
+  pagosConfig?: PagosConfig;
 };
 
 function formatoPrecio(valor: number) {
@@ -77,6 +87,7 @@ export default function TiendaCatalogoPedidos({
   whatsappUrl = "",
   mostrarWhatsApp = false,
   mostrarContacto = false,
+  pagosConfig,
 }: Props) {
   const [carrito, setCarrito] = useState<ItemCarritoTienda[]>([]);
   const [carritoAbierto, setCarritoAbierto] = useState(false);
@@ -84,7 +95,6 @@ export default function TiendaCatalogoPedidos({
   const [notas, setNotas] = useState("");
   const [error, setError] = useState("");
   
-  // Detección dinámica del tema claro u oscuro del documento
   const [esClaro, setEsClaro] = useState(tema === "claro");
 
   useEffect(() => {
@@ -113,7 +123,7 @@ export default function TiendaCatalogoPedidos({
         );
       }
     } catch {
-      // Ignorar si el carrito está roto
+      // Ignorar
     }
   }, [slug]);
 
@@ -121,7 +131,7 @@ export default function TiendaCatalogoPedidos({
     try {
       window.localStorage.setItem(`ndi-carrito-tienda:${slug}`, JSON.stringify(carrito));
     } catch {
-      // localStorage no obligatorio
+      // No obligatorio
     }
   }, [carrito, slug]);
 
@@ -196,9 +206,23 @@ export default function TiendaCatalogoPedidos({
     setCarritoAbierto(false);
   }
 
+  function pagarConMercadoPago() {
+    if (!nombreCliente.trim()) {
+      setError("Por favor, ingresá tu nombre para continuar.");
+      return;
+    }
+    if (pagosConfig?.linkMercadoPago) {
+      window.open(pagosConfig.linkMercadoPago, "_blank");
+    }
+  }
+
   const estiloCard = claro
     ? "border-slate-200 bg-white text-slate-950 shadow-sm"
     : "border-zinc-800 bg-zinc-900 text-white shadow-none";
+
+  const usaMp = pagosConfig?.activoMercadoPago && pagosConfig?.linkMercadoPago;
+  const usaTransferencia = pagosConfig?.activoTransferencia && (pagosConfig?.aliasCbu || pagosConfig?.titularCuenta);
+  const soloWap = pagosConfig?.soloWhatsapp !== false || (!usaMp && !usaTransferencia);
 
   return (
     <>
@@ -279,7 +303,7 @@ export default function TiendaCatalogoPedidos({
             <div className={`flex items-center justify-between border-b px-5 py-4 ${claro ? "border-slate-200" : "border-zinc-800"}`}>
               <div>
                 <p className="text-lg font-bold">Tu pedido</p>
-                <p className={`mt-0.5 text-xs ${claseSecundario}`}>Completá tus datos para enviar por WhatsApp</p>
+                <p className={`mt-0.5 text-xs ${claseSecundario}`}>Revisá los productos y elegí cómo abonar</p>
               </div>
               <button
                 type="button"
@@ -354,27 +378,47 @@ export default function TiendaCatalogoPedidos({
                       className={`w-full resize-none rounded-xl border px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 ${claro ? "border-slate-300 bg-white text-slate-950 placeholder-slate-400" : "border-zinc-700 bg-zinc-900 text-white placeholder-zinc-500"}`}
                     />
                   </div>
+
+                  {usaTransferencia && (
+                    <div className={`rounded-2xl border p-4 text-xs ${claro ? "border-blue-200 bg-blue-50 text-blue-950" : "border-blue-500/20 bg-blue-500/10 text-blue-200"}`}>
+                      <p className="font-bold flex items-center gap-1.5"><Wallet className="h-4 w-4" /> Datos para transferir:</p>
+                      {pagosConfig?.aliasCbu && <p className="mt-1">Alias/CBU: <span className="font-semibold">{pagosConfig.aliasCbu}</span></p>}
+                      {pagosConfig?.titularCuenta && <p className="mt-0.5">Titular: <span className="font-semibold">{pagosConfig.titularCuenta}</span></p>}
+                    </div>
+                  )}
                 </div>
               )}
 
               {error && <div className="mt-4 rounded-xl border border-red-500/20 bg-red-50 px-3 py-2.5 text-xs text-red-600 dark:bg-red-500/10 dark:text-red-400">{error}</div>}
             </div>
 
-            <div className={`border-t p-5 ${claro ? "border-slate-200" : "border-zinc-800"}`}>
-              <div className="mb-4 flex items-center justify-between">
+            <div className={`border-t p-5 space-y-2.5 ${claro ? "border-slate-200" : "border-zinc-800"}`}>
+              <div className="mb-2 flex items-center justify-between">
                 <span className={`text-sm ${claseSecundario}`}>Total del pedido</span>
                 <strong className="text-xl">{formatoPrecio(total)}</strong>
               </div>
 
-              <button
-                type="button"
-                disabled={carrito.length === 0}
-                onClick={enviarPedidoWhatsApp}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
-                style={{ backgroundColor: colorPrincipal }}
-              >
-                <MessageCircle className="h-4 w-4" /> Enviar pedido por WhatsApp
-              </button>
+              {usaMp && (
+                <button
+                  type="button"
+                  disabled={carrito.length === 0}
+                  onClick={pagarConMercadoPago}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-sky-400 disabled:opacity-50"
+                >
+                  <CreditCard className="h-4 w-4" /> Pagar con Mercado Pago / Tarjeta
+                </button>
+              )}
+
+              {(!soloWap || mostrarWhatsApp) && (
+                <button
+                  type="button"
+                  disabled={carrito.length === 0}
+                  onClick={enviarPedidoWhatsApp}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:opacity-50"
+                >
+                  <MessageCircle className="h-4 w-4" /> Enviar pedido por WhatsApp
+                </button>
+              )}
             </div>
           </div>
         </div>
