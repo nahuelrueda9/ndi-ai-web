@@ -413,6 +413,12 @@ export default function Sidebar() {
             feature: "presupuestos",
           },
           {
+            label: "Métodos de pago",
+            ruta: "pagos",
+            icon: CreditCard,
+            roles: ROLES_ADMINISTRACION,
+          },
+          {
             label: "Consultas",
             ruta: "conversaciones",
             icon: MessageSquare,

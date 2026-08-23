@@ -140,6 +140,22 @@ export default function AyudaPage() {
     },
     {
       numero: 4,
+      titulo: "Configurá tus Métodos de Pago",
+      descripcion:
+        "Elegí cómo querés cobrar a tus clientes sin intermediarios ni comisiones.",
+      detalles: [
+        "Conectá Mercado Pago pegando tu link de pago personalizado para cobros online instantáneos.",
+        "Agregá tus datos bancarios (Alias/CBU y titular) para recibir transferencias directas.",
+        "Activá la opción exclusiva de coordinar por WhatsApp si preferís no cobrar por adelantado.",
+        "NDI AI no cobra ninguna comisión por tus ventas: todo va directo a tu cuenta.",
+      ],
+      ruta: "pagos",
+      boton: "Métodos de pago",
+      icono: <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" />,
+      disponibilidad: "todos",
+    },
+    {
+      numero: 5,
       titulo: "Recibí solicitudes de presupuesto",
       descripcion:
         "Permití que los clientes pidan una cotización desde tu página.",
@@ -155,7 +171,7 @@ export default function AyudaPage() {
       disponibilidad: "completa",
     },
     {
-      numero: 5,
+      numero: 6,
       titulo: "Usá las funciones de tu rubro",
       descripcion:
         "Página Completa y Business IA habilitan herramientas específicas según el tipo de negocio.",
@@ -169,7 +185,7 @@ export default function AyudaPage() {
       disponibilidad: "completa",
     },
     {
-      numero: 6,
+      numero: 7,
       titulo: "Configurá el Asistente IA",
       descripcion:
         "Definí cómo debe presentarse, responder y comportarse la IA.",
@@ -185,7 +201,7 @@ export default function AyudaPage() {
       disponibilidad: "business",
     },
     {
-      numero: 7,
+      numero: 8,
       titulo: "Armá la Base de conocimiento",
       descripcion:
         "Agregá información real del negocio para mejorar las respuestas de la IA.",
@@ -201,7 +217,7 @@ export default function AyudaPage() {
       disponibilidad: "business",
     },
     {
-      numero: 8,
+      numero: 9,
       titulo: "Probá la IA antes de publicarla",
       descripcion:
         "Hacé consultas de prueba como si fueras un cliente.",
@@ -217,7 +233,7 @@ export default function AyudaPage() {
       disponibilidad: "business",
     },
     {
-      numero: 9,
+      numero: 10,
       titulo: "Instalá el Widget web",
       descripcion:
         "Usá el asistente de NDI AI dentro de otra página web.",
@@ -233,7 +249,7 @@ export default function AyudaPage() {
       disponibilidad: "business",
     },
     {
-      numero: 10,
+      numero: 11,
       titulo: "Revisá consultas y estadísticas",
       descripcion:
         "Usá el panel para entender qué hacen tus clientes y cómo rinde tu página.",
