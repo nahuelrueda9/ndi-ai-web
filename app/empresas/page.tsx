@@ -649,7 +649,7 @@ setEmpresasCompartidas(
 
   return (
     <DashboardLayout>
-      <section className="w-full max-w-7xl mx-auto px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+      <section className="w-full px-3 py-3 sm:px-6 sm:py-5 lg:px-7">
         <div className="mb-3 overflow-hidden rounded-xl border border-blue-200 sm:mb-5 sm:rounded-2xl bg-gradient-to-br from-blue-600 via-blue-600 to-indigo-700 shadow-lg shadow-blue-600/10 dark:border-blue-500/20 dark:from-blue-700 dark:via-blue-800 dark:to-indigo-950">
           <div className="relative px-4 py-4 sm:px-6 sm:py-6">
             <div className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
