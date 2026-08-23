@@ -13,9 +13,15 @@ export default function DashboardLayout({
   children,
 }: DashboardLayoutProps) {
   return (
-    <div className="min-h-dvh w-full bg-slate-50 text-slate-950 transition-colors dark:bg-zinc-950 dark:text-white flex justify-center">
-      {/* Contenedor general centrado que limita el ancho máximo en pantallas grandes y deja márgenes iguales */}
-      <div className="relative flex min-h-dvh w-full max-w-[1440px] mx-auto bg-slate-50 dark:bg-zinc-950 shadow-2xl">
+    /* Contenedor que centra toda la app y maneja el fondo oscuro */
+    <div className="min-h-dvh w-full bg-zinc-950 flex justify-center overflow-x-hidden">
+      
+      /* 
+         1. transform translate-x-0: Obliga al Sidebar fijo a quedarse anclado a esta caja y no a la pantalla (elimina el hueco).
+         2. lg:[zoom:0.85]: Recupera la escala perfecta para que las tarjetas tengan espacio y los botones no se rompan.
+         3. w-full max-w-[1920px]: Da un ancho total amplio pero contenido, dejando márgenes negros simétricos y mínimos.
+      */
+      <div className="flex min-h-dvh w-full max-w-[1920px] transform translate-x-0 relative bg-slate-50 dark:bg-zinc-950 lg:[zoom:0.85] shadow-2xl">
         <Sidebar />
 
         <div className="flex min-w-0 flex-1 flex-col md:ml-72">
