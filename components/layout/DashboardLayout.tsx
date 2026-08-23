@@ -14,15 +14,16 @@ export default function DashboardLayout({
 }: DashboardLayoutProps) {
   return (
     <div className="min-h-dvh bg-slate-50 text-slate-950 transition-colors dark:bg-zinc-950 dark:text-white">
-      <div className="flex min-h-dvh justify-center lg:[zoom:0.85]">
+      <div className="flex min-h-dvh">
         <Sidebar />
 
-        {/* Agregamos md:ml-72 para que el contenido respete exactamente el ancho del sidebar en laptops y tablets */}
         <div className="flex min-w-0 flex-1 flex-col md:ml-72">
           <Header />
 
           <main className="min-w-0 flex-1 bg-slate-50 text-slate-950 transition-colors dark:bg-zinc-950 dark:text-white">
-            {children}
+            <div className="mx-auto w-full max-w-7xl">
+              {children}
+            </div>
           </main>
         </div>
       </div>
