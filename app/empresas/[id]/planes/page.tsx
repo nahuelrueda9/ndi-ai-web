@@ -17,6 +17,7 @@ import {
   useParams,
   useRouter,
 } from "next/navigation";
+import { MessageCircle } from "lucide-react";
 
 import {
   auth,
@@ -29,6 +30,9 @@ import {
   obtenerPrecioPlan,
   type PlanId,
 } from "@/lib/plans/planAccess";
+
+// Configuración de contacto (código de país sin signos ni espacios, ej: 5493886XXXXXX)
+const WHATSAPP_NUMERO = "5493886654578";
 
 type Empresa = {
   nombre?: string;
@@ -78,7 +82,6 @@ const PLANES: Plan[] = [
       "Estadísticas básicas",
     ],
   },
-
   {
     id: "pro",
     nombre: "Página Completa",
@@ -101,7 +104,6 @@ const PLANES: Plan[] = [
       "Estadísticas avanzadas",
     ],
   },
-
   {
     id: "business",
     nombre: "Business IA",
@@ -124,364 +126,169 @@ const PLANES: Plan[] = [
   },
 ];
 
-function formatearPrecio(
-  valor: number,
-) {
-  return new Intl.NumberFormat(
-    "es-AR",
-    {
-      style: "currency",
-      currency: "ARS",
-      maximumFractionDigits: 0,
-    },
-  ).format(valor);
+function formatearPrecio(valor: number) {
+  return new Intl.NumberFormat("es-AR", {
+    style: "currency",
+    currency: "ARS",
+    maximumFractionDigits: 0,
+  }).format(valor);
 }
 
-function convertirFecha(
-  valor: unknown,
-): Date | null {
-  if (!valor) {
-    return null;
-  }
+function convertirFecha(valor: unknown): Date | null {
+  if (!valor) return null;
 
   if (
     typeof valor === "object" &&
     valor !== null &&
     "toDate" in valor &&
-    typeof (
-      valor as {
-        toDate?: unknown;
-      }
-    ).toDate === "function"
+    typeof (valor as { toDate?: unknown }).toDate === "function"
   ) {
     try {
-      return (
-        valor as {
-          toDate: () => Date;
-        }
-      ).toDate();
+      return (valor as { toDate: () => Date }).toDate();
     } catch {
       return null;
     }
   }
 
-  if (
-    valor instanceof Date
-  ) {
-    return valor;
-  }
+  if (valor instanceof Date) return valor;
 
-  if (
-    typeof valor === "string" ||
-    typeof valor === "number"
-  ) {
-    const fecha =
-      new Date(valor);
-
-    if (
-      !Number.isNaN(
-        fecha.getTime(),
-      )
-    ) {
-      return fecha;
-    }
+  if (typeof valor === "string" || typeof valor === "number") {
+    const fecha = new Date(valor);
+    if (!Number.isNaN(fecha.getTime())) return fecha;
   }
 
   return null;
 }
 
-function formatearFecha(
-  fecha: Date | null,
-) {
-  if (!fecha) {
-    return "";
-  }
+function formatearFecha(fecha: Date | null) {
+  if (!fecha) return "";
 
-  return new Intl.DateTimeFormat(
-    "es-AR",
-    {
-      timeZone:
-        "America/Argentina/Buenos_Aires",
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    },
-  ).format(fecha);
+  return new Intl.DateTimeFormat("es-AR", {
+    timeZone: "America/Argentina/Buenos_Aires",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  }).format(fecha);
 }
 
-function obtenerTextoEstado(
-  estado?: string,
-) {
+function obtenerTextoEstado(estado?: string) {
   switch (estado) {
     case "active":
     case "approved":
     case "authorized":
       return "Activo";
-
     case "pending":
       return "Pendiente";
-
     case "paused":
       return "Pausado";
-
     case "expired":
       return "Vencido";
-
     case "cancelled":
     case "canceled":
       return "Cancelado";
-
     default:
       return "Activo";
   }
 }
 
 export default function PlanesPage() {
-  const params =
-    useParams();
+  const params = useParams();
+  const router = useRouter();
 
-  const router =
-    useRouter();
+  const parametroEmpresa = params.id ?? params.empresaId;
+  const empresaId = Array.isArray(parametroEmpresa)
+    ? parametroEmpresa[0]
+    : (parametroEmpresa as string | undefined);
 
-  const parametroEmpresa =
-    params.id ??
-    params.empresaId;
-
-  const empresaId =
-    Array.isArray(
-      parametroEmpresa,
-    )
-      ? parametroEmpresa[0]
-      : (parametroEmpresa as
-          | string
-          | undefined);
-
-  const [
-    empresa,
-    setEmpresa,
-  ] = useState<
-    Empresa | null
-  >(null);
-
-  const [
-    usuario,
-    setUsuario,
-  ] = useState<User | null>(
-    null,
-  );
-
-  const [
-    procesandoPlan,
-    setProcesandoPlan,
-  ] = useState<PlanId | null>(
-    null,
-  );
-
-  const [
-    procesandoRenovacion,
-    setProcesandoRenovacion,
-  ] = useState(false);
-
-  const [
-    cargando,
-    setCargando,
-  ] = useState(true);
-
-  const [
-    error,
-    setError,
-  ] = useState("");
-
-  const [
-    mensaje,
-    setMensaje,
-  ] = useState("");
-
-  const [
-    accesoVerificado,
-    setAccesoVerificado,
-  ] = useState(false);
+  const [empresa, setEmpresa] = useState<Empresa | null>(null);
+  const [usuario, setUsuario] = useState<User | null>(null);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState("");
+  const [accesoVerificado, setAccesoVerificado] = useState(false);
 
   useEffect(() => {
-    const cancelarAuth =
-      onAuthStateChanged(
-        auth,
-        async (
-          usuarioActual,
-        ) => {
-          if (
-            !usuarioActual
-          ) {
-            router.replace(
-              "/login",
-            );
-            return;
-          }
+    const cancelarAuth = onAuthStateChanged(auth, async (usuarioActual) => {
+      if (!usuarioActual) {
+        router.replace("/login");
+        return;
+      }
 
-          if (!empresaId) {
-            setError(
-              "No se encontró la empresa.",
-            );
-            setCargando(false);
-            return;
-          }
+      if (!empresaId) {
+        setError("No se encontró la empresa.");
+        setCargando(false);
+        return;
+      }
 
-          const empresaIdSeguro =
-            empresaId;
+      setEmpresa(null);
+      setAccesoVerificado(false);
+      setError("");
+      setCargando(true);
 
-          setEmpresa(null);
-          setAccesoVerificado(
-            false,
+      try {
+        const empresaSnapshot = await getDoc(
+          doc(db, "companies", empresaId)
+        );
+
+        if (!empresaSnapshot.exists()) {
+          setError("La empresa no existe.");
+          return;
+        }
+
+        const datos = empresaSnapshot.data() as Empresa;
+
+        if (datos.userId !== usuarioActual.uid) {
+          const miembroSnapshot = await getDoc(
+            doc(db, "companies", empresaId, "members", usuarioActual.uid)
           );
-          setError("");
-          setMensaje("");
-          setCargando(true);
 
-          try {
-            const empresaSnapshot =
-              await getDoc(
-                doc(
-                  db,
-                  "companies",
-                  empresaIdSeguro,
-                ),
-              );
-
-            if (
-              !empresaSnapshot.exists()
-            ) {
-              setError(
-                "La empresa no existe.",
-              );
+          if (miembroSnapshot.exists()) {
+            const miembro = miembroSnapshot.data() as MiembroEmpresa;
+            if (miembro.estado === "activo") {
+              router.replace(`/empresas/${empresaId}/dashboard`);
               return;
             }
-
-            const datos =
-              empresaSnapshot.data() as Empresa;
-
-            if (
-              datos.userId !==
-              usuarioActual.uid
-            ) {
-              const miembroSnapshot =
-                await getDoc(
-                  doc(
-                    db,
-                    "companies",
-                    empresaIdSeguro,
-                    "members",
-                    usuarioActual.uid,
-                  ),
-                );
-
-              if (
-                miembroSnapshot.exists()
-              ) {
-                const miembro =
-                  miembroSnapshot.data() as MiembroEmpresa;
-
-                if (
-                  miembro.estado ===
-                  "activo"
-                ) {
-                  router.replace(
-                    `/empresas/${empresaIdSeguro}/dashboard`,
-                  );
-                  return;
-                }
-              }
-
-              router.replace(
-                "/empresas",
-              );
-              return;
-            }
-
-            setUsuario(
-              usuarioActual,
-            );
-
-            setEmpresa(datos);
-            setAccesoVerificado(
-              true,
-            );
-          } catch (
-            firebaseError
-          ) {
-            console.error(
-              "Error cargando los planes:",
-              firebaseError,
-            );
-
-            setError(
-              "No se pudo cargar la información del plan.",
-            );
-          } finally {
-            setCargando(false);
           }
-        },
-      );
 
-    return () =>
-      cancelarAuth();
-  }, [
-    empresaId,
-    router,
-  ]);
+          router.replace("/empresas");
+          return;
+        }
 
-  /*
-   * Una vez validado que el usuario es el propietario,
-   * escuchamos el documento de la empresa en tiempo real.
-   *
-   * Esto es importante al volver de Mercado Pago:
-   * el navegador puede regresar antes de que el webhook
-   * termine de activar o renovar la suscripción.
-   */
+        setUsuario(usuarioActual);
+        setEmpresa(datos);
+        setAccesoVerificado(true);
+      } catch (firebaseError) {
+        console.error("Error cargando los planes:", firebaseError);
+        setError("No se pudo cargar la información del plan.");
+      } finally {
+        setCargando(false);
+      }
+    });
+
+    return () => cancelarAuth();
+  }, [empresaId, router]);
+
   useEffect(() => {
-    if (
-      !empresaId ||
-      !accesoVerificado
-    ) {
-      return;
-    }
+    if (!empresaId || !accesoVerificado) return;
 
-    const cancelarEmpresa =
-      onSnapshot(
-        doc(
-          db,
-          "companies",
-          empresaId,
-        ),
-        (snapshot) => {
-          if (!snapshot.exists()) {
-            return;
-          }
+    const cancelarEmpresa = onSnapshot(
+      doc(db, "companies", empresaId),
+      (snapshot) => {
+        if (!snapshot.exists()) return;
+        setEmpresa(snapshot.data() as Empresa);
+      },
+      (snapshotError) => {
+        console.error("Error actualizando la empresa:", snapshotError);
+      }
+    );
 
-          setEmpresa(
-            snapshot.data() as Empresa,
-          );
-        },
-        (snapshotError) => {
-          console.error(
-            "Error actualizando el estado de la suscripción:",
-            snapshotError,
-          );
-        },
-      );
-
-    return () =>
-      cancelarEmpresa();
-  }, [
-    accesoVerificado,
-    empresaId,
-  ]);
+    return () => cancelarEmpresa();
+  }, [accesoVerificado, empresaId]);
 
   if (cargando) {
     return (
       <section className="mx-auto w-full max-w-[1500px] px-3 py-3 sm:px-6 sm:py-4">
         <div className="rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-2xl sm:p-10">
           <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
-
           <p className="mt-2 text-xs text-slate-600 dark:text-zinc-400 sm:mt-4 sm:text-sm">
             Cargando planes...
           </p>
@@ -490,10 +297,7 @@ export default function PlanesPage() {
     );
   }
 
-  if (
-    !accesoVerificado ||
-    !empresa
-  ) {
+  if (!accesoVerificado || !empresa) {
     if (error) {
       return (
         <section className="mx-auto w-full max-w-[1500px] px-3 py-3 sm:px-6 sm:py-4">
@@ -503,250 +307,47 @@ export default function PlanesPage() {
         </section>
       );
     }
-
     return null;
   }
 
-  const planActual =
-    obtenerPlanEfectivo(
-      empresa,
-    );
+  const planActual = obtenerPlanEfectivo(empresa);
+  const suscripcionActiva = empresaTieneSuscripcionActiva(empresa);
+  const nombrePlanActual = suscripcionActiva
+    ? obtenerNombrePlan(planActual)
+    : "Sin plan activo";
 
-  const suscripcionActiva =
-    empresaTieneSuscripcionActiva(
-      empresa,
-    );
+  const precioPlanActual = obtenerPrecioPlan(planActual);
+  const estado = suscripcionActiva
+    ? obtenerTextoEstado(empresa.subscriptionStatus)
+    : empresa.subscriptionStatus
+    ? obtenerTextoEstado(empresa.subscriptionStatus)
+    : "Sin plan activo";
 
-  const nombrePlanActual =
-    suscripcionActiva
-      ? obtenerNombrePlan(
-          planActual,
-        )
-      : "Sin plan activo";
-
-  const precioPlanActual =
-    obtenerPrecioPlan(
-      planActual,
-    );
-
-  const precioMensualActual =
-    suscripcionActiva
-      ? typeof empresa.subscriptionMonthlyPrice ===
-            "number" &&
-          empresa.subscriptionMonthlyPrice >
-            0
-        ? empresa.subscriptionMonthlyPrice
-        : precioPlanActual.mensual
-      : 0;
-
-  const estado =
-    suscripcionActiva
-      ? obtenerTextoEstado(
-          empresa.subscriptionStatus,
-        )
-      : empresa.subscriptionStatus
-        ? obtenerTextoEstado(
-            empresa.subscriptionStatus,
-          )
-        : "Sin plan activo";
-
-  const vencimiento =
-    convertirFecha(
-      empresa.subscriptionEndsAt,
-    );
-
-  const tuvoSuscripcion =
-    Boolean(
-      empresa.subscriptionStatus ||
+  const vencimiento = convertirFecha(empresa.subscriptionEndsAt);
+  const tuvoSuscripcion = Boolean(
+    empresa.subscriptionStatus ||
       empresa.subscriptionEndsAt ||
-      empresa.subscriptionMonthlyPrice,
-    );
+      empresa.subscriptionMonthlyPrice
+  );
 
   const precioRenovacion =
-    typeof empresa.subscriptionMonthlyPrice ===
-      "number" &&
-    empresa.subscriptionMonthlyPrice >
-      0
+    typeof empresa.subscriptionMonthlyPrice === "number" &&
+    empresa.subscriptionMonthlyPrice > 0
       ? empresa.subscriptionMonthlyPrice
       : precioPlanActual.mensual;
 
-  async function abrirCheckout(
-    planId: PlanId,
-    tipoPago: "alta" | "renovacion",
-  ) {
-    if (
-      !empresaId ||
-      !usuario ||
-      !accesoVerificado
-    ) {
-      throw new Error(
-        "No se encontró la empresa o el usuario.",
-      );
+  const nombreNegocio = empresa.nombre || empresa.name || "Mi Negocio";
+
+  function solicitarPorWhatsApp(nombrePlan: string, accion: "contratar" | "renovar" = "contratar") {
+    let mensaje = "";
+    if (accion === "renovar") {
+      mensaje = `¡Hola! Quiero renovar el plan *${nombrePlan}* para mi empresa *${nombreNegocio}*. ¿Me pasás los datos para pagar el servicio?`;
+    } else {
+      mensaje = `¡Hola! Quiero activar el plan *${nombrePlan}* para mi empresa *${nombreNegocio}*. ¿Me pasás los datos para pagar el servicio?`;
     }
 
-    const idToken =
-      await usuario.getIdToken(
-        true,
-      );
-
-    const response =
-      await fetch(
-        "/api/payments/mercadopago/create-preference",
-        {
-          method:
-            "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-
-            Authorization:
-              `Bearer ${idToken}`,
-          },
-
-          body:
-            JSON.stringify({
-              empresaId,
-              plan:
-                planId,
-              tipoPago,
-            }),
-        },
-      );
-
-    const data =
-      (await response.json()) as {
-        error?: string;
-        checkoutUrl?: string;
-        initPoint?: string;
-        sandboxInitPoint?: string;
-      };
-
-    if (!response.ok) {
-      throw new Error(
-        data.error ||
-          "No se pudo iniciar el pago con Mercado Pago.",
-      );
-    }
-
-    const checkoutUrl =
-      data.checkoutUrl ||
-      data.initPoint ||
-      data.sandboxInitPoint;
-
-    if (!checkoutUrl) {
-      throw new Error(
-        "Mercado Pago no devolvió el enlace de pago.",
-      );
-    }
-
-    window.location.href =
-      checkoutUrl;
-  }
-
-  async function seleccionarPlan(
-    planId: PlanId,
-  ) {
-    setError("");
-    setMensaje("");
-
-    if (
-      suscripcionActiva
-    ) {
-      if (
-        planId ===
-          planActual
-      ) {
-        setMensaje(
-          "Este es tu plan actual.",
-        );
-      } else {
-        setMensaje(
-          "El cambio de plan todavía no está habilitado mientras tu suscripción está activa.",
-        );
-      }
-
-      return;
-    }
-
-    const esRenovacion =
-      (suscripcionActiva ||
-        tuvoSuscripcion) &&
-      planId ===
-        planActual;
-
-    setProcesandoPlan(
-      planId,
-    );
-
-    try {
-      await abrirCheckout(
-        planId,
-        esRenovacion
-          ? "renovacion"
-          : "alta",
-      );
-    } catch (
-      paymentError
-    ) {
-      console.error(
-        "Error al iniciar el pago:",
-        paymentError,
-      );
-
-      setError(
-        paymentError instanceof Error
-          ? paymentError.message
-          : "No se pudo iniciar el pago.",
-      );
-    } finally {
-      setProcesandoPlan(
-        null,
-      );
-    }
-  }
-
-  async function renovarPlan() {
-    setError("");
-    setMensaje("");
-
-    if (
-      !suscripcionActiva &&
-      !tuvoSuscripcion
-    ) {
-      setError(
-        "Esta empresa todavía no tiene una suscripción para renovar.",
-      );
-      return;
-    }
-
-    setProcesandoRenovacion(
-      true,
-    );
-
-    try {
-      await abrirCheckout(
-        planActual,
-        "renovacion",
-      );
-    } catch (
-      paymentError
-    ) {
-      console.error(
-        "Error al iniciar la renovación:",
-        paymentError,
-      );
-
-      setError(
-        paymentError instanceof Error
-          ? paymentError.message
-          : "No se pudo iniciar la renovación.",
-      );
-    } finally {
-      setProcesandoRenovacion(
-        false,
-      );
-    }
+    const url = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(mensaje)}`;
+    window.open(url, "_blank");
   }
 
   return (
@@ -761,194 +362,124 @@ export default function PlanesPage() {
         </h1>
 
         <p className="mt-0.5 max-w-3xl text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:mt-1 sm:text-xs sm:leading-5">
-          Todos los planes son pagos e incluyen la puesta en marcha de tu página más un mantenimiento mensual para mantener el servicio funcionando.
+          Todos los planes incluyen la puesta en marcha de tu página y el mantenimiento mensual para el soporte y funcionamiento del negocio.
         </p>
 
         {!suscripcionActiva && (
           <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] leading-4 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200 sm:mt-3 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-xs sm:leading-normal">
-            Esta empresa todavía no tiene un plan activo. Al elegir uno vas a pagar la puesta en marcha + el primer mes mediante Mercado Pago.
+            Esta empresa todavía no tiene un plan activo. Al solicitar un plan te brindamos asistencia directa para activar el servicio de inmediato.
           </div>
         )}
       </header>
 
-      {error && (
-        <div className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[10px] text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300 sm:mb-4 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-xs">
-          {error}
-        </div>
-      )}
-
-      {mensaje && (
-        <div className="mb-3 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-[10px] text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300 sm:mb-4 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-xs">
-          {mensaje}
-        </div>
-      )}
-
       <div className="grid items-stretch gap-3 sm:gap-4 lg:grid-cols-3">
-        {PLANES.map(
-          (plan) => {
-            const esActual =
-              suscripcionActiva &&
-              plan.id ===
-                planActual;
+        {PLANES.map((plan) => {
+          const esActual = suscripcionActiva && plan.id === planActual;
+          const esUltimoPlan = !suscripcionActiva && tuvoSuscripcion && plan.id === planActual;
+          const precios = obtenerPrecioPlan(plan.id);
 
-            const esUltimoPlan =
-              !suscripcionActiva &&
-              tuvoSuscripcion &&
-              plan.id ===
-                planActual;
+          return (
+            <article
+              key={plan.id}
+              className={[
+                "relative flex flex-col rounded-xl border bg-white p-3 text-slate-950 shadow-sm transition-colors dark:bg-zinc-900 dark:text-white sm:rounded-2xl sm:p-4",
+                plan.destacado
+                  ? "border-blue-500 shadow-xl shadow-blue-500/10 dark:shadow-blue-950/20"
+                  : plan.lanzamiento
+                  ? "border-violet-400 shadow-lg shadow-violet-500/10 dark:border-violet-500/60 dark:shadow-violet-950/20"
+                  : "border-slate-200 dark:border-zinc-800",
+              ].join(" ")}
+            >
+              {plan.etiqueta && (
+                <span
+                  className={[
+                    "absolute -top-2 left-3 rounded-full px-2 py-0.5 text-[8px] font-semibold text-white sm:-top-2.5 sm:left-4 sm:px-2.5 sm:text-[10px]",
+                    plan.lanzamiento
+                      ? "bg-violet-600"
+                      : plan.destacado
+                      ? "bg-blue-600"
+                      : "bg-slate-700 dark:bg-zinc-700",
+                  ].join(" ")}
+                >
+                  {plan.etiqueta}
+                </span>
+              )}
 
-            const precios =
-              obtenerPrecioPlan(
-                plan.id,
-              );
+              <div className="flex items-start justify-between gap-2 sm:gap-3">
+                <div>
+                  <h2 className="text-base font-bold text-slate-950 dark:text-white sm:text-xl">
+                    {plan.nombre}
+                  </h2>
 
-            return (
-              <article
-                key={
-                  plan.id
-                }
-                className={[
-                  "relative flex flex-col rounded-xl border bg-white p-3 text-slate-950 shadow-sm transition-colors dark:bg-zinc-900 dark:text-white sm:rounded-2xl sm:p-4",
-                  plan.destacado
-                    ? "border-blue-500 shadow-xl shadow-blue-500/10 dark:shadow-blue-950/20"
-                    : plan.lanzamiento
-                      ? "border-violet-400 shadow-lg shadow-violet-500/10 dark:border-violet-500/60 dark:shadow-violet-950/20"
-                      : "border-slate-200 dark:border-zinc-800",
-                ].join(" ")}
-              >
-                {plan.etiqueta && (
-                  <span
-                    className={[
-                      "absolute -top-2 left-3 rounded-full px-2 py-0.5 text-[8px] font-semibold text-white sm:-top-2.5 sm:left-4 sm:px-2.5 sm:text-[10px]",
-                      plan.lanzamiento
-                        ? "bg-violet-600"
-                        : plan.destacado
-                          ? "bg-blue-600"
-                          : "bg-slate-700 dark:bg-zinc-700",
-                    ].join(
-                      " ",
-                    )}
-                  >
-                    {
-                      plan.etiqueta
-                    }
+                  <p className="mt-0.5 text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:mt-1 sm:text-xs sm:leading-5">
+                    {plan.descripcion}
+                  </p>
+                </div>
+
+                {esActual && (
+                  <span className="shrink-0 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[8px] font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 sm:px-2 sm:text-[10px]">
+                    Plan actual
                   </span>
                 )}
+              </div>
 
-                <div className="flex items-start justify-between gap-2 sm:gap-3">
-                  <div>
-                    <h2 className="text-base font-bold text-slate-950 dark:text-white sm:text-xl">
-                      {
-                        plan.nombre
-                      }
-                    </h2>
+              <div className="mt-2.5 sm:mt-4">
+                <p className="text-[8px] font-semibold uppercase tracking-[0.1em] text-slate-500 dark:text-zinc-500 sm:text-[10px] sm:tracking-[0.12em]">
+                  Puesta en marcha
+                </p>
 
-                    <p className="mt-0.5 text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:mt-1 sm:text-xs sm:leading-5">
-                      {
-                        plan.descripcion
-                      }
-                    </p>
+                <p className="mt-0.5 text-xl font-bold text-slate-950 dark:text-white sm:text-2xl">
+                  {formatearPrecio(precios.inicial)}
+                </p>
+
+                <p className="mt-0.5 text-[10px] font-semibold text-blue-600 dark:text-blue-400 sm:mt-1 sm:text-xs">
+                  + {formatearPrecio(precios.mensual)}/mes
+                </p>
+
+                {plan.lanzamiento && (
+                  <p className="mt-1.5 rounded-md border border-violet-200 bg-violet-50 p-1.5 text-[9px] leading-3.5 text-violet-800 dark:border-violet-500/20 dark:bg-violet-500/10 dark:text-violet-200 sm:mt-2 sm:rounded-lg sm:p-2 sm:text-[10px] sm:leading-4">
+                    Conservás el precio mensual de lanzamiento mientras mantengas activa tu suscripción.
+                  </p>
+                )}
+              </div>
+
+              <div className="mt-2.5 grid flex-1 grid-cols-2 gap-x-2 gap-y-1 sm:mt-4 sm:block sm:space-y-1.5">
+                {plan.funciones.map((funcion) => (
+                  <div
+                    key={funcion}
+                    className="flex items-start gap-1 text-[9px] leading-3.5 text-slate-700 dark:text-zinc-300 sm:gap-2 sm:text-[11px] sm:leading-4"
+                  >
+                    <span className="text-emerald-500">✓</span>
+                    <span>{funcion}</span>
                   </div>
+                ))}
+              </div>
 
-                  {esActual && (
-                    <span className="shrink-0 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[8px] font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 sm:px-2 sm:text-[10px]">
-                      Plan actual
-                    </span>
-                  )}
-                </div>
-
-                <div className="mt-2.5 sm:mt-4">
-                  <p className="text-[8px] font-semibold uppercase tracking-[0.1em] text-slate-500 dark:text-zinc-500 sm:text-[10px] sm:tracking-[0.12em]">
-                    Puesta en marcha
-                  </p>
-
-                  <p className="mt-0.5 text-xl font-bold text-slate-950 dark:text-white sm:text-2xl">
-                    {formatearPrecio(
-                      precios.inicial,
-                    )}
-                  </p>
-
-                  <p className="mt-0.5 text-[10px] font-semibold text-blue-600 dark:text-blue-400 sm:mt-1 sm:text-xs">
-                    +{" "}
-                    {formatearPrecio(
-                      precios.mensual,
-                    )}
-                    /mes
-                  </p>
-
-                  {plan.lanzamiento && (
-                    <p className="mt-1.5 rounded-md border border-violet-200 bg-violet-50 p-1.5 text-[9px] leading-3.5 text-violet-800 dark:border-violet-500/20 dark:bg-violet-500/10 dark:text-violet-200 sm:mt-2 sm:rounded-lg sm:p-2 sm:text-[10px] sm:leading-4">
-                      Conservás el precio mensual de lanzamiento mientras mantengas activa tu suscripción.
-                    </p>
-                  )}
-                </div>
-
-                <div className="mt-2.5 grid flex-1 grid-cols-2 gap-x-2 gap-y-1 sm:mt-4 sm:block sm:space-y-1.5">
-                  {plan.funciones.map(
-                    (
-                      funcion,
-                    ) => (
-                      <div
-                        key={
-                          funcion
-                        }
-                        className="flex items-start gap-1 text-[9px] leading-3.5 text-slate-700 dark:text-zinc-300 sm:gap-2 sm:text-[11px] sm:leading-4"
-                      >
-                        <span className="text-emerald-500">
-                          ✓
-                        </span>
-
-                        <span>
-                          {
-                            funcion
-                          }
-                        </span>
-                      </div>
-                    ),
-                  )}
-                </div>
-
-                <button
-                  type="button"
-                  disabled={
-                    esActual ||
-                    procesandoPlan !==
-                      null ||
-                    procesandoRenovacion
-                  }
-                  onClick={() =>
-                    seleccionarPlan(
-                      plan.id,
-                    )
-                  }
-                  className={[
-                    "mt-3 w-full rounded-lg px-3 py-2 text-[10px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 sm:mt-4 sm:px-4 sm:py-2.5 sm:text-xs",
-                    plan.destacado
-                      ? "bg-blue-600 text-white hover:bg-blue-500"
-                      : plan.lanzamiento
-                        ? "bg-violet-600 text-white hover:bg-violet-500"
-                        : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 dark:border-zinc-700 dark:bg-transparent dark:text-zinc-200 dark:hover:bg-zinc-800",
-                  ].join(
-                    " ",
-                  )}
-                >
-                  {esActual
-                    ? "Plan actual"
-                    : procesandoPlan ===
-                        plan.id
-                      ? esUltimoPlan
-                        ? "Abriendo renovación..."
-                        : "Abriendo Mercado Pago..."
-                      : esUltimoPlan
-                        ? `Renovar por ${formatearPrecio(
-                            precioRenovacion,
-                          )}`
-                        : "Elegir plan"}
-                </button>
-              </article>
-            );
-          },
-        )}
+              <button
+                type="button"
+                disabled={esActual}
+                onClick={() => solicitarPorWhatsApp(plan.nombre, esUltimoPlan ? "renovar" : "contratar")}
+                className={[
+                  "mt-3 flex items-center justify-center gap-1.5 w-full rounded-lg px-3 py-2 text-[10px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 sm:mt-4 sm:px-4 sm:py-2.5 sm:text-xs",
+                  esActual
+                    ? "border border-slate-300 bg-white text-slate-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                    : plan.destacado
+                    ? "bg-blue-600 text-white hover:bg-blue-500"
+                    : plan.lanzamiento
+                    ? "bg-violet-600 text-white hover:bg-violet-500"
+                    : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 dark:border-zinc-700 dark:bg-transparent dark:text-zinc-200 dark:hover:bg-zinc-800",
+                ].join(" ")}
+              >
+                {!esActual && <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
+                {esActual
+                  ? "Plan actual"
+                  : esUltimoPlan
+                  ? `Renovar por WhatsApp (${formatearPrecio(precioRenovacion)})`
+                  : "Solicitar por WhatsApp"}
+              </button>
+            </article>
+          );
+        })}
       </div>
 
       <div className="mt-3 grid gap-2 sm:mt-4 sm:gap-3 lg:grid-cols-[1fr_auto]">
@@ -963,11 +494,8 @@ export default function PlanesPage() {
                 <p>
                   Plan:{" "}
                   <span className="font-semibold text-slate-950 dark:text-white">
-                    {suscripcionActiva ||
-                    tuvoSuscripcion
-                      ? obtenerNombrePlan(
-                          planActual,
-                        )
+                    {suscripcionActiva || tuvoSuscripcion
+                      ? obtenerNombrePlan(planActual)
                       : nombrePlanActual}
                   </span>
                 </p>
@@ -975,11 +503,8 @@ export default function PlanesPage() {
                 <p>
                   Mensualidad:{" "}
                   <span className="font-semibold text-slate-950 dark:text-white">
-                    {suscripcionActiva ||
-                    tuvoSuscripcion
-                      ? `${formatearPrecio(
-                          precioRenovacion,
-                        )}/mes`
+                    {suscripcionActiva || tuvoSuscripcion
+                      ? `${formatearPrecio(precioRenovacion)}/mes`
                       : "—"}
                   </span>
                 </p>
@@ -996,8 +521,8 @@ export default function PlanesPage() {
                     {suscripcionActiva
                       ? estado
                       : tuvoSuscripcion
-                        ? "Vencido / sin renovar"
-                        : "Sin plan activo"}
+                      ? "Vencido / sin renovar"
+                      : "Sin plan activo"}
                   </span>
                 </p>
 
@@ -1008,42 +533,23 @@ export default function PlanesPage() {
                       : "Último vencimiento"}
                     :{" "}
                     <span className="font-semibold text-slate-950 dark:text-white">
-                      {formatearFecha(
-                        vencimiento,
-                      )}
+                      {formatearFecha(vencimiento)}
                     </span>
                   </p>
                 )}
               </div>
             </div>
 
-            {(suscripcionActiva ||
-              tuvoSuscripcion) && (
+            {(suscripcionActiva || tuvoSuscripcion) && (
               <div className="shrink-0 sm:text-right">
                 <button
                   type="button"
-                  disabled={
-                    procesandoRenovacion ||
-                    procesandoPlan !==
-                      null
-                  }
-                  onClick={
-                    renovarPlan
-                  }
-                  className="w-full rounded-lg bg-blue-600 px-3 py-2 text-[10px] font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:px-4 sm:py-2.5 sm:text-xs"
+                  onClick={() => solicitarPorWhatsApp(obtenerNombrePlan(planActual), "renovar")}
+                  className="inline-flex items-center justify-center gap-1.5 w-full rounded-lg bg-blue-600 px-3 py-2 text-[10px] font-semibold text-white transition hover:bg-blue-500 sm:w-auto sm:px-4 sm:py-2.5 sm:text-xs"
                 >
-                  {procesandoRenovacion
-                    ? "Abriendo Mercado Pago..."
-                    : `Renovar por ${formatearPrecio(
-                        precioRenovacion,
-                      )}`}
+                  <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  Renovar por WhatsApp
                 </button>
-
-                {suscripcionActiva && (
-                  <p className="mt-1 max-w-xs text-[9px] leading-3.5 text-slate-500 dark:text-zinc-500 sm:text-[10px] sm:leading-4">
-                    Si renovás antes del vencimiento, se suman 30 días sin perder los días que ya tenés pagos.
-                  </p>
-                )}
               </div>
             )}
           </div>
@@ -1051,11 +557,7 @@ export default function PlanesPage() {
 
         <button
           type="button"
-          onClick={() =>
-            router.push(
-              `/empresas/${empresaId}/facturacion`,
-            )
-          }
+          onClick={() => router.push(`/empresas/${empresaId}/facturacion`)}
           className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-[10px] font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 sm:rounded-xl sm:px-4 sm:py-3 sm:text-xs"
         >
           Volver a facturación
