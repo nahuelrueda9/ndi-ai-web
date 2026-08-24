@@ -191,6 +191,7 @@ const BENEFICIOS: Record<
   free: [
     "Página pública profesional",
     "Servicios y precios",
+    "Turnos y reservas online",
     "Horarios y ubicación",
     "WhatsApp directo",
     "Redes sociales",
@@ -201,9 +202,9 @@ const BENEFICIOS: Record<
   pro: [
     "Todo lo de Página Simple",
     "Productos y catálogo",
-    "Código QR",
+    "Cobros online (Mercado Pago / CVU)",
+    "Código QR para compartir",
     "Solicitud de presupuestos",
-    "Agenda y reservas online",
     "Más secciones",
     "Estadísticas avanzadas",
   ],
@@ -475,10 +476,9 @@ export default function FacturacionPage() {
     );
 
   const mensualContratado =
-    typeof empresa.subscriptionMonthlyPrice ===
-      "number" &&
-    empresa.subscriptionMonthlyPrice >
-      0
+    plan === "business" &&
+    typeof empresa.subscriptionMonthlyPrice === "number" &&
+    empresa.subscriptionMonthlyPrice > 0
       ? empresa.subscriptionMonthlyPrice
       : precioPlan.mensual;
 
