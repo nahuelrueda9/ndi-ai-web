@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import {
   Bell,
@@ -1381,15 +1382,26 @@ export default function Header() {
                         </span>
                       </div>
                     </div>
+                    
+                    <div className="mt-1 space-y-1">
+                      <Link
+                        href="/perfil"
+                        onClick={() => setPerfilAbierto(false)}
+                        className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                      >
+                        <UserRound className="h-4 w-4" />
+                        Mi perfil
+                      </Link>
 
-                    <button
-                      type="button"
-                      onClick={() => void cerrarSesion()}
-                      className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-red-500 transition hover:bg-red-500/10 dark:text-red-400"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      Cerrar sesión
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => void cerrarSesion()}
+                        className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-red-500 transition hover:bg-red-500/10 dark:text-red-400"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        Cerrar sesión
+                      </button>
+                    </div>
                   </div>
                 </>
               )}
