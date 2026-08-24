@@ -221,12 +221,8 @@ export default function DashboardEmpresaPage() {
             "asistente_ia",
           );
 
-        const [
-          catalogoSnapshot,
-          analyticsSnapshot,
-          turnosSnapshot,
-          conversacionesSnapshot,
-        ] = await Promise.all([
+        // Consultas seguras individuales
+        const tareas = [
           getDocs(
             collection(
               db,
@@ -234,7 +230,7 @@ export default function DashboardEmpresaPage() {
               empresaIdSeguro,
               "catalog",
             ),
-          ),
+          ).catch(() => null),
           getDocs(
             collection(
               db,
@@ -242,7 +238,7 @@ export default function DashboardEmpresaPage() {
               empresaIdSeguro,
               "analyticsEvents",
             ),
-          ),
+          ).catch(() => null),
           puedeUsarTurnos
             ? getDocs(
                 collection(
@@ -251,7 +247,7 @@ export default function DashboardEmpresaPage() {
                   empresaIdSeguro,
                   "appointments",
                 ),
-              )
+              ).catch(() => null)
             : Promise.resolve(null),
           puedeUsarAsistente
             ? getDocs(
@@ -265,60 +261,55 @@ export default function DashboardEmpresaPage() {
                   orderBy("updatedAt", "desc"),
                   limit(5),
                 ),
-              )
+              ).catch(() => null)
             : Promise.resolve(null),
-        ]);
+        ];
+
+        const [
+          catalogoSnapshot,
+          analyticsSnapshot,
+          turnosSnapshot,
+          conversacionesSnapshot,
+        ] = await Promise.all(tareas);
 
         if (!activo) {
           return;
         }
 
-        setCatalogo(
-          catalogoSnapshot.docs.map(
-            (documento) => ({
+        if (catalogoSnapshot) {
+          setCatalogo(
+            catalogoSnapshot.docs.map((documento) => ({
               id: documento.id,
-              ...(documento.data() as Omit<
-                CatalogoItem,
-                "id"
-              >),
-            }),
-          ),
-        );
+              ...(documento.data() as Omit<CatalogoItem, "id">),
+            })),
+          );
+        }
 
-        setEventosPagina(
-          analyticsSnapshot.docs.map(
-            (documento) =>
-              documento.data() as EventoPagina,
-          ),
-        );
+        if (analyticsSnapshot) {
+          setEventosPagina(
+            analyticsSnapshot.docs.map(
+              (documento) => documento.data() as EventoPagina,
+            ),
+          );
+        }
 
-        setTurnos(
-          turnosSnapshot
-            ? turnosSnapshot.docs.map(
-                (documento) => ({
-                  id: documento.id,
-                  ...(documento.data() as Omit<
-                    Turno,
-                    "id"
-                  >),
-                }),
-              )
-            : [],
-        );
+        if (turnosSnapshot) {
+          setTurnos(
+            turnosSnapshot.docs.map((documento) => ({
+              id: documento.id,
+              ...(documento.data() as Omit<Turno, "id">),
+            })),
+          );
+        }
 
-        setConversaciones(
-          conversacionesSnapshot
-            ? conversacionesSnapshot.docs.map(
-                (documento) => ({
-                  id: documento.id,
-                  ...(documento.data() as Omit<
-                    Conversacion,
-                    "id"
-                  >),
-                }),
-              )
-            : [],
-        );
+        if (conversacionesSnapshot) {
+          setConversaciones(
+            conversacionesSnapshot.docs.map((documento) => ({
+              id: documento.id,
+              ...(documento.data() as Omit<Conversacion, "id">),
+            })),
+          );
+        }
       } catch (firebaseError) {
         console.error(
           "Error al cargar el inicio:",
@@ -836,11 +827,11 @@ export default function DashboardEmpresaPage() {
                   <CalendarDays className="mx-auto h-7 w-7 text-slate-300 dark:text-zinc-700 sm:h-9 sm:w-9" />
 
                   <p className="mt-2 text-sm font-medium text-slate-950 dark:text-white sm:mt-4 sm:text-base">
-                    Agenda disponible desde Página Completa
+                    Agenda no disponible
                   </p>
 
                   <p className="mt-0.5 text-[11px] text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-sm">
-                    Activá Página Completa o Business IA para administrar reservas y turnos.
+                    Activá tu suscripción para gestionar reservas y turnos.
                   </p>
                 </div>
               ) : proximosTurnos.length === 0 ? (
