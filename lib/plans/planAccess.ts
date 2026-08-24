@@ -10,9 +10,6 @@
  * "free" YA NO significa que exista un plan gratuito comercial.
  * Es solamente el identificador histórico que ya usan Firestore,
  * Mercado Pago, APIs y distintas pantallas del proyecto.
- *
- * Más adelante, si queremos, podemos migrar los IDs internos a
- * "simple" | "complete" | "business" sin apurarnos ni romper el MVP.
  */
 
 export type PlanId =
@@ -31,6 +28,7 @@ export type PlanFeature =
   | "estadisticas_basicas"
   | "asistente_ia"
   | "turnos"
+  | "cobros_online"
   | "presupuestos"
   | "estadisticas_avanzadas"
   | "automatizaciones"
@@ -40,13 +38,6 @@ export type PlanFeature =
 
 /**
  * Límites mensuales.
- *
- * Página Simple y Página Completa no incluyen IA,
- * por eso no necesitan cuota de conversaciones del asistente
- * ni respuestas de IA.
- *
- * Business IA arranca con límites prudentes.
- * Los podemos ajustar más adelante cuando tengamos consumo real.
  */
 export const PLAN_LIMITS = {
   free: {
@@ -79,12 +70,6 @@ export const PLAN_NAMES: Record<
 
 /**
  * Precios de lanzamiento acordados.
- *
- * inicial = pago por armado / puesta en marcha.
- * mensual = mantenimiento mensual.
- *
- * Business puede conservar el precio mensual contratado
- * para los primeros clientes aunque el precio público suba luego.
  */
 export const PLAN_PRICES = {
   free: {
@@ -109,22 +94,7 @@ const FEATURES_BY_PLAN: Record<
 > = {
   /**
    * PÁGINA SIMPLE
-   *
-   * - página pública
-   * - información del negocio
-   * - servicios
-   * - horarios
-   * - ubicación
-   * - redes
-   * - WhatsApp directo
-   * - contacto
-   * - estadísticas básicas
-   *
-   * NOTA:
-   * "catalogo" sigue habilitado porque actualmente servicios
-   * y productos comparten el mismo módulo.
-   * La restricción específica de productos se hará desde
-   * la pantalla de catálogo usando la feature "productos".
+   * Incluye presencia profesional, servicios y sistema completo de turnos/reservas.
    */
   free: new Set<PlanFeature>([
     "pagina_publica",
@@ -133,17 +103,12 @@ const FEATURES_BY_PLAN: Record<
     "whatsapp",
     "redes_sociales",
     "estadisticas_basicas",
+    "turnos",
   ]),
 
   /**
    * PÁGINA COMPLETA
-   *
-   * Todo Página Simple +
-   * - productos
-   * - QR
-   * - presupuestos
-   * - agenda / reservas
-   * - estadísticas avanzadas
+   * Todo lo de Simple + Catálogo avanzado de productos, Cobros online (Mercado Pago / CVU), presupuestos y QR.
    */
   pro: new Set<PlanFeature>([
     "pagina_publica",
@@ -155,22 +120,14 @@ const FEATURES_BY_PLAN: Record<
     "qr",
     "estadisticas_basicas",
     "turnos",
+    "cobros_online",
     "presupuestos",
     "estadisticas_avanzadas",
   ]),
 
   /**
    * BUSINESS IA
-   *
-   * Todo Página Completa +
-   * - asistente IA
-   * - consultas del asistente
-   * - atención humana cuando haga falta
-   * - sin marca NDI AI
-   *
-   * Automatizaciones y Equipo quedan conservadas en el tipo
-   * por compatibilidad con código viejo, pero NO se ofrecen
-   * actualmente como funciones comerciales.
+   * Todo lo de Completa + Asistente con Inteligencia Artificial.
    */
   business: new Set<PlanFeature>([
     "pagina_publica",
@@ -182,6 +139,7 @@ const FEATURES_BY_PLAN: Record<
     "qr",
     "estadisticas_basicas",
     "turnos",
+    "cobros_online",
     "presupuestos",
     "estadisticas_avanzadas",
     "asistente_ia",
@@ -241,23 +199,6 @@ function convertirFecha(
   return null;
 }
 
-/**
- * Devuelve el plan efectivo sin cambiar todavía
- * los IDs históricos del proyecto.
- *
- * Para no romper empresas existentes:
- * - business sigue siendo business.
- * - pro con vencimiento activo sigue siendo pro.
- * - free se interpreta como Página Simple.
- *
- * IMPORTANTE:
- * "free" acá NO significa gratuito; significa Página Simple.
- *
- * El ID del plan se conserva aunque venza.
- * La habilitación real de funciones se controla abajo con
- * empresaTieneSuscripcionActiva(), usando subscriptionStatus
- * y subscriptionEndsAt.
- */
 export function obtenerPlanEfectivo(
   empresa: {
     plan?: unknown;
@@ -283,25 +224,10 @@ export function obtenerPlanEfectivo(
       empresa.subscriptionEndsAt,
     );
 
-  /**
-   * Compatibilidad:
-   * si todavía no existe fecha de vencimiento,
-   * mantenemos el plan guardado activo.
-   *
-   * Esto evita cortar empresas existentes mientras
-   * terminamos de adaptar facturación al nuevo modelo.
-   */
   if (!vencimiento) {
     return planGuardado;
   }
 
-  /**
-   * No degradamos automáticamente a otro plan cuando vence.
-   * Conservamos el plan contratado para mostrarlo en facturación.
-   *
-   * Las funciones quedan bloqueadas por
-   * empresaTieneSuscripcionActiva() si la suscripción no está activa.
-   */
   if (
     vencimiento.getTime() <=
     ahora.getTime()
@@ -347,13 +273,6 @@ export function empresaTieneSuscripcionActiva(
       empresa.subscriptionEndsAt,
     );
 
-  /*
-   * Compatibilidad con empresas antiguas:
-   * si el backend ya las marcó como activas pero todavía
-   * no tienen subscriptionEndsAt, no las cortamos de golpe.
-   *
-   * Las nuevas compras de Mercado Pago sí guardan vencimiento.
-   */
   if (!vencimiento) {
     return true;
   }
@@ -372,13 +291,6 @@ export function empresaTieneFuncion(
   },
   funcion: PlanFeature,
 ) {
-  /*
-   * NDI AI ya no ofrece ningún plan gratuito.
-   *
-   * El ID interno "free" sigue representando Página Simple
-   * por compatibilidad, pero una empresa SIN suscripción activa
-   * no puede utilizar funciones comerciales.
-   */
   if (
     !empresaTieneSuscripcionActiva(
       empresa,
