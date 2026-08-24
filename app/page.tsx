@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowRight,
-  Bot,
   Building2,
   CalendarDays,
   Check,
@@ -17,8 +17,6 @@ import {
   Sparkles,
   UserRoundCheck,
   Zap,
-  Sun,
-  Moon,
 } from "lucide-react";
 
 const problemas = [
@@ -163,30 +161,26 @@ const planSimple = [
   "Página pública profesional",
   "Logo, portada, colores e identidad visual",
   "Información completa del negocio",
-  "Servicios, productos o carta básica según tu negocio",
-  "Nombre, descripción, precio y 1 imagen por ítem",
-  "Consultas o pedidos por WhatsApp",
+  "Agenda propia de NDI AI",
+  "Turnos y reservas online las 24 hs",
+  "Reservas de estadías (hoteles y hostales)",
+  "Reservas de mesa para gastronomía",
+  "Consultas y pedidos por WhatsApp",
   "Horarios de atención",
   "Ubicación y mapa",
   "Redes sociales",
-  "Botón directo a WhatsApp",
-  "Teléfono, correo y formulario de contacto",
   "Galería de imágenes",
   "Estadísticas básicas",
 ];
 
 const planCompleta = [
   "Todo lo incluido en Página Simple",
-  "Productos, catálogo o carta",
-  "Hasta 3 imágenes por producto o servicio",
-  "Detalle completo de productos",
+  "Catálogo completo de productos y carta digital",
+  "Hasta 3 imágenes por producto",
+  "Cobros online (Mercado Pago, CVU / Alias)",
   "Código QR para compartir",
   "Solicitud de presupuestos",
-  "Agenda propia de NDI AI",
-  "Turnos y reservas online",
-  "Reservas de alojamiento para hoteles y hostales",
-  "Reservas de mesa para restaurantes",
-  "Pedidos online para restaurantes",
+  "Pedidos online organizados",
   "Estadísticas avanzadas",
 ];
 
@@ -202,6 +196,7 @@ const planBusinessIA = [
   "Atención humana cuando sea necesaria",
   "Sin marca comercial de NDI AI",
 ];
+
 const proximamente = [
   {
     titulo: "WhatsApp Business",
@@ -230,8 +225,15 @@ export default function HomePage() {
       <header className="sticky top-0 z-50 border-b border-zinc-800/80 bg-zinc-950/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 sm:px-8 sm:py-3">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 sm:h-10 sm:w-10">
-              <Bot className="h-5 w-5" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 p-2 shadow-md shadow-blue-600/20 sm:h-10 sm:w-10">
+              <Image
+                src="/logo-ndi.png"
+                alt="Logo NDI"
+                width={20}
+                height={20}
+                className="h-full w-full object-contain"
+                priority
+              />
             </div>
 
             <p className="text-sm font-bold tracking-[0.16em] text-white sm:text-base">
@@ -638,8 +640,7 @@ export default function HomePage() {
 
             <p className="mt-5 max-w-xl leading-8 text-zinc-400">
               Configurá horarios, recibí reservas desde tu página y administrá
-              cada turno desde el panel de NDI AI. Disponible desde Página
-              Completa.
+              cada turno desde el panel de NDI AI. Disponible en tu plan.
             </p>
 
             <div className="mt-7 space-y-3">
@@ -736,8 +737,15 @@ export default function HomePage() {
       <section className="mx-auto grid max-w-7xl gap-14 px-5 py-20 sm:px-8 sm:py-24 lg:grid-cols-2 lg:items-center">
         <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl">
           <div className="flex items-center gap-3 border-b border-zinc-800 pb-5">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600">
-              <Bot className="h-5 w-5" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 p-2 shadow-md shadow-blue-600/20">
+              <Image
+                src="/logo-ndi.png"
+                alt="Logo NDI"
+                width={22}
+                height={22}
+                className="h-full w-full object-contain"
+                priority
+              />
             </div>
 
             <div>
@@ -832,7 +840,7 @@ export default function HomePage() {
           <div className="mt-12 grid gap-6 lg:grid-cols-3">
             <PlanCard
               nombre="Página Simple"
-              descripcion="Para negocios que quieren tener toda su información ordenada en una página profesional y facilitar el contacto con sus clientes."
+              descripcion="Para negocios y profesionales que quieren su presencia web, servicios y sistema de turnos o reservas online."
               inicial="$ 89.999"
               mensual="$ 5.999/mes"
               features={planSimple}
@@ -840,7 +848,7 @@ export default function HomePage() {
 
             <PlanCard
               nombre="Página Completa"
-              descripcion="Para negocios que además necesitan catálogo, productos, presupuestos, turnos, reservas o pedidos según su actividad."
+              descripcion="Para negocios que además necesitan catálogo de productos, cobros online con Mercado Pago y transferencias."
               inicial="$ 159.999"
               mensual="$ 9.999/mes"
               features={planCompleta}

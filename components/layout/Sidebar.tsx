@@ -616,12 +616,12 @@ export default function Sidebar() {
             href={`/empresas/${empresaId}/dashboard`}
             className="flex items-center gap-3"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 p-1.5 shadow-md shadow-blue-600/20">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 p-2 shadow-md shadow-blue-600/20">
               <Image
                 src="/logo-ndi.png"
                 alt="Logo NDI"
-                width={28}
-                height={28}
+                width={20}
+                height={20}
                 className="h-full w-full object-contain"
                 priority
               />
@@ -704,12 +704,12 @@ export default function Sidebar() {
           className="border-b border-slate-200 p-6 transition hover:bg-slate-100 dark:border-zinc-800 dark:hover:bg-zinc-800/40"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 p-2 shadow-md shadow-blue-600/20">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 p-2.5 shadow-md shadow-blue-600/20">
               <Image
                 src="/logo-ndi.png"
                 alt="Logo NDI"
-                width={32}
-                height={32}
+                width={24}
+                height={24}
                 className="h-full w-full object-contain"
                 priority
               />
