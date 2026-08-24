@@ -6,6 +6,7 @@ import {
   useState,
 } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   useParams,
   usePathname,
@@ -615,8 +616,15 @@ export default function Sidebar() {
             href={`/empresas/${empresaId}/dashboard`}
             className="flex items-center gap-3"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600">
-              <Bot className="h-5 w-5 text-white" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 p-1.5 shadow-md shadow-blue-600/20">
+              <Image
+                src="/logo-ndi.png"
+                alt="Logo NDI"
+                width={28}
+                height={28}
+                className="h-full w-full object-contain"
+                priority
+              />
             </div>
 
             <div>
@@ -696,8 +704,15 @@ export default function Sidebar() {
           className="border-b border-slate-200 p-6 transition hover:bg-slate-100 dark:border-zinc-800 dark:hover:bg-zinc-800/40"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600">
-              <Bot className="h-6 w-6 text-white" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 p-2 shadow-md shadow-blue-600/20">
+              <Image
+                src="/logo-ndi.png"
+                alt="Logo NDI"
+                width={32}
+                height={32}
+                className="h-full w-full object-contain"
+                priority
+              />
             </div>
 
             <div>

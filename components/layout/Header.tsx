@@ -11,7 +11,6 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import {
   Bell,
-  Bot,
   Building2,
   CheckCheck,
   ChevronDown,
@@ -390,15 +389,6 @@ export default function Header() {
                   )
                 : "";
 
-            /*
-             * Si la empresa acaba de eliminarse (o el usuario perdió
-             * acceso), Firestore cierra primero el listener de
-             * notifications y puede devolver permission-denied antes
-             * de que llegue la actualización de la lista de empresas.
-             *
-             * Es un cierre esperado: limpiamos el estado local y no
-             * mostramos un error rojo en la consola.
-             */
             if (
               codigo ===
                 "permission-denied" ||
@@ -1032,10 +1022,6 @@ export default function Header() {
       <header className="sticky top-0 z-40 border-b border-zinc-200/80 bg-white/80 px-4 backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/80 sm:px-6">
         <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-blue-500 shadow-sm shadow-blue-500/20">
-              <Bot className="h-5 w-5 text-white" />
-            </div>
-
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <p className="text-sm font-semibold tracking-tight text-zinc-950 dark:text-white">
