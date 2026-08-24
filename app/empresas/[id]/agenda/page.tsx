@@ -140,16 +140,6 @@ const DIAS_SEMANA = [
   "Dom",
 ];
 
-const DIAS_CONFIG = [
-  { clave: "1", nombre: "Lunes" },
-  { clave: "2", nombre: "Martes" },
-  { clave: "3", nombre: "Miércoles" },
-  { clave: "4", nombre: "Jueves" },
-  { clave: "5", nombre: "Viernes" },
-  { clave: "6", nombre: "Sábado" },
-  { clave: "0", nombre: "Domingo" },
-];
-
 const AGENDA_CONFIG_INICIAL: AgendaConfig = {
   activa: false,
   intervaloMinutos: 30,
@@ -300,9 +290,6 @@ export default function AgendaPage() {
   const [agendaConfig, setAgendaConfig] =
     useState<AgendaConfig>(AGENDA_CONFIG_INICIAL);
 
-  const [guardandoHorarios, setGuardandoHorarios] =
-    useState(false);
-
   useEffect(() => {
     if (!empresaId) {
       setError("No se encontró la empresa.");
@@ -310,32 +297,23 @@ export default function AgendaPage() {
       return;
     }
 
-    const empresaIdSeguro =
-      empresaId;
+    const empresaIdSeguro = empresaId;
 
-    let cancelarTurnos:
-      | (() => void)
-      | undefined;
-
-    let cancelarCatalogo:
-      | (() => void)
-      | undefined;
+    let cancelarTurnos: (() => void) | undefined;
+    let cancelarCatalogo: (() => void) | undefined;
 
     async function cargarAgenda() {
       try {
-        const empresaSnapshot =
-          await getDoc(
-            doc(
-              db,
-              "companies",
-              empresaIdSeguro
-            )
-          );
+        const empresaSnapshot = await getDoc(
+          doc(
+            db,
+            "companies",
+            empresaIdSeguro
+          )
+        );
 
         if (!empresaSnapshot.exists()) {
-          setError(
-            "La empresa no existe."
-          );
+          setError("La empresa no existe.");
           setCargando(false);
           return;
         }
@@ -344,13 +322,9 @@ export default function AgendaPage() {
           empresaSnapshot.data() as EmpresaPlan;
 
         const habilitada =
-          planPermiteAgenda(
-            empresaData
-          );
+          planPermiteAgenda(empresaData);
 
-        setAgendaHabilitada(
-          habilitada
-        );
+        setAgendaHabilitada(habilitada);
 
         setRubroEmpresa(
           typeof empresaData.rubro === "string"
@@ -436,21 +410,16 @@ export default function AgendaPage() {
                   return {
                     id: documento.id,
                     ...datos,
-                    fecha:
-                      fechaNormalizada,
+                    fecha: fechaNormalizada,
                     hora:
                       datos.hora ||
-                      (datos.tipoReserva ===
-                      "alojamiento"
+                      (datos.tipoReserva === "alojamiento"
                         ? "14:00"
                         : ""),
                     duracionMinutos:
-                      Number(
-                        datos.duracionMinutos
-                      ) || 0,
+                      Number(datos.duracionMinutos) || 0,
                     estado:
-                      datos.estado ||
-                      "pendiente",
+                      datos.estado || "pendiente",
                   };
                 }
               );
@@ -464,14 +433,6 @@ export default function AgendaPage() {
               "Error al cargar turnos:",
               firebaseError
             );
-
-            setError(
-              firebaseError.code ===
-                "permission-denied"
-                ? "No tenés permisos para ver la agenda."
-                : "No se pudieron cargar los turnos."
-            );
-
             setCargando(false);
           }
         );
@@ -480,10 +441,7 @@ export default function AgendaPage() {
           "Error al verificar el plan de Agenda:",
           firebaseError
         );
-
-        setError(
-          "No se pudo verificar el plan."
-        );
+        setError("No se pudo verificar el plan.");
         setCargando(false);
       }
     }
@@ -502,9 +460,7 @@ export default function AgendaPage() {
   );
 
   const turnosFiltrados = useMemo(() => {
-    const hoy = obtenerFechaISO(
-      new Date()
-    );
+    const hoy = obtenerFechaISO(new Date());
 
     return turnos
       .filter((turno) => {
@@ -518,8 +474,7 @@ export default function AgendaPage() {
           fechaInicio;
 
         const sigueVigente =
-          turno.tipoReserva ===
-            "alojamiento"
+          turno.tipoReserva === "alojamiento"
             ? fechaFin >= hoy
             : fechaInicio >= hoy;
 
@@ -555,10 +510,7 @@ export default function AgendaPage() {
           b.hora || ""
         );
       });
-  }, [
-    turnos,
-    filtroEstado,
-  ]);
+  }, [turnos, filtroEstado]);
 
   const resumen = useMemo(() => {
     const hoy = obtenerFechaISO(new Date());
@@ -605,9 +557,7 @@ export default function AgendaPage() {
     return mapa;
   }, [turnos]);
 
-  function abrirNuevoTurno(
-    fecha = fechaSeleccionada
-  ) {
+  function abrirNuevoTurno(fecha = fechaSeleccionada) {
     setEditandoId(null);
     setFormulario({
       ...FORMULARIO_INICIAL,
@@ -629,9 +579,7 @@ export default function AgendaPage() {
       servicioId: turno.servicioId || "",
       fecha: turno.fecha,
       hora: turno.hora,
-      duracionMinutos: String(
-        turno.duracionMinutos
-      ),
+      duracionMinutos: String(turno.duracionMinutos),
       notas: turno.notas || "",
     });
 
@@ -771,23 +719,19 @@ export default function AgendaPage() {
 
     const servicioSeleccionado =
       serviciosCatalogo.find(
-        (item) =>
-          item.id === formulario.servicioId
+        (item) => item.id === formulario.servicioId
       );
 
     setGuardando(true);
 
     try {
       const datosTurno = {
-        nombreCliente:
-          formulario.nombreCliente.trim(),
+        nombreCliente: formulario.nombreCliente.trim(),
         email: formulario.email.trim(),
         telefono: formulario.telefono.trim(),
         servicio: formulario.servicio.trim(),
-        servicioId:
-          formulario.servicioId || "",
-        precioServicio:
-          servicioSeleccionado?.precio || 0,
+        servicioId: formulario.servicioId || "",
+        precioServicio: servicioSeleccionado?.precio || 0,
         fecha: formulario.fecha,
         hora: formulario.hora,
         duracionMinutos: duracion,
@@ -807,9 +751,7 @@ export default function AgendaPage() {
           datosTurno
         );
 
-        setMensaje(
-          "Turno actualizado correctamente."
-        );
+        setMensaje("Turno actualizado correctamente.");
       } else {
         await addDoc(
           collection(
@@ -826,9 +768,7 @@ export default function AgendaPage() {
           }
         );
 
-        setMensaje(
-          "Turno creado correctamente."
-        );
+        setMensaje("Turno creado correctamente.");
       }
 
       setFechaSeleccionada(formulario.fecha);
@@ -879,9 +819,7 @@ export default function AgendaPage() {
       );
 
       setMensaje(
-        `Turno marcado como ${ESTADOS[
-          estado
-        ].nombre.toLowerCase()}.`
+        `Turno marcado como ${ESTADOS[estado].nombre.toLowerCase()}.`
       );
     } catch (firebaseError) {
       console.error(
@@ -889,9 +827,7 @@ export default function AgendaPage() {
         firebaseError
       );
 
-      setError(
-        "No se pudo actualizar el turno."
-      );
+      setError("No se pudo actualizar el turno.");
     } finally {
       setProcesandoId(null);
     }
@@ -959,9 +895,7 @@ export default function AgendaPage() {
     );
 
     setMesActual(inicioMes);
-    setFechaSeleccionada(
-      obtenerFechaISO(hoy)
-    );
+    setFechaSeleccionada(obtenerFechaISO(hoy));
   }
 
   const rubroNormalizado =
@@ -995,13 +929,13 @@ export default function AgendaPage() {
   if (agendaHabilitada === false) {
     return (
       <section className="mx-auto w-full max-w-4xl px-3 py-5 sm:px-8 sm:py-12">
-        <Card className="border-cyan-200 bg-cyan-50 p-5 text-center sm:p-12 dark:border-cyan-500/20 dark:bg-cyan-500/5">
-          <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-cyan-100 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-400 sm:h-16 sm:w-16 sm:rounded-2xl">
+        <Card className="border-blue-200 bg-blue-50 p-5 text-center sm:p-12 dark:border-blue-500/20 dark:bg-blue-500/5">
+          <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 sm:h-16 sm:w-16 sm:rounded-2xl">
             <CalendarDays className="h-5 w-5 sm:h-8 sm:w-8" />
           </div>
 
-          <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-cyan-700 dark:text-cyan-400 sm:mt-6 sm:text-sm sm:tracking-[0.18em]">
-            Función Pro
+          <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-blue-700 dark:text-blue-400 sm:mt-6 sm:text-sm sm:tracking-[0.18em]">
+            Suscripción requerida
           </p>
 
           <h1 className="mt-1.5 text-xl font-bold text-slate-950 dark:text-white sm:mt-3 sm:text-3xl">
@@ -1009,7 +943,7 @@ export default function AgendaPage() {
           </h1>
 
           <p className="mx-auto mt-2 max-w-xl text-[11px] leading-5 text-slate-600 dark:text-zinc-400 sm:mt-3 sm:text-sm sm:leading-6">
-            La gestión de {pluralAgenda} está disponible en los planes que incluyen agenda.
+            Para acceder a la agenda y gestionar {pluralAgenda} necesitás contar con una suscripción activa de NDI AI.
           </p>
 
           <Button
@@ -1021,7 +955,7 @@ export default function AgendaPage() {
               )
             }
           >
-            Ver plan Pro
+            Ver planes disponibles
           </Button>
         </Card>
       </section>
@@ -1060,9 +994,7 @@ export default function AgendaPage() {
         <ResumenCard
           titulo={usaReservas ? "Reservas totales" : "Turnos totales"}
           valor={resumen.total}
-          icono={
-            <CalendarDays className="h-5 w-5" />
-          }
+          icono={<CalendarDays className="h-5 w-5" />}
         />
 
         <ResumenCard
@@ -1074,17 +1006,13 @@ export default function AgendaPage() {
         <ResumenCard
           titulo="Pendientes"
           valor={resumen.pendientes}
-          icono={
-            <UserRound className="h-5 w-5" />
-          }
+          icono={<UserRound className="h-5 w-5" />}
         />
 
         <ResumenCard
           titulo="Confirmados"
           valor={resumen.confirmados}
-          icono={
-            <CheckCircle2 className="h-5 w-5" />
-          }
+          icono={<CheckCircle2 className="h-5 w-5" />}
         />
       </div>
 
@@ -1161,23 +1089,19 @@ export default function AgendaPage() {
                       Seleccioná un servicio
                     </option>
 
-                    {serviciosCatalogo.map(
-                      (servicio) => (
-                        <option
-                          key={servicio.id}
-                          value={servicio.id}
-                        >
-                          {servicio.nombre}
-                          {servicio.precio
-                            ? ` · $${Number(
-                                servicio.precio
-                              ).toLocaleString(
-                                "es-AR"
-                              )}`
-                            : ""}
-                        </option>
-                      )
-                    )}
+                    {serviciosCatalogo.map((servicio) => (
+                      <option
+                        key={servicio.id}
+                        value={servicio.id}
+                      >
+                        {servicio.nombre}
+                        {servicio.precio
+                          ? ` · $${Number(
+                              servicio.precio
+                            ).toLocaleString("es-AR")}`
+                          : ""}
+                      </option>
+                    ))}
                   </select>
                 </div>
               ) : (
@@ -1300,9 +1224,7 @@ export default function AgendaPage() {
                 onClick={() => {
                   setMostrandoFormulario(false);
                   setEditandoId(null);
-                  setFormulario(
-                    FORMULARIO_INICIAL
-                  );
+                  setFormulario(FORMULARIO_INICIAL);
                   setError("");
                 }}
               >
@@ -1324,10 +1246,9 @@ export default function AgendaPage() {
         </Card>
       )}
 
-      {/* VISTA PRINCIPAL: CALENDARIO AMPLIADO Y PANEL LATERAL */}
+      {/* VISTA PRINCIPAL */}
       <div className="grid gap-4 sm:gap-6 xl:grid-cols-[minmax(0,1fr)_440px]">
-        
-        {/* CALENDARIO ADAPTABLE PARA MÓVIL Y ESCRITORIO */}
+        {/* CALENDARIO */}
         <Card className="overflow-hidden">
           <div className="flex items-center justify-between gap-2 border-b border-slate-200 p-4 dark:border-zinc-800 sm:p-6 sm:flex-row sm:items-center">
             <div>
@@ -1383,27 +1304,17 @@ export default function AgendaPage() {
 
           <div className="grid grid-cols-7">
             {diasCalendario.map((dia) => {
-              const fechaISO =
-                obtenerFechaISO(dia.fecha);
-
-              const turnosDelDia =
-                turnosPorFecha.get(fechaISO) ?? [];
-
-              const seleccionado =
-                fechaISO === fechaSeleccionada;
-
-              const esHoy =
-                fechaISO ===
-                obtenerFechaISO(new Date());
+              const fechaISO = obtenerFechaISO(dia.fecha);
+              const turnosDelDia = turnosPorFecha.get(fechaISO) ?? [];
+              const seleccionado = fechaISO === fechaSeleccionada;
+              const esHoy = fechaISO === obtenerFechaISO(new Date());
 
               return (
                 <button
                   key={fechaISO}
                   type="button"
                   onClick={() => {
-                    setFechaSeleccionada(
-                      fechaISO
-                    );
+                    setFechaSeleccionada(fechaISO);
 
                     if (!dia.perteneceAlMes) {
                       const nuevoMes = new Date(
@@ -1411,7 +1322,6 @@ export default function AgendaPage() {
                         dia.fecha.getMonth(),
                         1
                       );
-
                       setMesActual(nuevoMes);
                     }
                   }}
@@ -1474,7 +1384,7 @@ export default function AgendaPage() {
           </div>
         </Card>
 
-        {/* PANEL LATERAL DE PRÓXIMAS RESERVAS / TURNOS */}
+        {/* PANEL LATERAL */}
         <Card className="overflow-hidden flex flex-col">
           <div className="border-b border-slate-200 p-4 dark:border-zinc-800 sm:p-5">
             <div className="flex items-start justify-between gap-2">
@@ -1511,9 +1421,7 @@ export default function AgendaPage() {
                 <button
                   key={estado}
                   type="button"
-                  onClick={() =>
-                    setFiltroEstado(estado)
-                  }
+                  onClick={() => setFiltroEstado(estado)}
                   className={[
                     "shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-medium transition sm:px-3 sm:py-1.5 sm:text-xs",
                     filtroEstado === estado
@@ -1532,7 +1440,7 @@ export default function AgendaPage() {
           <div className="max-h-[580px] flex-1 overflow-y-auto p-3 sm:max-h-[720px] sm:p-4">
             {cargando ? (
               <div className="py-12 text-center">
-                <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-cyan-600 dark:border-zinc-700 dark:border-t-cyan-500" />
+                <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
                 <p className="mt-4 text-sm text-slate-500">Cargando agenda...</p>
               </div>
             ) : turnosFiltrados.length === 0 ? (
@@ -1550,9 +1458,7 @@ export default function AgendaPage() {
                   type="button"
                   className="mt-5"
                   onClick={() =>
-                    abrirNuevoTurno(
-                      fechaSeleccionada
-                    )
+                    abrirNuevoTurno(fechaSeleccionada)
                   }
                 >
                   <Plus className="mr-2 h-4 w-4" />
@@ -1568,9 +1474,7 @@ export default function AgendaPage() {
                     procesando={
                       procesandoId === turno.id
                     }
-                    onCambiarEstado={
-                      cambiarEstado
-                    }
+                    onCambiarEstado={cambiarEstado}
                     onEditar={editarTurno}
                     onEliminar={eliminarTurno}
                   />
@@ -1606,19 +1510,15 @@ function TurnoCard({
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-xs font-bold text-slate-900 dark:text-zinc-200">
-              {turno.tipoReserva ===
-              "alojamiento"
+              {turno.tipoReserva === "alojamiento"
                 ? "Estadía"
-                : turno.tipoReserva ===
-                    "mesa"
+                : turno.tipoReserva === "mesa"
                   ? `Mesa · ${turno.hora}`
                   : turno.hora}
             </p>
 
             <Badge
-              variant={
-                ESTADOS[turno.estado].variant
-              }
+              variant={ESTADOS[turno.estado].variant}
             >
               {ESTADOS[turno.estado].nombre}
             </Badge>
@@ -1659,16 +1559,12 @@ function TurnoCard({
       </div>
 
       <div className="mt-3 grid gap-1.5 text-xs text-slate-600 dark:text-zinc-400 border-t border-slate-200/60 pt-3 dark:border-zinc-800/80">
-        {turno.tipoReserva ===
-        "alojamiento" ? (
+        {turno.tipoReserva === "alojamiento" ? (
           <>
             <p>
               <strong>Entrada:</strong>{" "}
-              {turno.fechaEntrada ||
-                turno.fecha}
-              {turno.hora
-                ? ` · ${turno.hora}`
-                : ""}
+              {turno.fechaEntrada || turno.fecha}
+              {turno.hora ? ` · ${turno.hora}` : ""}
             </p>
 
             {turno.fechaSalida && (
@@ -1677,20 +1573,17 @@ function TurnoCard({
               </p>
             )}
 
-            {typeof turno.huespedes ===
-              "number" && (
+            {typeof turno.huespedes === "number" && (
               <p>
                 <strong>Huéspedes:</strong> {turno.huespedes}
               </p>
             )}
           </>
-        ) : turno.tipoReserva ===
-          "mesa" ? (
+        ) : turno.tipoReserva === "mesa" ? (
           <>
             <p><strong>Fecha:</strong> {turno.fecha}</p>
             <p><strong>Horario:</strong> {turno.hora}</p>
-            {typeof turno.personas ===
-              "number" && (
+            {typeof turno.personas === "number" && (
               <p>
                 <strong>Personas:</strong> {turno.personas}
               </p>
@@ -1730,10 +1623,7 @@ function TurnoCard({
             texto="Confirmar"
             disabled={procesando}
             onClick={() =>
-              onCambiarEstado(
-                turno,
-                "confirmado"
-              )
+              onCambiarEstado(turno, "confirmado")
             }
           />
         )}
@@ -1743,10 +1633,7 @@ function TurnoCard({
             texto="Completar"
             disabled={procesando}
             onClick={() =>
-              onCambiarEstado(
-                turno,
-                "completado"
-              )
+              onCambiarEstado(turno, "completado")
             }
           />
         )}
@@ -1757,10 +1644,7 @@ function TurnoCard({
             disabled={procesando}
             danger
             onClick={() =>
-              onCambiarEstado(
-                turno,
-                "cancelado"
-              )
+              onCambiarEstado(turno, "cancelado")
             }
           />
         )}
@@ -1772,10 +1656,7 @@ function TurnoCard({
               disabled={procesando}
               danger
               onClick={() =>
-                onCambiarEstado(
-                  turno,
-                  "no_asistio"
-                )
+                onCambiarEstado(turno, "no_asistio")
               }
             />
           )}
@@ -1785,10 +1666,7 @@ function TurnoCard({
             texto="Volver a pendiente"
             disabled={procesando}
             onClick={() =>
-              onCambiarEstado(
-                turno,
-                "pendiente"
-              )
+              onCambiarEstado(turno, "pendiente")
             }
           />
         )}
@@ -1895,41 +1773,25 @@ function obtenerFechasEstadia(
   const fechas: string[] = [];
 
   if (
-    !/^\d{4}-\d{2}-\d{2}$/.test(
-      fechaEntrada
-    ) ||
-    !/^\d{4}-\d{2}-\d{2}$/.test(
-      fechaSalida
-    ) ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(fechaEntrada) ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(fechaSalida) ||
     fechaSalida <= fechaEntrada
   ) {
     return [fechaEntrada];
   }
 
-  const cursor = new Date(
-    `${fechaEntrada}T12:00:00`
-  );
-
-  const salida = new Date(
-    `${fechaSalida}T12:00:00`
-  );
+  const cursor = new Date(`${fechaEntrada}T12:00:00`);
+  const salida = new Date(`${fechaSalida}T12:00:00`);
 
   while (cursor < salida) {
-    fechas.push(
-      obtenerFechaISO(cursor)
-    );
-
-    cursor.setDate(
-      cursor.getDate() + 1
-    );
+    fechas.push(obtenerFechaISO(cursor));
+    cursor.setDate(cursor.getDate() + 1);
   }
 
   return fechas;
 }
 
-function construirDiasCalendario(
-  mes: Date
-) {
+function construirDiasCalendario(mes: Date) {
   const primerDiaMes = new Date(
     mes.getFullYear(),
     mes.getMonth(),
@@ -1945,10 +1807,7 @@ function construirDiasCalendario(
   const diaSemanaInicial =
     (primerDiaMes.getDay() + 6) % 7;
 
-  const inicioCalendario = new Date(
-    primerDiaMes
-  );
-
+  const inicioCalendario = new Date(primerDiaMes);
   inicioCalendario.setDate(
     primerDiaMes.getDate() - diaSemanaInicial
   );
@@ -1967,10 +1826,8 @@ function construirDiasCalendario(
     dias.push({
       fecha,
       perteneceAlMes:
-        fecha.getMonth() ===
-          primerDiaMes.getMonth() &&
-        fecha.getFullYear() ===
-          primerDiaMes.getFullYear(),
+        fecha.getMonth() === primerDiaMes.getMonth() &&
+        fecha.getFullYear() === primerDiaMes.getFullYear(),
     });
   }
 
@@ -1993,9 +1850,7 @@ function obtenerFechaISO(fecha: Date) {
   const mes = String(
     fecha.getMonth() + 1
   ).padStart(2, "0");
-  const dia = String(
-    fecha.getDate()
-  ).padStart(2, "0");
+  const dia = String(fecha.getDate()).padStart(2, "0");
 
   return `${anio}-${mes}-${dia}`;
 }
@@ -2009,6 +1864,5 @@ function formatearMes(fecha: Date) {
     }
   ).format(fecha);
 
-  return texto.charAt(0).toUpperCase() +
-    texto.slice(1);
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
