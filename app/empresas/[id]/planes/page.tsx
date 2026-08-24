@@ -31,8 +31,8 @@ import {
   type PlanId,
 } from "@/lib/plans/planAccess";
 
-// Configuración de contacto (código de país sin signos ni espacios, ej: 5493886XXXXXX)
-const WHATSAPP_NUMERO = "5493886654578";
+// Configuración de contacto
+const WHATSAPP_NUMERO = "5493886575664";
 
 type Empresa = {
   nombre?: string;
@@ -362,12 +362,12 @@ export default function PlanesPage() {
         </h1>
 
         <p className="mt-0.5 max-w-3xl text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:mt-1 sm:text-xs sm:leading-5">
-          Todos los planes incluyen la puesta en marcha de tu página y el mantenimiento mensual para el soporte y funcionamiento del negocio.
+          Todos los planes incluyen la configuración inicial de tu página y el mantenimiento mensual del servicio.
         </p>
 
         {!suscripcionActiva && (
           <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] leading-4 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200 sm:mt-3 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-xs sm:leading-normal">
-            Esta empresa todavía no tiene un plan activo. Al solicitar un plan te brindamos asistencia directa para activar el servicio de inmediato.
+            Esta empresa todavía no tiene un plan activo. Al solicitar tu plan por WhatsApp te enviamos los datos de pago y activamos tu cuenta al instante.
           </div>
         )}
       </header>
