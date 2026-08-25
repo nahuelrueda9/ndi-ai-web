@@ -225,18 +225,18 @@ export default function HomePage() {
       <header className="sticky top-0 z-50 border-b border-zinc-800/80 bg-zinc-950/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 sm:px-8 sm:py-3">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 p-2 shadow-md shadow-blue-600/20 sm:h-10 sm:w-10">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-blue-600 p-1.5 shadow-sm shadow-blue-600/20 sm:h-8 sm:w-8">
               <Image
                 src="/logo-ndi.png"
                 alt="Logo NDI"
-                width={20}
-                height={20}
+                width={16}
+                height={16}
                 className="h-full w-full object-contain"
                 priority
               />
             </div>
 
-            <p className="text-sm font-bold tracking-[0.16em] text-white sm:text-base">
+            <p className="text-sm font-bold tracking-[0.14em] text-white">
               NDI AI
             </p>
           </Link>
