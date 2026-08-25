@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { onAuthStateChanged, type User } from "firebase/auth";
-import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import { doc, getDoc, onSnapshot, updateDoc, Timestamp } from "firebase/firestore";
 import { useParams, useRouter } from "next/navigation";
-import { Check, MessageCircle, Sparkles, ShieldCheck } from "lucide-react";
+import { Check, MessageCircle, Sparkles, ShieldCheck, Zap } from "lucide-react";
 
 import { auth, db } from "@/lib/firebase";
 import {
@@ -46,22 +46,17 @@ const PLANES: Plan[] = [
     id: "free",
     nombre: "Página Simple",
     descripcion:
-      "Para negocios que quieren tener toda su información ordenada en una página profesional y facilitar el contacto con sus clientes.",
+      "Para negocios que quieren tener toda su información ordenada en una página profesional y recibir turnos o reservas online.",
     etiqueta: "Para empezar · 30 Días Gratis",
     funciones: [
       "Página pública profesional",
       "Logo, portada, colores e identidad visual",
       "Información completa del negocio",
-      "Servicios, productos o carta básica según tu negocio",
-      "Nombre, descripción, precio y 1 imagen por ítem",
+      "Agenda propia de NDI AI y turnos online",
+      "Reservas de estadías o mesas",
       "Consultas o pedidos por WhatsApp",
-      "Horarios de atención",
-      "Ubicación y mapa",
-      "Redes sociales",
-      "Botón directo a WhatsApp",
-      "Teléfono, correo y formulario de contacto",
-      "Galería de imágenes",
-      "Diseño adaptable a celular",
+      "Horarios de atención y mapa",
+      "Galería de imágenes y redes",
       "Estadísticas básicas",
     ],
   },
@@ -69,21 +64,17 @@ const PLANES: Plan[] = [
     id: "pro",
     nombre: "Página Completa",
     descripcion:
-      "Para negocios que además necesitan catálogo, productos, presupuestos, turnos, reservas o pedidos según su actividad.",
+      "Para negocios que además necesitan catálogo de productos, presupuestos, carta digital y cobros online integrados.",
     destacado: true,
     etiqueta: "Recomendado · 30 Días Gratis",
     funciones: [
       "Todo lo incluido en Página Simple",
       "Productos, catálogo o carta",
       "Hasta 3 imágenes por producto o servicio",
-      "Detalle completo de productos",
+      "Cobros online (Mercado Pago, CVU / Alias)",
       "Código QR para compartir",
       "Solicitud de presupuestos",
-      "Agenda propia de NDI AI",
-      "Turnos y reservas online",
-      "Reservas de alojamiento para hoteles y hostales",
-      "Reservas de mesa para restaurantes",
-      "Pedidos online para restaurantes",
+      "Pedidos online organizados",
       "Estadísticas avanzadas",
     ],
   },
@@ -91,7 +82,7 @@ const PLANES: Plan[] = [
     id: "business",
     nombre: "Business IA",
     descripcion:
-      "La versión más completa, con todas las herramientas de gestión más un asistente inteligente entrenado con la información real del negocio.",
+      "La versión más completa, con todas las herramientas de gestión más un asistente inteligente entrenado con tu información real.",
     lanzamiento: true,
     etiqueta: "Precio lanzamiento · 30 Días Gratis",
     funciones: [
@@ -99,9 +90,9 @@ const PLANES: Plan[] = [
       "Asistente IA dentro de la página",
       "Asistente configurable para cada negocio",
       "Base de conocimiento del negocio",
-      "Respuestas basadas en información real",
-      "Conversaciones guardadas en el panel",
-      "Captura y seguimiento de potenciales clientes",
+      "Respuestas basadas en datos reales 24/7",
+      "Historial de conversaciones en el panel",
+      "Captura y seguimiento de clientes",
       "Widget de IA para otras páginas web",
       "Atención humana cuando sea necesaria",
       "Sin marca comercial de NDI AI",
@@ -186,6 +177,7 @@ export default function PlanesPage() {
   const [empresa, setEmpresa] = useState<Empresa | null>(null);
   const [usuario, setUsuario] = useState<User | null>(null);
   const [cargando, setCargando] = useState(true);
+  const [procesandoPlan, setProcesandoPlan] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [accesoVerificado, setAccesoVerificado] = useState(false);
 
@@ -269,7 +261,7 @@ export default function PlanesPage() {
 
   if (cargando) {
     return (
-      <section className="mx-auto w-full max-w-5xl px-4 py-8">
+      <section className="mx-auto w-full max-w-6xl px-4 py-8">
         <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
           <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
           <p className="mt-4 text-sm text-slate-600 dark:text-zinc-400">
@@ -283,7 +275,7 @@ export default function PlanesPage() {
   if (!accesoVerificado || !empresa) {
     if (error) {
       return (
-        <section className="mx-auto w-full max-w-5xl px-4 py-8">
+        <section className="mx-auto w-full max-w-6xl px-4 py-8">
           <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
             {error}
           </div>
@@ -321,14 +313,39 @@ export default function PlanesPage() {
 
   const nombreNegocio = empresa.nombre || empresa.name || "Mi Negocio";
 
-  function solicitarPorWhatsApp(nombrePlan: string, accion: "contratar" | "renovar" = "contratar") {
-    let mensaje = "";
-    if (accion === "renovar") {
-      mensaje = `¡Hola! Quiero renovar el plan *${nombrePlan}* para mi negocio *${nombreNegocio}*.`;
-    } else {
-      mensaje = `¡Hola! Quiero activar el plan *${nombrePlan}* para mi negocio *${nombreNegocio}*.`;
-    }
+  async function activarConfiguracionPropia(planId: PlanId) {
+    if (!empresaId) return;
+    try {
+      setProcesandoPlan(planId);
+      const fechaVencimiento = new Date();
+      fechaVencimiento.setDate(fechaVencimiento.getDate() + 30);
 
+      const precios = obtenerPrecioPlan(planId);
+
+      await updateDoc(doc(db, "companies", empresaId), {
+        plan: planId,
+        subscriptionStatus: "active",
+        subscriptionEndsAt: Timestamp.fromDate(fechaVencimiento),
+        subscriptionMonthlyPrice: precios.mensual,
+      });
+
+      router.push(`/empresas/${empresaId}/dashboard`);
+    } catch (err) {
+      console.error("Error al activar plan:", err);
+      alert("Hubo un error al activar el plan. Intentá de nuevo o contactanos por WhatsApp.");
+    } finally {
+      setProcesandoPlan(null);
+    }
+  }
+
+  function pedirArmadoPorWhatsApp(nombrePlan: string) {
+    const mensaje = `¡Hola! Quiero activar los 30 días gratis del plan *${nombrePlan}* y que me configuren la página de mi negocio *${nombreNegocio}*.`;
+    const url = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(mensaje)}`;
+    window.open(url, "_blank");
+  }
+
+  function renovarPorWhatsApp(nombrePlan: string) {
+    const mensaje = `¡Hola! Quiero renovar mi suscripción del plan *${nombrePlan}* para mi negocio *${nombreNegocio}*.`;
     const url = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(mensaje)}`;
     window.open(url, "_blank");
   }
@@ -344,40 +361,16 @@ export default function PlanesPage() {
           Elegí tu versión de NDI AI
         </h1>
         <p className="mt-1.5 max-w-3xl text-sm leading-relaxed text-slate-600 dark:text-zinc-400">
-          Todos los planes incluyen la configuración inicial de tu página y el mantenimiento mensual del servicio.
+          Todos los planes incluyen <strong>30 días de prueba sin cargo</strong>. Podés configurarlo vos mismo desde tu panel o enviarnos tu información para que lo armemos por vos.
         </p>
-
-        <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-blue-200 bg-blue-50/70 p-4 dark:border-blue-500/20 dark:bg-blue-500/10 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm">
-              <Sparkles className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-blue-950 dark:text-blue-200">
-                ¿Querés que carguemos los datos por vos?
-              </p>
-              <p className="text-xs text-blue-800/80 dark:text-blue-300/80">
-                Pasános tu logo, fotos y precios por WhatsApp y te dejamos todo configurado.
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => solicitarPorWhatsApp(nombrePlanActual !== "Sin plan activo" ? nombrePlanActual : "Página Simple")}
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-500"
-          >
-            <MessageCircle className="h-4 w-4" />
-            Pedir armado asistido
-          </button>
-        </div>
       </header>
 
       {/* TARJETAS DE PLANES */}
       <div className="grid gap-6 lg:grid-cols-3">
         {PLANES.map((plan) => {
           const esActual = suscripcionActiva && plan.id === planActual;
-          const esUltimoPlan = !suscripcionActiva && tuvoSuscripcion && plan.id === planActual;
           const precios = obtenerPrecioPlan(plan.id);
+          const procesandoEste = procesandoPlan === plan.id;
 
           return (
             <article
@@ -422,7 +415,7 @@ export default function PlanesPage() {
                   {plan.descripcion}
                 </p>
 
-                {/* ESTRUCTURA DE PRECIOS ORIGINAL */}
+                {/* PRECIOS */}
                 <div className="mt-5 rounded-2xl bg-slate-50 p-4 dark:bg-zinc-800/50">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 sm:text-xs">
                     Puesta en marcha
@@ -441,7 +434,7 @@ export default function PlanesPage() {
                   )}
                 </div>
 
-                {/* LISTA DE FUNCIONES */}
+                {/* FUNCIONES */}
                 <div className="mt-6 space-y-2.5">
                   {plan.funciones.map((funcion) => (
                     <div
@@ -455,12 +448,12 @@ export default function PlanesPage() {
                 </div>
               </div>
 
-              {/* BOTÓN ÚNICO DE ACCIÓN */}
-              <div className="mt-8 pt-4 border-t border-slate-100 dark:border-zinc-800">
+              {/* DOBLE BOTÓN DE ACCIÓN */}
+              <div className="mt-8 space-y-2.5 pt-4 border-t border-slate-100 dark:border-zinc-800">
                 <button
                   type="button"
-                  disabled={esActual}
-                  onClick={() => solicitarPorWhatsApp(plan.nombre, esUltimoPlan ? "renovar" : "contratar")}
+                  disabled={esActual || Boolean(procesandoPlan)}
+                  onClick={() => activarConfiguracionPropia(plan.id)}
                   className={[
                     "flex w-full items-center justify-center gap-2 rounded-xl py-3 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm",
                     esActual
@@ -469,15 +462,24 @@ export default function PlanesPage() {
                       ? "bg-blue-600 text-white hover:bg-blue-500 shadow-md shadow-blue-600/20"
                       : plan.lanzamiento
                       ? "bg-violet-600 text-white hover:bg-violet-500 shadow-md shadow-violet-600/20"
-                      : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 dark:border-zinc-700 dark:bg-transparent dark:text-zinc-200 dark:hover:bg-zinc-800",
+                      : "bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-zinc-200",
                   ].join(" ")}
                 >
-                  {!esActual && <MessageCircle className="h-4 w-4" />}
-                  {esActual
+                  <Zap className="h-4 w-4" />
+                  {procesandoEste
+                    ? "Activando..."
+                    : esActual
                     ? "Plan en uso"
-                    : esUltimoPlan
-                    ? `Renovar por WhatsApp (${formatearPrecio(precioRenovacion)})`
-                    : "Solicitar por WhatsApp"}
+                    : "Configurar por mi cuenta"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => pedirArmadoPorWhatsApp(plan.nombre)}
+                  className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 py-2.5 text-xs font-bold text-emerald-700 transition hover:bg-emerald-500/20 dark:text-emerald-300"
+                >
+                  <MessageCircle className="h-3.5 w-3.5" />
+                  Pedir armado asistido
                 </button>
               </div>
             </article>
@@ -547,7 +549,7 @@ export default function PlanesPage() {
             {(suscripcionActiva || tuvoSuscripcion) && (
               <button
                 type="button"
-                onClick={() => solicitarPorWhatsApp(obtenerNombrePlan(planActual), "renovar")}
+                onClick={() => renovarPorWhatsApp(obtenerNombrePlan(planActual))}
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-xs font-bold text-white transition hover:bg-blue-500 shadow-sm"
               >
                 <MessageCircle className="h-4 w-4" />
