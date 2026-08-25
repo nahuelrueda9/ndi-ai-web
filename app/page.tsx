@@ -288,12 +288,11 @@ export default function HomePage() {
 
         <div className="relative mx-auto grid max-w-7xl gap-9 px-4 py-10 sm:px-8 sm:py-20 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:gap-14 lg:py-24">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-blue-300">
-              <Sparkles className="h-3.5 w-3.5 text-blue-400" />
-              Probá 30 días gratis
-            </div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-400 sm:text-xs">
+              Páginas inteligentes para negocios
+            </p>
 
-            <h1 className="mt-3.5 text-[2.15rem] font-bold leading-[1.04] tracking-tight text-white sm:mt-4 sm:text-5xl lg:text-[3.6rem]">
+            <h1 className="mt-3 text-[2.15rem] font-bold leading-[1.04] tracking-tight text-white sm:mt-4 sm:text-5xl lg:text-[3.6rem]">
               Tu negocio,
               <span className="block text-blue-400">
                 siempre disponible.
@@ -316,7 +315,7 @@ export default function HomePage() {
             </div>
 
             <p className="mt-5 text-xs text-zinc-500 sm:mt-6">
-              30 días de prueba sin cargo · Sin tarjeta obligatoria
+              Página propia · WhatsApp · Turnos · Asistente IA
             </p>
           </div>
 
@@ -475,7 +474,7 @@ export default function HomePage() {
               "WhatsApp directo",
             ].map((item, index) => (
               <div key={item} className="flex items-center gap-3">
-                <div className="rounded-xl border border-zinc-800 bg-zinc-900 px-5 py-3 text-sm font-medium text-zinc-200">
+                <div className="rounded-xl border border-zinc-800 bg-zinc-950 px-5 py-3 text-sm font-medium text-zinc-200">
                   {item}
                 </div>
 
@@ -825,14 +824,13 @@ export default function HomePage() {
             </h2>
 
             <p className="mt-5 leading-8 text-zinc-400">
-              Todos los planes incluyen <strong>30 días de prueba sin cargo</strong>.
+              Elegí la versión que mejor se adapte a tu negocio. Todos los planes incluyen puesta en marcha y mantenimiento mensual.
             </p>
           </div>
 
           <div className="mt-12 grid gap-6 lg:grid-cols-3">
             <PlanCard
               nombre="Página Simple"
-              etiqueta="30 Días Gratis"
               descripcion="Para negocios y profesionales que quieren su presencia web, servicios y sistema de turnos o reservas online."
               inicial="$ 89.999"
               mensual="$ 5.999/mes"
@@ -841,7 +839,7 @@ export default function HomePage() {
 
             <PlanCard
               nombre="Página Completa"
-              etiqueta="Recomendado · 30 Días Gratis"
+              etiqueta="Recomendado"
               descripcion="Para negocios que además necesitan catálogo de productos, cobros online con Mercado Pago y transferencias."
               inicial="$ 159.999"
               mensual="$ 9.999/mes"
@@ -851,7 +849,7 @@ export default function HomePage() {
 
             <PlanCard
               nombre="Business IA"
-              etiqueta="Lanzamiento · 30 Días Gratis"
+              etiqueta="Precio lanzamiento"
               descripcion="La versión más completa, con todas las herramientas de gestión más un asistente inteligente entrenado con la información real del negocio."
               inicial="$ 219.999"
               mensual="$ 15.999/mes"
@@ -926,7 +924,7 @@ export default function HomePage() {
               </h2>
 
               <p className="mx-auto mt-5 max-w-2xl leading-7 text-zinc-300">
-                Creá tu cuenta en segundos y probá 30 días sin cargo.
+                Creá tu cuenta, configurá tu negocio y elegí el plan ideal para vos.
               </p>
 
               <div className="mt-8 flex justify-center">
@@ -934,7 +932,7 @@ export default function HomePage() {
                   href="/register"
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-8 py-4 font-semibold text-white transition hover:bg-blue-500 shadow-xl shadow-blue-600/25"
                 >
-                  Probar 30 días gratis
+                  Quiero mi página
                   <ArrowRight className="h-5 w-5" />
                 </Link>
               </div>
@@ -1092,7 +1090,7 @@ function PlanCard({
               : "border border-zinc-700 hover:bg-zinc-800"
           }`}
         >
-          Probar 30 días gratis
+          Quiero mi página
         </Link>
       </div>
     </article>
