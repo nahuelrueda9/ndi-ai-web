@@ -47,7 +47,7 @@ const PLANES: Plan[] = [
     nombre: "Página Simple",
     descripcion:
       "Para negocios que quieren tener toda su información ordenada en una página profesional y recibir turnos o reservas online.",
-    etiqueta: "Para empezar · 1er Mes Bonificado",
+    etiqueta: "Para empezar · 30 Días Gratis",
     funciones: [
       "Página pública profesional",
       "Logo, portada, colores e identidad visual",
@@ -66,7 +66,7 @@ const PLANES: Plan[] = [
     descripcion:
       "Para negocios que además necesitan catálogo de productos, presupuestos, carta digital y cobros online integrados.",
     destacado: true,
-    etiqueta: "Recomendado · 1er Mes Bonificado",
+    etiqueta: "Recomendado · 30 Días Gratis",
     funciones: [
       "Todo lo incluido en Página Simple",
       "Productos, catálogo o carta",
@@ -84,7 +84,7 @@ const PLANES: Plan[] = [
     descripcion:
       "La versión más completa, con todas las herramientas de gestión más un asistente inteligente entrenado con tu información real.",
     lanzamiento: true,
-    etiqueta: "Precio lanzamiento · 1er Mes Bonificado",
+    etiqueta: "Precio lanzamiento · 30 Días Gratis",
     funciones: [
       "Todo lo incluido en Página Completa",
       "Asistente IA dentro de la página",
@@ -319,7 +319,7 @@ export default function PlanesPage() {
     } else if (modo === "asistido") {
       mensaje = `¡Hola! Quiero contratar el plan *${nombrePlan}* (${formatearPrecio(precioInicial)}) y que me ayuden a armar la página de mi negocio *${nombreNegocio}*. ¿Me pasás los datos para pagar?`;
     } else {
-      mensaje = `¡Hola! Quiero contratar el plan *${nombrePlan}* (${formatearPrecio(precioInicial)}) para mi negocio *${nombreNegocio}* y cargar los datos por mi cuenta. ¿Me pasás los datos para pagar?`;
+      mensaje = `¡Hola! Quiero contratar el plan *${nombrePlan}* (${formatearPrecio(precioInicial)}) para mi negocio *${nombreNegocio}* y configurarlo por mi cuenta. ¿Me pasás los datos para pagar?`;
     }
 
     const url = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(mensaje)}`;
@@ -337,7 +337,7 @@ export default function PlanesPage() {
           Elegí tu versión de NDI AI
         </h1>
         <p className="mt-1.5 max-w-3xl text-sm leading-relaxed text-slate-600 dark:text-zinc-400">
-          Todos los planes incluyen la puesta en marcha inicial con el <strong>primer mes de mantenimiento bonificado</strong>.
+          Todos los planes incluyen <strong>30 días de prueba sin cargo</strong>. Podés configurarlo vos mismo desde tu panel o enviarnos tu información para que lo armemos por vos.
         </p>
       </header>
 
@@ -399,7 +399,7 @@ export default function PlanesPage() {
                     {formatearPrecio(precios.inicial)}
                   </p>
                   <p className="mt-1 text-xs font-bold text-blue-600 dark:text-blue-400 sm:text-sm">
-                    + {formatearPrecio(precios.mensual)}/mes (1° mes sin cargo)
+                    + {formatearPrecio(precios.mensual)}/mes
                   </p>
 
                   {plan.lanzamiento && (
@@ -423,7 +423,7 @@ export default function PlanesPage() {
                 </div>
               </div>
 
-              {/* BOTONES DIRECTOS */}
+              {/* BOTONES DIRECTOS A WHATSAPP */}
               <div className="mt-8 space-y-2.5 pt-4 border-t border-slate-100 dark:border-zinc-800">
                 <button
                   type="button"
