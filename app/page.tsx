@@ -19,6 +19,13 @@ import {
   Zap,
 } from "lucide-react";
 
+// Colocá acá tu número de WhatsApp de atención/ventas (ej: "5493881234567")
+const WHATSAPP_NDI = "5493886575664";
+
+const URL_WHATSAPP_VENTAS = `https://wa.me/${WHATSAPP_NDI}?text=${encodeURIComponent(
+  "¡Hola! Quiero que me armen la página web de mi negocio en NDI AI."
+)}`;
+
 const problemas = [
   "Clientes preguntando siempre lo mismo",
   "Consultas que llegan fuera de horario",
@@ -304,25 +311,29 @@ export default function HomePage() {
               clientes te encuentren, consulten o reserven desde un solo lugar.
             </p>
 
+            {/* BOTONES DE ELECCIÓN (CREAR O PEDIR ARMADO) */}
             <div className="mt-6 flex flex-wrap gap-2.5 sm:mt-7">
-              <a
-                href="#como-funciona"
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500 sm:px-5"
-              >
-                Ver cómo funciona
-                <ArrowRight className="h-4 w-4" />
-              </a>
-
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center rounded-lg border border-zinc-700 px-4 py-2.5 text-sm font-semibold text-zinc-200 transition hover:bg-zinc-900 sm:px-5"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500 sm:px-5"
               >
-                Crear mi página
+                Crear por mi cuenta
+                <ArrowRight className="h-4 w-4" />
               </Link>
+
+              <a
+                href={URL_WHATSAPP_VENTAS}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-2.5 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-500/20 sm:px-5"
+              >
+                <MessageCircle className="h-4 w-4 text-emerald-400" />
+                Quiero que la armen por mí
+              </a>
             </div>
 
             <p className="mt-5 text-xs text-zinc-500 sm:mt-6">
-              Página propia · WhatsApp · Reservas · IA opcional
+              Página propia · WhatsApp · Reservas · Puesta en marcha opcional
             </p>
           </div>
 
@@ -832,8 +843,7 @@ export default function HomePage() {
             </h2>
 
             <p className="mt-5 leading-8 text-zinc-400">
-              Elegí la versión que mejor se adapte a tu negocio. Todos los
-              planes incluyen puesta en marcha y mantenimiento mensual.
+              Elegí la versión que mejor se adapte a tu negocio. Podés crearlo vos mismo o pedirnos la puesta en marcha asistida.
             </p>
           </div>
 
@@ -931,17 +941,28 @@ export default function HomePage() {
               </h2>
 
               <p className="mx-auto mt-5 max-w-2xl leading-7 text-zinc-300">
-                Creá tu página, cargá la información de tu negocio y elegí
-                el plan que mejor se adapte a lo que necesitás.
+                Creá tu página, cargá la información de tu negocio o dejanos la configuración en nuestras manos.
               </p>
 
-              <Link
-                href="/register"
-                className="mt-8 inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 font-semibold text-white transition hover:bg-blue-500"
-              >
-                Quiero mi página
-                <ArrowRight className="h-5 w-5" />
-              </Link>
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                <Link
+                  href="/register"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 font-semibold text-white transition hover:bg-blue-500"
+                >
+                  Crear mi página
+                  <ArrowRight className="h-5 w-5" />
+                </Link>
+
+                <a
+                  href={URL_WHATSAPP_VENTAS}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-6 py-3.5 font-semibold text-emerald-300 transition hover:bg-emerald-500/20"
+                >
+                  <MessageCircle className="h-5 w-5 text-emerald-400" />
+                  Contactar por WhatsApp
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -1004,87 +1025,105 @@ function PlanCard({
   destacado?: boolean;
   lanzamiento?: boolean;
 }) {
+  const urlWhatsappPlan = `https://wa.me/${WHATSAPP_NDI}?text=${encodeURIComponent(
+    `¡Hola! Quiero contratar el plan ${nombre} para mi negocio.`
+  )}`;
+
   return (
     <article
-      className={`relative rounded-3xl p-7 sm:p-8 ${
+      className={`relative flex flex-col justify-between rounded-3xl p-7 sm:p-8 ${
         destacado
           ? "border border-blue-500/30 bg-blue-500/5"
           : "border border-zinc-800 bg-zinc-900"
       }`}
     >
-      {destacado && (
-        <span className="absolute right-6 top-6 rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold text-white">
-          Recomendado
-        </span>
-      )}
+      <div>
+        {destacado && (
+          <span className="absolute right-6 top-6 rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold text-white">
+            Recomendado
+          </span>
+        )}
 
-      {lanzamiento && (
-        <span className="absolute right-6 top-6 rounded-full bg-violet-600 px-3 py-1 text-xs font-semibold text-white">
-          Precio lanzamiento
-        </span>
-      )}
+        {lanzamiento && (
+          <span className="absolute right-6 top-6 rounded-full bg-violet-600 px-3 py-1 text-xs font-semibold text-white">
+            Precio lanzamiento
+          </span>
+        )}
 
-      <p
-        className={
-          destacado
-            ? "text-sm font-medium text-blue-400"
-            : "text-sm font-medium text-zinc-400"
-        }
-      >
-        {nombre}
-      </p>
-
-      <div className="mt-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
-          Puesta en marcha
+        <p
+          className={
+            destacado
+              ? "text-sm font-medium text-blue-400"
+              : "text-sm font-medium text-zinc-400"
+          }
+        >
+          {nombre}
         </p>
 
-        <p className="mt-1 text-3xl font-bold text-white">
-          {inicial}
+        <div className="mt-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
+            Puesta en marcha
+          </p>
+
+          <p className="mt-1 text-3xl font-bold text-white">
+            {inicial}
+          </p>
+
+          <p className="mt-1 text-sm font-semibold text-blue-400">
+            + {mensual}
+          </p>
+        </div>
+
+        <p className="mt-4 text-sm leading-6 text-zinc-400">
+          {descripcion}
         </p>
 
-        <p className="mt-1 text-sm font-semibold text-blue-400">
-          + {mensual}
-        </p>
+        {lanzamiento && (
+          <p className="mt-4 rounded-xl border border-violet-500/20 bg-violet-500/10 p-3 text-xs leading-5 text-violet-200">
+            Conservás este precio mensual mientras mantengas activa tu suscripción.
+          </p>
+        )}
+
+        <div className="mt-7 space-y-3">
+          {features.map((feature) => (
+            <div
+              key={feature}
+              className="flex items-start gap-3 text-sm text-zinc-300"
+            >
+              <Check
+                className={`mt-0.5 h-4 w-4 shrink-0 ${
+                  destacado ? "text-blue-400" : "text-emerald-400"
+                }`}
+              />
+
+              <span>{feature}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <p className="mt-4 text-sm leading-6 text-zinc-400">
-        {descripcion}
-      </p>
+      <div className="mt-8 space-y-2">
+        <Link
+          href="/register"
+          className={`inline-flex w-full items-center justify-center rounded-xl px-5 py-3 font-semibold text-white transition ${
+            destacado
+              ? "bg-blue-600 hover:bg-blue-500"
+              : "border border-zinc-700 hover:bg-zinc-800"
+          }`}
+        >
+          Crear por mi cuenta
+        </Link>
 
-      {lanzamiento && (
-        <p className="mt-4 rounded-xl border border-violet-500/20 bg-violet-500/10 p-3 text-xs leading-5 text-violet-200">
-          Conservás este precio mensual mientras mantengas activa tu suscripción.
-        </p>
-      )}
-
-      <div className="mt-7 space-y-3">
-        {features.map((feature) => (
-          <div
-            key={feature}
-            className="flex items-start gap-3 text-sm text-zinc-300"
-          >
-            <Check
-              className={`mt-0.5 h-4 w-4 shrink-0 ${
-                destacado ? "text-blue-400" : "text-emerald-400"
-              }`}
-            />
-
-            <span>{feature}</span>
-          </div>
-        ))}
+        <a
+          href={urlWhatsappPlan}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 py-2.5 text-xs font-semibold text-emerald-300 transition hover:bg-emerald-500/20"
+        >
+          <MessageCircle className="h-3.5 w-3.5 text-emerald-400" />
+          Pedir armado por WhatsApp
+        </a>
       </div>
-
-      <Link
-        href="/register"
-        className={`mt-8 inline-flex w-full items-center justify-center rounded-xl px-5 py-3 font-semibold text-white transition ${
-          destacado
-            ? "bg-blue-600 hover:bg-blue-500"
-            : "border border-zinc-700 hover:bg-zinc-800"
-        }`}
-      >
-        Quiero mi página
-      </Link>
     </article>
   );
 }
