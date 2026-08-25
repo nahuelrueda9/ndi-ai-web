@@ -19,11 +19,11 @@ import {
   Zap,
 } from "lucide-react";
 
-// Colocá acá tu número de WhatsApp de atención/ventas (ej: "5493881234567")
-const WHATSAPP_NDI = "5493886575664";
+// Tu número oficial de WhatsApp de NDI AI
+const WHATSAPP_NUMERO = "5493886575664";
 
-const URL_WHATSAPP_VENTAS = `https://wa.me/${WHATSAPP_NDI}?text=${encodeURIComponent(
-  "¡Hola! Quiero que me armen la página web de mi negocio en NDI AI."
+const URL_WHATSAPP_VENTAS = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(
+  "¡Hola! Quiero activar mis 30 días gratis y que me armen la página web de mi negocio en NDI AI."
 )}`;
 
 const problemas = [
@@ -295,11 +295,12 @@ export default function HomePage() {
 
         <div className="relative mx-auto grid max-w-7xl gap-9 px-4 py-10 sm:px-8 sm:py-20 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:gap-14 lg:py-24">
           <div className="max-w-2xl">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-400 sm:text-xs">
-              Páginas inteligentes para negocios
-            </p>
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-blue-300">
+              <Sparkles className="h-3.5 w-3.5 text-blue-400" />
+              Probá 30 días gratis
+            </div>
 
-            <h1 className="mt-3 text-[2.15rem] font-bold leading-[1.04] tracking-tight text-white sm:mt-4 sm:text-5xl lg:text-[3.6rem]">
+            <h1 className="mt-3.5 text-[2.15rem] font-bold leading-[1.04] tracking-tight text-white sm:mt-4 sm:text-5xl lg:text-[3.6rem]">
               Tu negocio,
               <span className="block text-blue-400">
                 siempre disponible.
@@ -311,11 +312,11 @@ export default function HomePage() {
               clientes te encuentren, consulten o reserven desde un solo lugar.
             </p>
 
-            {/* BOTONES DE ELECCIÓN (CREAR O PEDIR ARMADO) */}
+            {/* BOTONES DUALES DE ENTRADA */}
             <div className="mt-6 flex flex-wrap gap-2.5 sm:mt-7">
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500 sm:px-5"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 shadow-md shadow-blue-600/20"
               >
                 Crear por mi cuenta
                 <ArrowRight className="h-4 w-4" />
@@ -325,7 +326,7 @@ export default function HomePage() {
                 href={URL_WHATSAPP_VENTAS}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-2.5 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-500/20 sm:px-5"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-5 py-3 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-500/20"
               >
                 <MessageCircle className="h-4 w-4 text-emerald-400" />
                 Quiero que la armen por mí
@@ -333,7 +334,7 @@ export default function HomePage() {
             </div>
 
             <p className="mt-5 text-xs text-zinc-500 sm:mt-6">
-              Página propia · WhatsApp · Reservas · Puesta en marcha opcional
+              30 días gratis · Sin tarjeta obligatoria · Puesta en marcha asistida
             </p>
           </div>
 
@@ -369,8 +370,7 @@ export default function HomePage() {
                   </h2>
 
                   <p className="mt-3 max-w-md text-sm leading-6 text-zinc-400">
-                    Acá podés mostrar una captura real de uno de tus proyectos:
-                    servicios, productos, horarios, ubicación, reservas o contacto.
+                    Acá podés mostrar tus servicios, productos, horarios, ubicación, reservas y botones de contacto directo.
                   </p>
 
                   <div className="mt-6 grid w-full max-w-md grid-cols-3 gap-2.5">
@@ -392,7 +392,7 @@ export default function HomePage() {
 
               <div className="border-t border-zinc-800 px-4 py-3 text-center sm:px-5">
                 <p className="text-[11px] text-zinc-500 sm:text-xs">
-                  Reemplazá esta vista por una captura real de una página creada con NDI AI.
+                  Adaptable a celulares, tablets y computadoras.
                 </p>
               </div>
             </div>
@@ -651,7 +651,7 @@ export default function HomePage() {
 
             <p className="mt-5 max-w-xl leading-8 text-zinc-400">
               Configurá horarios, recibí reservas desde tu página y administrá
-              cada turno desde el panel de NDI AI. Disponible en tu plan.
+              cada turno desde el panel de NDI AI.
             </p>
 
             <div className="mt-7 space-y-3">
@@ -843,13 +843,14 @@ export default function HomePage() {
             </h2>
 
             <p className="mt-5 leading-8 text-zinc-400">
-              Elegí la versión que mejor se adapte a tu negocio. Podés crearlo vos mismo o pedirnos la puesta en marcha asistida.
+              Todos los planes incluyen <strong>30 días de prueba sin cargo</strong>. Podés crearlo vos mismo o pedirnos la puesta en marcha asistida por WhatsApp.
             </p>
           </div>
 
           <div className="mt-12 grid gap-6 lg:grid-cols-3">
             <PlanCard
               nombre="Página Simple"
+              etiqueta="30 Días Gratis"
               descripcion="Para negocios y profesionales que quieren su presencia web, servicios y sistema de turnos o reservas online."
               inicial="$ 89.999"
               mensual="$ 5.999/mes"
@@ -858,6 +859,7 @@ export default function HomePage() {
 
             <PlanCard
               nombre="Página Completa"
+              etiqueta="Recomendado · 30 Días Gratis"
               descripcion="Para negocios que además necesitan catálogo de productos, cobros online con Mercado Pago y transferencias."
               inicial="$ 159.999"
               mensual="$ 9.999/mes"
@@ -867,6 +869,7 @@ export default function HomePage() {
 
             <PlanCard
               nombre="Business IA"
+              etiqueta="Lanzamiento · 30 Días Gratis"
               descripcion="La versión más completa, con todas las herramientas de gestión más un asistente inteligente entrenado con la información real del negocio."
               inicial="$ 219.999"
               mensual="$ 15.999/mes"
@@ -947,9 +950,9 @@ export default function HomePage() {
               <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
                 <Link
                   href="/register"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 font-semibold text-white transition hover:bg-blue-500"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 font-semibold text-white transition hover:bg-blue-500 shadow-md shadow-blue-600/20"
                 >
-                  Crear mi página
+                  Probar 30 días gratis
                   <ArrowRight className="h-5 w-5" />
                 </Link>
 
@@ -960,7 +963,7 @@ export default function HomePage() {
                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-6 py-3.5 font-semibold text-emerald-300 transition hover:bg-emerald-500/20"
                 >
                   <MessageCircle className="h-5 w-5 text-emerald-400" />
-                  Contactar por WhatsApp
+                  Pedir armado por WhatsApp
                 </a>
               </div>
             </div>
@@ -1010,6 +1013,7 @@ export default function HomePage() {
 
 function PlanCard({
   nombre,
+  etiqueta,
   descripcion,
   inicial,
   mensual,
@@ -1018,6 +1022,7 @@ function PlanCard({
   lanzamiento = false,
 }: {
   nombre: string;
+  etiqueta?: string;
   descripcion: string;
   inicial: string;
   mensual: string;
@@ -1025,73 +1030,79 @@ function PlanCard({
   destacado?: boolean;
   lanzamiento?: boolean;
 }) {
-  const urlWhatsappPlan = `https://wa.me/${WHATSAPP_NDI}?text=${encodeURIComponent(
-    `¡Hola! Quiero contratar el plan ${nombre} para mi negocio.`
+  const urlWhatsappPlan = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(
+    `¡Hola! Quiero activar los 30 días gratis del plan ${nombre} y que me armen la página web de mi negocio.`
   )}`;
 
   return (
     <article
       className={`relative flex flex-col justify-between rounded-3xl p-7 sm:p-8 ${
         destacado
-          ? "border border-blue-500/30 bg-blue-500/5"
+          ? "border border-blue-500/40 bg-blue-500/5 ring-1 ring-blue-500/20 shadow-xl shadow-blue-500/10"
+          : lanzamiento
+          ? "border border-violet-500/40 bg-violet-500/5 ring-1 ring-violet-500/20 shadow-lg shadow-violet-500/10"
           : "border border-zinc-800 bg-zinc-900"
       }`}
     >
       <div>
-        {destacado && (
-          <span className="absolute right-6 top-6 rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold text-white">
-            Recomendado
+        {etiqueta && (
+          <span
+            className={`absolute -top-3 left-6 rounded-full px-3 py-1 text-[11px] font-bold text-white shadow-sm ${
+              lanzamiento
+                ? "bg-violet-600"
+                : destacado
+                ? "bg-blue-600"
+                : "bg-slate-800"
+            }`}
+          >
+            {etiqueta}
           </span>
         )}
 
-        {lanzamiento && (
-          <span className="absolute right-6 top-6 rounded-full bg-violet-600 px-3 py-1 text-xs font-semibold text-white">
-            Precio lanzamiento
-          </span>
-        )}
-
-        <p
-          className={
+        <h3
+          className={`text-xl font-bold ${
             destacado
-              ? "text-sm font-medium text-blue-400"
-              : "text-sm font-medium text-zinc-400"
-          }
+              ? "text-blue-400"
+              : lanzamiento
+              ? "text-violet-400"
+              : "text-white"
+          }`}
         >
           {nombre}
-        </p>
+        </h3>
 
-        <div className="mt-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
+        <div className="mt-4 rounded-2xl bg-zinc-950/60 p-4 border border-zinc-800/80">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
             Puesta en marcha
           </p>
 
-          <p className="mt-1 text-3xl font-bold text-white">
+          <p className="mt-0.5 text-3xl font-black text-white">
             {inicial}
           </p>
 
-          <p className="mt-1 text-sm font-semibold text-blue-400">
+          <p className="mt-1 text-xs font-bold text-blue-400">
             + {mensual}
           </p>
         </div>
 
-        <p className="mt-4 text-sm leading-6 text-zinc-400">
+        <p className="mt-4 text-xs leading-relaxed text-zinc-400">
           {descripcion}
         </p>
 
         {lanzamiento && (
-          <p className="mt-4 rounded-xl border border-violet-500/20 bg-violet-500/10 p-3 text-xs leading-5 text-violet-200">
-            Conservás este precio mensual mientras mantengas activa tu suscripción.
+          <p className="mt-3 rounded-xl border border-violet-500/20 bg-violet-500/10 p-2.5 text-[11px] leading-relaxed text-violet-200">
+            Conservás el precio mensual de lanzamiento mientras mantengas activa tu suscripción.
           </p>
         )}
 
-        <div className="mt-7 space-y-3">
+        <div className="mt-6 space-y-2.5">
           {features.map((feature) => (
             <div
               key={feature}
-              className="flex items-start gap-3 text-sm text-zinc-300"
+              className="flex items-start gap-2.5 text-xs text-zinc-300"
             >
               <Check
-                className={`mt-0.5 h-4 w-4 shrink-0 ${
+                className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${
                   destacado ? "text-blue-400" : "text-emerald-400"
                 }`}
               />
@@ -1102,23 +1113,25 @@ function PlanCard({
         </div>
       </div>
 
-      <div className="mt-8 space-y-2">
+      <div className="mt-8 space-y-2 pt-4 border-t border-zinc-800/80">
         <Link
           href="/register"
-          className={`inline-flex w-full items-center justify-center rounded-xl px-5 py-3 font-semibold text-white transition ${
+          className={`inline-flex w-full items-center justify-center rounded-xl px-5 py-3 text-xs font-bold text-white transition ${
             destacado
-              ? "bg-blue-600 hover:bg-blue-500"
+              ? "bg-blue-600 hover:bg-blue-500 shadow-md shadow-blue-600/20"
+              : lanzamiento
+              ? "bg-violet-600 hover:bg-violet-500 shadow-md shadow-violet-600/20"
               : "border border-zinc-700 hover:bg-zinc-800"
           }`}
         >
-          Crear por mi cuenta
+          Probar 30 días gratis
         </Link>
 
         <a
           href={urlWhatsappPlan}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 py-2.5 text-xs font-semibold text-emerald-300 transition hover:bg-emerald-500/20"
+          className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 py-2.5 text-xs font-bold text-emerald-300 transition hover:bg-emerald-500/20"
         >
           <MessageCircle className="h-3.5 w-3.5 text-emerald-400" />
           Pedir armado por WhatsApp
