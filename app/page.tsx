@@ -19,13 +19,6 @@ import {
   Zap,
 } from "lucide-react";
 
-// Tu número oficial de WhatsApp de NDI AI
-const WHATSAPP_NUMERO = "5493886575664";
-
-const URL_WHATSAPP_VENTAS = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(
-  "¡Hola! Quiero activar mis 30 días gratis y que me armen la página web de mi negocio en NDI AI."
-)}`;
-
 const problemas = [
   "Clientes preguntando siempre lo mismo",
   "Consultas que llegan fuera de horario",
@@ -312,29 +305,18 @@ export default function HomePage() {
               clientes te encuentren, consulten o reserven desde un solo lugar.
             </p>
 
-            {/* BOTONES DUALES DE ENTRADA */}
             <div className="mt-6 flex flex-wrap gap-2.5 sm:mt-7">
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 shadow-md shadow-blue-600/20"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-blue-500 shadow-lg shadow-blue-600/25"
               >
-                Crear por mi cuenta
+                Crear mi página
                 <ArrowRight className="h-4 w-4" />
               </Link>
-
-              <a
-                href={URL_WHATSAPP_VENTAS}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-5 py-3 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-500/20"
-              >
-                <MessageCircle className="h-4 w-4 text-emerald-400" />
-                Quiero que la armen por mí
-              </a>
             </div>
 
             <p className="mt-5 text-xs text-zinc-500 sm:mt-6">
-              30 días gratis · Sin tarjeta obligatoria · Puesta en marcha asistida
+              30 días de prueba sin cargo · Sin tarjeta obligatoria
             </p>
           </div>
 
@@ -493,7 +475,7 @@ export default function HomePage() {
               "WhatsApp directo",
             ].map((item, index) => (
               <div key={item} className="flex items-center gap-3">
-                <div className="rounded-xl border border-zinc-800 bg-zinc-950 px-5 py-3 text-sm font-medium text-zinc-200">
+                <div className="rounded-xl border border-zinc-800 bg-zinc-900 px-5 py-3 text-sm font-medium text-zinc-200">
                   {item}
                 </div>
 
@@ -843,7 +825,7 @@ export default function HomePage() {
             </h2>
 
             <p className="mt-5 leading-8 text-zinc-400">
-              Todos los planes incluyen <strong>30 días de prueba sin cargo</strong>. Podés crearlo vos mismo o pedirnos la puesta en marcha asistida por WhatsApp.
+              Todos los planes incluyen <strong>30 días de prueba sin cargo</strong>.
             </p>
           </div>
 
@@ -944,27 +926,17 @@ export default function HomePage() {
               </h2>
 
               <p className="mx-auto mt-5 max-w-2xl leading-7 text-zinc-300">
-                Creá tu página, cargá la información de tu negocio o dejanos la configuración en nuestras manos.
+                Creá tu cuenta en segundos y probá 30 días sin cargo.
               </p>
 
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <div className="mt-8 flex justify-center">
                 <Link
                   href="/register"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 font-semibold text-white transition hover:bg-blue-500 shadow-md shadow-blue-600/20"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-8 py-4 font-semibold text-white transition hover:bg-blue-500 shadow-xl shadow-blue-600/25"
                 >
                   Probar 30 días gratis
                   <ArrowRight className="h-5 w-5" />
                 </Link>
-
-                <a
-                  href={URL_WHATSAPP_VENTAS}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-6 py-3.5 font-semibold text-emerald-300 transition hover:bg-emerald-500/20"
-                >
-                  <MessageCircle className="h-5 w-5 text-emerald-400" />
-                  Pedir armado por WhatsApp
-                </a>
               </div>
             </div>
           </div>
@@ -1030,10 +1002,6 @@ function PlanCard({
   destacado?: boolean;
   lanzamiento?: boolean;
 }) {
-  const urlWhatsappPlan = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(
-    `¡Hola! Quiero activar los 30 días gratis del plan ${nombre} y que me armen la página web de mi negocio.`
-  )}`;
-
   return (
     <article
       className={`relative flex flex-col justify-between rounded-3xl p-7 sm:p-8 ${
@@ -1113,7 +1081,7 @@ function PlanCard({
         </div>
       </div>
 
-      <div className="mt-8 space-y-2 pt-4 border-t border-zinc-800/80">
+      <div className="mt-8 pt-4 border-t border-zinc-800/80">
         <Link
           href="/register"
           className={`inline-flex w-full items-center justify-center rounded-xl px-5 py-3 text-xs font-bold text-white transition ${
@@ -1126,16 +1094,6 @@ function PlanCard({
         >
           Probar 30 días gratis
         </Link>
-
-        <a
-          href={urlWhatsappPlan}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 py-2.5 text-xs font-bold text-emerald-300 transition hover:bg-emerald-500/20"
-        >
-          <MessageCircle className="h-3.5 w-3.5 text-emerald-400" />
-          Pedir armado por WhatsApp
-        </a>
       </div>
     </article>
   );

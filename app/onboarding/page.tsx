@@ -7,7 +7,6 @@ import {
   addDoc,
   collection,
   serverTimestamp,
-  Timestamp,
 } from "firebase/firestore";
 import { Sparkles, Wrench, MessageCircle, Check } from "lucide-react";
 
@@ -46,10 +45,6 @@ export default function OnboardingPage() {
     setLoading(true);
 
     try {
-      // Configuramos 30 días de prueba gratis automáticamente
-      const fechaVencimiento = new Date();
-      fechaVencimiento.setDate(fechaVencimiento.getDate() + 30);
-
       const snapshot = await addDoc(collection(db, "companies"), {
         userId: auth.currentUser.uid,
         nombre: nombreLimpio,
@@ -58,9 +53,8 @@ export default function OnboardingPage() {
         email: auth.currentUser.email || "",
         telefono: "",
         plan: "free",
-        subscriptionStatus: "active",
-        subscriptionEndsAt: Timestamp.fromDate(fechaVencimiento),
-        subscriptionMonthlyPrice: 5999,
+        subscriptionStatus: modalidad === "autogestion" ? "pending" : "pending",
+        subscriptionEndsAt: null,
         setupMode: modalidad,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -68,7 +62,7 @@ export default function OnboardingPage() {
 
       if (modalidad === "asistida") {
         const rubroTexto = industry.trim() || "General";
-        const mensaje = `¡Hola! Acabo de registrar mi negocio *${nombreLimpio}* (Rubro: ${rubroTexto}) en NDI AI y quiero que me ayuden a armar mi página web.`;
+        const mensaje = `¡Hola! Acabo de crear mi cuenta para el negocio *${nombreLimpio}* (Rubro: ${rubroTexto}) en NDI AI y quiero que me ayuden a armar mi página web.`;
         const urlWhatsApp = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(mensaje)}`;
         
         window.open(urlWhatsApp, "_blank");
@@ -123,7 +117,7 @@ export default function OnboardingPage() {
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
                 className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-white placeholder-zinc-500 transition focus:border-blue-500 focus:outline-none"
-                placeholder="Ej: Barbería Vintage, Restaurante Plaza, Dr. Gómez..."
+                placeholder="Ej: Mi negocio"
                 autoFocus
               />
             </div>
@@ -182,7 +176,7 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {/* PASO 3: MODALIDAD DE ARMADO + RESUMEN */}
+        {/* PASO 3: MODALIDAD + RESUMEN */}
         {step === 3 && (
           <div className="space-y-6">
             <div>
@@ -192,12 +186,11 @@ export default function OnboardingPage() {
               <input
                 value={website}
                 onChange={(e) => setWebsite(e.target.value)}
-                placeholder="Ej: miempresa.com o https://instagram.com/miempresa"
+                placeholder="Ej: miempresa.com"
                 className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-white placeholder-zinc-500 transition focus:border-blue-500 focus:outline-none"
               />
             </div>
 
-            {/* SELECTOR DE MODALIDAD */}
             <div>
               <label className="mb-3 block text-sm font-medium text-zinc-300">
                 ¿Cómo preferís poner en marcha tu página?
@@ -227,7 +220,7 @@ export default function OnboardingPage() {
                       Configurar por mi cuenta
                     </p>
                     <p className="mt-1 text-xs leading-relaxed text-zinc-400">
-                      Entrás directamente a tu panel y cargás tus fotos, servicios y precios vos mismo.
+                      Entrás a tu panel para cargar fotos, servicios y datos vos mismo.
                     </p>
                   </div>
                 </button>
@@ -256,7 +249,7 @@ export default function OnboardingPage() {
                       Quiero que la armen por mí
                     </p>
                     <p className="mt-1 text-xs leading-relaxed text-zinc-400">
-                      Nos enviás tus fotos y lista por WhatsApp y nuestro equipo te la deja lista.
+                      Nos enviás fotos y lista de precios por WhatsApp y te la dejamos lista.
                     </p>
                   </div>
                 </button>
@@ -267,10 +260,10 @@ export default function OnboardingPage() {
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-4">
               <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
                 <h2 className="text-sm font-semibold text-white">
-                  Resumen de tu cuenta
+                  Resumen
                 </h2>
-                <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-400">
-                  30 Días Gratis
+                <span className="rounded-full bg-blue-500/10 px-2.5 py-0.5 text-[11px] font-bold text-blue-400">
+                  Prueba inicial
                 </span>
               </div>
               <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-zinc-300">
@@ -283,12 +276,12 @@ export default function OnboardingPage() {
                   <strong>{industry || "Sin especificar"}</strong>
                 </p>
                 <p>
-                  <span className="text-zinc-500">Puesta en marcha:</span>{" "}
-                  <strong>{modalidad === "asistida" ? "Asistida por WhatsApp" : "Autogestionada"}</strong>
+                  <span className="text-zinc-500">Modalidad:</span>{" "}
+                  <strong>{modalidad === "asistida" ? "Armado asistido" : "Autogestión"}</strong>
                 </p>
                 <p>
-                  <span className="text-zinc-500">Prueba inicial:</span>{" "}
-                  <strong className="text-emerald-400">Sin costo</strong>
+                  <span className="text-zinc-500">Plan:</span>{" "}
+                  <strong className="text-zinc-400">A seleccionar</strong>
                 </p>
               </div>
             </div>
@@ -314,7 +307,7 @@ export default function OnboardingPage() {
                 ) : modalidad === "asistida" ? (
                   <span className="flex items-center justify-center gap-2">
                     <MessageCircle className="h-4 w-4" />
-                    Finalizar y contactar por WhatsApp
+                    Finalizar y pedir armado
                   </span>
                 ) : (
                   "Finalizar e ir al panel"
