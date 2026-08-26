@@ -47,7 +47,7 @@ const PLANES: Plan[] = [
     nombre: "Página Simple",
     descripcion:
       "Para negocios que quieren tener toda su información ordenada en una página profesional y recibir turnos o reservas online.",
-    etiqueta: "Para empezar · 30 Días Gratis",
+    etiqueta: "Para empezar",
     funciones: [
       "Página pública profesional",
       "Logo, portada, colores e identidad visual",
@@ -66,7 +66,7 @@ const PLANES: Plan[] = [
     descripcion:
       "Para negocios que además necesitan catálogo de productos, presupuestos, carta digital y cobros online integrados.",
     destacado: true,
-    etiqueta: "Recomendado · 30 Días Gratis",
+    etiqueta: "Recomendado",
     funciones: [
       "Todo lo incluido en Página Simple",
       "Productos, catálogo o carta",
@@ -84,7 +84,7 @@ const PLANES: Plan[] = [
     descripcion:
       "La versión más completa, con todas las herramientas de gestión más un asistente inteligente entrenado con tu información real.",
     lanzamiento: true,
-    etiqueta: "Precio lanzamiento · 30 Días Gratis",
+    etiqueta: "Precio lanzamiento",
     funciones: [
       "Todo lo incluido en Página Completa",
       "Asistente IA dentro de la página",
@@ -152,7 +152,7 @@ function obtenerTextoEstado(estado?: string) {
     case "authorized":
       return "Activo";
     case "pending":
-      return "Pendiente";
+      return "Pendiente de pago";
     case "paused":
       return "Pausado";
     case "expired":
@@ -161,7 +161,7 @@ function obtenerTextoEstado(estado?: string) {
     case "canceled":
       return "Cancelado";
     default:
-      return "Activo";
+      return "Sin plan activo";
   }
 }
 
@@ -264,7 +264,7 @@ export default function PlanesPage() {
         <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
           <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
           <p className="mt-4 text-sm text-slate-600 dark:text-zinc-400">
-            Cargando opciones de planes...
+            Cargando planes...
           </p>
         </div>
       </section>
@@ -319,7 +319,7 @@ export default function PlanesPage() {
     } else if (modo === "asistido") {
       mensaje = `¡Hola! Quiero contratar el plan *${nombrePlan}* (${formatearPrecio(precioInicial)}) y que me ayuden a armar la página de mi negocio *${nombreNegocio}*. ¿Me pasás los datos para pagar?`;
     } else {
-      mensaje = `¡Hola! Quiero contratar el plan *${nombrePlan}* (${formatearPrecio(precioInicial)}) para mi negocio *${nombreNegocio}* y configurarlo por mi cuenta. ¿Me pasás los datos para pagar?`;
+      mensaje = `¡Hola! Quiero contratar el plan *${nombrePlan}* (${formatearPrecio(precioInicial)}) para mi negocio *${nombreNegocio}* y cargar los datos por mi cuenta. ¿Me pasás los datos para pagar?`;
     }
 
     const url = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(mensaje)}`;
@@ -337,7 +337,7 @@ export default function PlanesPage() {
           Elegí tu versión de NDI AI
         </h1>
         <p className="mt-1.5 max-w-3xl text-sm leading-relaxed text-slate-600 dark:text-zinc-400">
-          Todos los planes incluyen <strong>30 días de prueba sin cargo</strong>. Podés configurarlo vos mismo desde tu panel o enviarnos tu información para que lo armemos por vos.
+          Elegí la versión que mejor se adapte a tu negocio. Todos los planes incluyen la puesta en marcha y el mantenimiento mensual del servicio.
         </p>
       </header>
 
