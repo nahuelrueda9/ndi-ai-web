@@ -283,35 +283,35 @@ export default function HomePage() {
       <section className="relative overflow-hidden">
         <div className="absolute inset-x-0 top-0 h-[620px] bg-[radial-gradient(circle_at_top,rgba(37,99,235,0.18),transparent_64%)]" />
 
-        <div className="relative mx-auto grid max-w-7xl gap-9 px-4 py-10 sm:px-8 sm:py-20 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:gap-14 lg:py-24">
+        <div className="relative mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:px-8 sm:py-20 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:gap-14 lg:py-24">
           <div className="max-w-2xl">
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-400 sm:text-xs">
               Páginas inteligentes para negocios
             </p>
 
-            <h1 className="mt-3 text-[2.15rem] font-bold leading-[1.04] tracking-tight text-white sm:mt-4 sm:text-5xl lg:text-[3.6rem]">
+            <h1 className="mt-2.5 text-3xl font-bold leading-[1.1] tracking-tight text-white sm:mt-4 sm:text-5xl lg:text-[3.6rem]">
               Tu negocio,
               <span className="block text-blue-400">
                 siempre disponible.
               </span>
             </h1>
 
-            <p className="mt-4 max-w-xl text-sm leading-6 text-zinc-400 sm:mt-5 sm:text-base sm:leading-7">
+            <p className="mt-3.5 max-w-xl text-sm leading-relaxed text-zinc-400 sm:mt-5 sm:text-base sm:leading-7">
               Mostrá lo que ofrecés, centralizá tu información y facilitá que tus
               clientes te encuentren, consulten o reserven desde un solo lugar.
             </p>
 
-            <div className="mt-6 flex flex-wrap gap-2.5 sm:mt-7">
+            <div className="mt-5 flex flex-wrap gap-2.5 sm:mt-7">
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-blue-500 shadow-lg shadow-blue-600/25"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 shadow-lg shadow-blue-600/25 sm:px-6 sm:py-3.5"
               >
                 Crear mi página
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
 
-            <p className="mt-5 text-xs text-zinc-500 sm:mt-6">
+            <p className="mt-4 text-xs text-zinc-500 sm:mt-6">
               Página propia · WhatsApp · Turnos · Asistente IA
             </p>
           </div>
@@ -321,11 +321,11 @@ export default function HomePage() {
             <div className="absolute -inset-6 rounded-[2.5rem] bg-blue-600/10 blur-3xl" />
 
             <div className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900 shadow-2xl sm:rounded-3xl">
-              <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3 sm:px-5">
+              <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-2.5 sm:px-5 sm:py-3">
                 <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-zinc-700" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-zinc-700" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-zinc-700" />
+                  <span className="h-2 w-2 rounded-full bg-zinc-700 sm:h-2.5 sm:w-2.5" />
+                  <span className="h-2 w-2 rounded-full bg-zinc-700 sm:h-2.5 sm:w-2.5" />
+                  <span className="h-2 w-2 rounded-full bg-zinc-700 sm:h-2.5 sm:w-2.5" />
                 </div>
 
                 <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-zinc-500 sm:text-xs">
@@ -333,25 +333,25 @@ export default function HomePage() {
                 </p>
               </div>
 
-              <div className="relative min-h-[290px] bg-gradient-to-br from-blue-600/15 via-zinc-950 to-zinc-900 p-5 sm:min-h-[390px] sm:p-8">
+              <div className="relative min-h-[260px] bg-gradient-to-br from-blue-600/15 via-zinc-950 to-zinc-900 p-4 sm:min-h-[390px] sm:p-8">
                 <div className="mx-auto flex max-w-lg flex-col items-center justify-center text-center">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-blue-500/20 bg-blue-500/10 text-blue-400 sm:h-12 sm:w-12">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-blue-500/20 bg-blue-500/10 text-blue-400 sm:h-12 sm:w-12">
                     <Globe2 className="h-5 w-5 sm:h-6 sm:w-6" />
                   </div>
 
-                  <p className="mt-5 text-xs font-semibold uppercase tracking-[0.18em] text-blue-400">
+                  <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-400 sm:text-xs">
                     Tu página puede verse así
                   </p>
 
-                  <h2 className="mt-2 max-w-md text-2xl font-bold leading-tight text-white sm:text-3xl">
+                  <h2 className="mt-2 max-w-md text-xl font-bold leading-snug text-white sm:text-3xl">
                     Una página clara, profesional y pensada para tu negocio.
                   </h2>
 
-                  <p className="mt-3 max-w-md text-sm leading-6 text-zinc-400">
+                  <p className="mt-2.5 max-w-md text-xs leading-relaxed text-zinc-400 sm:text-sm sm:leading-6">
                     Acá podés mostrar tus servicios, productos, horarios, ubicación, reservas y botones de contacto directo.
                   </p>
 
-                  <div className="mt-6 grid w-full max-w-md grid-cols-3 gap-2.5">
+                  <div className="mt-5 grid w-full max-w-md grid-cols-3 gap-2 sm:gap-2.5">
                     {[
                       "Servicios",
                       "Ubicación",
@@ -359,7 +359,7 @@ export default function HomePage() {
                     ].map((item) => (
                       <div
                         key={item}
-                        className="rounded-xl border border-zinc-800 bg-zinc-950/80 px-2 py-3 text-[11px] font-medium text-zinc-300 sm:text-xs"
+                        className="rounded-xl border border-zinc-800 bg-zinc-950/80 px-2 py-2 text-[10px] font-medium text-zinc-300 sm:py-3 sm:text-xs"
                       >
                         {item}
                       </div>
@@ -368,8 +368,8 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="border-t border-zinc-800 px-4 py-3 text-center sm:px-5">
-                <p className="text-[11px] text-zinc-500 sm:text-xs">
+              <div className="border-t border-zinc-800 px-4 py-2.5 text-center sm:px-5 sm:py-3">
+                <p className="text-[10px] text-zinc-500 sm:text-xs">
                   Adaptable a celulares, tablets y computadoras.
                 </p>
               </div>
@@ -380,12 +380,12 @@ export default function HomePage() {
 
       {/* RESUMEN */}
       <section className="border-y border-zinc-800 bg-zinc-900/40">
-        <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8">
-          <p className="text-center text-sm font-medium uppercase tracking-[0.2em] text-zinc-500">
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-8 sm:py-14">
+          <p className="text-center text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500 sm:text-sm">
             Una presencia digital pensada para negocios reales
           </p>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
             {[
               ["01", "Página profesional"],
               ["02", "Información centralizada"],
@@ -394,10 +394,10 @@ export default function HomePage() {
             ].map(([valor, texto]) => (
               <div
                 key={valor}
-                className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5 text-center"
+                className="rounded-2xl border border-zinc-800 bg-zinc-950 p-3.5 text-center sm:p-5"
               >
-                <p className="text-sm font-bold text-blue-400">{valor}</p>
-                <p className="mt-2 font-medium text-white">{texto}</p>
+                <p className="text-xs font-bold text-blue-400 sm:text-sm">{valor}</p>
+                <p className="mt-1 text-xs font-medium text-white sm:mt-2 sm:text-base">{texto}</p>
               </div>
             ))}
           </div>
@@ -405,36 +405,35 @@ export default function HomePage() {
       </section>
 
       {/* PROBLEMA */}
-      <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-24">
-        <div className="grid gap-14 lg:grid-cols-2 lg:items-center">
+      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-8 sm:py-24">
+        <div className="grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-14">
           <div>
-            <p className="text-sm font-medium text-blue-400">
+            <p className="text-xs font-semibold uppercase tracking-wider text-blue-400 sm:text-sm">
               El problema
             </p>
 
-            <h2 className="mt-3 max-w-xl text-3xl font-bold tracking-tight sm:text-4xl">
-              Tener Instagram no siempre significa tener tu negocio ordenado
-              online.
+            <h2 className="mt-2 max-w-xl text-2xl font-bold tracking-tight text-white sm:mt-3 sm:text-4xl">
+              Tener Instagram no siempre significa tener tu negocio ordenado online.
             </h2>
 
-            <p className="mt-5 max-w-xl leading-8 text-zinc-400">
+            <p className="mt-3.5 max-w-xl text-xs leading-relaxed text-zinc-400 sm:mt-5 sm:text-base sm:leading-8">
               Muchos negocios tienen información repartida entre publicaciones,
               historias, mensajes y WhatsApp. El cliente termina preguntando
               cosas que podrían estar disponibles en segundos.
             </p>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-2.5 sm:grid-cols-2 sm:gap-3">
             {problemas.map((problema) => (
               <div
                 key={problema}
-                className="flex items-start gap-3 rounded-2xl border border-zinc-800 bg-zinc-900 p-4"
+                className="flex items-start gap-2.5 rounded-xl border border-zinc-800 bg-zinc-900 p-3 sm:rounded-2xl sm:p-4"
               >
-                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-800">
-                  <span className="text-sm text-zinc-400">×</span>
+                <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs text-zinc-400 sm:h-7 sm:w-7 sm:text-sm">
+                  ×
                 </div>
 
-                <p className="text-sm leading-6 text-zinc-300">
+                <p className="text-xs leading-relaxed text-zinc-300 sm:text-sm sm:leading-6">
                   {problema}
                 </p>
               </div>
@@ -445,24 +444,24 @@ export default function HomePage() {
 
       {/* SOLUCIÓN */}
       <section className="border-y border-zinc-800 bg-zinc-900/40">
-        <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-24">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-8 sm:py-24">
           <div className="mx-auto max-w-3xl text-center">
-            <p className="text-sm font-medium text-blue-400">
+            <p className="text-xs font-semibold uppercase tracking-wider text-blue-400 sm:text-sm">
               La solución
             </p>
 
-            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:mt-3 sm:text-4xl">
               Un solo lugar para mostrar, atender y organizar tu negocio.
             </h2>
 
-            <p className="mt-5 leading-8 text-zinc-400">
+            <p className="mt-3.5 text-xs leading-relaxed text-zinc-400 sm:mt-5 sm:text-base sm:leading-8">
               NDI AI une tu presencia digital con herramientas para mostrar
               tu negocio, recibir consultas, organizar reservas y sumar
               inteligencia artificial cuando la necesitás.
             </p>
           </div>
 
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-2 sm:mt-12 sm:gap-3">
             {[
               "Página profesional",
               "Asistente IA",
@@ -470,8 +469,8 @@ export default function HomePage() {
               "Leads",
               "WhatsApp directo",
             ].map((item, index) => (
-              <div key={item} className="flex items-center gap-3">
-                <div className="rounded-xl border border-zinc-800 bg-zinc-950 px-5 py-3 text-sm font-medium text-zinc-200">
+              <div key={item} className="flex items-center gap-2 sm:gap-3">
+                <div className="rounded-xl border border-zinc-800 bg-zinc-950 px-3.5 py-2 text-xs font-medium text-zinc-200 sm:px-5 sm:py-3 sm:text-sm">
                   {item}
                 </div>
 
@@ -484,48 +483,52 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FUNCIONES */}
+      {/* FUNCIONES (OPTIMIZADA COMPACTA) */}
       <section
         id="funciones"
-        className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-24"
+        className="mx-auto max-w-7xl px-4 py-14 sm:px-8 sm:py-24"
       >
         <div className="max-w-3xl">
-          <p className="text-sm font-medium text-blue-400">
+          <p className="text-xs font-semibold uppercase tracking-wider text-blue-400 sm:text-sm">
             Todo alrededor de tu negocio
           </p>
 
-          <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+          <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:mt-3 sm:text-4xl">
             Más que una página web.
           </h2>
 
-          <p className="mt-5 max-w-2xl leading-8 text-zinc-400">
+          <p className="mt-3 max-w-2xl text-xs leading-relaxed text-zinc-400 sm:mt-5 sm:text-base sm:leading-8">
             La idea es que tu página sea el punto de entrada a todo lo que un
             cliente necesita para conocerte, consultarte y avanzar.
           </p>
         </div>
 
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid gap-3.5 sm:mt-12 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
           {funciones.map(
             ({ titulo, descripcion, icono: Icono, estado }) => (
               <article
                 key={titulo}
-                className="relative rounded-2xl border border-zinc-800 bg-zinc-900 p-6"
+                className="relative flex flex-col justify-between rounded-2xl border border-zinc-800/90 bg-zinc-900/90 p-4 transition hover:border-zinc-700 sm:p-6"
               >
-                {estado === "preparacion" && (
-                  <span className="absolute right-4 top-4 rounded-full border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-[11px] font-medium text-amber-300">
-                    En preparación
-                  </span>
-                )}
+                <div>
+                  {estado === "preparacion" && (
+                    <span className="absolute right-3 top-3 rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-300 sm:right-4 sm:top-4 sm:px-2.5 sm:py-1 sm:text-[11px]">
+                      En preparación
+                    </span>
+                  )}
 
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-400">
-                  <Icono className="h-6 w-6" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400 sm:h-11 sm:w-11 sm:rounded-2xl">
+                    <Icono className="h-5 w-5 sm:h-5 sm:w-5" />
+                  </div>
+
+                  <h3 className="mt-3 text-base font-semibold text-white sm:mt-4 sm:text-lg">
+                    {titulo}
+                  </h3>
+
+                  <p className="mt-1.5 text-xs leading-relaxed text-zinc-400 sm:mt-2.5 sm:text-sm sm:leading-6">
+                    {descripcion}
+                  </p>
                 </div>
-
-                <h3 className="mt-5 text-lg font-semibold">{titulo}</h3>
-
-                <p className="mt-3 text-sm leading-7 text-zinc-400">
-                  {descripcion}
-                </p>
               </article>
             ),
           )}
@@ -537,30 +540,32 @@ export default function HomePage() {
         id="como-funciona"
         className="border-y border-zinc-800 bg-zinc-900/40"
       >
-        <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-24">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-8 sm:py-24">
           <div className="max-w-3xl">
-            <p className="text-sm font-medium text-blue-400">
+            <p className="text-xs font-semibold uppercase tracking-wider text-blue-400 sm:text-sm">
               Cómo funciona
             </p>
 
-            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:mt-3 sm:text-4xl">
               De la información de tu negocio a una presencia digital completa.
             </h2>
           </div>
 
-          <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 grid gap-3.5 sm:mt-12 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
             {pasos.map(({ numero, titulo, descripcion }) => (
               <div
                 key={numero}
-                className="rounded-2xl border border-zinc-800 bg-zinc-950 p-6"
+                className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4 sm:p-6"
               >
-                <span className="text-sm font-bold text-blue-400">
+                <span className="text-xs font-bold text-blue-400 sm:text-sm">
                   {numero}
                 </span>
 
-                <h3 className="mt-3 text-xl font-semibold">{titulo}</h3>
+                <h3 className="mt-2 text-base font-semibold text-white sm:mt-3 sm:text-xl">
+                  {titulo}
+                </h3>
 
-                <p className="mt-3 leading-7 text-zinc-400">
+                <p className="mt-2 text-xs leading-relaxed text-zinc-400 sm:mt-3 sm:text-sm sm:leading-6">
                   {descripcion}
                 </p>
               </div>
@@ -574,22 +579,22 @@ export default function HomePage() {
         id="planes"
         className="border-y border-zinc-800 bg-zinc-900/40"
       >
-        <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-24">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-8 sm:py-24">
           <div className="mx-auto max-w-3xl text-center">
-            <p className="text-sm font-medium text-blue-400">
+            <p className="text-xs font-semibold uppercase tracking-wider text-blue-400 sm:text-sm">
               Planes
             </p>
 
-            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:mt-3 sm:text-4xl">
               Elegí hasta dónde querés llevar tu negocio.
             </h2>
 
-            <p className="mt-5 leading-8 text-zinc-400">
+            <p className="mt-3.5 text-xs leading-relaxed text-zinc-400 sm:mt-5 sm:text-base sm:leading-8">
               Elegí la versión que mejor se adapte a tu negocio. Todos los planes incluyen puesta en marcha y mantenimiento mensual.
             </p>
           </div>
 
-          <div className="mt-12 grid gap-6 lg:grid-cols-3">
+          <div className="mt-8 grid gap-5 sm:mt-12 lg:grid-cols-3">
             <PlanCard
               nombre="Página Simple"
               descripcion="Para negocios y profesionales que quieren su presencia web, servicios y sistema de turnos o reservas online."
@@ -622,20 +627,20 @@ export default function HomePage() {
       </section>
 
       {/* PREGUNTAS FRECUENTES (FAQ) */}
-      <section id="faq" className="mx-auto max-w-5xl px-5 py-20 sm:px-8 sm:py-24">
+      <section id="faq" className="mx-auto max-w-5xl px-4 py-14 sm:px-8 sm:py-24">
         <div className="text-center">
           <p className="text-xs font-bold uppercase tracking-widest text-blue-400">
             Dudas frecuentes
           </p>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:mt-3 sm:text-4xl">
             ¿Tenés preguntas? Nosotros te respondemos.
           </h2>
-          <p className="mt-4 text-sm text-zinc-400">
+          <p className="mt-3 text-xs text-zinc-400 sm:mt-4 sm:text-sm">
             Todo lo que necesitás saber antes de poner en marcha tu página web.
           </p>
         </div>
 
-        <div className="mt-12 space-y-3">
+        <div className="mt-8 space-y-2.5 sm:mt-12 sm:space-y-3">
           {faqs.map((faq, index) => {
             const abierta = faqAbierta === index;
             return (
@@ -646,19 +651,19 @@ export default function HomePage() {
                 <button
                   type="button"
                   onClick={() => toggleFaq(index)}
-                  className="flex w-full items-center justify-between p-5 text-left transition hover:bg-zinc-800/40"
+                  className="flex w-full items-center justify-between p-4 text-left transition hover:bg-zinc-800/40 sm:p-5"
                 >
-                  <span className="text-sm font-semibold text-zinc-200 sm:text-base">
+                  <span className="text-xs font-semibold text-zinc-200 sm:text-base">
                     {faq.pregunta}
                   </span>
                   <ChevronDown
-                    className={`h-5 w-5 shrink-0 text-zinc-400 transition-transform duration-200 ${
+                    className={`h-4 w-4 shrink-0 text-zinc-400 transition-transform duration-200 sm:h-5 sm:w-5 ${
                       abierta ? "rotate-180 text-blue-400" : ""
                     }`}
                   />
                 </button>
                 {abierta && (
-                  <div className="border-t border-zinc-800/60 px-5 pb-5 pt-3">
+                  <div className="border-t border-zinc-800/60 px-4 pb-4 pt-2.5 sm:px-5 sm:pb-5 sm:pt-3">
                     <p className="text-xs leading-relaxed text-zinc-400 sm:text-sm">
                       {faq.respuesta}
                     </p>
@@ -675,30 +680,30 @@ export default function HomePage() {
         id="contacto"
         className="border-t border-zinc-800 bg-zinc-900/40"
       >
-        <div className="mx-auto max-w-5xl px-5 py-20 sm:px-8 sm:py-24">
-          <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
+        <div className="mx-auto max-w-5xl px-4 py-14 sm:px-8 sm:py-24">
+          <div className="grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-10">
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-blue-400">
                 Atención directa
               </p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:mt-3 sm:text-4xl">
                 Empecemos tu proyecto hoy.
               </h2>
-              <p className="mt-4 text-sm leading-relaxed text-zinc-400">
+              <p className="mt-3 text-xs leading-relaxed text-zinc-400 sm:mt-4 sm:text-sm">
                 Escribinos si tenés dudas específicas sobre cómo adaptar NDI AI a tu negocio o querés consultar por planes personalizados.
               </p>
 
-              <div className="mt-8 space-y-4 text-sm text-zinc-300">
+              <div className="mt-6 space-y-3 text-sm text-zinc-300 sm:mt-8 sm:space-y-4">
                 <a
                   href={`mailto:${CORREO_CONTACTO}`}
-                  className="flex items-center gap-3.5 rounded-xl border border-zinc-800 bg-zinc-900/90 p-4 transition hover:border-zinc-700 hover:text-white"
+                  className="flex items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900/90 p-3.5 transition hover:border-zinc-700 hover:text-white sm:gap-3.5 sm:p-4"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 text-blue-400">
-                    <Mail className="h-5 w-5" />
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/10 text-blue-400 sm:h-10 sm:w-10">
+                    <Mail className="h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
                   <div>
-                    <p className="text-xs text-zinc-500">Correo electrónico</p>
-                    <p className="font-semibold text-white">{CORREO_CONTACTO}</p>
+                    <p className="text-[11px] text-zinc-500 sm:text-xs">Correo electrónico</p>
+                    <p className="text-xs font-semibold text-white sm:text-sm">{CORREO_CONTACTO}</p>
                   </div>
                 </a>
 
@@ -706,43 +711,43 @@ export default function HomePage() {
                   href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Tengo una consulta sobre NDI AI para mi negocio.")}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 transition hover:bg-emerald-500/10"
+                  className="flex items-center gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3.5 transition hover:bg-emerald-500/10 sm:gap-3.5 sm:p-4"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400">
-                    <MessageCircle className="h-5 w-5" />
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400 sm:h-10 sm:w-10">
+                    <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
                   <div>
-                    <p className="text-xs text-emerald-400/80">WhatsApp directo</p>
-                    <p className="font-semibold text-emerald-300">+54 9 388 657-5664</p>
+                    <p className="text-[11px] text-emerald-400/80 sm:text-xs">WhatsApp directo</p>
+                    <p className="text-xs font-semibold text-emerald-300 sm:text-sm">+54 9 388 657-5664</p>
                   </div>
                 </a>
 
-                <div className="flex items-center gap-3.5 rounded-xl border border-zinc-800 bg-zinc-900/40 p-4 text-zinc-400">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-800 text-zinc-400">
-                    <Clock className="h-5 w-5" />
+                <div className="flex items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900/40 p-3.5 text-zinc-400 sm:gap-3.5 sm:p-4">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-800 text-zinc-400 sm:h-10 sm:w-10">
+                    <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
                   <div>
-                    <p className="text-xs text-zinc-500">Horario de atención</p>
-                    <p className="text-xs text-zinc-300 font-medium">Lunes a sábados de 09:00 a 20:00 hs</p>
+                    <p className="text-[11px] text-zinc-500 sm:text-xs">Horario de atención</p>
+                    <p className="text-[11px] font-medium text-zinc-300 sm:text-xs">Lunes a sábados de 09:00 a 20:00 hs</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-7 sm:p-8 text-center shadow-xl">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600/10 text-blue-400">
-                <Sparkles className="h-7 w-7" />
+            <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-5 sm:p-8 text-center shadow-xl">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600/10 text-blue-400 sm:h-14 sm:w-14">
+                <Sparkles className="h-6 w-6 sm:h-7 sm:w-7" />
               </div>
-              <h3 className="mt-5 text-xl font-bold text-white">
+              <h3 className="mt-4 text-lg font-bold text-white sm:mt-5 sm:text-xl">
                 ¿Listo para poner tu negocio online?
               </h3>
               <p className="mt-2 text-xs leading-relaxed text-zinc-400 sm:text-sm">
                 Creá tu cuenta ahora y comenzá a configurar tu catálogo, servicios y turnos.
               </p>
-              <div className="mt-6 flex flex-col gap-3">
+              <div className="mt-5 flex flex-col gap-2.5 sm:mt-6 sm:gap-3">
                 <Link
                   href="/register"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3.5 text-sm font-semibold text-white transition hover:bg-blue-500 shadow-md shadow-blue-600/20"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-xs font-semibold text-white transition hover:bg-blue-500 shadow-md shadow-blue-600/20 sm:py-3.5 sm:text-sm"
                 >
                   Quiero mi página
                   <ArrowRight className="h-4 w-4" />
@@ -751,7 +756,7 @@ export default function HomePage() {
                   href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Quiero que me ayuden a armar mi página web en NDI AI.")}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/80 py-3.5 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/80 py-3 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800 sm:py-3.5"
                 >
                   <MessageCircle className="h-4 w-4 text-emerald-400" />
                   Hablar con un asesor por WhatsApp
@@ -768,22 +773,22 @@ export default function HomePage() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Contactar por WhatsApp"
-        className="fixed bottom-5 right-5 z-50 flex h-13 w-13 items-center justify-center rounded-full bg-emerald-500 p-3 text-white shadow-xl shadow-emerald-500/30 transition hover:scale-105 hover:bg-emerald-400"
+        className="fixed bottom-4 right-4 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500 p-2.5 text-white shadow-xl shadow-emerald-500/30 transition hover:scale-105 hover:bg-emerald-400 sm:bottom-5 sm:right-5 sm:h-13 sm:w-13 sm:p-3"
       >
-        <MessageCircle className="h-7 w-7 fill-current" />
+        <MessageCircle className="h-6 w-6 fill-current sm:h-7 sm:w-7" />
       </a>
 
       {/* FOOTER */}
       <footer className="border-t border-zinc-800">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-5 py-8 text-sm text-zinc-500 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-7 text-xs text-zinc-500 sm:flex-row sm:items-center sm:justify-between sm:px-8 sm:py-8 sm:text-sm">
           <div>
             <p className="font-medium text-zinc-300">NDI AI</p>
-            <p className="mt-1">
+            <p className="mt-0.5 sm:mt-1">
               Páginas inteligentes para negocios.
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-x-5 gap-y-2">
+          <div className="flex flex-wrap gap-x-4 gap-y-1.5 sm:gap-x-5 sm:gap-y-2">
             <Link
               href="/privacidad"
               className="transition hover:text-white"
@@ -834,7 +839,7 @@ function PlanCard({
 }) {
   return (
     <article
-      className={`relative flex flex-col justify-between rounded-3xl p-7 sm:p-8 ${
+      className={`relative flex flex-col justify-between rounded-2xl p-5 sm:rounded-3xl sm:p-8 ${
         destacado
           ? "border border-blue-500/40 bg-blue-500/5 ring-1 ring-blue-500/20 shadow-xl shadow-blue-500/10"
           : lanzamiento
@@ -845,7 +850,7 @@ function PlanCard({
       <div>
         {etiqueta && (
           <span
-            className={`absolute -top-3 left-6 rounded-full px-3 py-1 text-[11px] font-bold text-white shadow-sm ${
+            className={`absolute -top-3 left-5 rounded-full px-2.5 py-0.5 text-[10px] font-bold text-white shadow-sm sm:left-6 sm:px-3 sm:py-1 sm:text-[11px] ${
               lanzamiento
                 ? "bg-violet-600"
                 : destacado
@@ -858,7 +863,7 @@ function PlanCard({
         )}
 
         <h3
-          className={`text-xl font-bold ${
+          className={`text-lg font-bold sm:text-xl ${
             destacado
               ? "text-blue-400"
               : lanzamiento
@@ -869,38 +874,38 @@ function PlanCard({
           {nombre}
         </h3>
 
-        <div className="mt-4 rounded-2xl bg-zinc-950/60 p-4 border border-zinc-800/80">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+        <div className="mt-3.5 rounded-xl bg-zinc-950/60 p-3 border border-zinc-800/80 sm:mt-4 sm:rounded-2xl sm:p-4">
+          <p className="text-[9px] font-bold uppercase tracking-wider text-zinc-500 sm:text-[10px]">
             Puesta en marcha
           </p>
 
-          <p className="mt-0.5 text-3xl font-black text-white">
+          <p className="mt-0.5 text-2xl font-black text-white sm:text-3xl">
             {inicial}
           </p>
 
-          <p className="mt-1 text-xs font-bold text-blue-400">
+          <p className="mt-0.5 text-[11px] font-bold text-blue-400 sm:mt-1 sm:text-xs">
             + {mensual}
           </p>
         </div>
 
-        <p className="mt-4 text-xs leading-relaxed text-zinc-400">
+        <p className="mt-3 text-xs leading-relaxed text-zinc-400 sm:mt-4">
           {descripcion}
         </p>
 
         {lanzamiento && (
-          <p className="mt-3 rounded-xl border border-violet-500/20 bg-violet-500/10 p-2.5 text-[11px] leading-relaxed text-violet-200">
+          <p className="mt-2.5 rounded-xl border border-violet-500/20 bg-violet-500/10 p-2 text-[10px] leading-relaxed text-violet-200 sm:mt-3 sm:p-2.5 sm:text-[11px]">
             Conservás el precio mensual de lanzamiento mientras mantengas activa tu suscripción.
           </p>
         )}
 
-        <div className="mt-6 space-y-2.5">
+        <div className="mt-4 space-y-2 sm:mt-6 sm:space-y-2.5">
           {features.map((feature) => (
             <div
               key={feature}
-              className="flex items-start gap-2.5 text-xs text-zinc-300"
+              className="flex items-start gap-2 text-[11px] text-zinc-300 sm:gap-2.5 sm:text-xs"
             >
               <Check
-                className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${
+                className={`mt-0.5 h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5 ${
                   destacado ? "text-blue-400" : "text-emerald-400"
                 }`}
               />
@@ -911,10 +916,10 @@ function PlanCard({
         </div>
       </div>
 
-      <div className="mt-8 pt-4 border-t border-zinc-800/80">
+      <div className="mt-6 pt-3 border-t border-zinc-800/80 sm:mt-8 sm:pt-4">
         <Link
           href="/register"
-          className={`inline-flex w-full items-center justify-center rounded-xl px-5 py-3 text-xs font-bold text-white transition ${
+          className={`inline-flex w-full items-center justify-center rounded-xl px-4 py-2.5 text-xs font-bold text-white transition sm:px-5 sm:py-3 ${
             destacado
               ? "bg-blue-600 hover:bg-blue-500 shadow-md shadow-blue-600/20"
               : lanzamiento
