@@ -2,8 +2,11 @@
 
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
 import {
   AlertTriangle,
+  ArrowLeft,
   CheckCircle2,
   KeyRound,
   Lock,
@@ -25,7 +28,6 @@ import {
 
 import { auth } from "@/lib/firebase";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import Avatar from "@/components/Ui/Avatar";
 import Button from "@/components/Ui/Button";
 import Card from "@/components/Ui/Card";
 import Input from "@/components/Ui/Input";
@@ -96,24 +98,24 @@ export default function PerfilPage() {
       }
 
       // 3. Actualizar Correo Electrónico si cambió y no es de Google
-      if (!esCuentaGoogle && email.trim() !== (user.email || "")) {
-        await updateEmail(user, email.trim());
+      if (!esCuentaGoogle && email.trim().toLowerCase() !== (user.email || "").toLowerCase()) {
+        await updateEmail(user, email.trim().toLowerCase());
       }
 
-      setMensajeExito("Perfil y correo actualizados correctamente.");
+      setMensajeExito("Perfil guardado correctamente.");
       setTimeout(() => setMensajeExito(""), 3500);
     } catch (error: any) {
       console.error("Error al actualizar perfil:", error);
       if (error.code === "auth/requires-recent-login") {
         setErrorPerfil(
-          "Por seguridad, para cambiar el correo debés cerrar sesión y volver a ingresar antes de editarlo."
+          "Por seguridad, para cambiar el correo electrónico debés cerrar sesión y volver a ingresar antes de guardarlo."
         );
       } else if (error.code === "auth/email-already-in-use") {
-        setErrorPerfil("Ese correo electrónico ya está registrado en otra cuenta.");
+        setErrorPerfil("Ese correo electrónico ya está en uso por otra cuenta.");
       } else if (error.code === "auth/invalid-email") {
-        setErrorPerfil("El formato del correo electrónico no es válido.");
+        setErrorPerfil("El formato del correo electrónico ingresado no es válido.");
       } else {
-        setErrorPerfil("No se pudo actualizar el perfil. Verificá los datos e intentá de nuevo.");
+        setErrorPerfil("No se pudo actualizar el perfil. Por favor, intentá de nuevo.");
       }
     } finally {
       setGuardando(false);
@@ -130,7 +132,7 @@ export default function PerfilPage() {
     try {
       await sendPasswordResetEmail(auth, user.email);
       setMensajeSeguridad(
-        `Enviamos un enlace seguro para actualizar tu contraseña a ${user.email}. Revisá tu bandeja de entrada o spam.`
+        `Enviamos un enlace seguro para actualizar tu contraseña a ${user.email}. Revisá tu bandeja de entrada o carpeta de spam.`
       );
     } catch (error: any) {
       console.error("Error al enviar email de contraseña:", error);
@@ -187,6 +189,18 @@ export default function PerfilPage() {
     <DashboardLayout>
       <div className="flex w-full justify-center">
         <div className="w-full max-w-[800px] px-4 py-6 sm:px-6 sm:py-8 lg:py-10">
+          
+          {/* BOTÓN VOLVER ATRÁS */}
+          <div className="mb-4">
+            <Link
+              href="/workspace"
+              className="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium text-zinc-400 transition hover:bg-zinc-900 hover:text-white"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Volver al panel principal
+            </Link>
+          </div>
+
           <div className="mb-6 sm:mb-8">
             <h1 className="text-2xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-3xl">
               Mi Perfil
@@ -209,20 +223,23 @@ export default function PerfilPage() {
               </div>
 
               <div className="p-5 sm:p-6">
+                {/* LOGO OFICIAL NDI AI */}
                 <div className="mb-6 flex items-center gap-4">
-                  <Avatar
-                    name={user?.displayName || user?.email || "Usuario"}
-                    src={user?.photoURL || undefined}
-                    size="lg"
-                  />
+                  <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-950 p-2.5 shadow-md shadow-blue-500/5">
+                    <Image
+                      src="/logo-ndi.png"
+                      alt="Logo NDI AI"
+                      width={36}
+                      height={36}
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
                   <div>
-                    <p className="text-sm font-medium text-slate-950 dark:text-white">
-                      Foto de perfil
+                    <p className="text-sm font-semibold text-slate-950 dark:text-white">
+                      Identificador de cuenta NDI AI
                     </p>
-                    <p className="text-xs text-slate-500 dark:text-zinc-500">
-                      {esCuentaGoogle
-                        ? "Se obtiene automáticamente de tu cuenta de Google."
-                        : "Generada automáticamente según tu nombre."}
+                    <p className="text-xs text-slate-500 dark:text-zinc-400">
+                      Cuenta activa de administrador en la plataforma.
                     </p>
                   </div>
                 </div>
@@ -250,7 +267,7 @@ export default function PerfilPage() {
                       <Input
                         id="email"
                         type="email"
-                        label="Correo electrónico"
+                        label="Correo electrónico de acceso"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         disabled={esCuentaGoogle}
@@ -261,7 +278,7 @@ export default function PerfilPage() {
                       <p className="mt-1.5 text-[11px] text-slate-500 dark:text-zinc-500">
                         {esCuentaGoogle
                           ? "El correo está administrado por tu cuenta de Google."
-                          : "Ingresá un correo real para recibir notificaciones y recuperar tu clave."}
+                          : "Ingresá un correo real para recibir notificaciones y restablecer tu clave."}
                       </p>
                     </div>
                   </div>
@@ -274,9 +291,10 @@ export default function PerfilPage() {
                   )}
 
                   {errorPerfil && (
-                    <p className="text-xs font-medium text-red-600 dark:text-red-400">
-                      {errorPerfil}
-                    </p>
+                    <div className="flex items-start gap-2 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs font-medium text-red-600 dark:text-red-400">
+                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span>{errorPerfil}</span>
+                    </div>
                   )}
 
                   <div className="flex justify-end pt-2">
