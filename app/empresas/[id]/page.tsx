@@ -43,6 +43,7 @@ import Badge from "@/components/Ui/Badge";
 import Button from "@/components/Ui/Button";
 import Card from "@/components/Ui/Card";
 import Input from "@/components/Ui/Input";
+import OnboardingCard from "@/components/dashboard/OnboardingCard";
 
 type TemaPagina = "oscuro" | "claro";
 
@@ -203,7 +204,6 @@ export default function ConfigurarAgentePage() {
 
   const [horarios, setHorarios] =
     useState("");
-
 
   const [instagram, setInstagram] =
     useState("");
@@ -582,7 +582,6 @@ export default function ConfigurarAgentePage() {
             setHorarios(
               empresa.horarios || "",
             );
-
 
             setInstagram(
               empresa.redesSociales
@@ -1422,14 +1421,6 @@ export default function ConfigurarAgentePage() {
           empresaId,
         );
 
-      /*
-       * El slug ya quedó reservado y guardado por
-       * /api/companies/slug.
-       *
-       * Desde el navegador actualizamos únicamente
-       * los demás campos usando dot notation, para
-       * no volver a tocar paginaPublica.slug.
-       */
       const datosActualizar = {
         nombre:
           nombre.trim(),
@@ -1550,11 +1541,6 @@ export default function ConfigurarAgentePage() {
           serverTimestamp(),
       };
 
-      /*
-       * Estos campos pertenecen exclusivamente a
-       * Business IA. Página Simple y Página Completa
-       * ni siquiera los envían a Firestore.
-       */
       const datosIA =
         puedeUsarIA
           ? {
@@ -1758,6 +1744,9 @@ export default function ConfigurarAgentePage() {
         </Card>
       </header>
 
+      {/* GUÍA DE BIENVENIDA Y PRIMEROS PASOS */}
+      <OnboardingCard empresaId={empresaId} />
+
       <form
         onSubmit={handleGuardar}
         className="space-y-3 sm:space-y-6"
@@ -1838,7 +1827,6 @@ export default function ConfigurarAgentePage() {
               }
               placeholder="Dirección del negocio"
             />
-
 
             <Input
               id="instagram"
@@ -2284,7 +2272,7 @@ export default function ConfigurarAgentePage() {
                 </div>
               </div>
 
-              {/* NUEVO: Selector de Tipografía */}
+              {/* Selector de Tipografía */}
               <div className="space-y-1.5 sm:space-y-2">
                 <label
                   htmlFor="paginaTipografia"
@@ -2308,7 +2296,6 @@ export default function ConfigurarAgentePage() {
                   <option value="oswald">Oswald — Urbana y llamativa</option>
                 </select>
               </div>
-              {/* FIN NUEVO */}
 
               <label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/50 sm:gap-4 sm:rounded-xl sm:p-4">
                 <div>
@@ -2359,7 +2346,7 @@ export default function ConfigurarAgentePage() {
                     checked={paginaMostrarLogoHeader}
                     onChange={setPaginaMostrarLogoHeader}
                   />
-                
+                  
                   <ToggleOpcion
                     titulo="Correo"
                     descripcion="Mostrar correo del negocio."
