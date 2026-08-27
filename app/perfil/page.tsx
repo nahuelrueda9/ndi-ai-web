@@ -194,7 +194,7 @@ export default function PerfilPage() {
             <button
               type="button"
               onClick={() => router.back()}
-              className="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium text-zinc-400 transition hover:bg-zinc-900 hover:text-white"
+              className="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-white"
             >
               <ArrowLeft className="h-4 w-4" />
               Volver atrás
@@ -313,14 +313,14 @@ export default function PerfilPage() {
 
               <div className="p-5 sm:p-6">
                 {esCuentaGoogle ? (
-                  <div className="flex items-start gap-3 rounded-2xl border border-blue-500/20 bg-blue-500/5 p-4 text-xs text-blue-300">
+                  <div className="flex items-start gap-3 rounded-2xl border border-blue-500/20 bg-blue-500/5 p-4 text-xs text-blue-600 dark:text-blue-300">
                     <Lock className="mt-0.5 h-4 w-4 shrink-0" />
                     <p>Tu cuenta utiliza autenticación de Google. Tu contraseña se gestiona directamente desde Google.</p>
                   </div>
                 ) : (
                   <form onSubmit={handleActualizarPassword} className="space-y-4">
                     <div className="max-w-md">
-                      <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
+                      <label className="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-zinc-300">
                         Nueva contraseña
                       </label>
                       <div className="relative">
@@ -331,12 +331,12 @@ export default function PerfilPage() {
                           value={nuevaPassword}
                           onChange={(e) => setNuevaPassword(e.target.value)}
                           required
-                          className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-2.5 pr-10 text-sm text-white placeholder:text-zinc-600 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 pr-10 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white dark:placeholder:text-zinc-600"
                         />
                         <button
                           type="button"
                           onClick={() => setVerPassword(!verPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300"
                         >
                           {verPassword ? (
                             <EyeOff className="h-4 w-4" />
@@ -348,14 +348,14 @@ export default function PerfilPage() {
                     </div>
 
                     {mensajePass && (
-                      <div className="flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-400">
+                      <div className="flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-600 dark:text-emerald-400">
                         <CheckCircle2 className="h-4 w-4 shrink-0" />
                         {mensajePass}
                       </div>
                     )}
 
                     {errorPass && (
-                      <p className="text-xs text-red-400">{errorPass}</p>
+                      <p className="text-xs text-red-600 dark:text-red-400">{errorPass}</p>
                     )}
 
                     <Button type="submit" variant="secondary" disabled={guardandoPass || !nuevaPassword}>
@@ -402,28 +402,28 @@ export default function PerfilPage() {
       {/* MODAL ELIMINAR */}
       {mostrarModalEliminar && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 px-3 py-4 backdrop-blur-sm">
-          <div className="w-full max-w-md overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-white">¿Eliminar cuenta?</h3>
-              <button onClick={() => setMostrarModalEliminar(false)} className="text-zinc-400 hover:text-white">
+          <div className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl dark:border-zinc-800 dark:bg-zinc-900">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-bold text-slate-900 dark:text-white">¿Eliminar cuenta?</h3>
+              <button onClick={() => setMostrarModalEliminar(false)} className="text-slate-400 hover:text-slate-600 dark:text-zinc-400 dark:hover:text-white">
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <p className="text-xs text-zinc-400 mb-4">Escribí <b>ELIMINAR</b> para confirmar.</p>
+            <p className="mb-4 text-xs text-slate-600 dark:text-zinc-400">Escribí <b>ELIMINAR</b> para confirmar.</p>
             <input
               type="text"
               value={confirmacionEliminacion}
               onChange={(e) => setConfirmacionEliminacion(e.target.value)}
-              className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-white mb-3"
+              className="mb-3 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-red-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-950 dark:text-white"
               placeholder="ELIMINAR"
             />
-            {errorEliminacion && <p className="text-xs text-red-400 mb-3">{errorEliminacion}</p>}
+            {errorEliminacion && <p className="mb-3 text-xs text-red-600 dark:text-red-400">{errorEliminacion}</p>}
             <div className="flex justify-end gap-2">
               <Button variant="secondary" onClick={() => setMostrarModalEliminar(false)}>Cancelar</Button>
               <button
                 disabled={eliminando || confirmacionEliminacion !== "ELIMINAR"}
                 onClick={handleEliminarCuenta}
-                className="bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-bold disabled:opacity-50"
+                className="rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-red-500 disabled:opacity-50"
               >
                 {eliminando ? "Eliminando..." : "Eliminar"}
               </button>
