@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 
 const WHATSAPP_NUMERO = "5493886575664";
-const CORREO_CONTACTO = "nahuel.disenio@gmail.com";
+const CORREO_CONTACTO = "soporte@ndiweb.com";
 
 const problemas = [
   "Clientes preguntando siempre lo mismo",
@@ -483,7 +483,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FUNCIONES (OPTIMIZADA COMPACTA) */}
+      {/* FUNCIONES */}
       <section
         id="funciones"
         className="mx-auto max-w-7xl px-4 py-14 sm:px-8 sm:py-24"
