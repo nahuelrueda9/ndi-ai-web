@@ -929,23 +929,25 @@ export default function Header() {
               )}
             </div>
 
-            {/* BOTÓN MENÚ MÓVIL */}
-            <button
-              type="button"
-              aria-label="Abrir menú del negocio"
-              title="Menú"
-              onClick={() => {
-                window.dispatchEvent(
-                  new CustomEvent("ndi-ai:open-mobile-sidebar")
-                );
-                setTemaAbierto(false);
-                setMenuAbierto(false);
-                setPerfilAbierto(false);
-              }}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-950 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:shadow-none dark:hover:border-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-white md:hidden"
-            >
-              <Menu className="h-[19px] w-[19px]" />
-            </button>
+            {/* BOTÓN MENÚ MÓVIL (Solo visible si estás dentro de una empresa) */}
+            {Boolean(empresaActualId) && (
+              <button
+                type="button"
+                aria-label="Abrir menú del negocio"
+                title="Menú"
+                onClick={() => {
+                  window.dispatchEvent(
+                    new CustomEvent("ndi-ai:open-mobile-sidebar")
+                  );
+                  setTemaAbierto(false);
+                  setMenuAbierto(false);
+                  setPerfilAbierto(false);
+                }}
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-950 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:shadow-none dark:hover:border-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-white md:hidden"
+              >
+                <Menu className="h-[19px] w-[19px]" />
+              </button>
+            )}
 
             {/* PERFIL */}
             <div className="relative ml-0 md:ml-1">
