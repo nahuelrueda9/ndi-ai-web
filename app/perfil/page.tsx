@@ -2,7 +2,7 @@
 
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
   AlertTriangle,
@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   KeyRound,
   Lock,
-  Phone,
   Save,
   ShieldCheck,
   Trash2,
@@ -20,9 +19,9 @@ import {
 import {
   onAuthStateChanged,
   updateProfile,
-  updateEmail,
+  updatePassword,
+  verifyBeforeUpdateEmail,
   deleteUser,
-  sendPasswordResetEmail,
   type User,
 } from "firebase/auth";
 
@@ -33,10 +32,11 @@ import Card from "@/components/Ui/Card";
 import Input from "@/components/Ui/Input";
 
 export default function PerfilPage() {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loadingBase, setLoadingBase] = useState(true);
 
-  // Estados para actualizar perfil
+  // Perfil
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [telefono, setTelefono] = useState("");
@@ -44,12 +44,13 @@ export default function PerfilPage() {
   const [mensajeExito, setMensajeExito] = useState("");
   const [errorPerfil, setErrorPerfil] = useState("");
 
-  // Estados para seguridad y restablecimiento de contraseña
-  const [enviandoReset, setEnviandoReset] = useState(false);
-  const [mensajeSeguridad, setMensajeSeguridad] = useState("");
-  const [errorSeguridad, setErrorSeguridad] = useState("");
+  // Cambio directo de contraseña
+  const [nuevaPassword, setNuevaPassword] = useState("");
+  const [guardandoPass, setGuardandoPass] = useState(false);
+  const [mensajePass, setMensajePass] = useState("");
+  const [errorPass, setErrorPass] = useState("");
 
-  // Estados para eliminar cuenta
+  // Eliminar cuenta
   const [mostrarModalEliminar, setMostrarModalEliminar] = useState(false);
   const [confirmacionEliminacion, setConfirmacionEliminacion] = useState("");
   const [eliminando, setEliminando] = useState(false);
@@ -85,70 +86,74 @@ export default function PerfilPage() {
     setMensajeExito("");
 
     try {
-      // 1. Actualizar Nombre si cambió
+      // 1. Nombre
       if (nombre.trim() !== (user.displayName || "")) {
-        await updateProfile(user, {
-          displayName: nombre.trim(),
-        });
+        await updateProfile(user, { displayName: nombre.trim() });
       }
 
-      // 2. Actualizar Teléfono en almacenamiento local
+      // 2. Teléfono
       if (telefono.trim()) {
         localStorage.setItem(`phone_${user.uid}`, telefono.trim());
       }
 
-      // 3. Actualizar Correo Electrónico si cambió y no es de Google
+      // 3. Email
       if (!esCuentaGoogle && email.trim().toLowerCase() !== (user.email || "").toLowerCase()) {
-        await updateEmail(user, email.trim().toLowerCase());
+        await verifyBeforeUpdateEmail(user, email.trim().toLowerCase());
+        setMensajeExito(
+          "Se envió un enlace de confirmación al nuevo correo. Hacé clic en él para completar el cambio."
+        );
+      } else {
+        setMensajeExito("Perfil actualizado correctamente.");
       }
 
-      setMensajeExito("Perfil guardado correctamente.");
-      setTimeout(() => setMensajeExito(""), 3500);
+      setTimeout(() => setMensajeExito(""), 5000);
     } catch (error: any) {
       console.error("Error al actualizar perfil:", error);
       if (error.code === "auth/requires-recent-login") {
-        setErrorPerfil(
-          "Por seguridad, para cambiar el correo electrónico debés cerrar sesión y volver a ingresar antes de guardarlo."
-        );
+        setErrorPerfil("Por seguridad, cerrá sesión y volvé a entrar antes de modificar tu correo.");
       } else if (error.code === "auth/email-already-in-use") {
-        setErrorPerfil("Ese correo electrónico ya está en uso por otra cuenta.");
-      } else if (error.code === "auth/invalid-email") {
-        setErrorPerfil("El formato del correo electrónico ingresado no es válido.");
+        setErrorPerfil("Ese correo ya está registrado en otra cuenta.");
       } else {
-        setErrorPerfil("No se pudo actualizar el perfil. Por favor, intentá de nuevo.");
+        setErrorPerfil(error.message || "Error al actualizar. Intentá de nuevo.");
       }
     } finally {
       setGuardando(false);
     }
   }
 
-  async function handleEnviarResetPassword() {
-    if (!user?.email || enviandoReset) return;
+  async function handleActualizarPassword(e: FormEvent) {
+    e.preventDefault();
+    if (!user || guardandoPass) return;
+    if (nuevaPassword.length < 6) {
+      setErrorPass("La contraseña debe tener al menos 6 caracteres.");
+      return;
+    }
 
-    setEnviandoReset(true);
-    setErrorSeguridad("");
-    setMensajeSeguridad("");
+    setGuardandoPass(true);
+    setErrorPass("");
+    setMensajePass("");
 
     try {
-      await sendPasswordResetEmail(auth, user.email);
-      setMensajeSeguridad(
-        `Enviamos un enlace seguro para actualizar tu contraseña a ${user.email}. Revisá tu bandeja de entrada o carpeta de spam.`
-      );
+      await updatePassword(user, nuevaPassword);
+      setMensajePass("Contraseña cambiada exitosamente.");
+      setNuevaPassword("");
+      setTimeout(() => setMensajePass(""), 4000);
     } catch (error: any) {
-      console.error("Error al enviar email de contraseña:", error);
-      setErrorSeguridad(
-        "No se pudo enviar el correo de restablecimiento. Intentá más tarde."
-      );
+      console.error("Error al cambiar contraseña:", error);
+      if (error.code === "auth/requires-recent-login") {
+        setErrorPass("Por seguridad, debés cerrar sesión y volver a ingresar para cambiar la contraseña.");
+      } else {
+        setErrorPass("No se pudo cambiar la contraseña. Intentá más tarde.");
+      }
     } finally {
-      setEnviandoReset(false);
+      setGuardandoPass(false);
     }
   }
 
   async function handleEliminarCuenta() {
     if (!user || eliminando) return;
-
     if (confirmacionEliminacion.trim().toLowerCase() !== "eliminar") {
-      setErrorEliminacion("Tenés que escribir ELIMINAR para confirmar.");
+      setErrorEliminacion("Escribí ELIMINAR para confirmar.");
       return;
     }
 
@@ -159,16 +164,11 @@ export default function PerfilPage() {
       await deleteUser(user);
       window.location.href = "/login";
     } catch (error: any) {
-      console.error("Error al eliminar la cuenta:", error);
-
+      console.error("Error al eliminar:", error);
       if (error.code === "auth/requires-recent-login") {
-        setErrorEliminacion(
-          "Por seguridad, necesitás volver a iniciar sesión antes de eliminar tu cuenta."
-        );
+        setErrorEliminacion("Por seguridad, cerrá sesión y volvé a entrar antes de eliminar.");
       } else {
-        setErrorEliminacion(
-          "No se pudo eliminar la cuenta. Por favor, contactá a soporte."
-        );
+        setErrorEliminacion("No se pudo eliminar la cuenta.");
       }
     } finally {
       setEliminando(false);
@@ -190,15 +190,16 @@ export default function PerfilPage() {
       <div className="flex w-full justify-center">
         <div className="w-full max-w-[800px] px-4 py-6 sm:px-6 sm:py-8 lg:py-10">
           
-          {/* BOTÓN VOLVER ATRÁS */}
+          {/* BOTÓN VOLVER SEGURO */}
           <div className="mb-4">
-            <Link
-              href="/workspace"
+            <button
+              type="button"
+              onClick={() => router.back()}
               className="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium text-zinc-400 transition hover:bg-zinc-900 hover:text-white"
             >
               <ArrowLeft className="h-4 w-4" />
-              Volver al panel principal
-            </Link>
+              Volver atrás
+            </button>
           </div>
 
           <div className="mb-6 sm:mb-8">
@@ -223,23 +224,22 @@ export default function PerfilPage() {
               </div>
 
               <div className="p-5 sm:p-6">
-                {/* LOGO OFICIAL NDI AI */}
                 <div className="mb-6 flex items-center gap-4">
-                  <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-950 p-2.5 shadow-md shadow-blue-500/5">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 p-2 shadow-md shadow-blue-600/20">
                     <Image
                       src="/logo-ndi.png"
-                      alt="Logo NDI AI"
-                      width={36}
-                      height={36}
+                      alt="Logo NDI"
+                      width={32}
+                      height={32}
                       className="h-full w-full object-contain"
                     />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-slate-950 dark:text-white">
-                      Identificador de cuenta NDI AI
+                      Cuenta NDI AI
                     </p>
                     <p className="text-xs text-slate-500 dark:text-zinc-400">
-                      Cuenta activa de administrador en la plataforma.
+                      Administrador de plataforma
                     </p>
                   </div>
                 </div>
@@ -267,31 +267,25 @@ export default function PerfilPage() {
                       <Input
                         id="email"
                         type="email"
-                        label="Correo electrónico de acceso"
+                        label="Correo electrónico"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         disabled={esCuentaGoogle}
                         className={esCuentaGoogle ? "cursor-not-allowed opacity-70" : ""}
-                        placeholder="tu-correo@gmail.com"
                         required
                       />
-                      <p className="mt-1.5 text-[11px] text-slate-500 dark:text-zinc-500">
-                        {esCuentaGoogle
-                          ? "El correo está administrado por tu cuenta de Google."
-                          : "Ingresá un correo real para recibir notificaciones y restablecer tu clave."}
-                      </p>
                     </div>
                   </div>
 
                   {mensajeExito && (
-                    <div className="flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                    <div className="flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-600 dark:text-emerald-400">
                       <CheckCircle2 className="h-4 w-4 shrink-0" />
                       {mensajeExito}
                     </div>
                   )}
 
                   {errorPerfil && (
-                    <div className="flex items-start gap-2 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs font-medium text-red-600 dark:text-red-400">
+                    <div className="flex items-start gap-2 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-600 dark:text-red-400">
                       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
                       <span>{errorPerfil}</span>
                     </div>
@@ -299,21 +293,15 @@ export default function PerfilPage() {
 
                   <div className="flex justify-end pt-2">
                     <Button type="submit" disabled={guardando}>
-                      {guardando ? (
-                        "Guardando..."
-                      ) : (
-                        <>
-                          <Save className="h-4 w-4" />
-                          Guardar cambios
-                        </>
-                      )}
+                      <Save className="h-4 w-4" />
+                      {guardando ? "Guardando..." : "Guardar cambios"}
                     </Button>
                   </div>
                 </form>
               </div>
             </Card>
 
-            {/* SEGURIDAD & CONTRASEÑA */}
+            {/* CAMBIAR CONTRASEÑA */}
             <Card className="overflow-hidden">
               <div className="border-b border-slate-200 bg-slate-50/50 px-5 py-4 dark:border-zinc-800 dark:bg-zinc-900/50">
                 <div className="flex items-center gap-2">
@@ -326,49 +314,40 @@ export default function PerfilPage() {
 
               <div className="p-5 sm:p-6">
                 {esCuentaGoogle ? (
-                  <div className="flex items-start gap-3 rounded-2xl border border-blue-500/20 bg-blue-500/5 p-4 text-xs text-blue-700 dark:text-blue-300">
+                  <div className="flex items-start gap-3 rounded-2xl border border-blue-500/20 bg-blue-500/5 p-4 text-xs text-blue-300">
                     <Lock className="mt-0.5 h-4 w-4 shrink-0" />
-                    <div>
-                      <p className="font-semibold">Cuenta vinculada con Google</p>
-                      <p className="mt-1 text-slate-600 dark:text-zinc-400 leading-relaxed">
-                        Tu sesión se gestiona con los estándares de autenticación y doble factor de Google. La contraseña y seguridad se administran desde tu cuenta de Google.
-                      </p>
-                    </div>
+                    <p>Tu cuenta utiliza autenticación de Google. Tu contraseña se gestiona desde Google.</p>
                   </div>
                 ) : (
-                  <div>
-                    <p className="text-xs leading-relaxed text-slate-600 dark:text-zinc-400 sm:text-sm">
-                      Podés solicitar un enlace seguro a tu correo ({user?.email}) para actualizar tu clave de acceso en cualquier momento.
-                    </p>
+                  <form onSubmit={handleActualizarPassword} className="space-y-4">
+                    <div className="max-w-md">
+                      <Input
+                        id="new-pass"
+                        type="password"
+                        label="Nueva contraseña"
+                        placeholder="Mínimo 6 caracteres"
+                        value={nuevaPassword}
+                        onChange={(e) => setNuevaPassword(e.target.value)}
+                        required
+                      />
+                    </div>
 
-                    {mensajeSeguridad && (
-                      <div className="mt-3 flex items-start gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-600 dark:text-emerald-400">
-                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-                        <span>{mensajeSeguridad}</span>
+                    {mensajePass && (
+                      <div className="flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-400">
+                        <CheckCircle2 className="h-4 w-4 shrink-0" />
+                        {mensajePass}
                       </div>
                     )}
 
-                    {errorSeguridad && (
-                      <p className="mt-3 text-xs font-medium text-red-600 dark:text-red-400">
-                        {errorSeguridad}
-                      </p>
+                    {errorPass && (
+                      <p className="text-xs text-red-400">{errorPass}</p>
                     )}
 
-                    <div className="mt-4">
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        disabled={enviandoReset}
-                        onClick={handleEnviarResetPassword}
-                        className="inline-flex items-center gap-2"
-                      >
-                        <KeyRound className="h-4 w-4" />
-                        {enviandoReset
-                          ? "Enviando correo..."
-                          : "Cambiar o restablecer contraseña"}
-                      </Button>
-                    </div>
-                  </div>
+                    <Button type="submit" variant="secondary" disabled={guardandoPass || !nuevaPassword}>
+                      <KeyRound className="h-4 w-4" />
+                      {guardandoPass ? "Actualizando..." : "Actualizar contraseña"}
+                    </Button>
+                  </form>
                 )}
               </div>
             </Card>
@@ -385,11 +364,11 @@ export default function PerfilPage() {
               </div>
 
               <div className="p-5 sm:p-6">
-                <p className="text-xs leading-relaxed text-slate-600 dark:text-zinc-400 sm:text-sm">
-                  Una vez que elimines tu cuenta, no hay vuelta atrás. Se borrará tu acceso y perderás el control de las empresas que hayas creado.
+                <p className="text-xs text-slate-600 dark:text-zinc-400 sm:text-sm">
+                  Una vez eliminada la cuenta no hay vuelta atrás.
                 </p>
 
-                <div className="mt-5">
+                <div className="mt-4">
                   <button
                     type="button"
                     onClick={() => setMostrarModalEliminar(true)}
@@ -405,88 +384,34 @@ export default function PerfilPage() {
         </div>
       </div>
 
-      {/* MODAL DE ELIMINAR CUENTA */}
+      {/* MODAL ELIMINAR */}
       {mostrarModalEliminar && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 px-3 py-4 backdrop-blur-sm sm:px-4 sm:py-8">
-          <div className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-zinc-900">
-            <div className="flex items-start justify-between gap-3 border-b border-slate-200 p-4 dark:border-zinc-800 sm:p-5">
-              <div className="flex gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400">
-                  <AlertTriangle className="h-5 w-5" />
-                </div>
-                <div>
-                  <h2 className="mt-1 text-base font-bold text-slate-950 dark:text-white sm:text-lg">
-                    ¿Estás seguro?
-                  </h2>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                disabled={eliminando}
-                onClick={() => {
-                  setMostrarModalEliminar(false);
-                  setConfirmacionEliminacion("");
-                  setErrorEliminacion("");
-                }}
-                className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-zinc-800 dark:hover:text-white"
-              >
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 px-3 py-4 backdrop-blur-sm">
+          <div className="w-full max-w-md overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-white">¿Eliminar cuenta?</h3>
+              <button onClick={() => setMostrarModalEliminar(false)} className="text-zinc-400 hover:text-white">
                 <X className="h-5 w-5" />
               </button>
             </div>
-
-            <div className="p-4 sm:p-5">
-              <p className="text-xs leading-relaxed text-slate-600 dark:text-zinc-400 sm:text-sm">
-                Esta acción es <strong className="text-red-600 dark:text-red-400">permanente e irreversible</strong>. Perderás el acceso a NDI AI inmediatamente.
-              </p>
-
-              <label className="mt-4 block text-xs font-medium text-slate-700 dark:text-zinc-300 sm:text-sm">
-                Para confirmar, escribí <span className="font-bold text-slate-950 dark:text-white">ELIMINAR</span> abajo:
-              </label>
-
-              <input
-                type="text"
-                autoComplete="off"
-                value={confirmacionEliminacion}
-                disabled={eliminando}
-                onChange={(e) => {
-                  setConfirmacionEliminacion(e.target.value);
-                  setErrorEliminacion("");
-                }}
-                className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-xs text-slate-950 outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-500/10 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white sm:py-3 sm:text-sm"
-                placeholder="ELIMINAR"
-              />
-
-              {errorEliminacion && (
-                <p className="mt-2.5 text-xs font-medium text-red-600 dark:text-red-400">
-                  {errorEliminacion}
-                </p>
-              )}
-
-              <div className="mt-5 flex flex-col-reverse gap-2.5 sm:mt-6 sm:flex-row sm:justify-end sm:gap-3">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  disabled={eliminando}
-                  onClick={() => {
-                    setMostrarModalEliminar(false);
-                    setConfirmacionEliminacion("");
-                    setErrorEliminacion("");
-                  }}
-                >
-                  Cancelar
-                </Button>
-
-                <button
-                  type="button"
-                  disabled={eliminando || confirmacionEliminacion.trim() !== "ELIMINAR"}
-                  onClick={() => void handleEliminarCuenta()}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  {eliminando ? "Eliminando..." : "Eliminar cuenta"}
-                </button>
-              </div>
+            <p className="text-xs text-zinc-400 mb-4">Escribí <b>ELIMINAR</b> para confirmar.</p>
+            <input
+              type="text"
+              value={confirmacionEliminacion}
+              onChange={(e) => setConfirmacionEliminacion(e.target.value)}
+              className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-white mb-3"
+              placeholder="ELIMINAR"
+            />
+            {errorEliminacion && <p className="text-xs text-red-400 mb-3">{errorEliminacion}</p>}
+            <div className="flex justify-end gap-2">
+              <Button variant="secondary" onClick={() => setMostrarModalEliminar(false)}>Cancelar</Button>
+              <button
+                disabled={eliminando || confirmacionEliminacion !== "ELIMINAR"}
+                onClick={handleEliminarCuenta}
+                className="bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-bold disabled:opacity-50"
+              >
+                {eliminando ? "Eliminando..." : "Eliminar"}
+              </button>
             </div>
           </div>
         </div>
