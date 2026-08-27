@@ -8,6 +8,8 @@ import {
   AlertTriangle,
   ArrowLeft,
   CheckCircle2,
+  Eye,
+  EyeOff,
   KeyRound,
   Lock,
   Save,
@@ -46,6 +48,7 @@ export default function PerfilPage() {
 
   // Cambio directo de contraseña
   const [nuevaPassword, setNuevaPassword] = useState("");
+  const [verPassword, setVerPassword] = useState(false);
   const [guardandoPass, setGuardandoPass] = useState(false);
   const [mensajePass, setMensajePass] = useState("");
   const [errorPass, setErrorPass] = useState("");
@@ -86,21 +89,18 @@ export default function PerfilPage() {
     setMensajeExito("");
 
     try {
-      // 1. Nombre
       if (nombre.trim() !== (user.displayName || "")) {
         await updateProfile(user, { displayName: nombre.trim() });
       }
 
-      // 2. Teléfono
       if (telefono.trim()) {
         localStorage.setItem(`phone_${user.uid}`, telefono.trim());
       }
 
-      // 3. Email
       if (!esCuentaGoogle && email.trim().toLowerCase() !== (user.email || "").toLowerCase()) {
         await verifyBeforeUpdateEmail(user, email.trim().toLowerCase());
         setMensajeExito(
-          "Se envió un enlace de confirmación al nuevo correo. Hacé clic en él para completar el cambio."
+          "Se envió un enlace de verificación al nuevo correo. Confirmalo para completar el cambio."
         );
       } else {
         setMensajeExito("Perfil actualizado correctamente.");
@@ -190,7 +190,6 @@ export default function PerfilPage() {
       <div className="flex w-full justify-center">
         <div className="w-full max-w-[800px] px-4 py-6 sm:px-6 sm:py-8 lg:py-10">
           
-          {/* BOTÓN VOLVER SEGURO */}
           <div className="mb-4">
             <button
               type="button"
@@ -316,20 +315,36 @@ export default function PerfilPage() {
                 {esCuentaGoogle ? (
                   <div className="flex items-start gap-3 rounded-2xl border border-blue-500/20 bg-blue-500/5 p-4 text-xs text-blue-300">
                     <Lock className="mt-0.5 h-4 w-4 shrink-0" />
-                    <p>Tu cuenta utiliza autenticación de Google. Tu contraseña se gestiona desde Google.</p>
+                    <p>Tu cuenta utiliza autenticación de Google. Tu contraseña se gestiona directamente desde Google.</p>
                   </div>
                 ) : (
                   <form onSubmit={handleActualizarPassword} className="space-y-4">
                     <div className="max-w-md">
-                      <Input
-                        id="new-pass"
-                        type="password"
-                        label="Nueva contraseña"
-                        placeholder="Mínimo 6 caracteres"
-                        value={nuevaPassword}
-                        onChange={(e) => setNuevaPassword(e.target.value)}
-                        required
-                      />
+                      <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
+                        Nueva contraseña
+                      </label>
+                      <div className="relative">
+                        <input
+                          id="new-pass"
+                          type={verPassword ? "text" : "password"}
+                          placeholder="Mínimo 6 caracteres"
+                          value={nuevaPassword}
+                          onChange={(e) => setNuevaPassword(e.target.value)}
+                          required
+                          className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-2.5 pr-10 text-sm text-white placeholder:text-zinc-600 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setVerPassword(!verPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+                        >
+                          {verPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
                     </div>
 
                     {mensajePass && (
