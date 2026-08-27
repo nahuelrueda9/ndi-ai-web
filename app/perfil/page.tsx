@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   KeyRound,
   Lock,
-  Mail,
   Phone,
   Save,
   ShieldCheck,
@@ -18,6 +17,7 @@ import {
 import {
   onAuthStateChanged,
   updateProfile,
+  updateEmail,
   deleteUser,
   sendPasswordResetEmail,
   type User,
@@ -36,6 +36,7 @@ export default function PerfilPage() {
 
   // Estados para actualizar perfil
   const [nombre, setNombre] = useState("");
+  const [email, setEmail] = useState("");
   const [telefono, setTelefono] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [mensajeExito, setMensajeExito] = useState("");
@@ -52,7 +53,6 @@ export default function PerfilPage() {
   const [eliminando, setEliminando] = useState(false);
   const [errorEliminacion, setErrorEliminacion] = useState("");
 
-  // Detectar si el usuario inició con Google o Email
   const esCuentaGoogle = user?.providerData.some(
     (provider) => provider.providerId === "google.com"
   );
@@ -65,7 +65,7 @@ export default function PerfilPage() {
       }
       setUser(currentUser);
       setNombre(currentUser.displayName || "");
-      // Si tenías guardado el teléfono en el perfil o localStorage
+      setEmail(currentUser.email || "");
       const savedPhone = localStorage.getItem(`phone_${currentUser.uid}`) || "";
       setTelefono(savedPhone);
       setLoadingBase(false);
@@ -83,19 +83,38 @@ export default function PerfilPage() {
     setMensajeExito("");
 
     try {
-      await updateProfile(user, {
-        displayName: nombre.trim(),
-      });
+      // 1. Actualizar Nombre si cambió
+      if (nombre.trim() !== (user.displayName || "")) {
+        await updateProfile(user, {
+          displayName: nombre.trim(),
+        });
+      }
 
+      // 2. Actualizar Teléfono en almacenamiento local
       if (telefono.trim()) {
         localStorage.setItem(`phone_${user.uid}`, telefono.trim());
       }
 
-      setMensajeExito("Perfil actualizado correctamente.");
+      // 3. Actualizar Correo Electrónico si cambió y no es de Google
+      if (!esCuentaGoogle && email.trim() !== (user.email || "")) {
+        await updateEmail(user, email.trim());
+      }
+
+      setMensajeExito("Perfil y correo actualizados correctamente.");
       setTimeout(() => setMensajeExito(""), 3500);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al actualizar perfil:", error);
-      setErrorPerfil("No se pudo actualizar el perfil. Intentá de nuevo.");
+      if (error.code === "auth/requires-recent-login") {
+        setErrorPerfil(
+          "Por seguridad, para cambiar el correo debés cerrar sesión y volver a ingresar antes de editarlo."
+        );
+      } else if (error.code === "auth/email-already-in-use") {
+        setErrorPerfil("Ese correo electrónico ya está registrado en otra cuenta.");
+      } else if (error.code === "auth/invalid-email") {
+        setErrorPerfil("El formato del correo electrónico no es válido.");
+      } else {
+        setErrorPerfil("No se pudo actualizar el perfil. Verificá los datos e intentá de nuevo.");
+      }
     } finally {
       setGuardando(false);
     }
@@ -178,7 +197,7 @@ export default function PerfilPage() {
           </div>
 
           <div className="space-y-6 sm:space-y-8">
-            {/* TARJETA 1: INFORMACIÓN PERSONAL */}
+            {/* INFORMACIÓN PERSONAL */}
             <Card className="overflow-hidden">
               <div className="border-b border-slate-200 bg-slate-50/50 px-5 py-4 dark:border-zinc-800 dark:bg-zinc-900/50">
                 <div className="flex items-center gap-2">
@@ -230,13 +249,19 @@ export default function PerfilPage() {
                     <div className="sm:col-span-2">
                       <Input
                         id="email"
+                        type="email"
                         label="Correo electrónico"
-                        value={user?.email || ""}
-                        disabled
-                        className="cursor-not-allowed opacity-70"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        disabled={esCuentaGoogle}
+                        className={esCuentaGoogle ? "cursor-not-allowed opacity-70" : ""}
+                        placeholder="tu-correo@gmail.com"
+                        required
                       />
                       <p className="mt-1.5 text-[11px] text-slate-500 dark:text-zinc-500">
-                        Para cambiar tu correo de acceso contactanos a soporte.
+                        {esCuentaGoogle
+                          ? "El correo está administrado por tu cuenta de Google."
+                          : "Ingresá un correo real para recibir notificaciones y recuperar tu clave."}
                       </p>
                     </div>
                   </div>
@@ -270,7 +295,7 @@ export default function PerfilPage() {
               </div>
             </Card>
 
-            {/* TARJETA 2: SEGURIDAD Y CONTRASEÑA */}
+            {/* SEGURIDAD & CONTRASEÑA */}
             <Card className="overflow-hidden">
               <div className="border-b border-slate-200 bg-slate-50/50 px-5 py-4 dark:border-zinc-800 dark:bg-zinc-900/50">
                 <div className="flex items-center gap-2">
@@ -330,7 +355,7 @@ export default function PerfilPage() {
               </div>
             </Card>
 
-            {/* TARJETA 3: ZONA DE PELIGRO */}
+            {/* ZONA DE PELIGRO */}
             <Card className="overflow-hidden border-red-200 dark:border-red-900/30">
               <div className="border-b border-red-100 bg-red-50/50 px-5 py-4 dark:border-red-900/20 dark:bg-red-950/10">
                 <div className="flex items-center gap-2">
