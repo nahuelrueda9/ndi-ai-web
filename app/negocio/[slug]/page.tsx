@@ -68,7 +68,6 @@ interface Empresa {
     soloWhatsapp?: boolean;
   };
 
-
   redesSociales?: {
     instagram?: string;
     facebook?: string;
@@ -749,6 +748,7 @@ export default async function NegocioPage({ params }: PageProps) {
           ) : (
             <TiendaCatalogoPedidos
               slug={slug}
+              empresaId={documento.id}
               productos={productosTienda}
               colorPrincipal={colorPrincipal}
               tema={esClaro ? "claro" : "oscuro"}
