@@ -29,7 +29,7 @@ export default function OnboardingCard({ empresaId }: { empresaId: string }) {
   if (!mostrar) return null;
 
   return (
-    <div className="relative mb-6 overflow-hidden rounded-2xl border border-blue-200 bg-white p-5 shadow-sm transition-colors dark:border-blue-500/20 dark:bg-gradient-to-br dark:from-blue-600/10 dark:via-zinc-900 dark:to-zinc-950 sm:p-6">
+    <div className="relative mb-6 overflow-hidden rounded-2xl border border-blue-200 bg-white p-5 shadow-sm transition-colors dark:border-blue-500/20 dark:bg-zinc-900 sm:p-6">
       <button
         type="button"
         onClick={cerrarGuia}
@@ -51,9 +51,9 @@ export default function OnboardingCard({ empresaId }: { empresaId: string }) {
       </h3>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
-        {/* Paso 1: Identidad */}
+        {/* Paso 1: Identidad (Redirige a Mi Página) */}
         <Link
-          href={`/empresas/${empresaId}/informacion`}
+          href={`/empresas/${empresaId}/mi-pagina`}
           className="flex flex-col justify-between rounded-xl border border-slate-200 bg-slate-50 p-3.5 transition hover:border-blue-500/40 hover:bg-white hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950/70 dark:hover:border-blue-500/50 dark:hover:bg-zinc-900"
         >
           <div>
