@@ -10,6 +10,7 @@ import Image from "next/image";
 import {
   useParams,
   usePathname,
+  router as nextRouter,
   useRouter,
 } from "next/navigation";
 import {
@@ -336,9 +337,18 @@ export default function Sidebar() {
   const rubroConfig = useMemo(() => {
     const r = (empresa?.rubro || "").trim().toLowerCase();
 
-    const esGastronomia = [
-      "restaurante", "restaurant", "cafe", "café", "bar", "pizzeria", "pizzería", "panaderia", "panadería", "comida", "heladeria", "heladería"
+    // 1. Detección prioritaria de Barbería, Peluquería y Estética
+    const esBarberiaPeluqueria = [
+      "barberia", "barbería", "barbero", "peluqueria", "peluquería", "estilista", "estetica", "estética", "spa", "unas", "uñas"
     ].some((palabra) => r.includes(palabra));
+
+    // 2. Gastronomía evitando colisiones con 'bar' en 'barberia'
+    const esGastronomia = !esBarberiaPeluqueria && (
+      /\bbar\b/.test(r) ||
+      [
+        "restaurante", "restaurant", "cafe", "café", "pizzeria", "pizzería", "panaderia", "panadería", "comida", "heladeria", "heladería", "rotiseria", "rotisería"
+      ].some((palabra) => r.includes(palabra))
+    );
 
     const esAlojamiento = [
       "hotel", "hostal", "cabaña", "cabana", "cabañas", "cabanas", "alojamiento", "hospedaje"
@@ -346,10 +356,6 @@ export default function Sidebar() {
 
     const esTienda = [
       "tienda", "ropa", "indumentaria", "calzado", "bazar", "kiosco", "almacen", "almacén", "supermercado", "accesorios", "joyeria", "joyería", "electronica", "electrónica"
-    ].some((palabra) => r.includes(palabra));
-
-    const esBarberiaPeluqueria = [
-      "barberia", "barbería", "barbero", "peluqueria", "peluquería", "estilista", "estetica", "estética", "spa", "unas", "uñas"
     ].some((palabra) => r.includes(palabra));
 
     const esConsultorio = [
