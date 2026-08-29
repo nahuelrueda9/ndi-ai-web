@@ -2,7 +2,7 @@
 
 import { CreditCard, Loader2, MessageCircle, Minus, Plus, ShoppingBag, Trash2, Wallet, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { collection, addDoc, serverTimestamp, query, where, getDocs, limit } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import ProductoDetalleTienda from "./ProductoDetalleTienda";
 
@@ -52,6 +52,7 @@ type PagosConfig = {
 
 type Props = {
   slug: string;
+  empresaId: string;
   productos: Producto[];
   colorPrincipal: string;
   tema?: "oscuro" | "claro";
@@ -82,6 +83,7 @@ function obtenerImagenes(producto: Producto) {
 
 export default function TiendaCatalogoPedidos({
   slug,
+  empresaId,
   productos,
   colorPrincipal,
   tema = "oscuro",
@@ -188,22 +190,8 @@ export default function TiendaCatalogoPedidos({
 
   async function registrarPedidoEnFirestore(): Promise<boolean> {
     try {
-      // 1. Obtener la ID de la empresa por medio del slug
-      const q = query(
-        collection(db, "companies"),
-        where("paginaPublica.slug", "==", slug),
-        limit(1)
-      );
-      const snapshot = await getDocs(q);
+      if (!empresaId) return false;
 
-      if (snapshot.empty) {
-        console.error("No se encontró la empresa con slug:", slug);
-        return false;
-      }
-
-      const empresaId = snapshot.docs[0].id;
-
-      // 2. Crear la orden de compra
       await addDoc(collection(db, "companies", empresaId, "orders"), {
         nombreCliente: nombreCliente.trim(),
         telefono: telefonoCliente.trim() || "",
@@ -441,16 +429,6 @@ export default function TiendaCatalogoPedidos({
                       onChange={(event) => setNombreCliente(event.target.value)}
                       maxLength={120}
                       placeholder="Tu nombre y apellido"
-                      className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 ${claro ? "border-slate-300 bg-white text-slate-950 placeholder-slate-400" : "border-zinc-700 bg-zinc-900 text-white placeholder-zinc-500"}`}
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-xs font-medium">Teléfono / WhatsApp <span className={claseSecundario}>(opcional)</span></label>
-                    <input
-                      value={telefonoCliente}
-                      onChange={(event) => setTelefonoCliente(event.target.value)}
-                      maxLength={40}
-                      placeholder="Ej.: +54 9 11 1234-5678"
                       className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 ${claro ? "border-slate-300 bg-white text-slate-950 placeholder-slate-400" : "border-zinc-700 bg-zinc-900 text-white placeholder-zinc-500"}`}
                     />
                   </div>
