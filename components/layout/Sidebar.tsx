@@ -165,11 +165,6 @@ export default function Sidebar() {
   );
 
   const [
-    restaurante,
-    setRestaurante,
-  ] = useState(false);
-
-  const [
     cargandoRol,
     setCargandoRol,
   ] = useState(true);
@@ -189,7 +184,6 @@ export default function Sidebar() {
           if (!currentUser) {
             setRol(null);
             setEmpresa(null);
-            setRestaurante(false);
             setCargandoRol(false);
           }
         },
@@ -240,28 +234,15 @@ export default function Sidebar() {
           return;
         }
 
-        const empresa =
+        const empresaData =
           empresaSnapshot.data() as EmpresaData;
 
         if (activo) {
-          setEmpresa(empresa);
-
-          const rubro =
-            empresa.rubro
-              ?.trim()
-              .toLowerCase() ||
-            "";
-
-          setRestaurante(
-            rubro ===
-              "restaurante" ||
-            rubro ===
-              "restaurant",
-          );
+          setEmpresa(empresaData);
         }
 
         if (
-          empresa.userId ===
+          empresaData.userId ===
           usuarioSeguro.uid
         ) {
           if (activo) {
@@ -351,6 +332,56 @@ export default function Sidebar() {
     usuario,
   ]);
 
+  // Clasificación inteligente del rubro
+  const rubroConfig = useMemo(() => {
+    const r = (empresa?.rubro || "").trim().toLowerCase();
+
+    const esGastronomia = [
+      "restaurante", "restaurant", "cafe", "café", "bar", "pizzeria", "pizzería", "panaderia", "panadería", "comida", "heladeria", "heladería"
+    ].some((palabra) => r.includes(palabra));
+
+    const esAlojamiento = [
+      "hotel", "hostal", "cabaña", "cabana", "cabañas", "cabanas", "alojamiento", "hospedaje"
+    ].some((palabra) => r.includes(palabra));
+
+    const esTienda = [
+      "tienda", "ropa", "indumentaria", "calzado", "bazar", "kiosco", "almacen", "almacén", "supermercado", "accesorios", "joyeria", "joyería", "electronica", "electrónica"
+    ].some((palabra) => r.includes(palabra));
+
+    const esBarberiaPeluqueria = [
+      "barberia", "barbería", "barbero", "peluqueria", "peluquería", "estilista", "estetica", "estética", "spa", "unas", "uñas"
+    ].some((palabra) => r.includes(palabra));
+
+    const esConsultorio = [
+      "consultorio", "medico", "médico", "clinica", "clínica", "odontologia", "odontología", "dentista", "psicologia", "psicología", "nutricion", "nutrición", "kinesiologia", "kinesiología"
+    ].some((palabra) => r.includes(palabra));
+
+    // Nombres dinámicos
+    let labelCatalogo = "Servicios y productos";
+    if (esGastronomia) labelCatalogo = "Menú y carta";
+    else if (esAlojamiento) labelCatalogo = "Habitaciones";
+    else if (esTienda) labelCatalogo = "Catálogo de productos";
+    else if (esBarberiaPeluqueria) labelCatalogo = "Servicios y productos";
+    else if (esConsultorio) labelCatalogo = "Prestaciones y servicios";
+
+    let labelTurnos = "Turnos y reservas";
+    if (esGastronomia || esAlojamiento) labelTurnos = "Reservas";
+    else if (esBarberiaPeluqueria || esConsultorio) labelTurnos = "Turnos";
+
+    // Visibilidad condicional
+    const muestraTurnos = !esTienda;
+    const muestraPedidos = esGastronomia || esTienda;
+    const muestraPresupuestos = !esGastronomia && !esTienda && !esBarberiaPeluqueria;
+
+    return {
+      labelCatalogo,
+      labelTurnos,
+      muestraTurnos,
+      muestraPedidos,
+      muestraPresupuestos,
+    };
+  }, [empresa?.rubro]);
+
   const items =
     useMemo<ItemMenu[]>(
       () => {
@@ -373,7 +404,7 @@ export default function Sidebar() {
             feature: "pagina_publica",
           },
           {
-            label: "Servicios y productos",
+            label: rubroConfig.labelCatalogo,
             ruta: "catalogo",
             icon: Package,
             roles: ROLES_SUPERVISION,
@@ -386,33 +417,39 @@ export default function Sidebar() {
             roles: TODOS_LOS_ROLES,
             feature: "turnos",
           },
-          {
-            label: "Turnos y reservas",
-            ruta: "agenda",
-            icon: CalendarDays,
-            roles: TODOS_LOS_ROLES,
-            feature: "turnos",
-          },
-          ...(restaurante
+          ...(rubroConfig.muestraTurnos
+            ? [
+                {
+                  label: rubroConfig.labelTurnos,
+                  ruta: "agenda",
+                  icon: CalendarDays,
+                  roles: TODOS_LOS_ROLES,
+                  feature: "turnos" as PlanFeature,
+                },
+              ]
+            : []),
+          ...(rubroConfig.muestraPedidos
             ? [
                 {
                   label: "Pedidos",
                   ruta: "pedidos",
                   icon: ShoppingBag,
-                  roles:
-                    TODOS_LOS_ROLES,
-                  feature:
-                    "productos" as PlanFeature,
+                  roles: TODOS_LOS_ROLES,
+                  feature: "productos" as PlanFeature,
                 },
               ]
             : []),
-          {
-            label: "Presupuestos",
-            ruta: "presupuestos",
-            icon: FileText,
-            roles: TODOS_LOS_ROLES,
-            feature: "presupuestos",
-          },
+          ...(rubroConfig.muestraPresupuestos
+            ? [
+                {
+                  label: "Presupuestos",
+                  ruta: "presupuestos",
+                  icon: FileText,
+                  roles: TODOS_LOS_ROLES,
+                  feature: "presupuestos" as PlanFeature,
+                },
+              ]
+            : []),
           {
             label: "Métodos de pago",
             ruta: "pagos",
@@ -476,7 +513,7 @@ export default function Sidebar() {
       },
       [
         empresaId,
-        restaurante,
+        rubroConfig,
       ],
     );
 
