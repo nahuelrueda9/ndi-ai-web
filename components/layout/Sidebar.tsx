@@ -10,7 +10,6 @@ import Image from "next/image";
 import {
   useParams,
   usePathname,
-  router as nextRouter,
   useRouter,
 } from "next/navigation";
 import {
