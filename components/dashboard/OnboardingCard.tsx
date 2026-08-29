@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import {
   Sparkles,
   ArrowRight,
@@ -24,6 +23,13 @@ export default function OnboardingCard({ empresaId }: { empresaId: string }) {
   const cerrarGuia = () => {
     localStorage.setItem(`onboarding_cerrado_${empresaId}`, "true");
     setMostrar(false);
+  };
+
+  const irASeccion = (idElemento: string) => {
+    const elemento = document.getElementById(idElemento);
+    if (elemento) {
+      elemento.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
   };
 
   if (!mostrar) return null;
@@ -52,9 +58,10 @@ export default function OnboardingCard({ empresaId }: { empresaId: string }) {
 
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
         {/* Paso 1: Identidad */}
-        <Link
-          href={`/empresas/${empresaId}/mi-pagina`}
-          className="flex flex-col justify-between rounded-xl border border-slate-200 bg-slate-50 p-3.5 transition hover:border-blue-500/40 hover:bg-white hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950/70 dark:hover:border-blue-500/50 dark:hover:bg-zinc-900"
+        <button
+          type="button"
+          onClick={() => irASeccion("seccion-identidad")}
+          className="flex flex-col justify-between rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-left transition hover:border-blue-500/40 hover:bg-white hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950/70 dark:hover:border-blue-500/50 dark:hover:bg-zinc-900"
         >
           <div>
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
@@ -70,12 +77,13 @@ export default function OnboardingCard({ empresaId }: { empresaId: string }) {
           <span className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-blue-600 dark:text-blue-400">
             Completar <ArrowRight className="h-3 w-3" />
           </span>
-        </Link>
+        </button>
 
         {/* Paso 2: Catálogo / Servicios */}
-        <Link
-          href={`/empresas/${empresaId}/servicios-y-productos`}
-          className="flex flex-col justify-between rounded-xl border border-slate-200 bg-slate-50 p-3.5 transition hover:border-emerald-500/40 hover:bg-white hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950/70 dark:hover:border-blue-500/50 dark:hover:bg-zinc-900"
+        <button
+          type="button"
+          onClick={() => irASeccion("seccion-catalogo")}
+          className="flex flex-col justify-between rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-left transition hover:border-emerald-500/40 hover:bg-white hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950/70 dark:hover:border-blue-500/50 dark:hover:bg-zinc-900"
         >
           <div>
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
@@ -91,12 +99,13 @@ export default function OnboardingCard({ empresaId }: { empresaId: string }) {
           <span className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
             Cargar <ArrowRight className="h-3 w-3" />
           </span>
-        </Link>
+        </button>
 
         {/* Paso 3: Publicar y compartir */}
-        <Link
-          href={`/empresas/${empresaId}/mi-pagina`}
-          className="flex flex-col justify-between rounded-xl border border-slate-200 bg-slate-50 p-3.5 transition hover:border-violet-500/40 hover:bg-white hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950/70 dark:hover:border-blue-500/50 dark:hover:bg-zinc-900"
+        <button
+          type="button"
+          onClick={() => irASeccion("seccion-compartir")}
+          className="flex flex-col justify-between rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-left transition hover:border-violet-500/40 hover:bg-white hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950/70 dark:hover:border-blue-500/50 dark:hover:bg-zinc-900"
         >
           <div>
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-100 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400">
@@ -112,7 +121,7 @@ export default function OnboardingCard({ empresaId }: { empresaId: string }) {
           <span className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-violet-600 dark:text-violet-400">
             Ver enlace <ArrowRight className="h-3 w-3" />
           </span>
-        </Link>
+        </button>
       </div>
     </div>
   );
