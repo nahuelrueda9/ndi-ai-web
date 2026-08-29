@@ -1,5 +1,5 @@
 "use client";
 
-export default function OnboardingCard() {
+export default function OnboardingCard({ empresaId }: { empresaId?: string }) {
   return null;
 }
