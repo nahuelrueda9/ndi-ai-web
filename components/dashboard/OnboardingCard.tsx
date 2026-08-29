@@ -51,7 +51,7 @@ export default function OnboardingCard({ empresaId }: { empresaId: string }) {
       </h3>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
-        {/* Paso 1: Identidad (Redirige a Mi Página) */}
+        {/* Paso 1: Identidad */}
         <Link
           href={`/empresas/${empresaId}/mi-pagina`}
           className="flex flex-col justify-between rounded-xl border border-slate-200 bg-slate-50 p-3.5 transition hover:border-blue-500/40 hover:bg-white hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950/70 dark:hover:border-blue-500/50 dark:hover:bg-zinc-900"
@@ -74,7 +74,7 @@ export default function OnboardingCard({ empresaId }: { empresaId: string }) {
 
         {/* Paso 2: Catálogo / Servicios */}
         <Link
-          href={`/empresas/${empresaId}/servicios`}
+          href={`/empresas/${empresaId}/servicios-y-productos`}
           className="flex flex-col justify-between rounded-xl border border-slate-200 bg-slate-50 p-3.5 transition hover:border-emerald-500/40 hover:bg-white hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950/70 dark:hover:border-blue-500/50 dark:hover:bg-zinc-900"
         >
           <div>
