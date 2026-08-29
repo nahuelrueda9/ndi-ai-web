@@ -7,6 +7,7 @@ import {
   PackageCheck,
   Phone,
   ShoppingBag,
+  Trash2,
   Truck,
   XCircle,
 } from "lucide-react";
@@ -22,6 +23,7 @@ import {
 } from "firebase/auth";
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   onSnapshot,
@@ -56,6 +58,8 @@ type ItemPedido = {
   precioUnitario?: number;
   cantidad?: number;
   subtotal?: number;
+  talle?: string;
+  color?: string;
 };
 
 type Pedido = {
@@ -80,9 +84,6 @@ type Empresa = {
   plan?: PlanId;
   subscriptionStatus?: string;
   subscriptionEndsAt?: unknown;
-  paginaPublica?: {
-    mostrarPedidosOnline?: boolean;
-  };
 };
 
 type MiembroEmpresa = {
@@ -152,7 +153,6 @@ export default function PedidosPage() {
   const [cargando, setCargando] = useState(true);
   const [cargandoAccion, setCargandoAccion] = useState("");
   const [error, setError] = useState("");
-  const [empresa, setEmpresa] = useState<Empresa | null>(null);
   const [accesoPedidos, setAccesoPedidos] = useState<boolean | null>(null);
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [filtro, setFiltro] = useState<Filtro>("todos");
@@ -254,7 +254,6 @@ export default function PedidosPage() {
         }
 
         if (activo) {
-          setEmpresa(datos);
           setAccesoPedidos(true);
         }
 
@@ -384,6 +383,27 @@ export default function PedidosPage() {
     }
   }
 
+  async function eliminarPedido(pedidoId: string) {
+    if (accesoPedidos !== true || !empresaId || cargandoAccion) {
+      return;
+    }
+
+    const confirmar = window.confirm("¿Seguro que querés eliminar este pedido del registro?");
+    if (!confirmar) return;
+
+    setCargandoAccion(pedidoId);
+    setError("");
+
+    try {
+      await deleteDoc(doc(db, "companies", empresaId, "orders", pedidoId));
+    } catch (err) {
+      console.error("Error al eliminar pedido:", err);
+      setError("No se pudo eliminar el pedido.");
+    } finally {
+      setCargandoAccion("");
+    }
+  }
+
   if (cargando) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
@@ -467,6 +487,7 @@ export default function PedidosPage() {
               pedido={pedido}
               procesando={cargandoAccion === pedido.id}
               onEstado={cambiarEstado}
+              onEliminar={eliminarPedido}
             />
           ))}
         </div>
@@ -490,10 +511,12 @@ function PedidoCard({
   pedido,
   procesando,
   onEstado,
+  onEliminar,
 }: {
   pedido: Pedido;
   procesando: boolean;
   onEstado: (id: string, estado: EstadoPedido) => Promise<void>;
+  onEliminar: (id: string) => Promise<void>;
 }) {
   const estado = pedido.estado || "nuevo";
   const items = Array.isArray(pedido.items) ? pedido.items : [];
@@ -551,6 +574,11 @@ function PedidoCard({
                     {item.cantidad || 1}x
                   </span>
                   {item.nombre || "Producto"}
+                  {(item.talle || item.color) && (
+                    <span className="ml-1 text-[9px] text-slate-500 dark:text-zinc-400">
+                      ({[item.talle && `Talle ${item.talle}`, item.color && `Color ${item.color}`].filter(Boolean).join(" · ")})
+                    </span>
+                  )}
                 </p>
 
                 <p className="mt-0.5 text-[8px] text-slate-400 dark:text-zinc-600 sm:text-[11px]">
@@ -641,6 +669,16 @@ function PedidoCard({
               disabled={procesando}
               principal
               onClick={() => void onEstado(pedido.id, "entregado")}
+            />
+          )}
+
+          {(estado === "entregado" || estado === "cancelado") && (
+            <Accion
+              icono={<Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
+              texto="Eliminar pedido"
+              disabled={procesando}
+              peligro
+              onClick={() => void onEliminar(pedido.id)}
             />
           )}
         </div>
