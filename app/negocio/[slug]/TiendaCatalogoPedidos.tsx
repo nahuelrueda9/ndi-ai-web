@@ -1,7 +1,9 @@
 "use client";
 
-import { CreditCard, MessageCircle, Minus, Plus, ShoppingBag, Trash2, Wallet, X } from "lucide-react";
+import { CreditCard, Loader2, MessageCircle, Minus, Plus, ShoppingBag, Trash2, Wallet, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { collection, addDoc, serverTimestamp, query, where, getDocs, limit } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import ProductoDetalleTienda from "./ProductoDetalleTienda";
 
 type VarianteProducto = {
@@ -92,8 +94,10 @@ export default function TiendaCatalogoPedidos({
   const [carrito, setCarrito] = useState<ItemCarritoTienda[]>([]);
   const [carritoAbierto, setCarritoAbierto] = useState(false);
   const [nombreCliente, setNombreCliente] = useState("");
+  const [telefonoCliente, setTelefonoCliente] = useState("");
   const [notas, setNotas] = useState("");
   const [error, setError] = useState("");
+  const [guardandoPedido, setGuardandoPedido] = useState(false);
   
   const [esClaro, setEsClaro] = useState(tema === "claro");
 
@@ -182,37 +186,110 @@ export default function TiendaCatalogoPedidos({
     setCarrito((actual) => actual.filter((item) => item.idUnico !== idUnico));
   }
 
-  function enviarPedidoWhatsApp() {
+  async function registrarPedidoEnFirestore(): Promise<boolean> {
+    try {
+      // 1. Obtener la ID de la empresa por medio del slug
+      const q = query(
+        collection(db, "companies"),
+        where("paginaPublica.slug", "==", slug),
+        limit(1)
+      );
+      const snapshot = await getDocs(q);
+
+      if (snapshot.empty) {
+        console.error("No se encontró la empresa con slug:", slug);
+        return false;
+      }
+
+      const empresaId = snapshot.docs[0].id;
+
+      // 2. Crear la orden de compra
+      await addDoc(collection(db, "companies", empresaId, "orders"), {
+        nombreCliente: nombreCliente.trim(),
+        telefono: telefonoCliente.trim() || "",
+        notas: notas.trim() || "",
+        items: carrito.map((item) => ({
+          productoId: item.productoId,
+          nombre: item.nombre,
+          precioUnitario: item.precio,
+          cantidad: item.cantidad,
+          subtotal: item.precio * item.cantidad,
+          talle: item.talle || "",
+          color: item.color || "",
+        })),
+        cantidadItems: cantidadTotal,
+        total,
+        estado: "nuevo",
+        tipoEntrega: "retiro",
+        createdAt: serverTimestamp(),
+      });
+
+      return true;
+    } catch (err) {
+      console.error("Error al registrar pedido en Firestore:", err);
+      return false;
+    }
+  }
+
+  async function enviarPedidoWhatsApp() {
     if (!nombreCliente.trim()) {
       setError("Por favor, ingresá tu nombre para identificarte.");
       return;
     }
-    
-    let texto = `¡Hola! Quiero hacer un pedido:\n\n`;
-    carrito.forEach((item) => {
-      texto += `• ${item.cantidad}x ${item.nombre}`;
-      const vars = [item.talle && `Talle ${item.talle}`, item.color && `Color ${item.color}`].filter(Boolean).join(" · ");
-      if (vars) texto += ` (${vars})`;
-      texto += ` -> ${formatoPrecio(item.precio * item.cantidad)}\n`;
-    });
-    texto += `\n*Total: ${formatoPrecio(total)}*\n`;
-    texto += `\nNombre: ${nombreCliente.trim()}`;
-    if (notas.trim()) texto += `\nNotas: ${notas.trim()}`;
 
-    const url = `${whatsappUrl}?text=${encodeURIComponent(texto)}`;
-    window.open(url, "_blank");
-    
-    setCarrito([]);
-    setCarritoAbierto(false);
+    setGuardandoPedido(true);
+    setError("");
+
+    try {
+      await registrarPedidoEnFirestore();
+
+      let texto = `¡Hola! Quiero hacer un pedido:\n\n`;
+      carrito.forEach((item) => {
+        texto += `• ${item.cantidad}x ${item.nombre}`;
+        const vars = [item.talle && `Talle ${item.talle}`, item.color && `Color ${item.color}`].filter(Boolean).join(" · ");
+        if (vars) texto += ` (${vars})`;
+        texto += ` -> ${formatoPrecio(item.precio * item.cantidad)}\n`;
+      });
+      texto += `\n*Total: ${formatoPrecio(total)}*\n`;
+      texto += `\nNombre: ${nombreCliente.trim()}`;
+      if (telefonoCliente.trim()) texto += `\nTeléfono: ${telefonoCliente.trim()}`;
+      if (notas.trim()) texto += `\nNotas: ${notas.trim()}`;
+
+      const url = `${whatsappUrl}?text=${encodeURIComponent(texto)}`;
+      window.open(url, "_blank");
+      
+      setCarrito([]);
+      setCarritoAbierto(false);
+    } catch (e) {
+      console.error("Error al procesar el pedido:", e);
+      setError("Ocurrió un error al procesar tu compra.");
+    } finally {
+      setGuardandoPedido(false);
+    }
   }
 
-  function pagarConMercadoPago() {
+  async function pagarConMercadoPago() {
     if (!nombreCliente.trim()) {
       setError("Por favor, ingresá tu nombre para continuar.");
       return;
     }
-    if (pagosConfig?.linkMercadoPago) {
-      window.open(pagosConfig.linkMercadoPago, "_blank");
+
+    setGuardandoPedido(true);
+    setError("");
+
+    try {
+      await registrarPedidoEnFirestore();
+
+      if (pagosConfig?.linkMercadoPago) {
+        window.open(pagosConfig.linkMercadoPago, "_blank");
+      }
+      setCarrito([]);
+      setCarritoAbierto(false);
+    } catch (e) {
+      console.error("Error al procesar pago:", e);
+      setError("No se pudo iniciar el pago.");
+    } finally {
+      setGuardandoPedido(false);
     }
   }
 
@@ -303,7 +380,7 @@ export default function TiendaCatalogoPedidos({
             <div className={`flex items-center justify-between border-b px-5 py-4 ${claro ? "border-slate-200" : "border-zinc-800"}`}>
               <div>
                 <p className="text-lg font-bold">Tu pedido</p>
-                <p className={`mt-0.5 text-xs ${claseSecundario}`}>Revisá los productos y elegí cómo abonar</p>
+                <p className={`mt-0.5 text-xs ${claseSecundario}`}>Revisá los productos y confirmá tu compra</p>
               </div>
               <button
                 type="button"
@@ -358,7 +435,7 @@ export default function TiendaCatalogoPedidos({
               {carrito.length > 0 && (
                 <div className={`mt-6 space-y-4 border-t pt-6 ${claro ? "border-slate-200" : "border-zinc-800"}`}>
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium">Nombre</label>
+                    <label className="mb-1.5 block text-xs font-medium">Nombre completo</label>
                     <input
                       value={nombreCliente}
                       onChange={(event) => setNombreCliente(event.target.value)}
@@ -368,13 +445,23 @@ export default function TiendaCatalogoPedidos({
                     />
                   </div>
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium">Nota <span className={claseSecundario}>(opcional)</span></label>
+                    <label className="mb-1.5 block text-xs font-medium">Teléfono / WhatsApp <span className={claseSecundario}>(opcional)</span></label>
+                    <input
+                      value={telefonoCliente}
+                      onChange={(event) => setTelefonoCliente(event.target.value)}
+                      maxLength={40}
+                      placeholder="Ej.: +54 9 11 1234-5678"
+                      className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 ${claro ? "border-slate-300 bg-white text-slate-950 placeholder-slate-400" : "border-zinc-700 bg-zinc-900 text-white placeholder-zinc-500"}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium">Nota o aclaración <span className={claseSecundario}>(opcional)</span></label>
                     <textarea
                       value={notas}
                       onChange={(event) => setNotas(event.target.value)}
                       maxLength={1000}
                       rows={3}
-                      placeholder="Ej.: ¿Tienen envíos a domicilio?"
+                      placeholder="Ej.: Dirección de entrega, horario de retiro, etc."
                       className={`w-full resize-none rounded-xl border px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 ${claro ? "border-slate-300 bg-white text-slate-950 placeholder-slate-400" : "border-zinc-700 bg-zinc-900 text-white placeholder-zinc-500"}`}
                     />
                   </div>
@@ -401,22 +488,24 @@ export default function TiendaCatalogoPedidos({
               {usaMp && (
                 <button
                   type="button"
-                  disabled={carrito.length === 0}
+                  disabled={carrito.length === 0 || guardandoPedido}
                   onClick={pagarConMercadoPago}
                   className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-sky-400 disabled:opacity-50"
                 >
-                  <CreditCard className="h-4 w-4" /> Pagar con Mercado Pago / Tarjeta
+                  {guardandoPedido ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
+                  Pagar con Mercado Pago / Tarjeta
                 </button>
               )}
 
               {(!soloWap || mostrarWhatsApp) && (
                 <button
                   type="button"
-                  disabled={carrito.length === 0}
+                  disabled={carrito.length === 0 || guardandoPedido}
                   onClick={enviarPedidoWhatsApp}
                   className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:opacity-50"
                 >
-                  <MessageCircle className="h-4 w-4" /> Enviar pedido por WhatsApp
+                  {guardandoPedido ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
+                  Enviar pedido por WhatsApp
                 </button>
               )}
             </div>
