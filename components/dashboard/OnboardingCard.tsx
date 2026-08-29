@@ -8,10 +8,12 @@ import {
   Image as ImageIcon,
   Package,
   Share2,
+  Check,
 } from "lucide-react";
 
 export default function OnboardingCard({ empresaId }: { empresaId: string }) {
   const [mostrar, setMostrar] = useState(false);
+  const [copiado, setCopiado] = useState(false);
 
   useEffect(() => {
     const cerrado = localStorage.getItem(`onboarding_cerrado_${empresaId}`);
@@ -25,10 +27,23 @@ export default function OnboardingCard({ empresaId }: { empresaId: string }) {
     setMostrar(false);
   };
 
-  const irASeccion = (idElemento: string) => {
-    const elemento = document.getElementById(idElemento);
-    if (elemento) {
-      elemento.scrollIntoView({ behavior: "smooth", block: "center" });
+  const hacerScroll = (selector: string) => {
+    const el = document.querySelector(selector) || document.getElementById(selector);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      window.scrollBy({ top: 350, behavior: "smooth" });
+    }
+  };
+
+  const copiarEnlace = async () => {
+    try {
+      const url = window.location.origin;
+      await navigator.clipboard.writeText(url);
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2500);
+    } catch {
+      // Fallback
     }
   };
 
@@ -60,7 +75,7 @@ export default function OnboardingCard({ empresaId }: { empresaId: string }) {
         {/* Paso 1: Identidad */}
         <button
           type="button"
-          onClick={() => irASeccion("seccion-identidad")}
+          onClick={() => hacerScroll("form")}
           className="flex flex-col justify-between rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-left transition hover:border-blue-500/40 hover:bg-white hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950/70 dark:hover:border-blue-500/50 dark:hover:bg-zinc-900"
         >
           <div>
@@ -71,7 +86,7 @@ export default function OnboardingCard({ empresaId }: { empresaId: string }) {
               1. Identidad
             </p>
             <p className="mt-1 text-[11px] text-slate-500 dark:text-zinc-400">
-              Subí tu logo, portada y datos de contacto.
+              Subí tu logo, portada y datos de contacto abajo.
             </p>
           </div>
           <span className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-blue-600 dark:text-blue-400">
@@ -82,7 +97,7 @@ export default function OnboardingCard({ empresaId }: { empresaId: string }) {
         {/* Paso 2: Catálogo / Servicios */}
         <button
           type="button"
-          onClick={() => irASeccion("seccion-catalogo")}
+          onClick={() => hacerScroll("form")}
           className="flex flex-col justify-between rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-left transition hover:border-emerald-500/40 hover:bg-white hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950/70 dark:hover:border-blue-500/50 dark:hover:bg-zinc-900"
         >
           <div>
@@ -93,7 +108,7 @@ export default function OnboardingCard({ empresaId }: { empresaId: string }) {
               2. Catálogo / Servicios
             </p>
             <p className="mt-1 text-[11px] text-slate-500 dark:text-zinc-400">
-              Cargá tus primeros productos o servicios y precios.
+              Configurá tus productos o servicios y precios.
             </p>
           </div>
           <span className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
@@ -104,7 +119,7 @@ export default function OnboardingCard({ empresaId }: { empresaId: string }) {
         {/* Paso 3: Publicar y compartir */}
         <button
           type="button"
-          onClick={() => irASeccion("seccion-compartir")}
+          onClick={copiarEnlace}
           className="flex flex-col justify-between rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-left transition hover:border-violet-500/40 hover:bg-white hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950/70 dark:hover:border-blue-500/50 dark:hover:bg-zinc-900"
         >
           <div>
@@ -119,7 +134,15 @@ export default function OnboardingCard({ empresaId }: { empresaId: string }) {
             </p>
           </div>
           <span className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-violet-600 dark:text-violet-400">
-            Ver enlace <ArrowRight className="h-3 w-3" />
+            {copiado ? (
+              <>
+                <Check className="h-3 w-3 text-emerald-500" /> ¡Enlace copiado!
+              </>
+            ) : (
+              <>
+                Copiar enlace <ArrowRight className="h-3 w-3" />
+              </>
+            )}
           </span>
         </button>
       </div>
