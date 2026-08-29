@@ -418,12 +418,6 @@ export default function PedidosPage() {
         </div>
       </div>
 
-      {empresa?.paginaPublica?.mostrarPedidosOnline !== true && (
-        <div className="mt-3 rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-[10px] leading-4 text-amber-600 dark:text-amber-300 sm:mt-6 sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm sm:leading-normal">
-          Los pedidos online están desactivados en Mi página. Los pedidos anteriores siguen visibles.
-        </div>
-      )}
-
       {error && (
         <div className="mt-3 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-500 sm:mt-6 sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm">
           {error}
