@@ -238,17 +238,22 @@ export default async function NegocioPage({ params }: PageProps) {
   const puedeUsarQr = empresaTieneFuncion(empresa, "qr");
   const puedeUsarSeccionesAmpliadas = puedeUsarProductos;
 
+  const esBusiness = empresa.plan === "business";
+  const limiteFotosItems = esBusiness ? 6 : puedeUsarProductos ? 3 : 1;
+
   const servicios = catalogo.filter((item) => item.tipo === "servicio");
   const productos = puedeUsarCatalogo ? catalogo.filter((item) => item.tipo === "producto") : [];
 
-  // Mapeos limpios (sin Firebase Timestamps) para pasar seguros al cliente
+  // Mapeos limpios para el cliente
   const productosRestaurante = productos.map((producto) => ({
     id: producto.id,
     nombre: producto.nombre || "",
     descripcion: producto.descripcion || "",
     precio: typeof producto.precio === "number" ? producto.precio : 0,
     imagenUrl: producto.imagenUrl || "",
-    imagenes: Array.isArray(producto.imagenes) ? producto.imagenes.filter((url): url is string => typeof url === "string").slice(0, puedeUsarProductos ? 3 : 1) : [],
+    imagenes: Array.isArray(producto.imagenes)
+      ? producto.imagenes.filter((url): url is string => typeof url === "string").slice(0, limiteFotosItems)
+      : [],
     categoria: producto.categoria || "",
   }));
 
@@ -259,7 +264,9 @@ export default async function NegocioPage({ params }: PageProps) {
     descripcion: producto.descripcion || "",
     precio: typeof producto.precio === "number" ? producto.precio : 0,
     imagenUrl: producto.imagenUrl || "",
-    imagenes: Array.isArray(producto.imagenes) ? producto.imagenes.filter((url): url is string => typeof url === "string").slice(0, puedeUsarProductos ? 3 : 1) : [],
+    imagenes: Array.isArray(producto.imagenes)
+      ? producto.imagenes.filter((url): url is string => typeof url === "string").slice(0, limiteFotosItems)
+      : [],
     talles: Array.isArray(producto.talles) ? producto.talles : [],
     colores: Array.isArray(producto.colores) ? producto.colores : [],
     variantes: Array.isArray(producto.variantes) ? producto.variantes.map(v => ({ talle: v.talle, color: v.color, stock: v.stock })) : [],
@@ -712,7 +719,7 @@ export default async function NegocioPage({ params }: PageProps) {
                 mostrarHorariosRapidos={mostrarHorariosRapidos}
                 tema={esClaro ? "claro" : "oscuro"}
                 esAlojamiento={esAlojamiento}
-                imagenesMultiples={puedeUsarProductos}
+                limiteFotos={limiteFotosItems}
                 pedidosHabilitados={mostrarPedidosOnline}
               />
             ))}
@@ -1184,7 +1191,7 @@ function CatalogoCard({
   esRestaurante = false,
   esAlojamiento = false,
   esTienda = false,
-  imagenesMultiples = false,
+  limiteFotos = 1,
   pedidosHabilitados = false,
 }: {
   item: CatalogoItem;
@@ -1199,7 +1206,7 @@ function CatalogoCard({
   esRestaurante?: boolean;
   esAlojamiento?: boolean;
   esTienda?: boolean;
-  imagenesMultiples?: boolean;
+  limiteFotos?: number;
   pedidosHabilitados?: boolean;
 }) {
   const mensajeWhatsApp =
@@ -1211,7 +1218,7 @@ function CatalogoCard({
 
   const imagenesItem = (Array.isArray(item.imagenes) ? item.imagenes.filter((url): url is string => typeof url === "string" && url.trim().length > 0) : [])
     .map((url) => url.trim())
-    .slice(0, imagenesMultiples ? 3 : 1);
+    .slice(0, limiteFotos);
 
   if (imagenesItem.length === 0 && item.imagenUrl?.trim()) {
     imagenesItem.push(item.imagenUrl.trim());
@@ -1279,7 +1286,7 @@ function CatalogoCard({
                   descripcion: item.descripcion || "",
                   precio: typeof item.precio === "number" ? item.precio : 0,
                   imagenUrl: item.imagenUrl || "",
-                  imagenes: Array.isArray(item.imagenes) ? item.imagenes.filter((url): url is string => typeof url === "string") : [],
+                  imagenes: Array.isArray(item.imagenes) ? item.imagenes.filter((url): url is string => typeof url === "string").slice(0, limiteFotos) : [],
                 }}
                 colorPrincipal={color}
                 tema={tema}
