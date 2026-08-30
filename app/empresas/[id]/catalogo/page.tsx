@@ -108,6 +108,7 @@ export default function CatalogoPage() {
     setPuedeUsarProductos,
   ] = useState(false);
 
+  const [esPlanBusiness, setEsPlanBusiness] = useState(false);
   const [items, setItems] = useState<CatalogoItem[]>([]);
   const [rubroEmpresa, setRubroEmpresa] =
     useState("");
@@ -177,6 +178,17 @@ export default function CatalogoPage() {
 
           const datosEmpresa =
             empresaSnap.data() as Empresa;
+
+          const planStr = String(datosEmpresa.plan || "").toLowerCase().trim();
+          const tieneFeatureBusiness = empresaTieneFuncion(datosEmpresa, "plan_business");
+          const esBusinessDirecto = 
+            tieneFeatureBusiness || 
+            planStr === "business" || 
+            planStr === "empresa" || 
+            planStr === "completo" || 
+            planStr === "pro_max";
+
+          setEsPlanBusiness(esBusinessDirecto);
 
           setRubroEmpresa(
             datosEmpresa.rubro?.trim() || "",
@@ -335,8 +347,11 @@ export default function CatalogoPage() {
       rubroNormalizado,
     );
 
-  const limiteImagenes =
-    puedeUsarProductos ? 3 : 1;
+  const limiteImagenes = useMemo(() => {
+    if (esPlanBusiness) return 6;
+    if (puedeUsarProductos) return 3;
+    return 1;
+  }, [esPlanBusiness, puedeUsarProductos]);
 
   // Lógica para procesar y crear las combinaciones de talles y colores en tiempo real
   const tallesNormalizados = useMemo(() => {
@@ -472,7 +487,7 @@ export default function CatalogoPage() {
                 url.trim().length > 0,
             )
             .map((url) => url.trim())
-            .slice(0, 3)
+            .slice(0, limiteImagenes)
         : [];
 
     setImagenes(
@@ -508,7 +523,7 @@ export default function CatalogoPage() {
       setError(
         limiteImagenes === 1
           ? "Página Simple permite 1 imagen por elemento."
-          : "Podés cargar hasta 3 imágenes por elemento.",
+          : `Podés cargar hasta ${limiteImagenes} imágenes por elemento.`,
       );
       return;
     }
@@ -694,7 +709,7 @@ export default function CatalogoPage() {
       }
 
       setImagenes((actual) =>
-        [...actual, url].slice(0, 3),
+        [...actual, url].slice(0, limiteImagenes),
       );
       setMensaje(
         "Imagen cargada correctamente.",
@@ -820,7 +835,6 @@ export default function CatalogoPage() {
           imagenes
             .filter(Boolean)
             .slice(0, limiteImagenes),
-        // Compatibilidad con datos/código anterior:
         imagenUrl:
           imagenes[0]?.trim() || "",
         updatedAt: serverTimestamp(),
@@ -1068,7 +1082,7 @@ export default function CatalogoPage() {
 
                 <p className="mt-1 text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:text-sm sm:leading-6">
                   Podés cargar nombre, descripción, precio y 1 imagen por elemento.
-                  Página Completa habilita hasta 3 imágenes, stock, talles y colores.
+                  Página Completa habilita hasta 3 imágenes (Business hasta 6), stock, talles y colores.
                 </p>
               </div>
             </div>
@@ -1305,7 +1319,7 @@ export default function CatalogoPage() {
                 </div>
               )}
 
-            {/* PRODUCTO REGULAR SIN TALLES NI COLORES (EJ: RESTAURANTES) */}
+            {/* PRODUCTO REGULAR SIN TALLES NI COLORES */}
             {!esTienda && tipo === "producto" && puedeUsarProductos && (
                <Input
                  id="stockGeneral"
@@ -1341,7 +1355,7 @@ export default function CatalogoPage() {
                   <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs">
                     {limiteImagenes === 1
                       ? "Opcional · 1 imagen · JPG, PNG o WEBP · Máximo 5 MB."
-                      : "Opcional · Hasta 3 imágenes · JPG, PNG o WEBP · Máximo 5 MB por imagen."}
+                      : `Opcional · Hasta ${limiteImagenes} imágenes · JPG, PNG o WEBP · Máximo 5 MB por imagen.`}
                   </p>
                 </div>
 
@@ -1352,11 +1366,11 @@ export default function CatalogoPage() {
                 </span>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              <div className={`grid gap-2 sm:gap-3 ${limiteImagenes === 6 ? "grid-cols-3 sm:grid-cols-6" : "grid-cols-3"}`}>
                 {imagenes.map((url, indice) => (
                   <div
                     key={`${url}-${indice}`}
-                    className="relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-slate-100 dark:border-zinc-800 dark:bg-zinc-950 sm:aspect-[4/3] sm:rounded-2xl"
+                    className="relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-slate-100 dark:border-zinc-800 dark:bg-zinc-950 sm:rounded-2xl"
                   >
                     <img
                       src={url}
@@ -1375,14 +1389,14 @@ export default function CatalogoPage() {
                         )
                       }
                       disabled={subiendoImagen}
-                      className="absolute right-1.5 top-1.5 inline-flex h-6 w-6 items-center justify-center rounded-md bg-black/70 text-white backdrop-blur transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60 sm:right-2 sm:top-2 sm:h-8 sm:w-8 sm:rounded-xl"
+                      className="absolute right-1.5 top-1.5 inline-flex h-6 w-6 items-center justify-center rounded-md bg-black/70 text-white backdrop-blur transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60 sm:right-2 sm:top-2 sm:h-7 sm:w-7 sm:rounded-lg"
                       aria-label={`Quitar imagen ${indice + 1}`}
                     >
-                      <X className="h-4 w-4" />
+                      <X className="h-3.5 w-3.5" />
                     </button>
 
                     {indice === 0 && (
-                      <span className="absolute bottom-1.5 left-1.5 rounded-md bg-black/70 px-1.5 py-0.5 text-[8px] font-semibold text-white backdrop-blur sm:bottom-2 sm:left-2 sm:rounded-lg sm:px-2 sm:py-1 sm:text-[10px]">
+                      <span className="absolute bottom-1.5 left-1.5 rounded-md bg-black/70 px-1.5 py-0.5 text-[8px] font-semibold text-white backdrop-blur sm:bottom-2 sm:left-2 sm:rounded-lg sm:px-2 sm:py-0.5 sm:text-[9px]">
                         Principal
                       </span>
                     )}
@@ -1391,7 +1405,7 @@ export default function CatalogoPage() {
 
                 {imagenes.length < limiteImagenes && (
                   <label
-                    className={`flex aspect-square cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed px-2 text-center transition sm:aspect-[4/3] sm:rounded-2xl sm:px-4 ${
+                    className={`flex aspect-square cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed px-2 text-center transition sm:rounded-2xl sm:px-2 ${
                       subiendoImagen
                         ? "cursor-wait border-blue-400 bg-blue-50 dark:border-blue-500/50 dark:bg-blue-500/10"
                         : "border-slate-300 bg-slate-50 hover:border-blue-400 hover:bg-blue-50 dark:border-zinc-700 dark:bg-zinc-950 dark:hover:border-blue-500/50 dark:hover:bg-blue-500/10"
@@ -1399,22 +1413,22 @@ export default function CatalogoPage() {
                   >
                     {subiendoImagen ? (
                       <>
-                        <div className="h-7 w-7 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
-                        <p className="mt-1 text-[10px] font-medium sm:mt-2 sm:text-xs">
+                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
+                        <p className="mt-1 text-[9px] font-medium sm:text-[10px]">
                           Subiendo...
                         </p>
                       </>
                     ) : (
                       <>
-                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500 sm:h-10 sm:w-10 sm:rounded-2xl">
-                          <ImageIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                        <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500 sm:h-8 sm:w-8 sm:rounded-xl">
+                          <ImageIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         </div>
 
-                        <p className="mt-1 text-[10px] font-medium sm:mt-2 sm:text-xs">
-                          Agregar imagen
+                        <p className="mt-1 text-[9px] font-medium sm:text-[11px]">
+                          Agregar
                         </p>
 
-                        <p className="mt-0.5 text-[8px] text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-[10px]">
+                        <p className="mt-0.5 text-[7px] text-slate-500 dark:text-zinc-500 sm:text-[9px]">
                           {imagenes.length + 1} de {limiteImagenes}
                         </p>
                       </>
@@ -1448,7 +1462,7 @@ export default function CatalogoPage() {
 
               <p className="mt-1.5 text-[9px] leading-4 text-slate-400 dark:text-zinc-600 sm:mt-2 sm:text-[11px] sm:leading-5">
                 {limiteImagenes === 1
-                  ? "La imagen será la portada del elemento. Con Página Completa podés cargar hasta 3 fotos."
+                  ? "La imagen será la portada del elemento. Con Página Completa podés cargar hasta 3 fotos (Business hasta 6)."
                   : "La primera imagen será la portada. En la página pública el cliente podrá deslizar entre las fotos."}
               </p>
             </div>
@@ -1691,10 +1705,7 @@ function SeccionCatalogo({
                 {Array.isArray(item.imagenes) &&
                   item.imagenes.length > 1 && (
                     <span className="absolute bottom-1.5 right-1.5 rounded-md bg-black/70 px-1.5 py-0.5 text-[8px] font-semibold text-white backdrop-blur sm:bottom-2 sm:right-2 sm:px-2 sm:text-[10px]">
-                      {Math.min(
-                        item.imagenes.length,
-                        3,
-                      )} fotos
+                      {item.imagenes.length} fotos
                     </span>
                   )}
               </div>
@@ -1757,6 +1768,7 @@ function SeccionCatalogo({
                     <p className="text-[8px] text-slate-500 sm:text-[10px]">
                       Stock
                     </p>
+
                     <p className="text-[10px] font-semibold sm:text-xs">
                       {item.stockTotal} un.
                     </p>
