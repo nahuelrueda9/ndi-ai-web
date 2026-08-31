@@ -1,7 +1,6 @@
 importScripts("https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js");
 
-// Configuración básica de Firebase (mismos datos que tu cliente)
 firebase.initializeApp({
   apiKey: "TU_API_KEY",
   authDomain: "TU_AUTH_DOMAIN",
@@ -13,29 +12,64 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// Manejador en segundo plano cuando la app está cerrada o el celular bloqueado
+// 1. Manejador oficial de Firebase
 messaging.onBackgroundMessage((payload) => {
-  const notificationTitle = payload.notification?.title || "Nueva notificación";
-  const notificationOptions = {
-    body: payload.notification?.body || "Tenés una nueva actividad en tu negocio.",
-    icon: payload.notification?.icon || "/icons/icon-192x192.png", // Logo de tu plataforma
+  const titulo = payload.notification?.title || "NDI AI";
+  const opciones = {
+    body: payload.notification?.body || "Nueva actividad en tu negocio.",
+    icon: "/icons/icon-192x192.png",
     badge: "/icons/badge-72x72.png",
+    vibrate: [300, 100, 300, 100, 300],
+    requireInteraction: true,
+    tag: "ndi-" + Date.now(),
     data: {
       url: payload.data?.url || "/empresas",
     },
   };
 
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  return self.registration.showNotification(titulo, opciones);
 });
 
-// Abrir la pantalla correspondiente cuando el dueño toca la notificación
+// 2. Respaldo nativo para cuando el teléfono está bloqueado / pantalla apagada
+self.addEventListener("push", (event) => {
+  if (!event.data) return;
+
+  try {
+    const data = event.data.json();
+    const titulo = data.notification?.title || data.data?.title || "NDI AI";
+    const cuerpo = data.notification?.body || data.data?.body || "Nueva reserva o pedido.";
+
+    const opciones = {
+      body: cuerpo,
+      icon: "/icons/icon-192x192.png",
+      badge: "/icons/badge-72x72.png",
+      vibrate: [300, 100, 300, 100, 300],
+      requireInteraction: true,
+      tag: "ndi-push-" + Date.now(),
+      data: {
+        url: data.data?.url || data.fcmOptions?.link || "/empresas",
+      },
+    };
+
+    event.waitUntil(self.registration.showNotification(titulo, opciones));
+  } catch {
+    // Si no vino como JSON, se procesa texto plano
+    event.waitUntil(
+      self.registration.showNotification("NDI AI", {
+        body: event.data.text(),
+        icon: "/icons/icon-192x192.png",
+      })
+    );
+  }
+});
+
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   const urlToOpen = event.notification.data?.url || "/";
 
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
-      for (let client of windowClients) {
+      for (const client of windowClients) {
         if (client.url.includes(urlToOpen) && "focus" in client) {
           return client.focus();
         }
