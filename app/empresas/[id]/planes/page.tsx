@@ -87,6 +87,7 @@ const PLANES: Plan[] = [
     etiqueta: "Precio lanzamiento",
     funciones: [
       "Todo lo incluido en Página Completa",
+      "Hasta 6 imágenes por producto o servicio",
       "Asistente IA dentro de la página",
       "Asistente configurable para cada negocio",
       "Base de conocimiento del negocio",
