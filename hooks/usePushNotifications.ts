@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { getMessaging, getToken, isSupported } from "firebase/messaging";
-import { doc, arrayUnion, setDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 
 // Pegá acá tu clave pública VAPID copiada de Firebase si no la tenés en .env
 const VAPID_KEY_FALLBACK = "BOg7GGV_t2HmcCMJA7CCBdl4BQOfwHgkhJdhd9HKbGiSwkTqqSPnIcHryd0_Qlgt2iQ8eifj31U1ffqlAhj4PFw";
@@ -29,7 +27,7 @@ export function usePushNotifications(empresaId?: string) {
 
       const supported = await isSupported();
       if (!supported) {
-        alert("Tu navegador no soporta notificaciones push en segundo plano.");
+        alert("Tu navegador no soporta notificaciones push.");
         return;
       }
 
@@ -37,21 +35,15 @@ export function usePushNotifications(empresaId?: string) {
       setPermission(resPermission);
 
       if (resPermission !== "granted") {
-        alert("Permiso denegado. Activá los permisos de notificación en los ajustes de tu navegador.");
+        alert("Permiso denegado en el navegador.");
         return;
       }
 
-      // Registro y espera del Service Worker
-      await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+      const swRegistration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
       const registration = await navigator.serviceWorker.ready;
 
       const messaging = getMessaging();
       const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY || VAPID_KEY_FALLBACK;
-
-      if (!vapidKey || vapidKey.startsWith("PEGAR_ACA")) {
-        alert("Falta configurar la Clave VAPID pública de Firebase.");
-        return;
-      }
 
       const currentToken = await getToken(messaging, {
         vapidKey,
@@ -59,25 +51,26 @@ export function usePushNotifications(empresaId?: string) {
       });
 
       if (!currentToken) {
-        alert("No se pudo obtener el identificador de notificación del teléfono.");
+        alert("No se pudo generar el token del teléfono.");
         return;
       }
 
-      // Guardar token en el documento de la empresa
-      const empresaRef = doc(db, "companies", empresaId);
-      await setDoc(
-        empresaRef,
-        {
-          fcmTokens: arrayUnion(currentToken),
-        },
-        { merge: true }
-      );
+      // Enviamos el token al endpoint de servidor
+      const res = await fetch("/api/notificaciones/registrar-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ empresaId, token: currentToken }),
+      });
 
-      alert("✅ ¡Notificaciones push activadas con éxito en este celular!");
+      if (!res.ok) {
+        throw new Error("El servidor no pudo guardar el dispositivo.");
+      }
+
+      alert("✅ ¡Teléfono vinculado correctamente a las alertas!");
     } catch (err) {
       console.error("Error al activar notificaciones:", err);
-      const mensajeError = err instanceof Error ? err.message : String(err);
-      alert(`Hubo un error al activar: ${mensajeError}`);
+      const msg = err instanceof Error ? err.message : String(err);
+      alert(`Error: ${msg}`);
     } finally {
       setLoading(false);
     }
