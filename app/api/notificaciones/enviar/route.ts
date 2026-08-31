@@ -22,6 +22,7 @@ export async function POST(req: Request) {
     }
 
     const messaging = getMessaging();
+    const urlFinal = urlDestino || `/empresas/${empresaId}/pedidos`;
 
     const response = await messaging.sendEachForMulticast({
       tokens,
@@ -29,8 +30,25 @@ export async function POST(req: Request) {
         title: titulo,
         body: mensaje,
       },
+      webpush: {
+        headers: {
+          Urgency: "high",
+        },
+        notification: {
+          title: titulo,
+          body: mensaje,
+          icon: "/icons/icon-192x192.png",
+          badge: "/icons/badge-72x72.png",
+          vibrate: [200, 100, 200, 100, 200],
+          requireInteraction: true,
+          tag: `alerta-${Date.now()}`,
+        },
+        fcmOptions: {
+          link: urlFinal,
+        },
+      },
       data: {
-        url: urlDestino || `/empresas/${empresaId}/pedidos`,
+        url: urlFinal,
       },
     });
 
