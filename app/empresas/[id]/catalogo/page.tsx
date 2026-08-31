@@ -32,7 +32,6 @@ import {
 import { auth, db } from "@/lib/firebase";
 import {
   empresaTieneFuncion,
-  obtenerLimiteImagenes,
   type PlanId,
 } from "@/lib/plans/planAccess";
 import Badge from "@/components/Ui/Badge";
@@ -108,7 +107,7 @@ export default function CatalogoPage() {
     setPuedeUsarProductos,
   ] = useState(false);
 
-  const [empresaData, setEmpresaData] = useState<Empresa | null>(null);
+  const [esPlanBusiness, setEsPlanBusiness] = useState(false);
   const [items, setItems] = useState<CatalogoItem[]>([]);
   const [rubroEmpresa, setRubroEmpresa] =
     useState("");
@@ -179,7 +178,13 @@ export default function CatalogoPage() {
           const datosEmpresa =
             empresaSnap.data() as Empresa;
 
-          setEmpresaData(datosEmpresa);
+          const planStr = String(datosEmpresa.plan || "").toLowerCase().trim();
+          const esBusiness = 
+            planStr === "business" || 
+            planStr === "empresa" || 
+            planStr.includes("business");
+
+          setEsPlanBusiness(esBusiness);
 
           setRubroEmpresa(
             datosEmpresa.rubro?.trim() || "",
@@ -339,9 +344,10 @@ export default function CatalogoPage() {
     );
 
   const limiteImagenes = useMemo(() => {
-    if (!empresaData) return 1;
-    return obtenerLimiteImagenes(empresaData);
-  }, [empresaData]);
+    if (esPlanBusiness) return 6;
+    if (puedeUsarProductos) return 3;
+    return 1;
+  }, [esPlanBusiness, puedeUsarProductos]);
 
   // Lógica para procesar y crear las combinaciones de talles y colores en tiempo real
   const tallesNormalizados = useMemo(() => {
