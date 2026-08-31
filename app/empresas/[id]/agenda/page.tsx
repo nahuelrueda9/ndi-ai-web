@@ -19,6 +19,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import {
+  Bed,
   Calendar as CalendarIcon,
   CalendarDays,
   CheckCircle2,
@@ -33,8 +34,8 @@ import {
   Phone,
   Plus,
   Trash2,
-  User,
   UserRound,
+  Users,
 } from "lucide-react";
 
 import { db } from "@/lib/firebase";
@@ -42,7 +43,6 @@ import {
   empresaTieneFuncion,
   type PlanId,
 } from "@/lib/plans/planAccess";
-import Badge from "@/components/Ui/Badge";
 import Button from "@/components/Ui/Button";
 import Card from "@/components/Ui/Card";
 import Input from "@/components/Ui/Input";
@@ -86,6 +86,9 @@ type FormularioTurno = {
   fecha: string;
   hora: string;
   duracionMinutos: string;
+  fechaEntrada: string;
+  fechaSalida: string;
+  huespedes: string;
   notas: string;
 };
 
@@ -97,6 +100,7 @@ type CatalogoServicio = {
   duracionMinutos?: number;
   activo?: boolean;
   tipo?: "servicio" | "producto";
+  rubro?: string;
 };
 
 type FiltroEstado = "todos" | EstadoTurno;
@@ -117,10 +121,17 @@ type AgendaConfig = {
 };
 
 type EmpresaPlan = {
+  nombre?: string;
   plan?: PlanId;
   rubro?: string;
+  tipoNegocio?: string;
   subscriptionStatus?: string;
   subscriptionEndsAt?: unknown;
+  paginaPublica?: {
+    plantilla?: string;
+    rubro?: string;
+    publicada?: boolean;
+  };
   agendaConfig?: {
     activa?: boolean;
     intervaloMinutos?: number;
@@ -148,6 +159,12 @@ const AGENDA_CONFIG_INICIAL: AgendaConfig = {
   },
 };
 
+function obtenerMananaISO() {
+  const manana = new Date();
+  manana.setDate(manana.getDate() + 1);
+  return obtenerFechaISO(manana);
+}
+
 const FORMULARIO_INICIAL: FormularioTurno = {
   nombreCliente: "",
   email: "",
@@ -157,6 +174,9 @@ const FORMULARIO_INICIAL: FormularioTurno = {
   fecha: obtenerFechaISO(new Date()),
   hora: "09:00",
   duracionMinutos: "60",
+  fechaEntrada: obtenerFechaISO(new Date()),
+  fechaSalida: obtenerMananaISO(),
+  huespedes: "2",
   notas: "",
 };
 
@@ -179,7 +199,7 @@ const ESTADOS: Record<
     clase: "bg-blue-500/15 text-blue-400 border-blue-500/30",
   },
   completado: {
-    nombre: "Atendido",
+    nombre: "Finalizado",
     variant: "success",
     clase: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
   },
@@ -230,8 +250,56 @@ export default function AgendaPage() {
   const [error, setError] = useState("");
 
   const [agendaHabilitada, setAgendaHabilitada] = useState<boolean | null>(null);
-  const [rubroEmpresa, setRubroEmpresa] = useState("");
+  const [empresaDocData, setEmpresaDocData] = useState<EmpresaPlan | null>(null);
   const [, setAgendaConfig] = useState<AgendaConfig>(AGENDA_CONFIG_INICIAL);
+
+  // Detección exhaustiva de Alojamiento / Hoteles / Hostales
+  const esAlojamiento = useMemo(() => {
+    const textoDetectar = [
+      empresaDocData?.rubro,
+      empresaDocData?.tipoNegocio,
+      empresaDocData?.nombre,
+      empresaDocData?.paginaPublica?.rubro,
+      empresaDocData?.paginaPublica?.plantilla,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    const coincideTexto = [
+      "hotel",
+      "hostal",
+      "hostel",
+      "alojamiento",
+      "hospedaje",
+      "cabaña",
+      "cabana",
+      "cabañas",
+      "cabanas",
+      "posada",
+      "departamento",
+    ].some((palabra) => textoDetectar.includes(palabra));
+
+    // Si además tiene ítems cargados que dicen "habitación"
+    const tieneHabitacionesEnCatalogo = serviciosCatalogo.some((item) =>
+      item.nombre.toLowerCase().includes("habitac") ||
+      item.nombre.toLowerCase().includes("depto") ||
+      item.nombre.toLowerCase().includes("suite")
+    );
+
+    return coincideTexto || tieneHabitacionesEnCatalogo;
+  }, [empresaDocData, serviciosCatalogo]);
+
+  const usaReservas = esAlojamiento || [
+    "restaurante",
+    "restaurant",
+    "bar",
+    "gastronomia",
+  ].some((r) => (empresaDocData?.rubro || "").toLowerCase().includes(r));
+
+  const singularAgenda = esAlojamiento ? "reserva" : usaReservas ? "reserva" : "turno";
+  const pluralAgenda = esAlojamiento ? "reservas" : usaReservas ? "reservas" : "turnos";
+  const tituloAgenda = esAlojamiento ? "Agenda de Reservas" : usaReservas ? "Agenda y Reservas" : "Agenda y Turnos";
 
   useEffect(() => {
     if (!empresaId) {
@@ -258,7 +326,7 @@ export default function AgendaPage() {
         const habilitada = planPermiteAgenda(empresaData);
 
         setAgendaHabilitada(habilitada);
-        setRubroEmpresa(typeof empresaData.rubro === "string" ? empresaData.rubro : "");
+        setEmpresaDocData(empresaData);
         setAgendaConfig(normalizarAgendaConfig(empresaData.agendaConfig));
 
         if (!habilitada) {
@@ -375,7 +443,12 @@ export default function AgendaPage() {
 
     return {
       total: turnos.length,
-      hoy: turnos.filter((turno) => turno.fecha === hoy).length,
+      hoy: turnos.filter((turno) => {
+        if (turno.tipoReserva === "alojamiento" && turno.fechaEntrada && turno.fechaSalida) {
+          return hoy >= turno.fechaEntrada && hoy <= turno.fechaSalida;
+        }
+        return turno.fecha === hoy;
+      }).length,
       pendientes: turnos.filter((turno) => turno.estado === "pendiente").length,
       confirmados: turnos.filter((turno) => turno.estado === "confirmado").length,
     };
@@ -401,9 +474,14 @@ export default function AgendaPage() {
 
   function abrirNuevoTurno(fecha = fechaSeleccionada) {
     setEditandoId(null);
+    const fechaSalidaCalculada = new Date(`${fecha}T12:00:00`);
+    fechaSalidaCalculada.setDate(fechaSalidaCalculada.getDate() + 1);
+
     setFormulario({
       ...FORMULARIO_INICIAL,
       fecha,
+      fechaEntrada: fecha,
+      fechaSalida: obtenerFechaISO(fechaSalidaCalculada),
     });
     setMostrandoFormulario(true);
     setError("");
@@ -419,12 +497,15 @@ export default function AgendaPage() {
       servicio: turno.servicio,
       servicioId: turno.servicioId || "",
       fecha: turno.fecha,
-      hora: turno.hora,
+      hora: turno.hora || "14:00",
       duracionMinutos: String(turno.duracionMinutos || 30),
+      fechaEntrada: turno.fechaEntrada || turno.fecha,
+      fechaSalida: turno.fechaSalida || obtenerMananaISO(),
+      huespedes: String(turno.huespedes || 2),
       notas: turno.notas || "",
     });
 
-    setFechaSeleccionada(turno.fecha);
+    setFechaSeleccionada(turno.fechaEntrada || turno.fecha);
     setMostrandoFormulario(true);
     setError("");
     setMensaje("");
@@ -459,13 +540,29 @@ export default function AgendaPage() {
 
   function validarFormulario() {
     if (!formulario.nombreCliente.trim()) return "Escribí el nombre del cliente.";
-    if (!formulario.servicio.trim()) return "Escribí el servicio o motivo del turno.";
-    if (!formulario.fecha) return "Seleccioná una fecha.";
-    if (!formulario.hora) return "Seleccioná un horario.";
-    const duracion = Number(formulario.duracionMinutos);
-    if (!Number.isFinite(duracion) || duracion < 5 || duracion > 1440) {
-      return "Ingresá una duración válida.";
+    if (!formulario.servicio.trim()) {
+      return esAlojamiento ? "Seleccioná una habitación." : "Escribí el servicio o motivo del turno.";
     }
+
+    if (esAlojamiento) {
+      if (!formulario.fechaEntrada) return "Seleccioná la fecha de entrada (check-in).";
+      if (!formulario.fechaSalida) return "Seleccioná la fecha de salida (check-out).";
+      if (formulario.fechaSalida <= formulario.fechaEntrada) {
+        return "La fecha de salida debe ser posterior a la fecha de entrada.";
+      }
+      const huespedesNum = Number(formulario.huespedes);
+      if (!Number.isInteger(huespedesNum) || huespedesNum < 1 || huespedesNum > 30) {
+        return "Ingresá una cantidad de huéspedes válida.";
+      }
+    } else {
+      if (!formulario.fecha) return "Seleccioná una fecha.";
+      if (!formulario.hora) return "Seleccioná un horario.";
+      const duracion = Number(formulario.duracionMinutos);
+      if (!Number.isFinite(duracion) || duracion < 5 || duracion > 1440) {
+        return "Ingresá una duración válida.";
+      }
+    }
+
     return "";
   }
 
@@ -482,69 +579,106 @@ export default function AgendaPage() {
       return;
     }
 
-    const duracion = Number(formulario.duracionMinutos);
-    const inicioNuevo = convertirHoraAMinutos(formulario.hora);
-    const finNuevo = inicioNuevo + duracion;
-
-    const conflicto = turnos.find((turno) => {
-      if (
-        turno.id === editandoId ||
-        turno.fecha !== formulario.fecha ||
-        turno.estado === "cancelado" ||
-        turno.estado === "no_asistio"
-      ) {
-        return false;
-      }
-
-      const inicioExistente = convertirHoraAMinutos(turno.hora);
-      const finExistente = inicioExistente + turno.duracionMinutos;
-
-      return inicioNuevo < finExistente && finNuevo > inicioExistente;
-    });
-
-    if (conflicto) {
-      setError(`Ese horario se superpone con el turno de ${conflicto.nombreCliente} a las ${conflicto.hora}.`);
-      return;
-    }
-
     const servicioSeleccionado = serviciosCatalogo.find((item) => item.id === formulario.servicioId);
     setGuardando(true);
 
     try {
-      const datosTurno = {
-        nombreCliente: formulario.nombreCliente.trim(),
-        email: formulario.email.trim(),
-        telefono: formulario.telefono.trim(),
-        servicio: formulario.servicio.trim(),
-        servicioId: formulario.servicioId || "",
-        precioServicio: servicioSeleccionado?.precio || 0,
-        fecha: formulario.fecha,
-        hora: formulario.hora,
-        duracionMinutos: duracion,
-        notas: formulario.notas.trim(),
-        updatedAt: serverTimestamp(),
-      };
+      if (esAlojamiento) {
+        const datosAlojamiento = {
+          nombreCliente: formulario.nombreCliente.trim(),
+          email: formulario.email.trim(),
+          telefono: formulario.telefono.trim(),
+          servicio: formulario.servicio.trim(),
+          servicioId: formulario.servicioId || "",
+          precioServicio: servicioSeleccionado?.precio || 0,
+          tipoReserva: "alojamiento" as const,
+          fecha: formulario.fechaEntrada,
+          hora: "14:00",
+          duracionMinutos: 0,
+          fechaEntrada: formulario.fechaEntrada,
+          fechaSalida: formulario.fechaSalida,
+          huespedes: Number(formulario.huespedes) || 2,
+          notas: formulario.notas.trim(),
+          updatedAt: serverTimestamp(),
+        };
 
-      if (editandoId) {
-        await updateDoc(doc(db, "companies", empresaId, "appointments", editandoId), datosTurno);
-        setMensaje("Turno actualizado correctamente.");
+        if (editandoId) {
+          await updateDoc(doc(db, "companies", empresaId, "appointments", editandoId), datosAlojamiento);
+          setMensaje("Reserva de habitación actualizada correctamente.");
+        } else {
+          await addDoc(collection(db, "companies", empresaId, "appointments"), {
+            ...datosAlojamiento,
+            estado: "pendiente",
+            origen: "manual",
+            createdAt: serverTimestamp(),
+          });
+          setMensaje("Reserva de habitación creada correctamente.");
+        }
+
+        setFechaSeleccionada(formulario.fechaEntrada);
       } else {
-        await addDoc(collection(db, "companies", empresaId, "appointments"), {
-          ...datosTurno,
-          estado: "pendiente",
-          origen: "manual",
-          createdAt: serverTimestamp(),
+        const duracion = Number(formulario.duracionMinutos);
+        const inicioNuevo = convertirHoraAMinutos(formulario.hora);
+        const finNuevo = inicioNuevo + duracion;
+
+        const conflicto = turnos.find((turno) => {
+          if (
+            turno.id === editandoId ||
+            turno.fecha !== formulario.fecha ||
+            turno.estado === "cancelado" ||
+            turno.estado === "no_asistio"
+          ) {
+            return false;
+          }
+
+          const inicioExistente = convertirHoraAMinutos(turno.hora);
+          const finExistente = inicioExistente + turno.duracionMinutos;
+
+          return inicioNuevo < finExistente && finNuevo > inicioExistente;
         });
-        setMensaje("Turno creado correctamente.");
+
+        if (conflicto) {
+          setError(`Ese horario se superpone con el turno de ${conflicto.nombreCliente} a las ${conflicto.hora}.`);
+          setGuardando(false);
+          return;
+        }
+
+        const datosTurno = {
+          nombreCliente: formulario.nombreCliente.trim(),
+          email: formulario.email.trim(),
+          telefono: formulario.telefono.trim(),
+          servicio: formulario.servicio.trim(),
+          servicioId: formulario.servicioId || "",
+          precioServicio: servicioSeleccionado?.precio || 0,
+          fecha: formulario.fecha,
+          hora: formulario.hora,
+          duracionMinutos: duracion,
+          notas: formulario.notas.trim(),
+          updatedAt: serverTimestamp(),
+        };
+
+        if (editandoId) {
+          await updateDoc(doc(db, "companies", empresaId, "appointments", editandoId), datosTurno);
+          setMensaje("Turno actualizado correctamente.");
+        } else {
+          await addDoc(collection(db, "companies", empresaId, "appointments"), {
+            ...datosTurno,
+            estado: "pendiente",
+            origen: "manual",
+            createdAt: serverTimestamp(),
+          });
+          setMensaje("Turno creado correctamente.");
+        }
+
+        setFechaSeleccionada(formulario.fecha);
       }
 
-      setFechaSeleccionada(formulario.fecha);
       setMostrandoFormulario(false);
       setEditandoId(null);
       setFormulario(FORMULARIO_INICIAL);
     } catch (firebaseError) {
-      console.error("Error al guardar turno:", firebaseError);
-      setError(editandoId ? "No se pudo actualizar el turno." : "No se pudo crear el turno.");
+      console.error("Error al guardar reserva/turno:", firebaseError);
+      setError(editandoId ? "No se pudo actualizar." : "No se pudo crear.");
     } finally {
       setGuardando(false);
     }
@@ -562,10 +696,10 @@ export default function AgendaPage() {
         estado,
         updatedAt: serverTimestamp(),
       });
-      setMensaje(`Turno marcado como ${ESTADOS[estado].nombre.toLowerCase()}.`);
+      setMensaje(`Reserva marcada como ${ESTADOS[estado].nombre.toLowerCase()}.`);
     } catch (firebaseError) {
-      console.error("Error al cambiar el turno:", firebaseError);
-      setError("No se pudo actualizar el turno.");
+      console.error("Error al cambiar el estado:", firebaseError);
+      setError("No se pudo actualizar el estado.");
     } finally {
       setProcesandoId(null);
     }
@@ -574,7 +708,7 @@ export default function AgendaPage() {
   async function eliminarTurno(turno: Turno) {
     if (!empresaId || procesandoId) return;
 
-    const confirmar = window.confirm(`¿Seguro que querés eliminar el turno de ${turno.nombreCliente}?`);
+    const confirmar = window.confirm(`¿Seguro que querés eliminar la reserva de ${turno.nombreCliente}?`);
     if (!confirmar) return;
 
     setProcesandoId(turno.id);
@@ -583,10 +717,10 @@ export default function AgendaPage() {
 
     try {
       await deleteDoc(doc(db, "companies", empresaId, "appointments", turno.id));
-      setMensaje("Turno eliminado.");
+      setMensaje("Registro eliminado.");
     } catch (firebaseError) {
-      console.error("Error al eliminar turno:", firebaseError);
-      setError("No se pudo eliminar el turno.");
+      console.error("Error al eliminar:", firebaseError);
+      setError("No se pudo eliminar.");
     } finally {
       setProcesandoId(null);
     }
@@ -604,23 +738,6 @@ export default function AgendaPage() {
     setMesActual(inicioMes);
     setFechaSeleccionada(obtenerFechaISO(hoy));
   }
-
-  const rubroNormalizado = rubroEmpresa.trim().toLowerCase();
-  const usaReservas = [
-    "restaurante",
-    "restaurant",
-    "hotel",
-    "hostal",
-    "alojamiento",
-    "cabaña",
-    "cabana",
-    "cabañas",
-    "cabanas",
-  ].some((rubro) => rubroNormalizado.includes(rubro));
-
-  const singularAgenda = usaReservas ? "reserva" : "turno";
-  const pluralAgenda = usaReservas ? "reservas" : "turnos";
-  const tituloAgenda = usaReservas ? "Agenda y Reservas" : "Agenda y Turnos";
 
   if (agendaHabilitada === false) {
     return (
@@ -668,19 +785,19 @@ export default function AgendaPage() {
 
         <Button type="button" onClick={() => abrirNuevoTurno()}>
           <Plus className="mr-1.5 h-4 w-4" />
-          {usaReservas ? "Nueva reserva" : "Nuevo turno"}
+          {esAlojamiento ? "Nueva reserva" : usaReservas ? "Nueva reserva" : "Nuevo turno"}
         </Button>
       </header>
 
       {/* METRICAS */}
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         <ResumenCard
-          titulo={usaReservas ? "Reservas totales" : "Turnos totales"}
+          titulo={pluralAgenda.charAt(0).toUpperCase() + pluralAgenda.slice(1) + " totales"}
           valor={resumen.total}
           icono={<CalendarDays className="h-5 w-5" />}
         />
         <ResumenCard
-          titulo="Para hoy"
+          titulo={esAlojamiento ? "Huéspedes hoy" : "Para hoy"}
           valor={resumen.hoy}
           icono={<Clock3 className="h-5 w-5" />}
         />
@@ -713,10 +830,16 @@ export default function AgendaPage() {
         <Card className="mb-6 p-4 sm:p-6">
           <div className="mb-4 sm:mb-6">
             <h2 className="text-lg font-bold text-slate-950 dark:text-white sm:text-xl">
-              {editandoId ? `Editar ${singularAgenda}` : `Nuevo ${singularAgenda}`}
+              {editandoId
+                ? `Editar ${singularAgenda}`
+                : esAlojamiento
+                ? "Nueva reserva de habitación"
+                : `Nuevo ${singularAgenda}`}
             </h2>
             <p className="mt-0.5 text-xs text-slate-500 dark:text-zinc-400">
-              Completá los datos del cliente y los detalles de la cita.
+              {esAlojamiento
+                ? "Completá los datos del huésped y las fechas de estadía."
+                : "Completá los datos del cliente y los detalles de la cita."}
             </p>
           </div>
 
@@ -724,7 +847,7 @@ export default function AgendaPage() {
             <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
               <Input
                 id="nombreCliente"
-                label="Nombre del cliente"
+                label={esAlojamiento ? "Nombre del huésped / titular" : "Nombre del cliente"}
                 value={formulario.nombreCliente}
                 onChange={(evento) => actualizarFormulario("nombreCliente", evento.target.value)}
                 placeholder="Ej: Juan Pérez"
@@ -733,7 +856,7 @@ export default function AgendaPage() {
               {serviciosCatalogo.length > 0 ? (
                 <div className="space-y-1.5">
                   <label htmlFor="servicio" className="block text-xs font-medium text-slate-700 dark:text-zinc-300 sm:text-sm">
-                    Servicio
+                    {esAlojamiento ? "Habitación" : "Servicio"}
                   </label>
                   <select
                     id="servicio"
@@ -741,7 +864,9 @@ export default function AgendaPage() {
                     onChange={(evento) => seleccionarServicio(evento.target.value)}
                     className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white sm:px-4 sm:py-2.5 sm:text-sm"
                   >
-                    <option value="">Seleccioná un servicio</option>
+                    <option value="">
+                      {esAlojamiento ? "Seleccioná una habitación" : "Seleccioná un servicio"}
+                    </option>
                     {serviciosCatalogo.map((servicio) => (
                       <option key={servicio.id} value={servicio.id}>
                         {servicio.nombre}
@@ -753,10 +878,10 @@ export default function AgendaPage() {
               ) : (
                 <Input
                   id="servicio"
-                  label="Servicio o motivo"
+                  label={esAlojamiento ? "Habitación o tipo de estadía" : "Servicio o motivo"}
                   value={formulario.servicio}
                   onChange={(evento) => actualizarFormulario("servicio", evento.target.value)}
-                  placeholder="Ej: Consulta inicial"
+                  placeholder={esAlojamiento ? "Ej: Habitación Matrimonial" : "Ej: Consulta inicial"}
                 />
               )}
 
@@ -777,33 +902,67 @@ export default function AgendaPage() {
                 placeholder="cliente@email.com"
               />
 
-              <Input
-                id="fecha"
-                label="Fecha"
-                type="date"
-                value={formulario.fecha}
-                onChange={(evento) => actualizarFormulario("fecha", evento.target.value)}
-              />
+              {/* CAMPOS ESPECÍFICOS PARA HOTELES / ALOJAMIENTOS */}
+              {esAlojamiento ? (
+                <>
+                  <Input
+                    id="fechaEntrada"
+                    label="Fecha de entrada (Check-in)"
+                    type="date"
+                    value={formulario.fechaEntrada}
+                    onChange={(evento) => actualizarFormulario("fechaEntrada", evento.target.value)}
+                  />
 
-              <div className="grid grid-cols-2 gap-2">
-                <Input
-                  id="hora"
-                  label="Hora"
-                  type="time"
-                  value={formulario.hora}
-                  onChange={(evento) => actualizarFormulario("hora", evento.target.value)}
-                />
-                <Input
-                  id="duracion"
-                  label="Duración (min)"
-                  type="number"
-                  min="5"
-                  max="1440"
-                  step="5"
-                  value={formulario.duracionMinutos}
-                  onChange={(evento) => actualizarFormulario("duracionMinutos", evento.target.value)}
-                />
-              </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      id="fechaSalida"
+                      label="Fecha de salida (Check-out)"
+                      type="date"
+                      value={formulario.fechaSalida}
+                      onChange={(evento) => actualizarFormulario("fechaSalida", evento.target.value)}
+                    />
+                    <Input
+                      id="huespedes"
+                      label="Huéspedes"
+                      type="number"
+                      min="1"
+                      max="30"
+                      value={formulario.huespedes}
+                      onChange={(evento) => actualizarFormulario("huespedes", evento.target.value)}
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Input
+                    id="fecha"
+                    label="Fecha"
+                    type="date"
+                    value={formulario.fecha}
+                    onChange={(evento) => actualizarFormulario("fecha", evento.target.value)}
+                  />
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      id="hora"
+                      label="Hora"
+                      type="time"
+                      value={formulario.hora}
+                      onChange={(evento) => actualizarFormulario("hora", evento.target.value)}
+                    />
+                    <Input
+                      id="duracion"
+                      label="Duración (min)"
+                      type="number"
+                      min="5"
+                      max="1440"
+                      step="5"
+                      value={formulario.duracionMinutos}
+                      onChange={(evento) => actualizarFormulario("duracionMinutos", evento.target.value)}
+                    />
+                  </div>
+                </>
+              )}
             </div>
 
             <div>
@@ -816,7 +975,7 @@ export default function AgendaPage() {
                 maxLength={1000}
                 value={formulario.notas}
                 onChange={(evento) => actualizarFormulario("notas", evento.target.value)}
-                placeholder="Aclaraciones sobre el turno o requerimientos especiales..."
+                placeholder="Aclaraciones sobre la reserva o requerimientos especiales..."
                 className="w-full resize-none rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white sm:text-sm"
               />
             </div>
@@ -835,7 +994,13 @@ export default function AgendaPage() {
                 Cancelar
               </Button>
               <Button type="submit" disabled={guardando}>
-                {guardando ? "Guardando..." : editandoId ? "Guardar cambios" : `Crear ${singularAgenda}`}
+                {guardando
+                  ? "Guardando..."
+                  : editandoId
+                  ? "Guardar cambios"
+                  : esAlojamiento
+                  ? "Crear reserva"
+                  : `Crear ${singularAgenda}`}
               </Button>
             </div>
           </form>
@@ -857,7 +1022,7 @@ export default function AgendaPage() {
             ].join(" ")}
           >
             <Clock3 className="h-4 w-4" />
-            Agenda diaria
+            {esAlojamiento ? "Vista por día" : "Agenda diaria"}
           </button>
           <button
             type="button"
@@ -912,7 +1077,7 @@ export default function AgendaPage() {
 
       {/* CONTENIDO SEGÚN LA VISTA */}
 
-      {/* 1. VISTA AGENDA DIARIA (ESTILO TARJETAS ANCHAS) */}
+      {/* 1. VISTA AGENDA DIARIA */}
       {vistaActual === "agenda" && (
         <Card className="overflow-hidden">
           {/* Navegador de Fecha */}
@@ -948,20 +1113,26 @@ export default function AgendaPage() {
             {cargando ? (
               <div className="py-12 text-center">
                 <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
-                <p className="mt-3 text-xs text-slate-500">Cargando turnos...</p>
+                <p className="mt-3 text-xs text-slate-500">Cargando {pluralAgenda}...</p>
               </div>
             ) : turnosDelDiaSeleccionado.length === 0 ? (
               <div className="py-16 text-center">
-                <Clock3 className="mx-auto h-12 w-12 text-slate-300 dark:text-zinc-700" />
+                {esAlojamiento ? (
+                  <Bed className="mx-auto h-12 w-12 text-slate-300 dark:text-zinc-700" />
+                ) : (
+                  <Clock3 className="mx-auto h-12 w-12 text-slate-300 dark:text-zinc-700" />
+                )}
                 <h3 className="mt-4 text-base font-bold text-slate-950 dark:text-white">
                   No hay {pluralAgenda} para este día
                 </h3>
                 <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
-                  Podés crear una cita manualmente o esperar que tus clientes reserven online.
+                  {esAlojamiento
+                    ? "Podés registrar una reserva manual o esperar que los huéspedes reserven desde la web."
+                    : "Podés crear una cita manualmente o esperar que tus clientes reserven online."}
                 </p>
                 <Button type="button" className="mt-5" onClick={() => abrirNuevoTurno(fechaSeleccionada)}>
                   <Plus className="mr-2 h-4 w-4" />
-                  {usaReservas ? "Crear reserva" : "Crear turno"}
+                  {esAlojamiento ? "Crear reserva" : "Crear turno"}
                 </Button>
               </div>
             ) : (
@@ -970,6 +1141,7 @@ export default function AgendaPage() {
                   <TarjetaTurnoAncha
                     key={turno.id}
                     turno={turno}
+                    esAlojamiento={esAlojamiento}
                     procesando={procesandoId === turno.id}
                     onCambiarEstado={cambiarEstado}
                     onEditar={editarTurno}
@@ -982,7 +1154,7 @@ export default function AgendaPage() {
         </Card>
       )}
 
-      {/* 2. VISTA MES (CALENDARIO COMPLETO) */}
+      {/* 2. VISTA MES */}
       {vistaActual === "mes" && (
         <Card className="overflow-hidden">
           <div className="flex items-center justify-between border-b border-slate-200 p-4 dark:border-zinc-800 sm:p-6">
@@ -991,7 +1163,7 @@ export default function AgendaPage() {
                 {formatearMes(mesActual)}
               </h2>
               <p className="text-xs text-slate-500 dark:text-zinc-400">
-                Hacé clic en un día para ver sus turnos en la agenda diaria.
+                Hacé clic en un día para ver sus {pluralAgenda} en la vista diaria.
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -1059,7 +1231,9 @@ export default function AgendaPage() {
                           key={turno.id}
                           className="truncate rounded-md border border-blue-200 bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/15 dark:text-blue-300"
                         >
-                          {turno.hora} {turno.nombreCliente}
+                          {turno.tipoReserva === "alojamiento"
+                            ? `🏨 ${turno.nombreCliente}`
+                            : `${turno.hora} ${turno.nombreCliente}`}
                         </div>
                       ))}
                       {turnosDelDia.length > 3 && (
@@ -1079,17 +1253,17 @@ export default function AgendaPage() {
         <Card className="p-4 sm:p-6">
           <div className="mb-4">
             <h2 className="text-lg font-bold text-slate-950 dark:text-white sm:text-xl">
-              Próximos turnos y reservas
+              {esAlojamiento ? "Próximas reservas de habitaciones" : "Próximos turnos y reservas"}
             </h2>
             <p className="text-xs text-slate-500 dark:text-zinc-400">
-              Listado completo cronológico de citas vigentes.
+              Listado completo cronológico de {pluralAgenda} vigentes.
             </p>
           </div>
 
           {turnosListadoGeneral.length === 0 ? (
             <div className="py-12 text-center">
               <CalendarDays className="mx-auto h-10 w-10 text-slate-300 dark:text-zinc-700" />
-              <p className="mt-3 text-sm text-slate-500">No hay turnos registrados con este filtro.</p>
+              <p className="mt-3 text-sm text-slate-500">No hay {pluralAgenda} registradas con este filtro.</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -1097,6 +1271,7 @@ export default function AgendaPage() {
                 <TarjetaTurnoAncha
                   key={turno.id}
                   turno={turno}
+                  esAlojamiento={esAlojamiento}
                   mostrarFecha
                   procesando={procesandoId === turno.id}
                   onCambiarEstado={cambiarEstado}
@@ -1116,9 +1291,9 @@ export default function AgendaPage() {
   }
 }
 
-// TARJETA DE TURNO ESTILO MEDCENTER (AMPLIA Y HORIZONTAL)
 function TarjetaTurnoAncha({
   turno,
+  esAlojamiento,
   procesando,
   mostrarFecha = false,
   onCambiarEstado,
@@ -1126,6 +1301,7 @@ function TarjetaTurnoAncha({
   onEliminar,
 }: {
   turno: Turno;
+  esAlojamiento: boolean;
   procesando: boolean;
   mostrarFecha?: boolean;
   onCambiarEstado: (turno: Turno, estado: EstadoTurno) => void;
@@ -1141,34 +1317,53 @@ function TarjetaTurnoAncha({
     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   }, [turno.hora, turno.duracionMinutos]);
 
+  const esTipoAlojamiento = turno.tipoReserva === "alojamiento" || esAlojamiento;
+
   const whatsappHref = turno.telefono
     ? `https://wa.me/${turno.telefono.replace(/\D/g, "")}?text=${encodeURIComponent(
-        `¡Hola ${turno.nombreCliente}! Nos comunicamos para confirmar tu turno del ${turno.fecha} a las ${turno.hora} hs.`
+        esTipoAlojamiento
+          ? `¡Hola ${turno.nombreCliente}! Nos comunicamos desde el alojamiento para confirmar tu estadía (${turno.fechaEntrada || turno.fecha} al ${turno.fechaSalida || "check-out"}).`
+          : `¡Hola ${turno.nombreCliente}! Nos comunicamos para confirmar tu turno del ${turno.fecha} a las ${turno.hora} hs.`
       )}`
     : null;
 
   return (
     <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 transition-all hover:border-slate-300 dark:border-zinc-800 dark:bg-zinc-900/60 dark:hover:border-zinc-700 sm:flex-row sm:items-center sm:justify-between">
-      {/* Columna Izquierda: Rango Horario */}
-      <div className="flex shrink-0 items-center gap-3 border-b border-slate-100 pb-3 dark:border-zinc-800 sm:w-44 sm:flex-col sm:items-start sm:border-b-0 sm:border-r sm:pb-0 sm:pr-4">
-        <div>
-          <p className="text-base font-bold text-slate-900 dark:text-white sm:text-lg">
-            {turno.hora || "--:--"}
-          </p>
-          {horaFin && (
-            <p className="text-xs font-medium text-slate-500 dark:text-zinc-500">
-              hasta las {horaFin} hs
+      {/* Columna Izquierda */}
+      <div className="flex shrink-0 items-center gap-3 border-b border-slate-100 pb-3 dark:border-zinc-800 sm:w-48 sm:flex-col sm:items-start sm:border-b-0 sm:border-r sm:pb-0 sm:pr-4">
+        {esTipoAlojamiento ? (
+          <div>
+            <div className="flex items-center gap-1 text-xs font-bold text-slate-900 dark:text-white sm:text-sm">
+              <Bed className="h-4 w-4 text-blue-500 shrink-0" />
+              <span>{turno.fechaEntrada || turno.fecha}</span>
+            </div>
+            {turno.fechaSalida && (
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-zinc-400">
+                hasta el {turno.fechaSalida}
+              </p>
+            )}
+          </div>
+        ) : (
+          <div>
+            <p className="text-base font-bold text-slate-900 dark:text-white sm:text-lg">
+              {turno.hora || "--:--"}
             </p>
-          )}
-        </div>
-        {mostrarFecha && (
+            {horaFin && (
+              <p className="text-xs font-medium text-slate-500 dark:text-zinc-500">
+                hasta las {horaFin} hs
+              </p>
+            )}
+          </div>
+        )}
+
+        {mostrarFecha && !esTipoAlojamiento && (
           <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:bg-zinc-800 dark:text-zinc-300">
             {turno.fecha}
           </span>
         )}
       </div>
 
-      {/* Columna Central: Datos del Cliente y Servicio */}
+      {/* Columna Central: Datos del Cliente y Habitación/Servicio */}
       <div className="min-w-0 flex-1 sm:px-3">
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="text-base font-bold text-slate-950 dark:text-white">
@@ -1184,10 +1379,19 @@ function TarjetaTurnoAncha({
           </span>
         </div>
 
-        <p className="mt-1 text-xs font-medium text-slate-700 dark:text-zinc-300 sm:text-sm">
-          {turno.servicio}
-          {turno.precioServicio ? ` · $${turno.precioServicio.toLocaleString("es-AR")}` : ""}
-        </p>
+        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs font-medium text-slate-700 dark:text-zinc-300 sm:text-sm">
+          <span>{turno.servicio}</span>
+          {turno.precioServicio ? (
+            <span className="text-slate-500 dark:text-zinc-400">
+              · ${turno.precioServicio.toLocaleString("es-AR")}
+            </span>
+          ) : null}
+          {esTipoAlojamiento && turno.huespedes ? (
+            <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] font-semibold text-slate-600 dark:bg-zinc-800 dark:text-zinc-300">
+              <Users className="h-3 w-3" /> {turno.huespedes} huésped{turno.huespedes === 1 ? "" : "es"}
+            </span>
+          ) : null}
+        </div>
 
         {/* Datos de contacto */}
         <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-zinc-400">
@@ -1244,7 +1448,7 @@ function TarjetaTurnoAncha({
             onClick={() => onCambiarEstado(turno, "completado")}
             className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-600 transition hover:bg-emerald-500/20 dark:text-emerald-400"
           >
-            Atendido
+            Finalizado
           </button>
         )}
 
