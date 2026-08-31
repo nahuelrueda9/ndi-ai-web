@@ -212,6 +212,22 @@ export default function TiendaCatalogoPedidos({
         createdAt: serverTimestamp(),
       });
 
+      // Disparo de Notificación Push Web al teléfono del dueño
+      try {
+        await fetch("/api/notificaciones/enviar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            empresaId,
+            titulo: "🛒 ¡Nuevo pedido recibido!",
+            mensaje: `${nombreCliente.trim() || "Un cliente"} realizó un pedido por ${formatoPrecio(total)}`,
+            urlDestino: `/empresas/${empresaId}/pedidos`,
+          }),
+        });
+      } catch (pushErr) {
+        console.error("No se pudo enviar la alerta push:", pushErr);
+      }
+
       return true;
     } catch (err) {
       console.error("Error al registrar pedido en Firestore:", err);

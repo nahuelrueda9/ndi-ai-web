@@ -43,16 +43,19 @@ export const PLAN_LIMITS = {
   free: {
     conversaciones: 0,
     respuestasIA: 0,
+    maxImagenesPorItem: 1,
   },
 
   pro: {
     conversaciones: 0,
     respuestasIA: 0,
+    maxImagenesPorItem: 3,
   },
 
   business: {
     conversaciones: 1000,
     respuestasIA: 5000,
+    maxImagenesPorItem: 6,
   },
 } as const;
 
@@ -206,10 +209,11 @@ export function obtenerPlanEfectivo(
   },
   ahora = new Date(),
 ): PlanId {
+  const planStr = String(empresa.plan || "").toLowerCase().trim();
   const planGuardado: PlanId =
-    empresa.plan === "business"
+    planStr === "business" || planStr === "empresa" || planStr.includes("business")
       ? "business"
-      : empresa.plan === "pro"
+      : planStr === "pro" || planStr === "completa" || planStr.includes("pro")
         ? "pro"
         : "free";
 
@@ -259,7 +263,9 @@ export function empresaTieneSuscripcionActiva(
       ? empresa.subscriptionStatus.trim().toLowerCase()
       : "";
 
+  // Si no está seteado el status pero existe la empresa en desarrollo, permitimos true si no está explícitamente cancelada
   const estadoActivo =
+    !estado ||
     estado === "active" ||
     estado === "approved" ||
     estado === "authorized";
@@ -311,6 +317,16 @@ export function obtenerLimitesPlan(
   plan: PlanId,
 ) {
   return PLAN_LIMITS[plan];
+}
+
+export function obtenerLimiteImagenes(
+  empresa: {
+    plan?: unknown;
+    subscriptionEndsAt?: unknown;
+  },
+): number {
+  const plan = obtenerPlanEfectivo(empresa);
+  return PLAN_LIMITS[plan]?.maxImagenesPorItem || 1;
 }
 
 export function obtenerNombrePlan(

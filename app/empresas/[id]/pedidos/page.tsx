@@ -1,26 +1,14 @@
 "use client";
 
 import {
-  CheckCircle2,
-  Clock3,
-  Loader2,
-  PackageCheck,
-  Phone,
-  ShoppingBag,
-  Trash2,
-  Truck,
-  XCircle,
-} from "lucide-react";
-import {
   useEffect,
   useMemo,
   useRef,
   useState,
   type ReactNode,
 } from "react";
-import {
-  onAuthStateChanged,
-} from "firebase/auth";
+import { useParams, useRouter } from "next/navigation";
+import { onAuthStateChanged } from "firebase/auth";
 import {
   collection,
   deleteDoc,
@@ -31,18 +19,24 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import {
-  useParams,
-  useRouter,
-} from "next/navigation";
+  Bell,
+  CheckCircle2,
+  Clock3,
+  Loader2,
+  PackageCheck,
+  Phone,
+  ShoppingBag,
+  Trash2,
+  Truck,
+  XCircle,
+} from "lucide-react";
 
-import {
-  auth,
-  db,
-} from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import {
   empresaTieneFuncion,
   type PlanId,
 } from "@/lib/plans/planAccess";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 type EstadoPedido =
   | "nuevo"
@@ -148,6 +142,8 @@ export default function PedidosPage() {
   const empresaId = Array.isArray(parametroEmpresa)
     ? parametroEmpresa[0]
     : (parametroEmpresa as string | undefined);
+
+  const { permission, loading: cargandoPush, suscribirNotificaciones } = usePushNotifications(empresaId);
 
   const [usuarioUid, setUsuarioUid] = useState("");
   const [cargando, setCargando] = useState(true);
@@ -418,6 +414,34 @@ export default function PedidosPage() {
 
   return (
     <section className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-8 sm:py-8">
+      {/* BANNER DE AVISO DE NOTIFICACIONES PUSH */}
+      {permission !== "granted" && (
+        <div className="mb-4 flex flex-col items-start justify-between gap-3 rounded-xl border border-blue-500/20 bg-blue-500/10 p-3.5 text-blue-950 dark:text-blue-100 sm:mb-6 sm:flex-row sm:items-center sm:rounded-2xl sm:p-4">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-blue-600 p-2 text-white sm:rounded-xl">
+              <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold sm:text-sm">
+                ¿Querés que te suene el celular con cada pedido?
+              </p>
+              <p className="text-[10px] text-slate-600 dark:text-zinc-400 sm:text-xs">
+                Activá las alertas push para no perderte ninguna venta aunque tengas la app cerrada.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={suscribirNotificaciones}
+            disabled={cargandoPush}
+            className="shrink-0 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50 sm:rounded-xl sm:px-4 sm:py-2"
+          >
+            {cargandoPush ? "Activando..." : "Activar en este celular"}
+          </button>
+        </div>
+      )}
+
       <div className="flex flex-col gap-3 sm:gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-[10px] font-semibold text-blue-500 sm:text-sm">
