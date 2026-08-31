@@ -5,6 +5,9 @@ import {
 import {
   FieldValue,
 } from "firebase-admin/firestore";
+import {
+  getMessaging,
+} from "firebase-admin/messaging";
 
 import {
   adminDb,
@@ -16,8 +19,7 @@ import {
   empresaTieneFuncion,
 } from "@/lib/plans/planAccess";
 
-export const runtime =
-  "nodejs";
+export const runtime = "nodejs";
 
 type ReservaMesaBody = {
   slug?: string;
@@ -40,14 +42,10 @@ function limpiarTexto(
   valor: unknown,
   maximo: number,
 ) {
-  return typeof valor ===
-    "string"
+  return typeof valor === "string"
     ? valor
         .trim()
-        .replace(
-          /\u0000/g,
-          "",
-        )
+        .replace(/\u0000/g, "")
         .slice(0, maximo)
     : "";
 }
@@ -69,29 +67,22 @@ function fechaValida(
     diaTexto,
   ] = valor.split("-");
 
-  const anio =
-    Number(anioTexto);
-  const mes =
-    Number(mesTexto);
-  const dia =
-    Number(diaTexto);
+  const anio = Number(anioTexto);
+  const mes = Number(mesTexto);
+  const dia = Number(diaTexto);
 
-  const fecha =
-    new Date(
-      Date.UTC(
-        anio,
-        mes - 1,
-        dia,
-      ),
-    );
+  const fecha = new Date(
+    Date.UTC(
+      anio,
+      mes - 1,
+      dia,
+    ),
+  );
 
   return (
-    fecha.getUTCFullYear() ===
-      anio &&
-    fecha.getUTCMonth() ===
-      mes - 1 &&
-    fecha.getUTCDate() ===
-      dia
+    fecha.getUTCFullYear() === anio &&
+    fecha.getUTCMonth() === mes - 1 &&
+    fecha.getUTCDate() === dia
   );
 }
 
@@ -114,12 +105,8 @@ function horaValida(
     .map(Number);
 
   return (
-    Number.isInteger(
-      horas,
-    ) &&
-    Number.isInteger(
-      minutos,
-    ) &&
+    Number.isInteger(horas) &&
+    Number.isInteger(minutos) &&
     horas >= 0 &&
     horas <= 23 &&
     minutos >= 0 &&
@@ -142,10 +129,7 @@ function emailValido(
 function esRestaurante(
   rubro: unknown,
 ) {
-  if (
-    typeof rubro !==
-    "string"
-  ) {
+  if (typeof rubro !== "string") {
     return false;
   }
 
@@ -155,10 +139,8 @@ function esRestaurante(
       .toLowerCase();
 
   return (
-    normalizado ===
-      "restaurante" ||
-    normalizado ===
-      "restaurant"
+    normalizado === "restaurante" ||
+    normalizado === "restaurant"
   );
 }
 
@@ -185,8 +167,7 @@ function ahoraArgentina() {
   ) =>
     partes.find(
       (parte) =>
-        parte.type ===
-        tipo,
+        parte.type === tipo,
     )?.value || "";
 
   return {
@@ -211,8 +192,7 @@ export async function POST(
   request: NextRequest,
 ) {
   try {
-    let body:
-      ReservaMesaBody;
+    let body: ReservaMesaBody;
 
     try {
       body =
@@ -537,12 +517,6 @@ export async function POST(
         async (
           transaction,
         ) => {
-          /*
-           * Revalidamos dentro de la transacción.
-           * Así un vencimiento de suscripción, una baja
-           * de la página o la desactivación de reservas
-           * no puede colarse antes de crear la reserva.
-           */
           const empresaActualSnapshot =
             await transaction.get(
               empresaRef,
@@ -625,20 +599,16 @@ export async function POST(
               nombreCliente,
               telefono,
               email,
-
               servicio:
                 "Reserva de mesa",
               servicioId: "",
               precioServicio: 0,
-
               fecha,
               hora,
               duracionMinutos: 0,
-
               tipoReserva:
                 "mesa",
               personas,
-
               estado:
                 "pendiente",
               notas,
@@ -646,7 +616,6 @@ export async function POST(
                 "web",
               canalReserva:
                 "pagina_publica",
-
               createdAt:
                 FieldValue.serverTimestamp(),
               updatedAt:
@@ -695,6 +664,7 @@ export async function POST(
       throw error;
     }
 
+    // 1. Notificación interna en el panel
     try {
       await crearNotificacion({
         empresaId:
@@ -726,6 +696,27 @@ export async function POST(
         "No se pudo crear la notificación de reserva de mesa:",
         notificationError,
       );
+    }
+
+    // 2. Disparo de Notificación Push Web al teléfono del dueño
+    try {
+      const fcmTokens: string[] = empresa?.fcmTokens || [];
+
+      if (fcmTokens.length > 0) {
+        const messaging = getMessaging();
+        await messaging.sendEachForMulticast({
+          tokens: fcmTokens,
+          notification: {
+            title: "🍽️ ¡Nueva reserva de mesa!",
+            body: `${nombreCliente} reservó para ${personas} persona${personas === 1 ? "" : "s"} (${fecha} a las ${hora}).`,
+          },
+          data: {
+            url: `/empresas/${empresaDoc.id}/agenda`,
+          },
+        });
+      }
+    } catch (pushError) {
+      console.error("Error enviando push de mesa:", pushError);
     }
 
     return NextResponse.json(

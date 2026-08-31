@@ -3,6 +3,7 @@ import {
   NextResponse,
 } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
+import { getMessaging } from "firebase-admin/messaging";
 
 import { adminDb } from "@/lib/firebaseAdmin";
 import { empresaTieneFuncion } from "@/lib/plans/planAccess";
@@ -56,6 +57,7 @@ type EmpresaPublica = {
     slug?: string;
   };
   agendaConfig?: AgendaConfig;
+  fcmTokens?: string[];
 };
 
 type TurnoExistente = {
@@ -1304,11 +1306,6 @@ export async function POST(
     try {
       await adminDb.runTransaction(
         async (transaction) => {
-          /*
-           * Todas las lecturas ocurren antes de escribir.
-           * Revalidamos empresa, plan, agenda y servicio
-           * dentro de la misma transacción que crea el turno.
-           */
           const empresaSnapshot =
             await transaction.get(
               empresaRef,
@@ -1444,10 +1441,6 @@ export async function POST(
             );
           }
 
-          /*
-           * Este documento fuerza a serializar
-           * reservas concurrentes del mismo día.
-           */
           await transaction.get(
             bloqueoDiaRef,
           );
@@ -1590,6 +1583,7 @@ export async function POST(
       throw transactionError;
     }
 
+    // 1. Notificación interna en el panel
     try {
       await crearNotificacion({
         empresaId:
@@ -1619,6 +1613,27 @@ export async function POST(
         "No se pudo crear la notificación del turno público:",
         notificationError,
       );
+    }
+
+    // 2. Disparo de Notificación Push Web al teléfono del dueño
+    try {
+      const fcmTokens: string[] = empresa?.fcmTokens || [];
+
+      if (fcmTokens.length > 0) {
+        const messaging = getMessaging();
+        await messaging.sendEachForMulticast({
+          tokens: fcmTokens,
+          notification: {
+            title: "📅 ¡Nuevo turno reservado!",
+            body: `${nombreCliente} reservó ${servicio.nombre} para el ${fecha} a las ${hora}.`,
+          },
+          data: {
+            url: `/empresas/${empresaDoc.id}/agenda`,
+          },
+        });
+      }
+    } catch (pushError) {
+      console.error("Error enviando push de turno:", pushError);
     }
 
     return NextResponse.json(

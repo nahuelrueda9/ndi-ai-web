@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
+import { getMessaging } from "firebase-admin/messaging";
 
 import { adminDb } from "@/lib/firebaseAdmin";
 import {
@@ -531,6 +532,7 @@ export async function POST(
       throw error;
     }
 
+    // 1. Notificación interna en el panel
     try {
       await crearNotificacion({
         empresaId,
@@ -560,6 +562,27 @@ export async function POST(
         "No se pudo crear la notificación del lead público:",
         notificationError
       );
+    }
+
+    // 2. Disparo de Notificación Push Web al teléfono del dueño
+    try {
+      const fcmTokens: string[] = empresa?.fcmTokens || [];
+
+      if (fcmTokens.length > 0) {
+        const messaging = getMessaging();
+        await messaging.sendEachForMulticast({
+          tokens: fcmTokens,
+          notification: {
+            title: esPresupuesto ? "📝 ¡Nueva solicitud de presupuesto!" : "💬 ¡Nuevo mensaje de contacto!",
+            body: `${nombre}: ${mensaje.slice(0, 100)}`,
+          },
+          data: {
+            url: `/empresas/${empresaId}/conversaciones/${conversacionRef.id}`,
+          },
+        });
+      }
+    } catch (pushError) {
+      console.error("Error enviando push de lead/contacto:", pushError);
     }
 
     return NextResponse.json(

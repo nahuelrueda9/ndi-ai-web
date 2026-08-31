@@ -3,6 +3,7 @@ import {
   NextResponse,
 } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
+import { getMessaging } from "firebase-admin/messaging";
 
 import { adminDb } from "@/lib/firebaseAdmin";
 import { empresaTieneFuncion } from "@/lib/plans/planAccess";
@@ -539,12 +540,6 @@ export async function POST(
     try {
       await adminDb.runTransaction(
         async (transaction) => {
-          /*
-           * Revalidamos empresa, plan, página pública y habitación
-           * dentro de la misma transacción. Así un cambio de plan
-           * o de disponibilidad no puede colarse entre la lectura
-           * inicial y la creación de la reserva.
-           */
           const empresaActualSnapshot =
             await transaction.get(
               empresaRef,
@@ -711,22 +706,14 @@ export async function POST(
                 Number(
                   servicioActual.precio,
                 ) || 0,
-
-              /*
-               * "fecha" mantiene compatibilidad con
-               * la agenda existente. Para alojamiento
-               * representa el día de ingreso.
-               */
               fecha: fechaEntrada,
               hora: "14:00",
               duracionMinutos: 0,
-
               tipoReserva:
                 "alojamiento",
               fechaEntrada,
               fechaSalida,
               huespedes,
-
               estado: "pendiente",
               notas,
               origen: "web",
@@ -797,6 +784,7 @@ export async function POST(
       throw error;
     }
 
+    // 1. Notificación interna en el panel
     try {
       await crearNotificacion({
         empresaId:
@@ -829,6 +817,27 @@ export async function POST(
         "No se pudo crear la notificación de alojamiento:",
         notificationError,
       );
+    }
+
+    // 2. Disparo de Notificación Push Web al teléfono del dueño
+    try {
+      const fcmTokens: string[] = empresa?.fcmTokens || [];
+
+      if (fcmTokens.length > 0) {
+        const messaging = getMessaging();
+        await messaging.sendEachForMulticast({
+          tokens: fcmTokens,
+          notification: {
+            title: "🏨 ¡Nueva reserva de alojamiento!",
+            body: `${nombreCliente} solicitó ${nombreHabitacion} (${fechaEntrada} al ${fechaSalida}).`,
+          },
+          data: {
+            url: `/empresas/${empresaDoc.id}/agenda`,
+          },
+        });
+      }
+    } catch (pushError) {
+      console.error("Error enviando push de alojamiento:", pushError);
     }
 
     return NextResponse.json(
