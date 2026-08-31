@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { getMessaging, getToken, isSupported } from "firebase/messaging";
-import { doc, arrayUnion, updateDoc } from "firebase/firestore";
+import { doc, arrayUnion, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+
+// Pegá acá tu clave pública VAPID copiada de Firebase si no la tenés en .env
+const VAPID_KEY_FALLBACK = "BOg7GGV_t2HmcCMJA7CCBdl4BQOfwHgkhJdhd9HKbGiSwkTqqSPnIcHryd0_Qlgt2iQ8eifj31U1ffqlAhj4PFw";
 
 export function usePushNotifications(empresaId?: string) {
   const [permission, setPermission] = useState<NotificationPermission>("default");
@@ -16,10 +19,14 @@ export function usePushNotifications(empresaId?: string) {
   }, []);
 
   const suscribirNotificaciones = async () => {
-    if (!empresaId) return;
+    if (!empresaId) {
+      alert("Error: Falta identificar la empresa.");
+      return;
+    }
 
     try {
       setLoading(true);
+
       const supported = await isSupported();
       if (!supported) {
         alert("Tu navegador no soporta notificaciones push en segundo plano.");
@@ -30,30 +37,47 @@ export function usePushNotifications(empresaId?: string) {
       setPermission(resPermission);
 
       if (resPermission !== "granted") {
-        alert("Permiso de notificaciones denegado.");
+        alert("Permiso denegado. Activá los permisos de notificación en los ajustes de tu navegador.");
         return;
       }
 
-      const swRegistration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
-      const messaging = getMessaging();
+      // Registro y espera del Service Worker
+      await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+      const registration = await navigator.serviceWorker.ready;
 
-      const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+      const messaging = getMessaging();
+      const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY || VAPID_KEY_FALLBACK;
+
+      if (!vapidKey || vapidKey.startsWith("PEGAR_ACA")) {
+        alert("Falta configurar la Clave VAPID pública de Firebase.");
+        return;
+      }
+
       const currentToken = await getToken(messaging, {
         vapidKey,
-        serviceWorkerRegistration: swRegistration,
+        serviceWorkerRegistration: registration,
       });
 
-      if (currentToken) {
-        // Guardamos el token en la empresa para poder notificar a este dispositivo
-        const empresaRef = doc(db, "companies", empresaId);
-        await updateDoc(empresaRef, {
-          fcmTokens: arrayUnion(currentToken),
-        });
-        alert("¡Notificaciones activadas con éxito en este teléfono!");
+      if (!currentToken) {
+        alert("No se pudo obtener el identificador de notificación del teléfono.");
+        return;
       }
+
+      // Guardar token en el documento de la empresa
+      const empresaRef = doc(db, "companies", empresaId);
+      await setDoc(
+        empresaRef,
+        {
+          fcmTokens: arrayUnion(currentToken),
+        },
+        { merge: true }
+      );
+
+      alert("✅ ¡Notificaciones push activadas con éxito en este celular!");
     } catch (err) {
       console.error("Error al activar notificaciones:", err);
-      alert("Hubo un error activando las notificaciones.");
+      const mensajeError = err instanceof Error ? err.message : String(err);
+      alert(`Hubo un error al activar: ${mensajeError}`);
     } finally {
       setLoading(false);
     }
