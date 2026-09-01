@@ -414,9 +414,9 @@ export default function PedidosPage() {
 
   return (
     <section className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-8 sm:py-8">
-      {/* BANNER DE AVISO DE NOTIFICACIONES PUSH */}
+      {/* BANNER DE AVISO DE NOTIFICACIONES PUSH (Oculto en escritorio con lg:hidden) */}
       {permission !== "granted" && (
-        <div className="mb-4 flex flex-col items-start justify-between gap-3 rounded-xl border border-blue-500/20 bg-blue-500/10 p-3.5 text-blue-950 dark:text-blue-100 sm:mb-6 sm:flex-row sm:items-center sm:rounded-2xl sm:p-4">
+        <div className="mb-4 flex flex-col items-start justify-between gap-3 rounded-xl border border-blue-500/20 bg-blue-500/10 p-3.5 text-blue-950 dark:text-blue-100 sm:mb-6 sm:flex-row sm:items-center sm:rounded-2xl sm:p-4 lg:hidden">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-blue-600 p-2 text-white sm:rounded-xl">
               <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
