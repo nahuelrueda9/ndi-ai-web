@@ -796,8 +796,8 @@ export default function ConfigurarAgentePage() {
       {/* GUÍA DE BIENVENIDA Y PRIMEROS PASOS */}
       <OnboardingCard empresaId={empresaId} />
 
-      {/* TARJETA DE VINCULACIÓN DE ALERTAS AL CELULAR */}
-      <Card className="mb-4 overflow-hidden border-blue-500/30 bg-blue-500/5 p-4 sm:mb-6 sm:p-6">
+      {/* TARJETA DE VINCULACIÓN DE ALERTAS AL CELULAR (Oculto en pantallas de computadora con lg:hidden) */}
+      <Card className="mb-4 overflow-hidden border-blue-500/30 bg-blue-500/5 p-4 sm:mb-6 sm:p-6 lg:hidden">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3.5">
             <div className="rounded-xl bg-blue-600 p-2.5 text-white shadow-sm sm:p-3">
