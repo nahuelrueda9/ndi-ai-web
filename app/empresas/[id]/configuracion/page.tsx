@@ -20,13 +20,11 @@ import {
   useParams,
   useRouter,
 } from "next/navigation";
-import { Bell, Smartphone, CheckCircle } from "lucide-react";
 
 import { auth, db } from "@/lib/firebase";
 import {
   empresaTieneFuncion,
 } from "@/lib/plans/planAccess";
-import { usePushNotifications } from "@/hooks/usePushNotifications";
 import Avatar from "@/components/Ui/Avatar";
 import Badge from "@/components/Ui/Badge";
 import Button from "@/components/Ui/Button";
@@ -96,8 +94,6 @@ export default function ConfiguracionPage() {
   const empresaId = Array.isArray(parametroEmpresa)
     ? parametroEmpresa[0]
     : (parametroEmpresa as string | undefined);
-
-  const { permission, loading: cargandoPush, suscribirNotificaciones } = usePushNotifications(empresaId);
 
   const [user, setUser] = useState<User | null>(null);
   const [empresaNombre, setEmpresaNombre] = useState("");
@@ -672,46 +668,6 @@ export default function ConfiguracionPage() {
         </div>
 
         <aside className="space-y-2 sm:space-y-3">
-          {/* TARJETA DE NOTIFICACIONES PUSH EN EL CELULAR */}
-          <Card className="border-blue-500/20 bg-blue-500/5 p-3 sm:p-4">
-            <div className="flex items-center gap-2">
-              <div className="rounded-lg bg-blue-600 p-1.5 text-white sm:rounded-xl sm:p-2">
-                <Bell className="h-4 w-4" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-slate-950 dark:text-white sm:text-sm">
-                  Alertas en el Celular
-                </p>
-                <p className="text-[9px] text-slate-500 dark:text-zinc-400 sm:text-[10px]">
-                  Notificaciones Push en vivo
-                </p>
-              </div>
-            </div>
-
-            <p className="mt-2 text-[10px] leading-4 text-slate-600 dark:text-zinc-400 sm:text-xs">
-              Recibí avisos de nuevos turnos, pedidos y reservas directo en tu pantalla de bloqueo.
-            </p>
-
-            <div className="mt-3">
-              <Button
-                type="button"
-                onClick={suscribirNotificaciones}
-                disabled={cargandoPush}
-                className="w-full flex items-center justify-center gap-2 text-xs"
-              >
-                <Smartphone className="h-3.5 w-3.5" />
-                {cargandoPush ? "Vinculando..." : "Vincular este celular"}
-              </Button>
-            </div>
-
-            <div className="mt-2 flex items-center justify-between text-[9px] text-slate-500 dark:text-zinc-500">
-              <span>Estado en navegador:</span>
-              <span className="font-semibold text-blue-600 dark:text-blue-400 capitalize">
-                {permission}
-              </span>
-            </div>
-          </Card>
-
           <Card className="p-3 sm:p-4">
             <p className="text-xs font-semibold text-slate-950 dark:text-white sm:text-sm">
               Vista previa
