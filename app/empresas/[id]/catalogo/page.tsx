@@ -96,7 +96,7 @@ export default function CatalogoPage() {
 
   const [loading, setLoading] = useState(true);
   const [autorizado, setAutorizado] = useState(false);
-
+  const [empresaData, setEmpresaData] = useState<Empresa | null>(null);
   const [
     puedeUsarCatalogo,
     setPuedeUsarCatalogo,
@@ -343,11 +343,11 @@ export default function CatalogoPage() {
       rubroNormalizado,
     );
 
-  const limiteImagenes = useMemo(() => {
-    if (esPlanBusiness) return 6;
-    if (puedeUsarProductos) return 3;
-    return 1;
-  }, [esPlanBusiness, puedeUsarProductos]);
+const limiteImagenes = useMemo(() => {
+  if (esPlanBusiness) return 6;
+  if (puedeUsarProductos) return 3;
+  return 1;
+}, [esPlanBusiness, puedeUsarProductos]);
 
   // Lógica para procesar y crear las combinaciones de talles y colores en tiempo real
   const tallesNormalizados = useMemo(() => {

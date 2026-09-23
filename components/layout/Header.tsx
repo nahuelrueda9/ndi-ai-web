@@ -1,5 +1,39 @@
 "use client";
 
+import { usePushNotifications } from "@/hooks/usePushNotifications";
+
+export function HeaderAdmin() {
+  const params = useParams();
+  const empresaId = Array.isArray(params.id) ? params.id[0] : (params.id as string);
+
+  const { permission, loading, suscribirNotificaciones } = usePushNotifications(empresaId);
+
+  return (
+    <header className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-zinc-800">
+      {/* Título o breadcrumb de la empresa */}
+      <div>...</div>
+
+      {/* Acciones de la derecha */}
+      <div className="flex items-center gap-3">
+        {/* BOTÓN DE NOTIFICACIONES PUSH */}
+        {permission !== "granted" && (
+          <button
+            type="button"
+            onClick={suscribirNotificaciones}
+            disabled={loading}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-50"
+          >
+            <Bell className="h-3.5 w-3.5" />
+            {loading ? "Activando..." : "Activar alertas al celular"}
+          </button>
+        )}
+
+        {/* ...resto de botones (modo oscuro, avatar, etc.) */}
+      </div>
+    </header>
+  );
+}
+
 import type { ComponentType } from "react";
 import {
   useEffect,

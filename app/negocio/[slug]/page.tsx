@@ -34,6 +34,8 @@ import CompartirPagina from "./CompartirPagina";
 import PresupuestoFormulario from "./PresupuestoFormulario";
 import { fontMap } from "@/lib/fonts";
 import BotonTema from "./BotonTema";
+import BotonWhatsAppHeader from "./BotonWhatsAppHeader";
+import HeroSlider from "./HeroSlider";
 
 export const dynamic = "force-dynamic";
 
@@ -295,6 +297,12 @@ export default async function NegocioPage({ params }: PageProps) {
   const logoOscuroUrl = pagina.logoOscuroUrl?.trim() || "";
   const logoParaHeader = esClaro && logoOscuroUrl ? logoOscuroUrl : logoUrl;
   const portadaUrl = pagina.portadaUrl?.trim() || "";
+
+  // Toma la portada y fotos de la galería hasta un máximo de 3 imágenes para el Hero
+  const imagenesPortada = [
+    portadaUrl,
+    ...(Array.isArray(pagina.galeria) ? pagina.galeria : [])
+  ].filter((url): url is string => typeof url === "string" && url.trim().length > 0).slice(0, 3);
   
   const galeria = Array.isArray(pagina.galeria) ? pagina.galeria.filter((url): url is string => typeof url === "string" && url.trim().length > 0).slice(0, 6) : [];
 
@@ -449,17 +457,9 @@ export default async function NegocioPage({ params }: PageProps) {
               </a>
             )}
 
+            {/* BOTÓN CON SCROLL INTELIGENTE */}
             {mostrarWhatsApp && (
-              <a
-                href={whatsappUrl}
-                data-analytics-event="whatsapp_click"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hidden items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-500 active:scale-95 sm:inline-flex"
-              >
-                <MessageCircle className="h-4 w-4" />
-                WhatsApp
-              </a>
+              <BotonWhatsAppHeader whatsappUrl={whatsappUrl} />
             )}
           </div>
         </div>
@@ -469,24 +469,15 @@ export default async function NegocioPage({ params }: PageProps) {
       <section
         id="inicio"
         className={`relative flex min-h-[560px] scroll-mt-20 items-center overflow-hidden sm:min-h-[75vh] ${
-          portadaUrl ? "text-white" : ""
+          imagenesPortada.length > 0 ? "text-white" : ""
         }`}
       >
-        {portadaUrl ? (
-          <>
-            <img
-              src={portadaUrl}
-              alt={`Portada de ${nombre}`}
-              className="absolute inset-0 h-full w-full scale-[1.01] object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/80 to-black/40" />
-            <div
-              className="absolute inset-0 opacity-25"
-              style={{
-                background: `radial-gradient(circle at 20% 50%, ${colorPrincipal}66, transparent 60%)`,
-              }}
-            />
-          </>
+        {imagenesPortada.length > 0 ? (
+          <HeroSlider
+            imagenes={imagenesPortada}
+            nombre={nombre}
+            colorPrincipal={colorPrincipal}
+          />
         ) : (
           <div
             className="absolute inset-0 opacity-30 dark:opacity-20 pointer-events-none"
@@ -513,7 +504,7 @@ export default async function NegocioPage({ params }: PageProps) {
                   style={{
                     borderColor: `${colorPrincipal}66`,
                     backgroundColor: `${colorPrincipal}18`,
-                    color: portadaUrl ? "#ffffff" : colorPrincipal,
+                    color: imagenesPortada.length > 0 ? "#ffffff" : colorPrincipal,
                   }}
                 >
                   <Sparkles className="h-3.5 w-3.5" />
@@ -529,7 +520,7 @@ export default async function NegocioPage({ params }: PageProps) {
             {textoPrincipal && (
               <p
                 className={`mt-4 max-w-2xl text-lg font-medium leading-relaxed sm:mt-6 sm:text-2xl sm:leading-snug ${
-                  portadaUrl ? "text-zinc-100" : "text-slate-800 dark:text-zinc-200"
+                  imagenesPortada.length > 0 ? "text-zinc-100" : "text-slate-800 dark:text-zinc-200"
                 }`}
               >
                 {textoPrincipal}
@@ -539,7 +530,7 @@ export default async function NegocioPage({ params }: PageProps) {
             {textoSecundario && (
               <p
                 className={`mt-2 max-w-2xl text-sm leading-relaxed sm:mt-3 sm:text-base ${
-                  portadaUrl ? "text-zinc-300" : "text-slate-600 dark:text-zinc-400"
+                  imagenesPortada.length > 0 ? "text-zinc-300" : "text-slate-600 dark:text-zinc-400"
                 }`}
               >
                 {textoSecundario}
@@ -582,9 +573,9 @@ export default async function NegocioPage({ params }: PageProps) {
                       aria-label={`Abrir ${red.nombre}`}
                       title={red.nombre}
                       className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border shadow-sm backdrop-blur transition hover:-translate-y-0.5 active:scale-95 ${
-                        portadaUrl 
-                        ? "border-white/20 bg-white/10 text-white hover:bg-white/20" 
-                        : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                        imagenesPortada.length > 0 
+                          ? "border-white/20 bg-white/10 text-white hover:bg-white/20" 
+                          : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
                       }`}
                     >
                       {red.nombre === "Instagram" ? (
@@ -606,9 +597,9 @@ export default async function NegocioPage({ params }: PageProps) {
                 <a
                   href="#servicios"
                   className={`inline-flex items-center justify-center gap-2 rounded-xl border px-6 py-3.5 text-sm font-semibold backdrop-blur transition hover:-translate-y-0.5 active:scale-95 sm:text-base ${
-                    portadaUrl 
-                    ? "border-white/20 bg-white/10 text-white hover:bg-white/20" 
-                    : "border-slate-200 bg-white text-slate-900 shadow-sm hover:bg-slate-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800"
+                    imagenesPortada.length > 0 
+                      ? "border-white/20 bg-white/10 text-white hover:bg-white/20" 
+                      : "border-slate-200 bg-white text-slate-900 shadow-sm hover:bg-slate-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800"
                   }`}
                 >
                   <Package className="h-5 w-5" />

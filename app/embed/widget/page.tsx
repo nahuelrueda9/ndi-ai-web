@@ -1,29 +1,23 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import ChatWidget from "@/components/widget/ChatWidget";
-import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+type PageProps = {
+  searchParams: Promise<{
+    empresaId?: string | string[];
+  }>;
+};
 
-function WidgetLoader() {
-  const params = useSearchParams();
+export default async function EmbedWidgetPage({
+  searchParams,
+}: PageProps) {
+  const consulta = await searchParams;
 
-  const empresaId = params.get("empresaId");
+  const empresaId = Array.isArray(consulta.empresaId)
+    ? consulta.empresaId[0]
+    : consulta.empresaId;
 
   if (!empresaId) {
-    return (
-      <div className="p-10">
-        Falta el parámetro empresaId
-      </div>
-    );
+    redirect("/empresas");
   }
 
-  return <ChatWidget empresaId={empresaId} />;
-}
-
-export default function EmbedWidgetPage() {
-  return (
-    <Suspense fallback={null}>
-      <WidgetLoader />
-    </Suspense>
-  );
+  redirect(`/widget/${encodeURIComponent(empresaId)}`);
 }
