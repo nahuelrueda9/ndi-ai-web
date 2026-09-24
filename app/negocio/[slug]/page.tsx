@@ -89,6 +89,8 @@ interface Empresa {
     logoUrl?: string;
     logoOscuroUrl?: string;
     portadaUrl?: string;
+    portadaUrl2?: string;
+    portadaUrl3?: string;
     galeria?: string[];
     mostrarWhatsApp?: boolean;
     mostrarEmail?: boolean;
@@ -296,14 +298,15 @@ export default async function NegocioPage({ params }: PageProps) {
   const logoOscuroUrl = pagina.logoOscuroUrl?.trim() || "";
   const esClaro = pagina.tema === "claro";
 
+  // ÚNICA Y EXCLUSIVAMENTE LAS 3 IMÁGENES DE PORTADA (La galería queda excluida)
   const portadaUrl = pagina.portadaUrl?.trim() || "";
-  const galeria = Array.isArray(pagina.galeria) ? pagina.galeria.filter((url): url is string => typeof url === "string" && url.trim().length > 0) : [];
+  const portadaUrl2 = (pagina as any).portadaUrl2?.trim() || "";
+  const portadaUrl3 = (pagina as any).portadaUrl3?.trim() || "";
 
-  // Junta la portada principal + fotos de la galería hasta un máximo de 3 imágenes
-  const imagenesHero = [
-    portadaUrl,
-    ...galeria
-  ].filter(Boolean).slice(0, 3);
+  const imagenesHero = [portadaUrl, portadaUrl2, portadaUrl3].filter(Boolean);
+
+  // Galería independiente para el local (máximo 6 fotos)
+  const galeria = Array.isArray(pagina.galeria) ? pagina.galeria.filter((url): url is string => typeof url === "string" && url.trim().length > 0).slice(0, 6) : [];
 
   const telefonoLimpio = empresa.telefono?.replace(/\D/g, "") || "";
   const whatsappUrl = telefonoLimpio ? `https://wa.me/${telefonoLimpio}` : "";
@@ -784,7 +787,7 @@ export default async function NegocioPage({ params }: PageProps) {
         </section>
       )}
 
-      {/* GALERÍA */}
+      {/* GALERÍA DE FOTOS (Exclusiva del local) */}
       {mostrarGaleria && galeria.length > 0 && (
         <section id="galeria" className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}>
           <div className="mx-auto max-w-7xl px-4 py-12 sm:px-8 sm:py-20">

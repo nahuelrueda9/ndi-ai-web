@@ -387,7 +387,7 @@ export default function ConfigurarAgentePage() {
 
   const subirImagenPagina = async (
     archivo: File,
-    tipo: "logo" | "logoOscuro" | "portada" | "portada2" | "portada3" | "galeria",
+    destino: "logo" | "logoOscuro" | "portada" | "portada2" | "portada3" | "galeria",
   ) => {
     if (!user || !empresaId) return;
 
@@ -402,19 +402,23 @@ export default function ConfigurarAgentePage() {
       return;
     }
 
-    if (tipo === "galeria" && paginaGaleria.length >= 6) {
+    if (destino === "galeria" && paginaGaleria.length >= 6) {
       setError("Podés cargar hasta 6 imágenes en la galería.");
       return;
     }
 
     setError("");
     setMensaje("");
-    setSubiendoImagen(tipo);
+    setSubiendoImagen(destino);
+
+    // Si es portada2 o portada3, para el backend de ImageKit enviamos "portada" para no violar validaciones
+    const tipoParaAuth =
+      destino === "portada2" || destino === "portada3" ? "portada" : destino;
 
     try {
       const idToken = await user.getIdToken();
       const authResponse = await fetch(
-        `/api/imagekit/auth?empresaId=${encodeURIComponent(empresaId)}`,
+        `/api/imagekit/auth?empresaId=${encodeURIComponent(empresaId)}&tipo=${tipoParaAuth}`,
         {
           method: "GET",
           headers: { Authorization: `Bearer ${idToken}` },
@@ -439,16 +443,18 @@ export default function ConfigurarAgentePage() {
         throw new Error("ImageKit devolvió una autorización incompleta.");
       }
 
-      const extension = archivo.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-      const baseNombre = archivo.name
-        .replace(/\.[^.]+$/, "")
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-zA-Z0-9_-]+/g, "-")
-        .replace(/^-+|-+$/g, "")
-        .slice(0, 60) || tipo;
+      const extension =
+        archivo.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+      const baseNombre =
+        archivo.name
+          .replace(/\.[^.]+$/, "")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-zA-Z0-9_-]+/g, "-")
+          .replace(/^-+|-+$/g, "")
+          .slice(0, 60) || destino;
 
-      const fileName = `${tipo}-${Date.now()}-${baseNombre}.${extension}`;
+      const fileName = `${destino}-${Date.now()}-${baseNombre}.${extension}`;
 
       const formData = new FormData();
       formData.append("file", archivo);
@@ -458,7 +464,7 @@ export default function ConfigurarAgentePage() {
       formData.append("expire", String(authData.expire));
       formData.append("signature", authData.signature);
       formData.append("useUniqueFileName", "true");
-      formData.append("folder", `/ndi-ai/companies/${empresaId}/public-page/${tipo}`);
+      formData.append("folder", `/ndi-ai/companies/${empresaId}/public-page/portada`);
 
       const uploadResponse = await fetch("https://upload.imagekit.io/api/v1/files/upload", {
         method: "POST",
@@ -480,23 +486,23 @@ export default function ConfigurarAgentePage() {
       const url = uploadData.url?.trim();
       if (!url) throw new Error("ImageKit no devolvió la URL de la imagen.");
 
-      if (tipo === "logo") {
+      if (destino === "logo") {
         setPaginaLogoUrl(url);
-      } else if (tipo === "logoOscuro") {
+      } else if (destino === "logoOscuro") {
         setPaginaLogoOscuroUrl(url);
-      } else if (tipo === "portada") {
+      } else if (destino === "portada") {
         setPaginaPortadaUrl(url);
-      } else if (tipo === "portada2") {
+      } else if (destino === "portada2") {
         setPaginaPortadaUrl2(url);
-      } else if (tipo === "portada3") {
+      } else if (destino === "portada3") {
         setPaginaPortadaUrl3(url);
       } else {
         setPaginaGaleria((actual) => [...actual, url].slice(0, 6));
       }
 
-      setMensaje("Imagen subida. Guardá la configuración para aplicar los cambios.");
+      setMensaje("Imagen subida con éxito. Hacé clic en Guardar cambios para aplicar.");
     } catch (uploadError) {
-      console.error("Error al subir imagen a ImageKit:", uploadError);
+      console.error("Error al subir imagen:", uploadError);
       setError(uploadError instanceof Error ? uploadError.message : "No se pudo subir la imagen.");
     } finally {
       setSubiendoImagen(null);
