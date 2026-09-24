@@ -6,6 +6,7 @@ import type {
 } from "react";
 import {
   useEffect,
+  useRef,
   useState,
 } from "react";
 import {
@@ -411,7 +412,6 @@ export default function ConfigurarAgentePage() {
     setMensaje("");
     setSubiendoImagen(destino);
 
-    // Si es portada2 o portada3, para el backend de ImageKit enviamos "portada" para no violar validaciones
     const tipoParaAuth =
       destino === "portada2" || destino === "portada3" ? "portada" : destino;
 
@@ -1850,6 +1850,8 @@ function ImagenUploader({
   onQuitar: () => void;
   aspectClass: string;
 }) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
   return (
     <div className="rounded-xl border border-slate-200 bg-slate-50 p-2.5 dark:border-zinc-800 dark:bg-zinc-950/50 sm:rounded-2xl sm:p-4">
       <div>
@@ -1888,8 +1890,26 @@ function ImagenUploader({
         </div>
       )}
 
-      <label
-        className={`mt-2.5 inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-[10px] font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 sm:mt-4 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm ${
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        disabled={cargando}
+        onChange={(event) => {
+          const archivo = event.target.files?.[0];
+          if (archivo) {
+            onSeleccionar(archivo);
+          }
+          event.target.value = "";
+        }}
+      />
+
+      <button
+        type="button"
+        disabled={cargando}
+        onClick={() => inputRef.current?.click()}
+        className={`mt-2.5 inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-[10px] font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 sm:mt-4 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm ${
           cargando ? "pointer-events-none opacity-50" : ""
         }`}
       >
@@ -1899,21 +1919,7 @@ function ImagenUploader({
           : imagenUrl
             ? "Cambiar imagen"
             : "Subir imagen"}
-
-        <input
-          type="file"
-          accept="image/*"
-          className="hidden"
-          disabled={cargando}
-          onChange={(event) => {
-            const archivo = event.target.files?.[0];
-            if (archivo) {
-              onSeleccionar(archivo);
-            }
-            event.currentTarget.value = "";
-          }}
-        />
-      </label>
+      </button>
     </div>
   );
 }
