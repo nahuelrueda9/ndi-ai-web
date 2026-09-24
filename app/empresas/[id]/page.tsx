@@ -6,7 +6,7 @@ import type {
 } from "react";
 import {
   useEffect,
-  useRef,
+  useId,
   useState,
 } from "react";
 import {
@@ -393,7 +393,7 @@ export default function ConfigurarAgentePage() {
     if (!user || !empresaId) return;
 
     if (!archivo.type.startsWith("image/")) {
-      setError("Seleccioná una imagen válida.");
+      setError("Seleccioná un archivo de imagen válido (JPG, PNG o WebP).");
       return;
     }
 
@@ -412,13 +412,10 @@ export default function ConfigurarAgentePage() {
     setMensaje("");
     setSubiendoImagen(destino);
 
-    const tipoParaAuth =
-      destino === "portada2" || destino === "portada3" ? "portada" : destino;
-
     try {
       const idToken = await user.getIdToken();
       const authResponse = await fetch(
-        `/api/imagekit/auth?empresaId=${encodeURIComponent(empresaId)}&tipo=${tipoParaAuth}`,
+        `/api/imagekit/auth?empresaId=${encodeURIComponent(empresaId)}`,
         {
           method: "GET",
           headers: { Authorization: `Bearer ${idToken}` },
@@ -436,11 +433,11 @@ export default function ConfigurarAgentePage() {
       };
 
       if (!authResponse.ok) {
-        throw new Error(authData.error || "No se pudo autorizar la subida.");
+        throw new Error(authData.error || "No se pudo autorizar la subida con ImageKit.");
       }
 
       if (!authData.token || !authData.expire || !authData.signature || !authData.publicKey) {
-        throw new Error("ImageKit devolvió una autorización incompleta.");
+        throw new Error("Credenciales de subida incompletas recibidas del servidor.");
       }
 
       const extension =
@@ -452,7 +449,7 @@ export default function ConfigurarAgentePage() {
           .replace(/[\u0300-\u036f]/g, "")
           .replace(/[^a-zA-Z0-9_-]+/g, "-")
           .replace(/^-+|-+$/g, "")
-          .slice(0, 60) || destino;
+          .slice(0, 50) || destino;
 
       const fileName = `${destino}-${Date.now()}-${baseNombre}.${extension}`;
 
@@ -480,7 +477,7 @@ export default function ConfigurarAgentePage() {
       };
 
       if (!uploadResponse.ok) {
-        throw new Error(uploadData.message || uploadData.error || "ImageKit rechazó la imagen.");
+        throw new Error(uploadData.message || uploadData.error || "ImageKit rechazó el archivo.");
       }
 
       const url = uploadData.url?.trim();
@@ -500,10 +497,10 @@ export default function ConfigurarAgentePage() {
         setPaginaGaleria((actual) => [...actual, url].slice(0, 6));
       }
 
-      setMensaje("Imagen subida con éxito. Hacé clic en Guardar cambios para aplicar.");
+      setMensaje("Imagen cargada con éxito. Hacé clic en 'Guardar cambios' para publicarla.");
     } catch (uploadError) {
       console.error("Error al subir imagen:", uploadError);
-      setError(uploadError instanceof Error ? uploadError.message : "No se pudo subir la imagen.");
+      setError(uploadError instanceof Error ? uploadError.message : "Error al procesar la imagen.");
     } finally {
       setSubiendoImagen(null);
     }
@@ -1050,7 +1047,7 @@ export default function ConfigurarAgentePage() {
                     descripcion="PNG, JPG o WebP · Se usa en modo oscuro y en el encabezado."
                     imagenUrl={paginaLogoUrl}
                     cargando={subiendoImagen === "logo"}
-                    onSeleccionar={(archivo) => subirImagenPagina(archivo, "logo")}
+                    onSeleccionar={(archivo) => void subirImagenPagina(archivo, "logo")}
                     onQuitar={() => setPaginaLogoUrl("")}
                     aspectClass="aspect-square max-w-[180px]"
                   />
@@ -1060,7 +1057,7 @@ export default function ConfigurarAgentePage() {
                     descripcion="Opcional. Se muestra automáticamente cuando el tema de la página es Claro."
                     imagenUrl={paginaLogoOscuroUrl}
                     cargando={subiendoImagen === "logoOscuro"}
-                    onSeleccionar={(archivo) => subirImagenPagina(archivo, "logoOscuro")}
+                    onSeleccionar={(archivo) => void subirImagenPagina(archivo, "logoOscuro")}
                     onQuitar={() => setPaginaLogoOscuroUrl("")}
                     aspectClass="aspect-square max-w-[180px]"
                   />
@@ -1070,7 +1067,7 @@ export default function ConfigurarAgentePage() {
                     descripcion="Primera foto de portada · recomendado 1600 × 900 px."
                     imagenUrl={paginaPortadaUrl}
                     cargando={subiendoImagen === "portada"}
-                    onSeleccionar={(archivo) => subirImagenPagina(archivo, "portada")}
+                    onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada")}
                     onQuitar={() => setPaginaPortadaUrl("")}
                     aspectClass="aspect-[16/9]"
                   />
@@ -1080,7 +1077,7 @@ export default function ConfigurarAgentePage() {
                     descripcion="Segunda foto del slider · ideal promociones o novedades."
                     imagenUrl={paginaPortadaUrl2}
                     cargando={subiendoImagen === "portada2"}
-                    onSeleccionar={(archivo) => subirImagenPagina(archivo, "portada2")}
+                    onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada2")}
                     onQuitar={() => setPaginaPortadaUrl2("")}
                     aspectClass="aspect-[16/9]"
                   />
@@ -1090,7 +1087,7 @@ export default function ConfigurarAgentePage() {
                     descripcion="Tercera foto del slider · novedades o banner visual."
                     imagenUrl={paginaPortadaUrl3}
                     cargando={subiendoImagen === "portada3"}
-                    onSeleccionar={(archivo) => subirImagenPagina(archivo, "portada3")}
+                    onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada3")}
                     onQuitar={() => setPaginaPortadaUrl3("")}
                     aspectClass="aspect-[16/9]"
                   />
@@ -1108,17 +1105,9 @@ export default function ConfigurarAgentePage() {
                       </p>
                     </div>
 
-                    <label
-                      className={`inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-[10px] font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm ${
-                        paginaGaleria.length >= 6 || subiendoImagen === "galeria"
-                          ? "pointer-events-none opacity-50"
-                          : ""
-                      }`}
-                    >
-                      <Upload className="h-4 w-4" />
-                      {subiendoImagen === "galeria" ? "Subiendo..." : "Agregar imagen"}
-
+                    <div>
                       <input
+                        id="galeria-upload-input"
                         type="file"
                         accept="image/*"
                         className="hidden"
@@ -1128,10 +1117,21 @@ export default function ConfigurarAgentePage() {
                           if (archivo) {
                             void subirImagenPagina(archivo, "galeria");
                           }
-                          event.currentTarget.value = "";
+                          event.target.value = "";
                         }}
                       />
-                    </label>
+                      <label
+                        htmlFor="galeria-upload-input"
+                        className={`inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-[10px] font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm ${
+                          paginaGaleria.length >= 6 || subiendoImagen === "galeria"
+                            ? "pointer-events-none opacity-50"
+                            : ""
+                        }`}
+                      >
+                        <Upload className="h-4 w-4" />
+                        {subiendoImagen === "galeria" ? "Subiendo..." : "Agregar imagen"}
+                      </label>
+                    </div>
                   </div>
 
                   {paginaGaleria.length > 0 ? (
@@ -1850,7 +1850,7 @@ function ImagenUploader({
   onQuitar: () => void;
   aspectClass: string;
 }) {
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  const inputId = useId();
 
   return (
     <div className="rounded-xl border border-slate-200 bg-slate-50 p-2.5 dark:border-zinc-800 dark:bg-zinc-950/50 sm:rounded-2xl sm:p-4">
@@ -1890,36 +1890,36 @@ function ImagenUploader({
         </div>
       )}
 
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        disabled={cargando}
-        onChange={(event) => {
-          const archivo = event.target.files?.[0];
-          if (archivo) {
-            onSeleccionar(archivo);
-          }
-          event.target.value = "";
-        }}
-      />
+      <div className="mt-2.5 sm:mt-4">
+        <input
+          id={inputId}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          disabled={cargando}
+          onChange={(event) => {
+            const archivo = event.target.files?.[0];
+            if (archivo) {
+              onSeleccionar(archivo);
+            }
+            event.target.value = "";
+          }}
+        />
 
-      <button
-        type="button"
-        disabled={cargando}
-        onClick={() => inputRef.current?.click()}
-        className={`mt-2.5 inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-[10px] font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 sm:mt-4 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm ${
-          cargando ? "pointer-events-none opacity-50" : ""
-        }`}
-      >
-        <Upload className="h-4 w-4" />
-        {cargando
-          ? "Subiendo..."
-          : imagenUrl
-            ? "Cambiar imagen"
-            : "Subir imagen"}
-      </button>
+        <label
+          htmlFor={inputId}
+          className={`inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-[10px] font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm ${
+            cargando ? "pointer-events-none opacity-50" : ""
+          }`}
+        >
+          <Upload className="h-4 w-4" />
+          {cargando
+            ? "Subiendo..."
+            : imagenUrl
+              ? "Cambiar imagen"
+              : "Subir imagen"}
+        </label>
+      </div>
     </div>
   );
 }
