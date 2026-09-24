@@ -467,14 +467,13 @@ export default async function NegocioPage({ params }: PageProps) {
         </div>
       </header>
 
-      {/* SECCIÓN HERO QUE ABARCA EXACTAMENTE EL VIEWPORT (100% DE PANTALLA) */}
+      {/* HERO EQUILIBRADO EN MOBILE Y LAPTOP */}
       <section
         id="inicio"
-        className="mx-auto flex w-full max-w-[1440px] flex-col justify-between p-3 sm:p-6 lg:p-8"
-        style={{ minHeight: "calc(100svh - 4rem)" }}
+        className="mx-auto flex w-full max-w-[1440px] flex-col justify-start px-3.5 sm:px-6 lg:px-8 pt-2 pb-6 lg:min-h-[calc(100svh-4.5rem)] lg:justify-between"
       >
-        {/* Contenedor Flotante de Portada */}
-        <div className="relative flex-1 w-full overflow-hidden rounded-[2rem] sm:rounded-[2.75rem] shadow-xl border border-black/5 dark:border-white/10 flex flex-col justify-end p-6 sm:p-12 lg:p-16">
+        {/* Contenedor Flotante de Portada con altura ajustada en mobile */}
+        <div className="relative h-[380px] sm:h-[480px] lg:h-[calc(100svh-12rem)] lg:min-h-[520px] w-full overflow-hidden rounded-[1.75rem] sm:rounded-[2.75rem] shadow-xl border border-black/5 dark:border-white/10 flex flex-col justify-end p-5 sm:p-10 lg:p-14">
           {imagenesHero.length > 0 ? (
             <HeroSlider
               imagenes={imagenesHero}
@@ -494,7 +493,7 @@ export default async function NegocioPage({ params }: PageProps) {
           <div className="relative z-10 max-w-xl text-white">
             {empresa.rubro && (
               <div
-                className="inline-flex items-center gap-1.5 rounded-full border px-3 py-0.5 text-[11px] font-medium backdrop-blur-md mb-2.5"
+                className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-medium backdrop-blur-md mb-2"
                 style={{
                   borderColor: "rgba(255,255,255,0.25)",
                   backgroundColor: "rgba(0,0,0,0.3)",
@@ -505,21 +504,21 @@ export default async function NegocioPage({ params }: PageProps) {
               </div>
             )}
 
-            <h1 className="text-3xl sm:text-5xl lg:text-[3.25rem] font-medium tracking-normal text-white leading-[1.12] drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
+            <h1 className="text-2xl sm:text-4xl lg:text-[3.25rem] font-medium tracking-normal text-white leading-[1.12] drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
               {textoPrincipal || nombre}
             </h1>
 
             {textoSecundario && (
-              <p className="mt-2.5 sm:mt-3 text-xs sm:text-sm text-zinc-100/90 leading-relaxed font-normal max-w-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
+              <p className="mt-1.5 sm:mt-3 text-[11px] sm:text-sm text-zinc-100/90 leading-relaxed font-normal max-w-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)] line-clamp-2 sm:line-clamp-none">
                 {textoSecundario}
               </p>
             )}
 
-            <div className="mt-5 sm:mt-6 flex flex-wrap items-center gap-2 sm:gap-3">
+            <div className="mt-3.5 sm:mt-5 flex flex-wrap items-center gap-2">
               {mostrarProductos && productos.length > 0 ? (
                 <a
                   href="#productos"
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs sm:text-sm font-medium text-slate-950 shadow-md transition hover:bg-zinc-100 active:scale-95"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-medium text-slate-950 shadow-md transition hover:bg-zinc-100 active:scale-95"
                 >
                   Ver catálogo
                   <ArrowRight className="h-3.5 w-3.5" />
@@ -527,35 +526,26 @@ export default async function NegocioPage({ params }: PageProps) {
               ) : puedeMostrarReserva ? (
                 <a
                   href="#reservar"
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs sm:text-sm font-medium text-slate-950 shadow-md transition hover:bg-zinc-100 active:scale-95"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-medium text-slate-950 shadow-md transition hover:bg-zinc-100 active:scale-95"
                 >
                   <Clock3 className="h-3.5 w-3.5" />
                   Reservar ahora
                 </a>
-              ) : mostrarWhatsApp ? (
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs sm:text-sm font-medium text-slate-950 shadow-md transition hover:bg-zinc-100 active:scale-95"
-                >
-                  <MessageCircle className="h-3.5 w-3.5" />
-                  WhatsApp
-                </a>
               ) : null}
 
-              {mostrarWhatsApp && (mostrarProductos || puedeMostrarReserva) && (
+              {mostrarWhatsApp && (
                 <a
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/40 backdrop-blur-md px-4 py-2.5 text-xs sm:text-sm font-normal text-white transition hover:bg-black/60"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-black/40 backdrop-blur-md px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-normal text-white transition hover:bg-black/60"
                 >
                   <MessageCircle className="h-3.5 w-3.5" />
                   WhatsApp
                 </a>
               )}
 
+              {/* Redes Sociales compactas en la misma fila */}
               <div className="flex items-center gap-1.5">
                 {redesSociales.map((red) => (
                   <a
@@ -564,17 +554,16 @@ export default async function NegocioPage({ params }: PageProps) {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={red.nombre}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/40 backdrop-blur-md text-white transition hover:bg-white/20"
+                    className="inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full border border-white/20 bg-black/40 backdrop-blur-md text-white transition hover:bg-white/20"
                   >
                     {red.nombre === "Instagram" ? (
-                      <span className="relative block h-3.5 w-3.5 rounded-[3px] border-2 border-current">
-                        <span className="absolute left-1/2 top-1/2 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full border border-current" />
-                        <span className="absolute right-[0.5px] top-[0.5px] h-[1px] w-[1px] rounded-full bg-current" />
+                      <span className="relative block h-3 w-3 rounded-[2.5px] border-[1.5px] border-current">
+                        <span className="absolute left-1/2 top-1/2 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full border-[1.5px] border-current" />
                       </span>
                     ) : red.nombre === "Facebook" ? (
                       <span className="text-xs font-bold leading-none">f</span>
                     ) : (
-                      <Music2 className="h-3.5 w-3.5" />
+                      <Music2 className="h-3 w-3" />
                     )}
                   </a>
                 ))}
@@ -583,15 +572,15 @@ export default async function NegocioPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* Barra de Información: limpia, adaptable y sin recortar textos */}
+        {/* Barra de Información: formato píldoras horizontales, sin ocupar media pantalla */}
         {tieneInfo && (
-          <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2 text-slate-700 dark:text-zinc-300">
+          <div className="mt-3 flex flex-nowrap overflow-x-auto gap-2 pb-1 scrollbar-none md:grid md:grid-cols-4 md:overflow-visible">
             {mostrarHorarios && empresa.horarios && (
-              <div className="flex items-center gap-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/70 px-3.5 py-2 border border-slate-200/60 dark:border-zinc-800/60 shadow-sm backdrop-blur-md">
-                <Clock3 className="h-4 w-4 shrink-0 text-slate-400 dark:text-zinc-500" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-[9px] uppercase font-semibold tracking-wider text-slate-400 dark:text-zinc-500">Horarios</p>
-                  <p className="text-xs font-medium text-slate-800 dark:text-zinc-200 leading-tight break-words">{empresa.horarios}</p>
+              <div className="flex shrink-0 items-center gap-2 rounded-full bg-white/80 dark:bg-zinc-900/80 px-3.5 py-2 border border-slate-200/70 dark:border-zinc-800/70 shadow-sm backdrop-blur-md">
+                <Clock3 className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-zinc-500" />
+                <div className="min-w-0">
+                  <p className="text-[8px] uppercase font-semibold tracking-wider text-slate-400 dark:text-zinc-500">Horarios</p>
+                  <p className="text-[11px] font-medium text-slate-800 dark:text-zinc-200 leading-tight whitespace-nowrap md:whitespace-normal">{empresa.horarios}</p>
                 </div>
               </div>
             )}
@@ -599,32 +588,32 @@ export default async function NegocioPage({ params }: PageProps) {
             {mostrarDireccion && empresa.direccion && (
               <a
                 href="#ubicacion"
-                className="flex items-center gap-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/70 px-3.5 py-2 border border-slate-200/60 dark:border-zinc-800/60 shadow-sm backdrop-blur-md transition hover:border-slate-300"
+                className="flex shrink-0 items-center gap-2 rounded-full bg-white/80 dark:bg-zinc-900/80 px-3.5 py-2 border border-slate-200/70 dark:border-zinc-800/70 shadow-sm backdrop-blur-md transition hover:border-slate-300"
               >
-                <MapPin className="h-4 w-4 shrink-0 text-slate-400 dark:text-zinc-500" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-[9px] uppercase font-semibold tracking-wider text-slate-400 dark:text-zinc-500">Ubicación</p>
-                  <p className="text-xs font-medium text-slate-800 dark:text-zinc-200 leading-tight break-words">{empresa.direccion}</p>
+                <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-zinc-500" />
+                <div className="min-w-0">
+                  <p className="text-[8px] uppercase font-semibold tracking-wider text-slate-400 dark:text-zinc-500">Ubicación</p>
+                  <p className="text-[11px] font-medium text-slate-800 dark:text-zinc-200 leading-tight whitespace-nowrap md:whitespace-normal">{empresa.direccion}</p>
                 </div>
               </a>
             )}
 
             {mostrarWhatsApp && empresa.telefono && (
-              <div className="flex items-center gap-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/70 px-3.5 py-2 border border-slate-200/60 dark:border-zinc-800/60 shadow-sm backdrop-blur-md">
-                <Phone className="h-4 w-4 shrink-0 text-slate-400 dark:text-zinc-500" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-[9px] uppercase font-semibold tracking-wider text-slate-400 dark:text-zinc-500">Teléfono</p>
-                  <p className="text-xs font-medium text-slate-800 dark:text-zinc-200 leading-tight break-words">{empresa.telefono}</p>
+              <div className="flex shrink-0 items-center gap-2 rounded-full bg-white/80 dark:bg-zinc-900/80 px-3.5 py-2 border border-slate-200/70 dark:border-zinc-800/70 shadow-sm backdrop-blur-md">
+                <Phone className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-zinc-500" />
+                <div className="min-w-0">
+                  <p className="text-[8px] uppercase font-semibold tracking-wider text-slate-400 dark:text-zinc-500">Teléfono</p>
+                  <p className="text-[11px] font-medium text-slate-800 dark:text-zinc-200 leading-tight whitespace-nowrap">{empresa.telefono}</p>
                 </div>
               </div>
             )}
 
             {mostrarEmail && empresa.email && (
-              <div className="flex items-center gap-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/70 px-3.5 py-2 border border-slate-200/60 dark:border-zinc-800/60 shadow-sm backdrop-blur-md">
-                <Mail className="h-4 w-4 shrink-0 text-slate-400 dark:text-zinc-500" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-[9px] uppercase font-semibold tracking-wider text-slate-400 dark:text-zinc-500">Correo</p>
-                  <p className="text-xs font-medium text-slate-800 dark:text-zinc-200 leading-tight break-all">{empresa.email}</p>
+              <div className="flex shrink-0 items-center gap-2 rounded-full bg-white/80 dark:bg-zinc-900/80 px-3.5 py-2 border border-slate-200/70 dark:border-zinc-800/70 shadow-sm backdrop-blur-md">
+                <Mail className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-zinc-500" />
+                <div className="min-w-0">
+                  <p className="text-[8px] uppercase font-semibold tracking-wider text-slate-400 dark:text-zinc-500">Correo</p>
+                  <p className="text-[11px] font-medium text-slate-800 dark:text-zinc-200 leading-tight whitespace-nowrap">{empresa.email}</p>
                 </div>
               </div>
             )}
@@ -634,7 +623,7 @@ export default async function NegocioPage({ params }: PageProps) {
 
       {/* SECCIÓN PRODUCTOS / CARTA */}
       {mostrarProductos && productos.length > 0 && (
-        <section id="productos" className="mx-auto max-w-[1440px] scroll-mt-20 px-4 py-16 sm:px-10 sm:py-24">
+        <section id="productos" className="mx-auto max-w-[1440px] scroll-mt-20 px-4 py-12 sm:px-10 sm:py-20">
           <div className="max-w-2xl">
             <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colorPrincipal }}>
               {esRestaurante ? "Menú" : "Colección"}
@@ -678,7 +667,7 @@ export default async function NegocioPage({ params }: PageProps) {
 
       {/* SECCIÓN SERVICIOS */}
       {mostrarServicios && servicios.length > 0 && (
-        <section id="servicios" className="mx-auto max-w-[1440px] scroll-mt-20 px-4 py-16 sm:px-10 sm:py-24">
+        <section id="servicios" className="mx-auto max-w-[1440px] scroll-mt-20 px-4 py-12 sm:px-10 sm:py-20">
           <div className="max-w-2xl">
             <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colorPrincipal }}>
               Lo que ofrecemos
@@ -865,7 +854,7 @@ export default async function NegocioPage({ params }: PageProps) {
 
       {/* PREGUNTAS FRECUENTES */}
       {preguntasFrecuentes.length > 0 && (
-        <section id="preguntas" className={`scroll-mt-24 border-y py-12 sm:py-16 ${claseSeccionAlterna}`}>
+        <section id="preguntas" className={`scroll-mt-24 border-y py-12 sm:py-20 ${claseSeccionAlterna}`}>
           <div className="mx-auto max-w-4xl px-4 sm:px-8">
             <div className="mx-auto max-w-xl text-center">
               <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colorPrincipal }}>
@@ -1002,11 +991,6 @@ export default async function NegocioPage({ params }: PageProps) {
             </div>
           </div>
         </section>
-      )}
-
-      {/* ASISTENTE IA */}
-      {puedeUsarAsistenteIA && (
-        <Script src="/widget.js" data-empresa-id={documento.id} data-mobile-dock="true" strategy="afterInteractive" />
       )}
 
       {/* FOOTER */}
