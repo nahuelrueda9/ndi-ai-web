@@ -467,13 +467,13 @@ export default async function NegocioPage({ params }: PageProps) {
         </div>
       </header>
 
-      {/* HERO EQUILIBRADO EN MOBILE Y LAPTOP */}
+      {/* HERO AJUSTADO EXACTO A PANTALLA COMPLETA (NO ASOMA EL CATÁLOGO) */}
       <section
         id="inicio"
-        className="mx-auto flex w-full max-w-[1440px] flex-col justify-start px-3.5 sm:px-6 lg:px-8 pt-2 pb-6 lg:min-h-[calc(100svh-4.5rem)] lg:justify-between"
+        className="mx-auto flex w-full max-w-[1440px] flex-col justify-between p-3 sm:p-5 lg:p-7 min-h-[calc(100svh-4rem)]"
       >
-        {/* Contenedor Flotante de Portada con altura ajustada en mobile */}
-        <div className="relative h-[380px] sm:h-[480px] lg:h-[calc(100svh-12rem)] lg:min-h-[520px] w-full overflow-hidden rounded-[1.75rem] sm:rounded-[2.75rem] shadow-xl border border-black/5 dark:border-white/10 flex flex-col justify-end p-5 sm:p-10 lg:p-14">
+        {/* Banner Curvo Portada */}
+        <div className="relative flex-1 w-full overflow-hidden rounded-[2rem] sm:rounded-[2.75rem] shadow-xl border border-black/5 dark:border-white/10 flex flex-col justify-end p-5 sm:p-10 lg:p-14 min-h-[350px]">
           {imagenesHero.length > 0 ? (
             <HeroSlider
               imagenes={imagenesHero}
@@ -493,7 +493,7 @@ export default async function NegocioPage({ params }: PageProps) {
           <div className="relative z-10 max-w-xl text-white">
             {empresa.rubro && (
               <div
-                className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-medium backdrop-blur-md mb-2"
+                className="inline-flex items-center gap-1.5 rounded-full border px-3 py-0.5 text-[10px] font-medium backdrop-blur-md mb-2.5"
                 style={{
                   borderColor: "rgba(255,255,255,0.25)",
                   backgroundColor: "rgba(0,0,0,0.3)",
@@ -504,21 +504,21 @@ export default async function NegocioPage({ params }: PageProps) {
               </div>
             )}
 
-            <h1 className="text-2xl sm:text-4xl lg:text-[3.25rem] font-medium tracking-normal text-white leading-[1.12] drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
+            <h1 className="text-2xl sm:text-4xl lg:text-[3rem] font-medium tracking-normal text-white leading-[1.12] drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
               {textoPrincipal || nombre}
             </h1>
 
             {textoSecundario && (
-              <p className="mt-1.5 sm:mt-3 text-[11px] sm:text-sm text-zinc-100/90 leading-relaxed font-normal max-w-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)] line-clamp-2 sm:line-clamp-none">
+              <p className="mt-2 sm:mt-2.5 text-xs sm:text-sm text-zinc-100/90 leading-relaxed font-normal max-w-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)] line-clamp-2 sm:line-clamp-none">
                 {textoSecundario}
               </p>
             )}
 
-            <div className="mt-3.5 sm:mt-5 flex flex-wrap items-center gap-2">
+            <div className="mt-4 sm:mt-5 flex flex-wrap items-center gap-2 sm:gap-2.5">
               {mostrarProductos && productos.length > 0 ? (
                 <a
                   href="#productos"
-                  className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-medium text-slate-950 shadow-md transition hover:bg-zinc-100 active:scale-95"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2 text-xs sm:text-sm font-medium text-slate-950 shadow-md transition hover:bg-zinc-100 active:scale-95"
                 >
                   Ver catálogo
                   <ArrowRight className="h-3.5 w-3.5" />
@@ -526,26 +526,35 @@ export default async function NegocioPage({ params }: PageProps) {
               ) : puedeMostrarReserva ? (
                 <a
                   href="#reservar"
-                  className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-medium text-slate-950 shadow-md transition hover:bg-zinc-100 active:scale-95"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2 text-xs sm:text-sm font-medium text-slate-950 shadow-md transition hover:bg-zinc-100 active:scale-95"
                 >
                   <Clock3 className="h-3.5 w-3.5" />
                   Reservar ahora
                 </a>
-              ) : null}
-
-              {mostrarWhatsApp && (
+              ) : mostrarWhatsApp ? (
                 <a
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-black/40 backdrop-blur-md px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-normal text-white transition hover:bg-black/60"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2 text-xs sm:text-sm font-medium text-slate-950 shadow-md transition hover:bg-zinc-100 active:scale-95"
+                >
+                  <MessageCircle className="h-3.5 w-3.5" />
+                  WhatsApp
+                </a>
+              ) : null}
+
+              {mostrarWhatsApp && (mostrarProductos || puedeMostrarReserva) && (
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/40 backdrop-blur-md px-4 py-2 text-xs sm:text-sm font-normal text-white transition hover:bg-black/60"
                 >
                   <MessageCircle className="h-3.5 w-3.5" />
                   WhatsApp
                 </a>
               )}
 
-              {/* Redes Sociales compactas en la misma fila */}
               <div className="flex items-center gap-1.5">
                 {redesSociales.map((red) => (
                   <a
@@ -563,7 +572,7 @@ export default async function NegocioPage({ params }: PageProps) {
                     ) : red.nombre === "Facebook" ? (
                       <span className="text-xs font-bold leading-none">f</span>
                     ) : (
-                      <Music2 className="h-3 w-3" />
+                      <Music2 className="h-3.5 w-3.5" />
                     )}
                   </a>
                 ))}
@@ -572,15 +581,15 @@ export default async function NegocioPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* Barra de Información: formato píldoras horizontales, sin ocupar media pantalla */}
+        {/* 4 TARJETAS DE INFORMACIÓN: ENTRAN EN EL ESPACIO BLANCO PERFECTAMENTE */}
         {tieneInfo && (
-          <div className="mt-3 flex flex-nowrap overflow-x-auto gap-2 pb-1 scrollbar-none md:grid md:grid-cols-4 md:overflow-visible">
+          <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2 text-slate-700 dark:text-zinc-300">
             {mostrarHorarios && empresa.horarios && (
-              <div className="flex shrink-0 items-center gap-2 rounded-full bg-white/80 dark:bg-zinc-900/80 px-3.5 py-2 border border-slate-200/70 dark:border-zinc-800/70 shadow-sm backdrop-blur-md">
-                <Clock3 className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-zinc-500" />
-                <div className="min-w-0">
-                  <p className="text-[8px] uppercase font-semibold tracking-wider text-slate-400 dark:text-zinc-500">Horarios</p>
-                  <p className="text-[11px] font-medium text-slate-800 dark:text-zinc-200 leading-tight whitespace-nowrap md:whitespace-normal">{empresa.horarios}</p>
+              <div className="flex items-center gap-2.5 rounded-2xl bg-white/80 dark:bg-zinc-900/80 px-3.5 py-2.5 border border-slate-200/70 dark:border-zinc-800/70 shadow-sm backdrop-blur-md">
+                <Clock3 className="h-4 w-4 shrink-0 text-slate-400 dark:text-zinc-500" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[9px] uppercase font-semibold tracking-wider text-slate-400 dark:text-zinc-500">Horarios</p>
+                  <p className="text-xs font-medium text-slate-800 dark:text-zinc-200 leading-tight">{empresa.horarios}</p>
                 </div>
               </div>
             )}
@@ -588,32 +597,32 @@ export default async function NegocioPage({ params }: PageProps) {
             {mostrarDireccion && empresa.direccion && (
               <a
                 href="#ubicacion"
-                className="flex shrink-0 items-center gap-2 rounded-full bg-white/80 dark:bg-zinc-900/80 px-3.5 py-2 border border-slate-200/70 dark:border-zinc-800/70 shadow-sm backdrop-blur-md transition hover:border-slate-300"
+                className="flex items-center gap-2.5 rounded-2xl bg-white/80 dark:bg-zinc-900/80 px-3.5 py-2.5 border border-slate-200/70 dark:border-zinc-800/70 shadow-sm backdrop-blur-md transition hover:border-slate-300"
               >
-                <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-zinc-500" />
-                <div className="min-w-0">
-                  <p className="text-[8px] uppercase font-semibold tracking-wider text-slate-400 dark:text-zinc-500">Ubicación</p>
-                  <p className="text-[11px] font-medium text-slate-800 dark:text-zinc-200 leading-tight whitespace-nowrap md:whitespace-normal">{empresa.direccion}</p>
+                <MapPin className="h-4 w-4 shrink-0 text-slate-400 dark:text-zinc-500" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[9px] uppercase font-semibold tracking-wider text-slate-400 dark:text-zinc-500">Ubicación</p>
+                  <p className="text-xs font-medium text-slate-800 dark:text-zinc-200 leading-tight">{empresa.direccion}</p>
                 </div>
               </a>
             )}
 
             {mostrarWhatsApp && empresa.telefono && (
-              <div className="flex shrink-0 items-center gap-2 rounded-full bg-white/80 dark:bg-zinc-900/80 px-3.5 py-2 border border-slate-200/70 dark:border-zinc-800/70 shadow-sm backdrop-blur-md">
-                <Phone className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-zinc-500" />
-                <div className="min-w-0">
-                  <p className="text-[8px] uppercase font-semibold tracking-wider text-slate-400 dark:text-zinc-500">Teléfono</p>
-                  <p className="text-[11px] font-medium text-slate-800 dark:text-zinc-200 leading-tight whitespace-nowrap">{empresa.telefono}</p>
+              <div className="flex items-center gap-2.5 rounded-2xl bg-white/80 dark:bg-zinc-900/80 px-3.5 py-2.5 border border-slate-200/70 dark:border-zinc-800/70 shadow-sm backdrop-blur-md">
+                <Phone className="h-4 w-4 shrink-0 text-slate-400 dark:text-zinc-500" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[9px] uppercase font-semibold tracking-wider text-slate-400 dark:text-zinc-500">Teléfono</p>
+                  <p className="text-xs font-medium text-slate-800 dark:text-zinc-200 leading-tight">{empresa.telefono}</p>
                 </div>
               </div>
             )}
 
             {mostrarEmail && empresa.email && (
-              <div className="flex shrink-0 items-center gap-2 rounded-full bg-white/80 dark:bg-zinc-900/80 px-3.5 py-2 border border-slate-200/70 dark:border-zinc-800/70 shadow-sm backdrop-blur-md">
-                <Mail className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-zinc-500" />
-                <div className="min-w-0">
-                  <p className="text-[8px] uppercase font-semibold tracking-wider text-slate-400 dark:text-zinc-500">Correo</p>
-                  <p className="text-[11px] font-medium text-slate-800 dark:text-zinc-200 leading-tight whitespace-nowrap">{empresa.email}</p>
+              <div className="flex items-center gap-2.5 rounded-2xl bg-white/80 dark:bg-zinc-900/80 px-3.5 py-2.5 border border-slate-200/70 dark:border-zinc-800/70 shadow-sm backdrop-blur-md">
+                <Mail className="h-4 w-4 shrink-0 text-slate-400 dark:text-zinc-500" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[9px] uppercase font-semibold tracking-wider text-slate-400 dark:text-zinc-500">Correo</p>
+                  <p className="text-xs font-medium text-slate-800 dark:text-zinc-200 leading-tight truncate">{empresa.email}</p>
                 </div>
               </div>
             )}
@@ -621,22 +630,22 @@ export default async function NegocioPage({ params }: PageProps) {
         )}
       </section>
 
-      {/* SECCIÓN PRODUCTOS / CARTA */}
+      {/* SECCIÓN PRODUCTOS / CARTA (TÍTULOS ESTILIZADOS Y FINOS) */}
       {mostrarProductos && productos.length > 0 && (
-        <section id="productos" className="mx-auto max-w-[1440px] scroll-mt-20 px-4 py-12 sm:px-10 sm:py-20">
+        <section id="productos" className="mx-auto max-w-[1440px] scroll-mt-20 px-4 py-10 sm:px-10 sm:py-16">
           <div className="max-w-2xl">
-            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colorPrincipal }}>
+            <p className="text-xs font-medium uppercase tracking-wider" style={{ color: colorPrincipal }}>
               {esRestaurante ? "Menú" : "Colección"}
             </p>
-            <h2 className="mt-2 text-2xl font-extrabold tracking-tight sm:text-4xl">
+            <h2 className="mt-1 text-xl sm:text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
               {esRestaurante ? "Carta" : "Catálogo de productos"}
             </h2>
-            <p className={`mt-2 text-sm sm:text-base ${claseTextoSecundario}`}>
+            <p className={`mt-1 text-xs sm:text-sm ${claseTextoSecundario}`}>
               {esRestaurante ? "Explorá nuestras entradas, platos principales, bebidas y postres." : "Descubrí todos los productos disponibles en nuestra tienda."}
             </p>
           </div>
 
-          <div className="mt-6 sm:mt-10">
+          <div className="mt-6 sm:mt-8">
             {esRestaurante ? (
               <RestauranteCartaPedidos
                 slug={slug}
@@ -665,22 +674,22 @@ export default async function NegocioPage({ params }: PageProps) {
         </section>
       )}
 
-      {/* SECCIÓN SERVICIOS */}
+      {/* SECCIÓN SERVICIOS (TÍTULOS ESTILIZADOS Y FINOS) */}
       {mostrarServicios && servicios.length > 0 && (
-        <section id="servicios" className="mx-auto max-w-[1440px] scroll-mt-20 px-4 py-12 sm:px-10 sm:py-20">
+        <section id="servicios" className="mx-auto max-w-[1440px] scroll-mt-20 px-4 py-10 sm:px-10 sm:py-16">
           <div className="max-w-2xl">
-            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colorPrincipal }}>
+            <p className="text-xs font-medium uppercase tracking-wider" style={{ color: colorPrincipal }}>
               Lo que ofrecemos
             </p>
-            <h2 className="mt-2 text-2xl font-extrabold tracking-tight sm:text-4xl">
+            <h2 className="mt-1 text-xl sm:text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
               {esAlojamiento ? "Habitaciones" : "Servicios"}
             </h2>
-            <p className={`mt-2 text-sm sm:text-base ${claseTextoSecundario}`}>
+            <p className={`mt-1 text-xs sm:text-sm ${claseTextoSecundario}`}>
               {esAlojamiento ? "Elegí la habitación que mejor se adapte a tu estadía." : "Conocé los servicios disponibles."}
             </p>
           </div>
 
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-10 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
             {servicios.map((servicio) => (
               <CatalogoCard
                 key={servicio.id}
@@ -705,22 +714,22 @@ export default async function NegocioPage({ params }: PageProps) {
       {/* PRESUPUESTO */}
       {puedeUsarPresupuestos && mostrarPresupuesto && (
         <section id="presupuesto" className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}>
-          <div className="mx-auto max-w-4xl px-4 py-10 sm:px-8 sm:py-16">
+          <div className="mx-auto max-w-4xl px-4 py-8 sm:px-8 sm:py-12">
             <details className="group">
-              <summary className="flex cursor-pointer list-none flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-slate-300 dark:border-zinc-800 dark:bg-zinc-900 sm:flex-row sm:items-center sm:justify-between">
+              <summary className="flex cursor-pointer list-none flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-300 dark:border-zinc-800 dark:bg-zinc-900 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colorPrincipal }}>
+                  <p className="text-xs font-medium uppercase tracking-wider" style={{ color: colorPrincipal }}>
                     Presupuesto
                   </p>
-                  <h2 className="mt-1 text-xl font-bold tracking-tight sm:text-2xl">
+                  <h2 className="mt-0.5 text-lg font-semibold tracking-tight sm:text-xl">
                     ¿Necesitás un presupuesto a medida?
                   </h2>
-                  <p className="mt-1 text-sm text-slate-600 dark:text-zinc-400">
+                  <p className="mt-0.5 text-xs text-slate-600 dark:text-zinc-400">
                     Contanos qué estás buscando y te preparamos una cotización personalizada.
                   </p>
                 </div>
                 <span
-                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white shadow-sm"
+                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold text-white shadow-sm"
                   style={{ backgroundColor: colorPrincipal }}
                 >
                   Solicitar cotización
@@ -739,26 +748,26 @@ export default async function NegocioPage({ params }: PageProps) {
         </section>
       )}
 
-      {/* GALERÍA DE FOTOS (Exclusiva del local) */}
+      {/* GALERÍA DE FOTOS (TÍTULOS ESTILIZADOS Y FINOS) */}
       {mostrarGaleria && galeria.length > 0 && (
         <section id="galeria" className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}>
-          <div className="mx-auto max-w-[1440px] px-4 py-12 sm:px-10 sm:py-20">
+          <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-10 sm:py-16">
             <div className="max-w-2xl">
-              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colorPrincipal }}>
+              <p className="text-xs font-medium uppercase tracking-wider" style={{ color: colorPrincipal }}>
                 Espacio
               </p>
-              <h2 className="mt-2 text-2xl font-extrabold tracking-tight sm:text-4xl">
+              <h2 className="mt-1 text-xl sm:text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
                 Galería de fotos
               </h2>
-              <p className={`mt-2 text-sm sm:text-base ${claseTextoSecundario}`}>
+              <p className={`mt-1 text-xs sm:text-sm ${claseTextoSecundario}`}>
                 Conocé el espacio y la calidad de {empresa.nombre || nombre}.
               </p>
             </div>
-            <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3">
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3">
               {galeria.map((url, indice) => (
                 <div
                   key={`${url}-${indice}`}
-                  className="group aspect-[4/3] overflow-hidden rounded-3xl border border-slate-200 bg-slate-100 dark:border-zinc-800 dark:bg-zinc-900 shadow-sm"
+                  className="group aspect-[4/3] overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 dark:border-zinc-800 dark:bg-zinc-900 shadow-sm"
                 >
                   <img
                     src={url}
@@ -776,7 +785,7 @@ export default async function NegocioPage({ params }: PageProps) {
       {/* RESERVA DE ALOJAMIENTO */}
       {esAlojamiento && puedeMostrarReserva && (
         <section id="reservar" className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}>
-          <div className="mx-auto max-w-4xl px-4 py-12 sm:px-8 sm:py-20">
+          <div className="mx-auto max-w-4xl px-4 py-10 sm:px-8 sm:py-16">
             <ReservaAlojamientoForm
               slug={slug}
               habitaciones={servicios.map((servicio) => ({ id: servicio.id, nombre: servicio.nombre, precio: servicio.precio }))}
@@ -790,18 +799,18 @@ export default async function NegocioPage({ params }: PageProps) {
       {/* SOBRE EL NEGOCIO */}
       {empresa.descripcion && (
         <section id="nosotros" className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}>
-          <div className="mx-auto max-w-[1440px] px-4 py-12 sm:px-10 sm:py-20">
+          <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-10 sm:py-16">
             <div className="grid gap-6 sm:gap-12 lg:grid-cols-[0.8fr_1.2fr]">
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colorPrincipal }}>
+                <p className="text-xs font-medium uppercase tracking-wider" style={{ color: colorPrincipal }}>
                   Sobre nosotros
                 </p>
-                <h2 className="mt-2 text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">
+                <h2 className="mt-1 text-xl sm:text-2xl font-semibold leading-tight tracking-tight text-slate-900 dark:text-white">
                   Conocé más sobre {empresa.nombre || nombre}
                 </h2>
               </div>
-              <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-8">
-                <p className="whitespace-pre-line text-sm leading-relaxed text-slate-700 dark:text-zinc-300 sm:text-base">
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-7">
+                <p className="whitespace-pre-line text-xs sm:text-sm leading-relaxed text-slate-700 dark:text-zinc-300">
                   {empresa.descripcion}
                 </p>
               </div>
@@ -812,36 +821,36 @@ export default async function NegocioPage({ params }: PageProps) {
 
       {/* TESTIMONIOS */}
       {testimonios.length > 0 && (
-        <section id="testimonios" className="mx-auto max-w-[1440px] scroll-mt-24 px-4 py-12 sm:px-10 sm:py-20">
+        <section id="testimonios" className="mx-auto max-w-[1440px] scroll-mt-24 px-4 py-10 sm:px-10 sm:py-16">
           <div className="mx-auto max-w-2xl text-center">
-            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colorPrincipal }}>
+            <p className="text-xs font-medium uppercase tracking-wider" style={{ color: colorPrincipal }}>
               Opiniones
             </p>
-            <h2 className="mt-2 text-2xl font-extrabold tracking-tight sm:text-4xl">
+            <h2 className="mt-1 text-xl sm:text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
               Lo que dicen nuestros clientes
             </h2>
-            <p className={`mt-2 text-sm sm:text-base ${claseTextoSecundario}`}>
+            <p className={`mt-1 text-xs sm:text-sm ${claseTextoSecundario}`}>
               Experiencias de personas que eligen {empresa.nombre || nombre}.
             </p>
           </div>
-          <div className={`mt-8 grid gap-4 sm:gap-6 ${testimonios.length === 1 ? "mx-auto max-w-2xl" : testimonios.length === 2 ? "mx-auto grid-cols-2 max-w-4xl" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"}`}>
+          <div className={`mt-6 grid gap-4 sm:gap-6 ${testimonios.length === 1 ? "mx-auto max-w-2xl" : testimonios.length === 2 ? "mx-auto grid-cols-2 max-w-4xl" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"}`}>
             {testimonios.map((testimonio, index) => (
               <article
                 key={`${testimonio.nombre}-${index}`}
-                className="relative flex h-full flex-col rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-8"
+                className="relative flex h-full flex-col rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-6"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl text-white shadow-sm" style={{ backgroundColor: colorPrincipal }}>
-                  <Quote className="h-5 w-5" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl text-white shadow-sm" style={{ backgroundColor: colorPrincipal }}>
+                  <Quote className="h-4 w-4" />
                 </div>
-                <p className="mt-5 flex-1 whitespace-pre-line text-sm leading-relaxed text-slate-700 dark:text-zinc-300 sm:text-base">
+                <p className="mt-4 flex-1 whitespace-pre-line text-xs sm:text-sm leading-relaxed text-slate-700 dark:text-zinc-300">
                   “{testimonio.texto}”
                 </p>
-                <div className="mt-6 border-t border-slate-100 pt-4 dark:border-zinc-800">
-                  <p className="text-sm font-bold sm:text-base">
+                <div className="mt-4 border-t border-slate-100 pt-3 dark:border-zinc-800">
+                  <p className="text-xs sm:text-sm font-semibold">
                     {testimonio.nombre}
                   </p>
                   {testimonio.cargo && (
-                    <p className={`mt-0.5 text-xs ${claseTextoSecundario}`}>
+                    <p className={`mt-0.5 text-[11px] ${claseTextoSecundario}`}>
                       {testimonio.cargo}
                     </p>
                   )}
@@ -854,30 +863,30 @@ export default async function NegocioPage({ params }: PageProps) {
 
       {/* PREGUNTAS FRECUENTES */}
       {preguntasFrecuentes.length > 0 && (
-        <section id="preguntas" className={`scroll-mt-24 border-y py-12 sm:py-20 ${claseSeccionAlterna}`}>
+        <section id="preguntas" className={`scroll-mt-24 border-y py-10 sm:py-16 ${claseSeccionAlterna}`}>
           <div className="mx-auto max-w-4xl px-4 sm:px-8">
             <div className="mx-auto max-w-xl text-center">
-              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colorPrincipal }}>
+              <p className="text-xs font-medium uppercase tracking-wider" style={{ color: colorPrincipal }}>
                 Preguntas frecuentes
               </p>
-              <h2 className="mt-2 text-2xl font-extrabold tracking-tight sm:text-4xl">
+              <h2 className="mt-1 text-xl sm:text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
                 Dudas comunes
               </h2>
             </div>
-            <div className="mx-auto mt-8 max-w-2xl space-y-3">
+            <div className="mx-auto mt-6 max-w-2xl space-y-2.5">
               {preguntasFrecuentes.map((item, index) => (
                 <details
                   key={`${item.pregunta}-${index}`}
                   className="group overflow-hidden rounded-2xl border border-slate-200 bg-white transition dark:border-zinc-800 dark:bg-zinc-950/70"
                 >
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-sm font-bold text-slate-900 dark:text-white sm:text-base">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-4 text-xs sm:text-sm font-semibold text-slate-900 dark:text-white">
                     <span>{item.pregunta}</span>
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-base leading-none text-slate-600 transition group-open:rotate-45 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-sm leading-none text-slate-600 transition group-open:rotate-45 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
                       +
                     </span>
                   </summary>
-                  <div className="border-t border-slate-100 px-5 pb-5 pt-3 dark:border-zinc-800">
-                    <p className="whitespace-pre-line text-sm leading-relaxed text-slate-600 dark:text-zinc-400">
+                  <div className="border-t border-slate-100 px-4 pb-4 pt-2.5 dark:border-zinc-800">
+                    <p className="whitespace-pre-line text-xs leading-relaxed text-slate-600 dark:text-zinc-400">
                       {item.respuesta}
                     </p>
                   </div>
@@ -890,23 +899,23 @@ export default async function NegocioPage({ params }: PageProps) {
 
       {/* MAPA */}
       {mostrarMapa && mostrarDireccion && mapaEmbedUrl && (
-        <section id="ubicacion" className="mx-auto max-w-[1440px] scroll-mt-24 px-4 py-12 sm:px-10">
+        <section id="ubicacion" className="mx-auto max-w-[1440px] scroll-mt-24 px-4 py-10 sm:px-10">
           <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-            <div className="flex flex-col gap-3 border-b border-slate-200 p-6 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-2 border-b border-slate-200 p-5 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
                   Ubicación
                 </p>
-                <h2 className="mt-1 text-xl font-bold">Cómo llegar</h2>
-                <p className={`mt-1 text-sm ${claseTextoSecundario}`}>{direccionMapa}</p>
+                <h2 className="mt-0.5 text-base sm:text-lg font-semibold">Cómo llegar</h2>
+                <p className={`mt-0.5 text-xs ${claseTextoSecundario}`}>{direccionMapa}</p>
               </div>
               <a
                 href={mapaAbrirUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-900 transition hover:bg-slate-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-3.5 py-2 text-xs font-semibold text-slate-900 transition hover:bg-slate-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
               >
-                <MapPin className="h-4 w-4" />
+                <MapPin className="h-3.5 w-3.5" />
                 Abrir en Google Maps
               </a>
             </div>
@@ -915,7 +924,7 @@ export default async function NegocioPage({ params }: PageProps) {
               title={`Mapa de ${nombre}`}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              className="h-[340px] w-full border-0"
+              className="h-[300px] w-full border-0"
               allowFullScreen
             />
           </div>
@@ -925,7 +934,7 @@ export default async function NegocioPage({ params }: PageProps) {
       {/* RESERVA ONLINE */}
       {!esAlojamiento && puedeMostrarReserva && (
         <section id="reservar" className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}>
-          <div className="mx-auto max-w-4xl px-4 py-12 sm:px-8 sm:py-20">
+          <div className="mx-auto max-w-4xl px-4 py-10 sm:px-8 sm:py-16">
             {mostrarReservaMesa ? (
               <ReservaMesaForm slug={slug} colorPrincipal={colorPrincipal} tema={esClaro ? "claro" : "oscuro"} />
             ) : (
@@ -942,33 +951,33 @@ export default async function NegocioPage({ params }: PageProps) {
 
       {/* CONTACTO */}
       {mostrarContacto && (
-        <section id="contacto" className="mx-auto max-w-[1440px] scroll-mt-24 px-4 py-12 sm:px-10 sm:py-20">
+        <section id="contacto" className="mx-auto max-w-[1440px] scroll-mt-24 px-4 py-10 sm:px-10 sm:py-16">
           <div
-            className="relative overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 p-6 dark:border-zinc-800/60 dark:bg-zinc-900/60 sm:p-12"
+            className="relative overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 p-6 dark:border-zinc-800/60 dark:bg-zinc-900/60 sm:p-10"
             style={{ borderColor: `${colorPrincipal}33` }}
           >
             <div className="relative grid gap-8 sm:gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colorPrincipal }}>
+                <p className="text-xs font-medium uppercase tracking-wider" style={{ color: colorPrincipal }}>
                   Contacto directo
                 </p>
-                <h2 className="mt-2 text-2xl font-extrabold tracking-tight sm:text-4xl">
+                <h2 className="mt-1 text-xl sm:text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
                   ¿Querés hacer una consulta?
                 </h2>
-                <p className={`mt-3 text-sm leading-relaxed sm:text-base ${claseTextoSecundario}`}>
+                <p className={`mt-2 text-xs sm:text-sm leading-relaxed ${claseTextoSecundario}`}>
                   Dejanos tus datos y te responderemos a la brevedad por teléfono o correo electrónico.
                 </p>
 
-                <div className="mt-6 flex flex-row gap-3 sm:gap-4">
+                <div className="mt-5 flex flex-row gap-3">
                   {mostrarWhatsApp && (
                     <a
                       href={whatsappUrl}
                       data-analytics-event="whatsapp_click"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-emerald-500 active:scale-95"
+                      className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-emerald-500 active:scale-95"
                     >
-                      <MessageCircle className="h-4 w-4" />
+                      <MessageCircle className="h-3.5 w-3.5" />
                       WhatsApp
                     </a>
                   )}
@@ -976,16 +985,16 @@ export default async function NegocioPage({ params }: PageProps) {
                   {mostrarEmail && (
                     <a
                       href={`mailto:${empresa.email}`}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-900 transition hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white dark:hover:bg-zinc-900 active:scale-95"
+                      className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-900 transition hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white dark:hover:bg-zinc-900 active:scale-95"
                     >
-                      <Mail className="h-4 w-4" />
+                      <Mail className="h-3.5 w-3.5" />
                       Correo
                     </a>
                   )}
                 </div>
               </div>
 
-              <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/80 sm:p-8">
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/80 sm:p-7">
                 <ContactoForm slug={slug} nombreNegocio={empresa.nombre || nombre} tema={esClaro ? "claro" : "oscuro"} />
               </div>
             </div>
@@ -995,17 +1004,17 @@ export default async function NegocioPage({ params }: PageProps) {
 
       {/* FOOTER */}
       <footer className="border-t border-slate-200/80 dark:border-zinc-800/80 bg-white dark:bg-[#0c0d0e]">
-        <div className="mx-auto flex max-w-[1440px] flex-col gap-4 px-6 py-10 text-sm text-slate-500 dark:text-zinc-500 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        <div className="mx-auto flex max-w-[1440px] flex-col gap-3 px-6 py-8 text-xs text-slate-500 dark:text-zinc-500 sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <div>
-            <p className="font-bold text-slate-900 dark:text-zinc-200">
+            <p className="font-semibold text-slate-900 dark:text-zinc-200">
               {empresa.nombre || nombre}
             </p>
-            {empresa.rubro && <p className="mt-1 text-xs">{empresa.rubro}</p>}
+            {empresa.rubro && <p className="mt-0.5 text-[11px]">{empresa.rubro}</p>}
           </div>
 
           {!sinMarcaNDI && (
-            <p className="text-xs">
-              Página creada con <span className="font-bold text-slate-900 dark:text-zinc-200">NDI AI</span>
+            <p className="text-[11px]">
+              Página creada con <span className="font-semibold text-slate-900 dark:text-zinc-200">NDI AI</span>
             </p>
           )}
         </div>
@@ -1061,7 +1070,7 @@ function CatalogoCard({
   }
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/90 dark:hover:border-zinc-700">
+    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/90 dark:hover:border-zinc-700">
       {imagenesItem.length > 0 && (
         <div className={`relative overflow-hidden border-b border-slate-100 bg-slate-100 dark:border-zinc-800/80 dark:bg-zinc-950 ${esTienda && item.tipo === "producto" ? "aspect-[4/5] sm:aspect-[5/6] lg:aspect-[4/5]" : "aspect-[4/3]"}`}>
           <div className="flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -1072,22 +1081,22 @@ function CatalogoCard({
         </div>
       )}
 
-      <div className="flex flex-1 flex-col p-4 sm:p-5">
-        <h3 className="line-clamp-2 text-sm font-bold leading-snug sm:text-base">
+      <div className="flex flex-1 flex-col p-3.5 sm:p-4">
+        <h3 className="line-clamp-2 text-xs sm:text-sm font-semibold leading-snug">
           {item.nombre}
         </h3>
 
-        <div className="mt-4 flex flex-wrap items-end justify-between gap-2 border-t border-slate-100 pt-3 dark:border-zinc-800/80">
+        <div className="mt-3 flex flex-wrap items-end justify-between gap-1.5 border-t border-slate-100 pt-2.5 dark:border-zinc-800/80">
           <div>
             {Boolean(item.precio) && (
               <>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
+                <p className="text-[9px] font-medium uppercase tracking-wider text-slate-400 dark:text-zinc-500">
                   {esAlojamiento && item.tipo === "servicio" ? "Precio por noche" : "Precio"}
                 </p>
-                <p className="mt-0.5 text-base font-extrabold sm:text-lg" style={{ color }}>
+                <p className="mt-0.5 text-sm sm:text-base font-bold" style={{ color }}>
                   ${Number(item.precio).toLocaleString("es-AR")}
                   {esAlojamiento && item.tipo === "servicio" && (
-                    <span className="ml-1 text-xs font-normal text-slate-500 dark:text-zinc-400">
+                    <span className="ml-1 text-[10px] font-normal text-slate-500 dark:text-zinc-400">
                       / noche
                     </span>
                   )}
@@ -1098,10 +1107,10 @@ function CatalogoCard({
 
           {item.tipo === "servicio" && Boolean(item.duracionMinutos) && (
             <div className="text-right">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
+              <p className="text-[9px] font-medium uppercase tracking-wider text-slate-400 dark:text-zinc-500">
                 Duración
               </p>
-              <p className="mt-0.5 text-xs font-semibold text-slate-700 dark:text-zinc-300">
+              <p className="mt-0.5 text-[11px] font-medium text-slate-700 dark:text-zinc-300">
                 {item.duracionMinutos} min
               </p>
             </div>
@@ -1109,13 +1118,13 @@ function CatalogoCard({
         </div>
 
         {puedeReservar && mostrarHorariosRapidos && slug && (
-          <div className="mt-3">
+          <div className="mt-2.5">
             <ProximosHorarios slug={slug} servicioId={item.id} colorPrincipal={color} tema={tema} />
           </div>
         )}
 
         {(puedeReservar || whatsappItemUrl || mostrarContacto || (esAlojamiento && item.tipo === "servicio")) && (
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-wrap gap-1.5">
             {esAlojamiento && item.tipo === "servicio" && (
               <AlojamientoDetalle
                 habitacion={{
@@ -1135,10 +1144,10 @@ function CatalogoCard({
             {puedeReservar && !esAlojamiento && (
               <a
                 href={`#reservar-servicio-${encodeURIComponent(item.id)}`}
-                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:brightness-110 active:scale-95"
+                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:brightness-110 active:scale-95"
                 style={{ backgroundColor: color }}
               >
-                <Clock3 className="h-3.5 w-3.5" />
+                <Clock3 className="h-3 w-3" />
                 Reservar
               </a>
             )}
@@ -1149,9 +1158,9 @@ function CatalogoCard({
                 data-analytics-event="whatsapp_click"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-500 active:scale-95"
+                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-500 active:scale-95"
               >
-                <MessageCircle className="h-3.5 w-3.5" />
+                <MessageCircle className="h-3 w-3" />
                 Consultar
               </a>
             )}
@@ -1159,10 +1168,10 @@ function CatalogoCard({
             {!puedeReservar && !whatsappItemUrl && mostrarContacto && (
               <a
                 href="#contacto"
-                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:brightness-110 active:scale-95"
+                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:brightness-110 active:scale-95"
                 style={{ backgroundColor: color }}
               >
-                <Mail className="h-3.5 w-3.5" />
+                <Mail className="h-3 w-3" />
                 Consultar
               </a>
             )}
