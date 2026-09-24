@@ -352,16 +352,18 @@ export default async function NegocioPage({ params }: PageProps) {
   const nombreTipografia = pagina.tipografia || "inter";
   const selectedFont = fontMap[nombreTipografia] || fontMap['inter'];
 
+  const tieneInfo = Boolean(empresa.horarios || empresa.direccion || empresa.telefono || empresa.email);
+
   return (
     <main
-      className="min-h-screen scroll-smooth pb-20 sm:pb-0 bg-[#f8f9fa] text-slate-950 antialiased selection:bg-blue-500 selection:text-white transition-colors duration-300 dark:bg-[#0c0d0e] dark:text-zinc-100"
+      className="min-h-screen scroll-smooth bg-[#f8f9fa] text-slate-950 antialiased selection:bg-blue-500 selection:text-white transition-colors duration-300 dark:bg-[#0c0d0e] dark:text-zinc-100"
       style={selectedFont.style}
     >
       <PublicAnalytics slug={slug} />
 
       {/* HEADER LIMPIO */}
-      <header className="sticky top-0 z-50 bg-[#f8f9fa]/85 backdrop-blur-xl transition-colors dark:bg-[#0c0d0e]/85">
-        <div className="mx-auto flex max-w-[1360px] items-center justify-between gap-4 px-4 py-3 sm:px-8 sm:py-4">
+      <header className="sticky top-0 z-50 h-16 bg-[#f8f9fa]/90 backdrop-blur-xl transition-colors dark:bg-[#0c0d0e]/90 border-b border-slate-200/40 dark:border-zinc-800/40">
+        <div className="mx-auto flex h-full max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-8">
           <a href="#inicio" className="group flex min-w-0 items-center gap-3">
             {mostrarLogoHeader && (logoUrl || logoOscuroUrl) ? (
               <LogoHeaderDinamico
@@ -371,10 +373,10 @@ export default async function NegocioPage({ params }: PageProps) {
               />
             ) : mostrarLogoHeader ? (
               <div
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-white shadow-sm transition group-hover:scale-105 sm:h-11 sm:w-11"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl text-white shadow-sm transition group-hover:scale-105"
                 style={{ backgroundColor: colorPrincipal }}
               >
-                <Globe2 className="h-5 w-5" />
+                <Globe2 className="h-4 w-4" />
               </div>
             ) : null}
 
@@ -382,7 +384,7 @@ export default async function NegocioPage({ params }: PageProps) {
               <p className="truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-zinc-500">
                 {empresa.rubro || "Negocio"}
               </p>
-              <p className="truncate text-base font-bold tracking-tight text-slate-900 dark:text-white sm:text-lg">
+              <p className="truncate text-base font-bold tracking-tight text-slate-900 dark:text-white">
                 {nombre}
               </p>
             </div>
@@ -392,7 +394,7 @@ export default async function NegocioPage({ params }: PageProps) {
             {mostrarServicios && servicios.length > 0 && (
               <a
                 href="#servicios"
-                className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:text-slate-950 dark:text-zinc-400 dark:hover:text-white"
+                className="rounded-full px-3.5 py-1.5 text-xs font-medium text-slate-600 transition hover:text-slate-950 dark:text-zinc-400 dark:hover:text-white"
               >
                 {esAlojamiento ? "Habitaciones" : "Servicios"}
               </a>
@@ -401,7 +403,7 @@ export default async function NegocioPage({ params }: PageProps) {
             {mostrarProductos && productos.length > 0 && (
               <a
                 href="#productos"
-                className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:text-slate-950 dark:text-zinc-400 dark:hover:text-white"
+                className="rounded-full px-3.5 py-1.5 text-xs font-medium text-slate-600 transition hover:text-slate-950 dark:text-zinc-400 dark:hover:text-white"
               >
                 {esRestaurante ? "Carta" : "Tienda"}
               </a>
@@ -410,7 +412,7 @@ export default async function NegocioPage({ params }: PageProps) {
             {mostrarGaleria && galeria.length > 0 && (
               <a
                 href="#galeria"
-                className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:text-slate-950 dark:text-zinc-400 dark:hover:text-white"
+                className="rounded-full px-3.5 py-1.5 text-xs font-medium text-slate-600 transition hover:text-slate-950 dark:text-zinc-400 dark:hover:text-white"
               >
                 Galería
               </a>
@@ -419,7 +421,7 @@ export default async function NegocioPage({ params }: PageProps) {
             {testimonios.length > 0 && (
               <a
                 href="#testimonios"
-                className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:text-slate-950 dark:text-zinc-400 dark:hover:text-white"
+                className="rounded-full px-3.5 py-1.5 text-xs font-medium text-slate-600 transition hover:text-slate-950 dark:text-zinc-400 dark:hover:text-white"
               >
                 Opiniones
               </a>
@@ -428,7 +430,7 @@ export default async function NegocioPage({ params }: PageProps) {
             {preguntasFrecuentes.length > 0 && (
               <a
                 href="#preguntas"
-                className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:text-slate-950 dark:text-zinc-400 dark:hover:text-white"
+                className="rounded-full px-3.5 py-1.5 text-xs font-medium text-slate-600 transition hover:text-slate-950 dark:text-zinc-400 dark:hover:text-white"
               >
                 Preguntas
               </a>
@@ -437,20 +439,20 @@ export default async function NegocioPage({ params }: PageProps) {
             {mostrarContacto && (
               <a
                 href="#contacto"
-                className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:text-slate-950 dark:text-zinc-400 dark:hover:text-white"
+                className="rounded-full px-3.5 py-1.5 text-xs font-medium text-slate-600 transition hover:text-slate-950 dark:text-zinc-400 dark:hover:text-white"
               >
                 Contacto
               </a>
             )}
           </nav>
 
-          <div className="flex shrink-0 items-center gap-2.5">
+          <div className="flex shrink-0 items-center gap-2">
             <BotonTema temaInicial={pagina.tema || "oscuro"} />
             
             {puedeMostrarReserva && (
               <a
                 href="#reservar"
-                className="hidden items-center gap-2 rounded-full px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:brightness-110 active:scale-95 md:inline-flex"
+                className="hidden items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:brightness-110 active:scale-95 md:inline-flex"
                 style={{ backgroundColor: colorPrincipal }}
               >
                 <Clock3 className="h-3.5 w-3.5" />
@@ -465,10 +467,14 @@ export default async function NegocioPage({ params }: PageProps) {
         </div>
       </header>
 
-      {/* HERO AJUSTADO A PROPORCIÓN DE PANTALLA (ENTRA EN 1440x900 SIN SCROLL) */}
-      <section id="inicio" className="mx-auto max-w-[1360px] px-3.5 sm:px-8 pt-1 pb-4 sm:py-3">
-        <div className="relative min-h-[460px] sm:min-h-[500px] lg:h-[58vh] lg:max-h-[580px] w-full overflow-hidden rounded-[1.75rem] sm:rounded-[2.5rem] shadow-xl border border-black/5 dark:border-white/10 flex flex-col justify-end p-6 sm:p-10 lg:p-12">
-          {/* Slider de Fondo nítido */}
+      {/* SECCIÓN HERO QUE ABARCA EXACTAMENTE EL VIEWPORT (100% DE PANTALLA) */}
+      <section
+        id="inicio"
+        className="mx-auto flex w-full max-w-[1440px] flex-col justify-between p-3 sm:p-6 lg:p-8"
+        style={{ minHeight: "calc(100svh - 4rem)" }}
+      >
+        {/* Contenedor Flotante de Portada */}
+        <div className="relative flex-1 w-full overflow-hidden rounded-[2rem] sm:rounded-[2.75rem] shadow-xl border border-black/5 dark:border-white/10 flex flex-col justify-end p-6 sm:p-12 lg:p-16">
           {imagenesHero.length > 0 ? (
             <HeroSlider
               imagenes={imagenesHero}
@@ -484,11 +490,11 @@ export default async function NegocioPage({ params }: PageProps) {
             />
           )}
 
-          {/* Textos y botones limpios */}
+          {/* Textos y Botones */}
           <div className="relative z-10 max-w-xl text-white">
             {empresa.rubro && (
               <div
-                className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-medium backdrop-blur-md mb-2.5"
+                className="inline-flex items-center gap-1.5 rounded-full border px-3 py-0.5 text-[11px] font-medium backdrop-blur-md mb-2.5"
                 style={{
                   borderColor: "rgba(255,255,255,0.25)",
                   backgroundColor: "rgba(0,0,0,0.3)",
@@ -499,8 +505,7 @@ export default async function NegocioPage({ params }: PageProps) {
               </div>
             )}
 
-            {/* Tipografía estilo Veluno */}
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-medium tracking-normal text-white leading-[1.15] drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
+            <h1 className="text-3xl sm:text-5xl lg:text-[3.25rem] font-medium tracking-normal text-white leading-[1.12] drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
               {textoPrincipal || nombre}
             </h1>
 
@@ -510,12 +515,11 @@ export default async function NegocioPage({ params }: PageProps) {
               </p>
             )}
 
-            {/* Botones ordenados en mobile y desktop */}
             <div className="mt-5 sm:mt-6 flex flex-wrap items-center gap-2 sm:gap-3">
               {mostrarProductos && productos.length > 0 ? (
                 <a
                   href="#productos"
-                  className="inline-flex items-center gap-1.5 rounded-full bg-white px-5 py-2.5 text-xs sm:text-sm font-medium text-slate-950 shadow-md transition hover:bg-zinc-100 active:scale-95"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs sm:text-sm font-medium text-slate-950 shadow-md transition hover:bg-zinc-100 active:scale-95"
                 >
                   Ver catálogo
                   <ArrowRight className="h-3.5 w-3.5" />
@@ -523,7 +527,7 @@ export default async function NegocioPage({ params }: PageProps) {
               ) : puedeMostrarReserva ? (
                 <a
                   href="#reservar"
-                  className="inline-flex items-center gap-1.5 rounded-full bg-white px-5 py-2.5 text-xs sm:text-sm font-medium text-slate-950 shadow-md transition hover:bg-zinc-100 active:scale-95"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs sm:text-sm font-medium text-slate-950 shadow-md transition hover:bg-zinc-100 active:scale-95"
                 >
                   <Clock3 className="h-3.5 w-3.5" />
                   Reservar ahora
@@ -533,7 +537,7 @@ export default async function NegocioPage({ params }: PageProps) {
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-full bg-white px-5 py-2.5 text-xs sm:text-sm font-medium text-slate-950 shadow-md transition hover:bg-zinc-100 active:scale-95"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs sm:text-sm font-medium text-slate-950 shadow-md transition hover:bg-zinc-100 active:scale-95"
                 >
                   <MessageCircle className="h-3.5 w-3.5" />
                   WhatsApp
@@ -545,14 +549,13 @@ export default async function NegocioPage({ params }: PageProps) {
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/40 backdrop-blur-md px-4 py-2.5 text-xs sm:text-sm font-normal text-white transition hover:bg-black/60"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/40 backdrop-blur-md px-4 py-2.5 text-xs sm:text-sm font-normal text-white transition hover:bg-black/60"
                 >
                   <MessageCircle className="h-3.5 w-3.5" />
                   WhatsApp
                 </a>
               )}
 
-              {/* Redes compactas en la misma fila */}
               <div className="flex items-center gap-1.5">
                 {redesSociales.map((red) => (
                   <a
@@ -579,95 +582,59 @@ export default async function NegocioPage({ params }: PageProps) {
             </div>
           </div>
         </div>
-      </section>
 
-      {/* TARJETAS DE INFORMACIÓN: EN MOBILE GRILLA 2x2 COMPACTA, EN PC 4 EN FILA */}
-      <section className="relative z-10 mx-auto max-w-[1360px] px-3.5 sm:px-8 pb-8 pt-1">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
-          {mostrarHorarios && (
-            <InfoCardMinimal
-              icono={<Clock3 className="h-3.5 w-3.5" />}
-              titulo="Horarios"
-              valor={empresa.horarios || ""}
-              color={colorPrincipal}
-            />
-          )}
+        {/* Barra de Información: limpia, adaptable y sin recortar textos */}
+        {tieneInfo && (
+          <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2 text-slate-700 dark:text-zinc-300">
+            {mostrarHorarios && empresa.horarios && (
+              <div className="flex items-center gap-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/70 px-3.5 py-2 border border-slate-200/60 dark:border-zinc-800/60 shadow-sm backdrop-blur-md">
+                <Clock3 className="h-4 w-4 shrink-0 text-slate-400 dark:text-zinc-500" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[9px] uppercase font-semibold tracking-wider text-slate-400 dark:text-zinc-500">Horarios</p>
+                  <p className="text-xs font-medium text-slate-800 dark:text-zinc-200 leading-tight break-words">{empresa.horarios}</p>
+                </div>
+              </div>
+            )}
 
-          {mostrarDireccion && (
-            <a
-              href="#ubicacion"
-              className="block transition hover:-translate-y-0.5"
-              aria-label="Ir al mapa y ver cómo llegar"
-            >
-              <InfoCardMinimal
-                icono={<MapPin className="h-3.5 w-3.5" />}
-                titulo="Cómo llegar"
-                valor={empresa.direccion || ""}
-                color={colorPrincipal}
-              />
-            </a>
-          )}
+            {mostrarDireccion && empresa.direccion && (
+              <a
+                href="#ubicacion"
+                className="flex items-center gap-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/70 px-3.5 py-2 border border-slate-200/60 dark:border-zinc-800/60 shadow-sm backdrop-blur-md transition hover:border-slate-300"
+              >
+                <MapPin className="h-4 w-4 shrink-0 text-slate-400 dark:text-zinc-500" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[9px] uppercase font-semibold tracking-wider text-slate-400 dark:text-zinc-500">Ubicación</p>
+                  <p className="text-xs font-medium text-slate-800 dark:text-zinc-200 leading-tight break-words">{empresa.direccion}</p>
+                </div>
+              </a>
+            )}
 
-          {mostrarWhatsApp && (
-            <InfoCardMinimal
-              icono={<Phone className="h-3.5 w-3.5" />}
-              titulo="Teléfono"
-              valor={empresa.telefono || ""}
-              color={colorPrincipal}
-            />
-          )}
+            {mostrarWhatsApp && empresa.telefono && (
+              <div className="flex items-center gap-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/70 px-3.5 py-2 border border-slate-200/60 dark:border-zinc-800/60 shadow-sm backdrop-blur-md">
+                <Phone className="h-4 w-4 shrink-0 text-slate-400 dark:text-zinc-500" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[9px] uppercase font-semibold tracking-wider text-slate-400 dark:text-zinc-500">Teléfono</p>
+                  <p className="text-xs font-medium text-slate-800 dark:text-zinc-200 leading-tight break-words">{empresa.telefono}</p>
+                </div>
+              </div>
+            )}
 
-          {mostrarEmail && (
-            <InfoCardMinimal
-              icono={<Mail className="h-3.5 w-3.5" />}
-              titulo="Correo"
-              valor={empresa.email || ""}
-              color={colorPrincipal}
-            />
-          )}
-        </div>
-      </section>
-
-      {/* SECCIÓN SERVICIOS */}
-      {mostrarServicios && servicios.length > 0 && (
-        <section id="servicios" className="mx-auto max-w-[1360px] scroll-mt-24 px-4 py-12 sm:px-8 sm:py-16">
-          <div className="max-w-2xl">
-            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colorPrincipal }}>
-              Lo que ofrecemos
-            </p>
-            <h2 className="mt-2 text-2xl font-extrabold tracking-tight sm:text-4xl">
-              {esAlojamiento ? "Habitaciones" : "Servicios"}
-            </h2>
-            <p className={`mt-2 text-sm sm:text-base ${claseTextoSecundario}`}>
-              {esAlojamiento ? "Elegí la habitación que mejor se adapte a tu estadía." : "Conocé los servicios disponibles."}
-            </p>
+            {mostrarEmail && empresa.email && (
+              <div className="flex items-center gap-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/70 px-3.5 py-2 border border-slate-200/60 dark:border-zinc-800/60 shadow-sm backdrop-blur-md">
+                <Mail className="h-4 w-4 shrink-0 text-slate-400 dark:text-zinc-500" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[9px] uppercase font-semibold tracking-wider text-slate-400 dark:text-zinc-500">Correo</p>
+                  <p className="text-xs font-medium text-slate-800 dark:text-zinc-200 leading-tight break-all">{empresa.email}</p>
+                </div>
+              </div>
+            )}
           </div>
-
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-10 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {servicios.map((servicio) => (
-              <CatalogoCard
-                key={servicio.id}
-                item={servicio}
-                color={colorPrincipal}
-                puedeReservar={puedeUsarTurnos && !esRestaurante}
-                mostrarWhatsApp={mostrarWhatsApp}
-                whatsappUrl={whatsappUrl}
-                mostrarContacto={mostrarContacto}
-                slug={slug}
-                mostrarHorariosRapidos={mostrarHorariosRapidos}
-                tema={esClaro ? "claro" : "oscuro"}
-                esAlojamiento={esAlojamiento}
-                limiteFotos={limiteFotosItems}
-                pedidosHabilitados={mostrarPedidosOnline}
-              />
-            ))}
-          </div>
-        </section>
-      )}
+        )}
+      </section>
 
       {/* SECCIÓN PRODUCTOS / CARTA */}
       {mostrarProductos && productos.length > 0 && (
-        <section id="productos" className="mx-auto max-w-[1360px] scroll-mt-24 px-4 py-12 sm:px-8 sm:py-16">
+        <section id="productos" className="mx-auto max-w-[1440px] scroll-mt-20 px-4 py-16 sm:px-10 sm:py-24">
           <div className="max-w-2xl">
             <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colorPrincipal }}>
               {esRestaurante ? "Menú" : "Colección"}
@@ -705,6 +672,43 @@ export default async function NegocioPage({ params }: PageProps) {
                 pagosConfig={empresa.pagosConfig}
               />
             )}
+          </div>
+        </section>
+      )}
+
+      {/* SECCIÓN SERVICIOS */}
+      {mostrarServicios && servicios.length > 0 && (
+        <section id="servicios" className="mx-auto max-w-[1440px] scroll-mt-20 px-4 py-16 sm:px-10 sm:py-24">
+          <div className="max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colorPrincipal }}>
+              Lo que ofrecemos
+            </p>
+            <h2 className="mt-2 text-2xl font-extrabold tracking-tight sm:text-4xl">
+              {esAlojamiento ? "Habitaciones" : "Servicios"}
+            </h2>
+            <p className={`mt-2 text-sm sm:text-base ${claseTextoSecundario}`}>
+              {esAlojamiento ? "Elegí la habitación que mejor se adapte a tu estadía." : "Conocé los servicios disponibles."}
+            </p>
+          </div>
+
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-10 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {servicios.map((servicio) => (
+              <CatalogoCard
+                key={servicio.id}
+                item={servicio}
+                color={colorPrincipal}
+                puedeReservar={puedeUsarTurnos && !esRestaurante}
+                mostrarWhatsApp={mostrarWhatsApp}
+                whatsappUrl={whatsappUrl}
+                mostrarContacto={mostrarContacto}
+                slug={slug}
+                mostrarHorariosRapidos={mostrarHorariosRapidos}
+                tema={esClaro ? "claro" : "oscuro"}
+                esAlojamiento={esAlojamiento}
+                limiteFotos={limiteFotosItems}
+                pedidosHabilitados={mostrarPedidosOnline}
+              />
+            ))}
           </div>
         </section>
       )}
@@ -749,7 +753,7 @@ export default async function NegocioPage({ params }: PageProps) {
       {/* GALERÍA DE FOTOS (Exclusiva del local) */}
       {mostrarGaleria && galeria.length > 0 && (
         <section id="galeria" className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}>
-          <div className="mx-auto max-w-[1360px] px-4 py-12 sm:px-8 sm:py-16">
+          <div className="mx-auto max-w-[1440px] px-4 py-12 sm:px-10 sm:py-20">
             <div className="max-w-2xl">
               <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colorPrincipal }}>
                 Espacio
@@ -797,7 +801,7 @@ export default async function NegocioPage({ params }: PageProps) {
       {/* SOBRE EL NEGOCIO */}
       {empresa.descripcion && (
         <section id="nosotros" className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}>
-          <div className="mx-auto max-w-[1360px] px-4 py-12 sm:px-8 sm:py-16">
+          <div className="mx-auto max-w-[1440px] px-4 py-12 sm:px-10 sm:py-20">
             <div className="grid gap-6 sm:gap-12 lg:grid-cols-[0.8fr_1.2fr]">
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colorPrincipal }}>
@@ -819,7 +823,7 @@ export default async function NegocioPage({ params }: PageProps) {
 
       {/* TESTIMONIOS */}
       {testimonios.length > 0 && (
-        <section id="testimonios" className="mx-auto max-w-[1360px] scroll-mt-24 px-4 py-12 sm:px-8 sm:py-16">
+        <section id="testimonios" className="mx-auto max-w-[1440px] scroll-mt-24 px-4 py-12 sm:px-10 sm:py-20">
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colorPrincipal }}>
               Opiniones
@@ -897,7 +901,7 @@ export default async function NegocioPage({ params }: PageProps) {
 
       {/* MAPA */}
       {mostrarMapa && mostrarDireccion && mapaEmbedUrl && (
-        <section id="ubicacion" className="mx-auto max-w-[1360px] scroll-mt-24 px-4 py-12 sm:px-8">
+        <section id="ubicacion" className="mx-auto max-w-[1440px] scroll-mt-24 px-4 py-12 sm:px-10">
           <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
             <div className="flex flex-col gap-3 border-b border-slate-200 p-6 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -949,7 +953,7 @@ export default async function NegocioPage({ params }: PageProps) {
 
       {/* CONTACTO */}
       {mostrarContacto && (
-        <section id="contacto" className="mx-auto max-w-[1360px] scroll-mt-24 px-4 py-12 sm:px-8 sm:py-16">
+        <section id="contacto" className="mx-auto max-w-[1440px] scroll-mt-24 px-4 py-12 sm:px-10 sm:py-20">
           <div
             className="relative overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 p-6 dark:border-zinc-800/60 dark:bg-zinc-900/60 sm:p-12"
             style={{ borderColor: `${colorPrincipal}33` }}
@@ -1050,7 +1054,7 @@ export default async function NegocioPage({ params }: PageProps) {
 
       {/* FOOTER */}
       <footer className="border-t border-slate-200/80 dark:border-zinc-800/80 bg-white dark:bg-[#0c0d0e]">
-        <div className="mx-auto flex max-w-[1360px] flex-col gap-4 px-6 py-10 text-sm text-slate-500 dark:text-zinc-500 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        <div className="mx-auto flex max-w-[1440px] flex-col gap-4 px-6 py-10 text-sm text-slate-500 dark:text-zinc-500 sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <div>
             <p className="font-bold text-slate-900 dark:text-zinc-200">
               {empresa.nombre || nombre}
@@ -1225,27 +1229,5 @@ function CatalogoCard({
         )}
       </div>
     </article>
-  );
-}
-
-{/* TARJETAS COMPACTAS, ESTILIZADAS Y LIMPIAS */}
-function InfoCardMinimal({ icono, titulo, valor, color }: { icono: React.ReactNode; titulo: string; valor: string; color: string; }) {
-  return (
-    <div className="flex items-start sm:items-center gap-2.5 sm:gap-3 rounded-2xl sm:rounded-full border border-slate-200/90 bg-white/95 p-3 sm:px-4 sm:py-2.5 shadow-sm backdrop-blur transition hover:border-slate-300 dark:border-zinc-800/90 dark:bg-zinc-900/90">
-      <div 
-        className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full mt-0.5 sm:mt-0" 
-        style={{ backgroundColor: `${color}15`, color }}
-      >
-        {icono}
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
-          {titulo}
-        </p>
-        <p className="text-[11px] sm:text-xs font-medium text-slate-800 dark:text-zinc-200 leading-snug line-clamp-2 sm:line-clamp-1">
-          {valor}
-        </p>
-      </div>
-    </div>
   );
 }
