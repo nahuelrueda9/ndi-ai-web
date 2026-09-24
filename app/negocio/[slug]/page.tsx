@@ -1004,49 +1004,6 @@ export default async function NegocioPage({ params }: PageProps) {
         </section>
       )}
 
-      {/* BOTONERA MÓVIL FIJA */}
-      {(puedeMostrarReserva || mostrarContacto || mostrarWhatsApp || puedeUsarAsistenteIA) && (
-        <div className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200/80 bg-white/95 px-3 py-2 backdrop-blur-xl dark:border-zinc-800/80 dark:bg-[#0c0d0e]/90 sm:hidden">
-          <div className={`mx-auto flex max-w-md gap-2 ${puedeUsarAsistenteIA ? "pr-[46px]" : ""}`}>
-            {(puedeMostrarReserva || mostrarContacto) && (
-              <a
-                href={puedeMostrarReserva ? "#reservar" : "#contacto"}
-                className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl px-4 text-xs font-bold text-white shadow-md active:scale-95"
-                style={{ backgroundColor: colorPrincipal }}
-              >
-                {puedeMostrarReserva ? (
-                  <>
-                    <Clock3 className="h-4 w-4" />
-                    {mostrarReservaMesa ? "Reservar mesa" : "Reservar turno"}
-                  </>
-                ) : (
-                  <>
-                    <Mail className="h-4 w-4" />
-                    Consultar
-                  </>
-                )}
-              </a>
-            )}
-
-            {mostrarWhatsApp && !puedeUsarAsistenteIA && (
-              <a
-                href={whatsappUrl}
-                data-analytics-event="whatsapp_click"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Abrir WhatsApp"
-                className={`inline-flex h-11 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-md transition hover:bg-emerald-500 active:scale-95 ${
-                  puedeMostrarReserva || mostrarContacto ? "w-11 shrink-0" : "flex-1 gap-2 px-4"
-                }`}
-              >
-                <MessageCircle className="h-5 w-5" />
-                {!(puedeMostrarReserva || mostrarContacto) && <span className="text-xs font-bold">WhatsApp</span>}
-              </a>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* ASISTENTE IA */}
       {puedeUsarAsistenteIA && (
         <Script src="/widget.js" data-empresa-id={documento.id} data-mobile-dock="true" strategy="afterInteractive" />
