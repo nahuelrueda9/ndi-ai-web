@@ -11,37 +11,38 @@ export default function HeroSlider({
   nombre: string;
   colorPrincipal: string;
 }) {
-  const [indiceActual, setIndiceActual] = useState(0);
+  const [indice, setIndice] = useState(0);
 
   useEffect(() => {
-    if (imagenes.length <= 1) return;
+    if (!imagenes || imagenes.length <= 1) return;
 
-    // Cambia de imagen cada 5 segundos con fade suave
-    const intervalo = setInterval(() => {
-      setIndiceActual((prev) => (prev + 1) % imagenes.length);
-    }, 5000);
+    const timer = setInterval(() => {
+      setIndice((prev) => (prev + 1) % imagenes.length);
+    }, 4500);
 
-    return () => clearInterval(intervalo);
-  }, [imagenes.length]);
+    return () => clearInterval(timer);
+  }, [imagenes]);
 
-  if (imagenes.length === 0) return null;
+  if (!imagenes || imagenes.length === 0) return null;
 
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
       {imagenes.map((url, i) => (
-        <img
+        <div
           key={`${url}-${i}`}
-          src={url}
-          alt={`Portada ${i + 1} de ${nombre}`}
-          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out ${
-            i === indiceActual ? "opacity-100 scale-105" : "opacity-0 scale-100"
+          className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out ${
+            i === indice ? "opacity-100 scale-105" : "opacity-0 scale-100"
           }`}
-          style={{ transitionDuration: "1200ms" }}
+          style={{
+            backgroundImage: `url("${url}")`,
+            transitionProperty: "opacity, transform",
+            transitionDuration: "1200ms",
+          }}
         />
       ))}
 
-      {/* Capas oscuras para legibilidad del texto */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/80 to-black/40" />
+      {/* Capas oscuras para garantizar legibilidad del texto */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/80 to-black/50" />
       <div
         className="absolute inset-0 opacity-25"
         style={{

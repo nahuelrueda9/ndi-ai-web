@@ -36,6 +36,7 @@ import { fontMap } from "@/lib/fonts";
 import BotonTema from "./BotonTema";
 import BotonWhatsAppHeader from "./BotonWhatsAppHeader";
 import HeroSlider from "./HeroSlider";
+import LogoHeaderDinamico from "./LogoHeaderDinamico";
 
 export const dynamic = "force-dynamic";
 
@@ -292,19 +293,17 @@ export default async function NegocioPage({ params }: PageProps) {
 
   const colorPrincipal = pagina.colorPrincipal || "#2563eb";
   const logoUrl = pagina.logoUrl?.trim() || "";
-
-  const esClaro = pagina.tema === "claro";
   const logoOscuroUrl = pagina.logoOscuroUrl?.trim() || "";
-  const logoParaHeader = esClaro && logoOscuroUrl ? logoOscuroUrl : logoUrl;
-  const portadaUrl = pagina.portadaUrl?.trim() || "";
+  const esClaro = pagina.tema === "claro";
 
-  // Toma la portada y fotos de la galería hasta un máximo de 3 imágenes para el Hero
-  const imagenesPortada = [
+  const portadaUrl = pagina.portadaUrl?.trim() || "";
+  const galeria = Array.isArray(pagina.galeria) ? pagina.galeria.filter((url): url is string => typeof url === "string" && url.trim().length > 0) : [];
+
+  // Junta la portada principal + fotos de la galería hasta un máximo de 3 imágenes
+  const imagenesHero = [
     portadaUrl,
-    ...(Array.isArray(pagina.galeria) ? pagina.galeria : [])
-  ].filter((url): url is string => typeof url === "string" && url.trim().length > 0).slice(0, 3);
-  
-  const galeria = Array.isArray(pagina.galeria) ? pagina.galeria.filter((url): url is string => typeof url === "string" && url.trim().length > 0).slice(0, 6) : [];
+    ...galeria
+  ].filter(Boolean).slice(0, 3);
 
   const telefonoLimpio = empresa.telefono?.replace(/\D/g, "") || "";
   const whatsappUrl = telefonoLimpio ? `https://wa.me/${telefonoLimpio}` : "";
@@ -362,13 +361,13 @@ export default async function NegocioPage({ params }: PageProps) {
       <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/80 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-xl transition-colors dark:border-zinc-800/60 dark:bg-[#0c0d0e]/80">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-8 sm:py-4">
           <a href="#inicio" className="group flex min-w-0 items-center gap-3">
-            {logoParaHeader && mostrarLogoHeader ? (
-              <img
-                src={logoParaHeader}
-                alt={`Logo de ${nombre}`}
-                className="h-9 w-auto max-w-[90px] shrink-0 object-contain sm:h-11 sm:max-w-[140px]"
+            {mostrarLogoHeader && (logoUrl || logoOscuroUrl) ? (
+              <LogoHeaderDinamico
+                logoClaro={logoUrl}
+                logoOscuro={logoOscuroUrl}
+                nombre={nombre}
               />
-            ) : !logoParaHeader && mostrarLogoHeader ? (
+            ) : mostrarLogoHeader ? (
               <div
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow-md transition group-hover:scale-105 sm:h-11 sm:w-11 sm:rounded-2xl"
                 style={{ backgroundColor: colorPrincipal }}
@@ -469,12 +468,12 @@ export default async function NegocioPage({ params }: PageProps) {
       <section
         id="inicio"
         className={`relative flex min-h-[560px] scroll-mt-20 items-center overflow-hidden sm:min-h-[75vh] ${
-          imagenesPortada.length > 0 ? "text-white" : ""
+          imagenesHero.length > 0 ? "text-white" : ""
         }`}
       >
-        {imagenesPortada.length > 0 ? (
+        {imagenesHero.length > 0 ? (
           <HeroSlider
-            imagenes={imagenesPortada}
+            imagenes={imagenesHero}
             nombre={nombre}
             colorPrincipal={colorPrincipal}
           />
@@ -504,7 +503,7 @@ export default async function NegocioPage({ params }: PageProps) {
                   style={{
                     borderColor: `${colorPrincipal}66`,
                     backgroundColor: `${colorPrincipal}18`,
-                    color: imagenesPortada.length > 0 ? "#ffffff" : colorPrincipal,
+                    color: imagenesHero.length > 0 ? "#ffffff" : colorPrincipal,
                   }}
                 >
                   <Sparkles className="h-3.5 w-3.5" />
@@ -520,7 +519,7 @@ export default async function NegocioPage({ params }: PageProps) {
             {textoPrincipal && (
               <p
                 className={`mt-4 max-w-2xl text-lg font-medium leading-relaxed sm:mt-6 sm:text-2xl sm:leading-snug ${
-                  imagenesPortada.length > 0 ? "text-zinc-100" : "text-slate-800 dark:text-zinc-200"
+                  imagenesHero.length > 0 ? "text-zinc-100" : "text-slate-800 dark:text-zinc-200"
                 }`}
               >
                 {textoPrincipal}
@@ -530,7 +529,7 @@ export default async function NegocioPage({ params }: PageProps) {
             {textoSecundario && (
               <p
                 className={`mt-2 max-w-2xl text-sm leading-relaxed sm:mt-3 sm:text-base ${
-                  imagenesPortada.length > 0 ? "text-zinc-300" : "text-slate-600 dark:text-zinc-400"
+                  imagenesHero.length > 0 ? "text-zinc-300" : "text-slate-600 dark:text-zinc-400"
                 }`}
               >
                 {textoSecundario}
@@ -573,7 +572,7 @@ export default async function NegocioPage({ params }: PageProps) {
                       aria-label={`Abrir ${red.nombre}`}
                       title={red.nombre}
                       className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border shadow-sm backdrop-blur transition hover:-translate-y-0.5 active:scale-95 ${
-                        imagenesPortada.length > 0 
+                        imagenesHero.length > 0 
                           ? "border-white/20 bg-white/10 text-white hover:bg-white/20" 
                           : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
                       }`}
@@ -597,7 +596,7 @@ export default async function NegocioPage({ params }: PageProps) {
                 <a
                   href="#servicios"
                   className={`inline-flex items-center justify-center gap-2 rounded-xl border px-6 py-3.5 text-sm font-semibold backdrop-blur transition hover:-translate-y-0.5 active:scale-95 sm:text-base ${
-                    imagenesPortada.length > 0 
+                    imagenesHero.length > 0 
                       ? "border-white/20 bg-white/10 text-white hover:bg-white/20" 
                       : "border-slate-200 bg-white text-slate-900 shadow-sm hover:bg-slate-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800"
                   }`}
