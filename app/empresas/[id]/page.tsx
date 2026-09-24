@@ -105,6 +105,8 @@ interface Empresa {
     logoUrl?: string;
     logoOscuroUrl?: string;
     portadaUrl?: string;
+    portadaUrl2?: string;
+    portadaUrl3?: string;
     galeria?: string[];
 
     mostrarWhatsApp?: boolean;
@@ -185,8 +187,12 @@ export default function ConfigurarAgentePage() {
   const [paginaLogoUrl, setPaginaLogoUrl] = useState("");
   const [paginaLogoOscuroUrl, setPaginaLogoOscuroUrl] = useState("");
   const [paginaPortadaUrl, setPaginaPortadaUrl] = useState("");
+  const [paginaPortadaUrl2, setPaginaPortadaUrl2] = useState("");
+  const [paginaPortadaUrl3, setPaginaPortadaUrl3] = useState("");
   const [paginaGaleria, setPaginaGaleria] = useState<string[]>([]);
-  const [subiendoImagen, setSubiendoImagen] = useState<"logo" | "logoOscuro" | "portada" | "galeria" | null>(null);
+  const [subiendoImagen, setSubiendoImagen] = useState<
+    "logo" | "logoOscuro" | "portada" | "portada2" | "portada3" | "galeria" | null
+  >(null);
 
   const [paginaMostrarWhatsApp, setPaginaMostrarWhatsApp] = useState(true);
   const [paginaMostrarEmail, setPaginaMostrarEmail] = useState(true);
@@ -301,6 +307,8 @@ export default function ConfigurarAgentePage() {
         setPaginaLogoOscuroUrl(empresa.paginaPublica?.logoOscuroUrl || "");
         setPaginaTipografia(empresa.paginaPublica?.tipografia || "inter");
         setPaginaPortadaUrl(empresa.paginaPublica?.portadaUrl || "");
+        setPaginaPortadaUrl2(empresa.paginaPublica?.portadaUrl2 || "");
+        setPaginaPortadaUrl3(empresa.paginaPublica?.portadaUrl3 || "");
 
         setPaginaGaleria(
           Array.isArray(empresa.paginaPublica?.galeria)
@@ -379,7 +387,7 @@ export default function ConfigurarAgentePage() {
 
   const subirImagenPagina = async (
     archivo: File,
-    tipo: "logo" | "logoOscuro" | "portada" | "galeria",
+    tipo: "logo" | "logoOscuro" | "portada" | "portada2" | "portada3" | "galeria",
   ) => {
     if (!user || !empresaId) return;
 
@@ -478,6 +486,10 @@ export default function ConfigurarAgentePage() {
         setPaginaLogoOscuroUrl(url);
       } else if (tipo === "portada") {
         setPaginaPortadaUrl(url);
+      } else if (tipo === "portada2") {
+        setPaginaPortadaUrl2(url);
+      } else if (tipo === "portada3") {
+        setPaginaPortadaUrl3(url);
       } else {
         setPaginaGaleria((actual) => [...actual, url].slice(0, 6));
       }
@@ -654,6 +666,8 @@ export default function ConfigurarAgentePage() {
         "paginaPublica.logoUrl": paginaLogoUrl,
         "paginaPublica.logoOscuroUrl": paginaLogoOscuroUrl,
         "paginaPublica.portadaUrl": paginaPortadaUrl,
+        "paginaPublica.portadaUrl2": paginaPortadaUrl2,
+        "paginaPublica.portadaUrl3": paginaPortadaUrl3,
         "paginaPublica.galeria": paginaGaleria,
         "paginaPublica.mostrarWhatsApp": paginaMostrarWhatsApp,
         "paginaPublica.mostrarEmail": paginaMostrarEmail,
@@ -796,7 +810,7 @@ export default function ConfigurarAgentePage() {
       {/* GUÍA DE BIENVENIDA Y PRIMEROS PASOS */}
       <OnboardingCard empresaId={empresaId} />
 
-      {/* TARJETA DE VINCULACIÓN DE ALERTAS AL CELULAR (Oculto en pantallas de computadora con lg:hidden) */}
+      {/* TARJETA DE VINCULACIÓN DE ALERTAS AL CELULAR */}
       <Card className="mb-4 overflow-hidden border-blue-500/30 bg-blue-500/5 p-4 sm:mb-6 sm:p-6 lg:hidden">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3.5">
@@ -1013,20 +1027,21 @@ export default function ConfigurarAgentePage() {
                 />
               </div>
 
+              {/* IDENTIDAD VISUAL: LOGOS Y HASTA 3 PORTADAS */}
               <div className="md:col-span-2">
                 <div className="mb-2 sm:mb-3">
                   <p className="text-xs font-medium text-slate-700 dark:text-zinc-200 sm:text-sm">
                     Identidad visual
                   </p>
                   <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs">
-                    Cargá el logo, una imagen de portada y hasta 6 fotos para la galería pública.
+                    Cargá los logos del negocio y hasta 3 imágenes exclusivas para el carrusel de portada.
                   </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-3">
                   <ImagenUploader
-                    titulo="Logo del negocio"
-                    descripcion="PNG, JPG o WebP · máximo 5 MB · recomendado 512 × 512 px."
+                    titulo="Logo claro / principal"
+                    descripcion="PNG, JPG o WebP · Se usa en modo oscuro y en el encabezado."
                     imagenUrl={paginaLogoUrl}
                     cargando={subiendoImagen === "logo"}
                     onSeleccionar={(archivo) => subirImagenPagina(archivo, "logo")}
@@ -1036,7 +1051,7 @@ export default function ConfigurarAgentePage() {
 
                   <ImagenUploader
                     titulo="Logo secundario (Oscuro)"
-                    descripcion="Opcional. Se usa en la barra superior cuando el tema de la página es Claro."
+                    descripcion="Opcional. Se muestra automáticamente cuando el tema de la página es Claro."
                     imagenUrl={paginaLogoOscuroUrl}
                     cargando={subiendoImagen === "logoOscuro"}
                     onSeleccionar={(archivo) => subirImagenPagina(archivo, "logoOscuro")}
@@ -1045,24 +1060,45 @@ export default function ConfigurarAgentePage() {
                   />
 
                   <ImagenUploader
-                    titulo="Imagen de portada"
-                    descripcion="PNG, JPG o WebP · máximo 5 MB · recomendado 1600 × 900 px."
+                    titulo="Portada 1 (Principal)"
+                    descripcion="Primera foto de portada · recomendado 1600 × 900 px."
                     imagenUrl={paginaPortadaUrl}
                     cargando={subiendoImagen === "portada"}
                     onSeleccionar={(archivo) => subirImagenPagina(archivo, "portada")}
                     onQuitar={() => setPaginaPortadaUrl("")}
                     aspectClass="aspect-[16/9]"
                   />
+
+                  <ImagenUploader
+                    titulo="Portada 2 (Opcional)"
+                    descripcion="Segunda foto del slider · ideal promociones o novedades."
+                    imagenUrl={paginaPortadaUrl2}
+                    cargando={subiendoImagen === "portada2"}
+                    onSeleccionar={(archivo) => subirImagenPagina(archivo, "portada2")}
+                    onQuitar={() => setPaginaPortadaUrl2("")}
+                    aspectClass="aspect-[16/9]"
+                  />
+
+                  <ImagenUploader
+                    titulo="Portada 3 (Opcional)"
+                    descripcion="Tercera foto del slider · novedades o banner visual."
+                    imagenUrl={paginaPortadaUrl3}
+                    cargando={subiendoImagen === "portada3"}
+                    onSeleccionar={(archivo) => subirImagenPagina(archivo, "portada3")}
+                    onQuitar={() => setPaginaPortadaUrl3("")}
+                    aspectClass="aspect-[16/9]"
+                  />
                 </div>
 
-                <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/50 sm:mt-4 sm:rounded-2xl sm:p-4">
+                {/* SECCIÓN GALERÍA INDEPENDIENTE */}
+                <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/50 sm:mt-5 sm:rounded-2xl sm:p-4">
                   <div className="flex items-center justify-between gap-2 sm:flex-wrap sm:gap-3">
                     <div>
                       <p className="text-xs font-medium text-slate-950 dark:text-white sm:text-sm">
-                        Galería
+                        Galería de fotos del local
                       </p>
                       <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs">
-                        {paginaGaleria.length}/6 imágenes cargadas · máximo 5 MB cada una · recomendado 1200 × 900 px
+                        {paginaGaleria.length}/6 imágenes cargadas · fotos de tu local, equipo o espacio
                       </p>
                     </div>
 
