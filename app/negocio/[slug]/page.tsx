@@ -11,6 +11,7 @@ import {
   Phone,
   Quote,
   Sparkles,
+  ArrowRight,
 } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -298,14 +299,17 @@ export default async function NegocioPage({ params }: PageProps) {
   const logoOscuroUrl = pagina.logoOscuroUrl?.trim() || "";
   const esClaro = pagina.tema === "claro";
 
-  // ÚNICA Y EXCLUSIVAMENTE LAS 3 IMÁGENES DE PORTADA (La galería queda excluida)
+  // Las 3 imágenes dedicadas de portada
   const portadaUrl = pagina.portadaUrl?.trim() || "";
   const portadaUrl2 = (pagina as any).portadaUrl2?.trim() || "";
   const portadaUrl3 = (pagina as any).portadaUrl3?.trim() || "";
 
   const imagenesHero = [portadaUrl, portadaUrl2, portadaUrl3].filter(Boolean);
 
-  // Galería independiente para el local (máximo 6 fotos)
+  // Producto destacado para el widget flotante del estilo Veluno
+  const productoDestacado = productosTienda.find((p) => p.imagenUrl || p.imagenes.length > 0) || productosTienda[0];
+
+  // Galería de fotos del local (independiente, máx 6 fotos)
   const galeria = Array.isArray(pagina.galeria) ? pagina.galeria.filter((url): url is string => typeof url === "string" && url.trim().length > 0).slice(0, 6) : [];
 
   const telefonoLimpio = empresa.telefono?.replace(/\D/g, "") || "";
@@ -355,14 +359,14 @@ export default async function NegocioPage({ params }: PageProps) {
 
   return (
     <main
-      className="min-h-screen scroll-smooth pb-20 sm:pb-0 bg-white text-slate-950 antialiased selection:bg-blue-500 selection:text-white transition-colors duration-300 dark:bg-[#0c0d0e] dark:text-zinc-100"
+      className="min-h-screen scroll-smooth pb-20 sm:pb-0 bg-[#f8f9fa] text-slate-950 antialiased selection:bg-blue-500 selection:text-white transition-colors duration-300 dark:bg-[#0c0d0e] dark:text-zinc-100"
       style={selectedFont.style}
     >
       <PublicAnalytics slug={slug} />
 
-      {/* HEADER */}
-      <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/80 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-xl transition-colors dark:border-zinc-800/60 dark:bg-[#0c0d0e]/80">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-8 sm:py-4">
+      {/* HEADER LIMPIO TIPO VELUNO */}
+      <header className="sticky top-0 z-50 bg-[#f8f9fa]/85 backdrop-blur-xl transition-colors dark:bg-[#0c0d0e]/85">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-8 sm:py-5">
           <a href="#inicio" className="group flex min-w-0 items-center gap-3">
             {mostrarLogoHeader && (logoUrl || logoOscuroUrl) ? (
               <LogoHeaderDinamico
@@ -372,7 +376,7 @@ export default async function NegocioPage({ params }: PageProps) {
               />
             ) : mostrarLogoHeader ? (
               <div
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow-md transition group-hover:scale-105 sm:h-11 sm:w-11 sm:rounded-2xl"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-white shadow-sm transition group-hover:scale-105 sm:h-11 sm:w-11"
                 style={{ backgroundColor: colorPrincipal }}
               >
                 <Globe2 className="h-5 w-5" />
@@ -383,17 +387,17 @@ export default async function NegocioPage({ params }: PageProps) {
               <p className="truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-zinc-500">
                 {empresa.rubro || "Negocio"}
               </p>
-              <p className="truncate text-base font-bold tracking-tight text-slate-900 dark:text-white">
+              <p className="truncate text-base font-bold tracking-tight text-slate-900 dark:text-white sm:text-lg">
                 {nombre}
               </p>
             </div>
           </a>  
 
-          <nav className="hidden items-center gap-1.5 lg:flex">
+          <nav className="hidden items-center gap-1 lg:flex">
             {mostrarServicios && servicios.length > 0 && (
               <a
                 href="#servicios"
-                className="rounded-xl px-3.5 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-white"
+                className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:text-slate-950 dark:text-zinc-400 dark:hover:text-white"
               >
                 {esAlojamiento ? "Habitaciones" : "Servicios"}
               </a>
@@ -402,16 +406,16 @@ export default async function NegocioPage({ params }: PageProps) {
             {mostrarProductos && productos.length > 0 && (
               <a
                 href="#productos"
-                className="rounded-xl px-3.5 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-white"
+                className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:text-slate-950 dark:text-zinc-400 dark:hover:text-white"
               >
-                {esRestaurante ? "Carta" : "Catálogo"}
+                {esRestaurante ? "Carta" : "Tienda"}
               </a>
             )}
 
             {mostrarGaleria && galeria.length > 0 && (
               <a
                 href="#galeria"
-                className="rounded-xl px-3.5 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-white"
+                className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:text-slate-950 dark:text-zinc-400 dark:hover:text-white"
               >
                 Galería
               </a>
@@ -420,7 +424,7 @@ export default async function NegocioPage({ params }: PageProps) {
             {testimonios.length > 0 && (
               <a
                 href="#testimonios"
-                className="rounded-xl px-3.5 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-white"
+                className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:text-slate-950 dark:text-zinc-400 dark:hover:text-white"
               >
                 Opiniones
               </a>
@@ -429,7 +433,7 @@ export default async function NegocioPage({ params }: PageProps) {
             {preguntasFrecuentes.length > 0 && (
               <a
                 href="#preguntas"
-                className="rounded-xl px-3.5 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-white"
+                className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:text-slate-950 dark:text-zinc-400 dark:hover:text-white"
               >
                 Preguntas
               </a>
@@ -438,7 +442,7 @@ export default async function NegocioPage({ params }: PageProps) {
             {mostrarContacto && (
               <a
                 href="#contacto"
-                className="rounded-xl px-3.5 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-white"
+                className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:text-slate-950 dark:text-zinc-400 dark:hover:text-white"
               >
                 Contacto
               </a>
@@ -451,15 +455,14 @@ export default async function NegocioPage({ params }: PageProps) {
             {puedeMostrarReserva && (
               <a
                 href="#reservar"
-                className="hidden items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 active:scale-95 md:inline-flex"
+                className="hidden items-center gap-2 rounded-full px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:brightness-110 active:scale-95 md:inline-flex"
                 style={{ backgroundColor: colorPrincipal }}
               >
-                <Clock3 className="h-4 w-4" />
+                <Clock3 className="h-3.5 w-3.5" />
                 {mostrarReservaMesa ? "Reservar mesa" : "Reservar turno"}
               </a>
             )}
 
-            {/* BOTÓN CON SCROLL INTELIGENTE */}
             {mostrarWhatsApp && (
               <BotonWhatsAppHeader whatsappUrl={whatsappUrl} />
             )}
@@ -467,163 +470,150 @@ export default async function NegocioPage({ params }: PageProps) {
         </div>
       </header>
 
-      {/* HERO ESTILO SAAS / MODERNO */}
-      <section
-        id="inicio"
-        className={`relative flex min-h-[560px] scroll-mt-20 items-center overflow-hidden sm:min-h-[75vh] ${
-          imagenesHero.length > 0 ? "text-white" : ""
-        }`}
-      >
-        {imagenesHero.length > 0 ? (
-          <HeroSlider
-            imagenes={imagenesHero}
-            nombre={nombre}
-            colorPrincipal={colorPrincipal}
-          />
-        ) : (
-          <div
-            className="absolute inset-0 opacity-30 dark:opacity-20 pointer-events-none"
-            style={{
-              background: `radial-gradient(circle at 50% 0%, ${colorPrincipal}44, transparent 70%)`,
-            }}
-          />
-        )}
+      {/* HERO FLOTANTE ENMARCADO (ESTILO VELUNO) */}
+      <section id="inicio" className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 pt-2 pb-8 sm:py-6">
+        <div className="relative min-h-[520px] sm:min-h-[580px] lg:min-h-[620px] w-full overflow-hidden rounded-[2rem] sm:rounded-[2.75rem] shadow-xl border border-black/5 dark:border-white/10 flex flex-col justify-end p-6 sm:p-12 lg:p-16">
+          {/* Slider de Fondo */}
+          {imagenesHero.length > 0 ? (
+            <HeroSlider
+              imagenes={imagenesHero}
+              nombre={nombre}
+              colorPrincipal={colorPrincipal}
+            />
+          ) : (
+            <div
+              className="absolute inset-0 opacity-80"
+              style={{
+                background: `linear-gradient(135deg, ${colorPrincipal}33, #0c0d0e)`,
+              }}
+            />
+          )}
 
-        <div className="relative mx-auto w-full max-w-7xl px-4 py-12 sm:px-8 sm:py-24">
-          <div className="max-w-3xl">
-            <div className="flex flex-wrap items-center gap-3">
-              {logoUrl && (
-                <img
-                  src={logoUrl}
-                  alt={`Logo de ${nombre}`}
-                  className="h-16 w-auto max-w-[120px] rounded-2xl bg-transparent object-contain shadow-xl sm:h-24 sm:max-w-[160px]"
-                />
-              )}
-
-              {empresa.rubro && (
-                <div
-                  className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold backdrop-blur-md"
-                  style={{
-                    borderColor: `${colorPrincipal}66`,
-                    backgroundColor: `${colorPrincipal}18`,
-                    color: imagenesHero.length > 0 ? "#ffffff" : colorPrincipal,
-                  }}
-                >
-                  <Sparkles className="h-3.5 w-3.5" />
-                  {empresa.rubro}
-                </div>
-              )}
-            </div>
-
-            <h1 className="mt-5 text-4xl font-extrabold tracking-tight sm:mt-6 sm:text-6xl lg:text-5xl">
-              {nombre}
-            </h1>
-
-            {textoPrincipal && (
-              <p
-                className={`mt-4 max-w-2xl text-lg font-medium leading-relaxed sm:mt-6 sm:text-2xl sm:leading-snug ${
-                  imagenesHero.length > 0 ? "text-zinc-100" : "text-slate-800 dark:text-zinc-200"
-                }`}
+          {/* Contenido Principal Izquierda */}
+          <div className="relative z-10 max-w-2xl text-white">
+            {empresa.rubro && (
+              <div
+                className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold backdrop-blur-md mb-4"
+                style={{
+                  borderColor: "rgba(255,255,255,0.2)",
+                  backgroundColor: "rgba(0,0,0,0.35)",
+                }}
               >
-                {textoPrincipal}
-              </p>
+                <Sparkles className="h-3 w-3 text-amber-300" />
+                {empresa.rubro}
+              </div>
             )}
 
+            <h1 className="text-3xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl text-white leading-[1.1]">
+              {textoPrincipal || nombre}
+            </h1>
+
             {textoSecundario && (
-              <p
-                className={`mt-2 max-w-2xl text-sm leading-relaxed sm:mt-3 sm:text-base ${
-                  imagenesHero.length > 0 ? "text-zinc-300" : "text-slate-600 dark:text-zinc-400"
-                }`}
-              >
+              <p className="mt-3 sm:mt-4 text-xs sm:text-base text-zinc-200/90 leading-relaxed max-w-xl font-normal">
                 {textoSecundario}
               </p>
             )}
 
-            <div className="mt-7 flex flex-col gap-3 sm:mt-9 sm:flex-row sm:flex-wrap sm:items-center">
-              {puedeMostrarReserva && (
+            {/* Botón Principal Cápsula Minimalista */}
+            <div className="mt-6 sm:mt-8 flex flex-wrap items-center gap-3">
+              {mostrarProductos && productos.length > 0 ? (
+                <a
+                  href="#productos"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 text-xs sm:text-sm font-bold text-slate-950 shadow-lg transition hover:bg-zinc-100 hover:scale-[1.02] active:scale-95"
+                >
+                  Ver catálogo
+                  <ArrowRight className="h-4 w-4" />
+                </a>
+              ) : puedeMostrarReserva ? (
                 <a
                   href="#reservar"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:brightness-110 active:scale-95 sm:text-base"
-                  style={{ backgroundColor: colorPrincipal }}
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 text-xs sm:text-sm font-bold text-slate-950 shadow-lg transition hover:bg-zinc-100 hover:scale-[1.02] active:scale-95"
                 >
-                  <Clock3 className="h-4 w-4 sm:h-5 sm:w-5" />
-                  {mostrarReservaMesa ? "Reservar mesa" : esAlojamiento ? "Reservar estadía" : "Reservar turno"}
+                  <Clock3 className="h-4 w-4" />
+                  Reservar ahora
                 </a>
-              )}
-
-              {(mostrarWhatsApp || redesSociales.length > 0) && (
-                <div className="flex w-full flex-nowrap items-center gap-2 sm:w-auto">
-                  {mostrarWhatsApp && (
-                    <a
-                      href={whatsappUrl}
-                      data-analytics-event="whatsapp_click"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3.5 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-emerald-500 active:scale-95 sm:flex-none sm:text-base"
-                    >
-                      <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
-                      Hablar por WhatsApp
-                    </a>
-                  )}
-
-                  {redesSociales.map((red) => (
-                    <a
-                      key={`hero-${red.nombre}`}
-                      href={red.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={`Abrir ${red.nombre}`}
-                      title={red.nombre}
-                      className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border shadow-sm backdrop-blur transition hover:-translate-y-0.5 active:scale-95 ${
-                        imagenesHero.length > 0 
-                          ? "border-white/20 bg-white/10 text-white hover:bg-white/20" 
-                          : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
-                      }`}
-                    >
-                      {red.nombre === "Instagram" ? (
-                        <span className="relative block h-5 w-5 rounded-[6px] border-2 border-current">
-                          <span className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-current" />
-                          <span className="absolute right-[2px] top-[2px] h-[3px] w-[3px] rounded-full bg-current" />
-                        </span>
-                      ) : red.nombre === "Facebook" ? (
-                        <span className="text-xl font-bold leading-none">f</span>
-                      ) : (
-                        <Music2 className="h-5 w-5" />
-                      )}
-                    </a>
-                  ))}
-                </div>
-              )}
-
-              {!puedeUsarTurnos && mostrarServicios && servicios.length > 0 && (
+              ) : mostrarWhatsApp ? (
                 <a
-                  href="#servicios"
-                  className={`inline-flex items-center justify-center gap-2 rounded-xl border px-6 py-3.5 text-sm font-semibold backdrop-blur transition hover:-translate-y-0.5 active:scale-95 sm:text-base ${
-                    imagenesHero.length > 0 
-                      ? "border-white/20 bg-white/10 text-white hover:bg-white/20" 
-                      : "border-slate-200 bg-white text-slate-900 shadow-sm hover:bg-slate-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800"
-                  }`}
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 text-xs sm:text-sm font-bold text-slate-950 shadow-lg transition hover:bg-zinc-100 hover:scale-[1.02] active:scale-95"
                 >
-                  <Package className="h-5 w-5" />
-                  {esAlojamiento ? "Ver habitaciones" : "Ver catálogo"}
+                  <MessageCircle className="h-4 w-4" />
+                  Contactar por WhatsApp
+                </a>
+              ) : null}
+
+              {mostrarWhatsApp && (mostrarProductos || puedeMostrarReserva) && (
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-black/30 backdrop-blur-md px-5 py-3 text-xs sm:text-sm font-semibold text-white transition hover:bg-black/50"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  WhatsApp
                 </a>
               )}
-            </div>
 
-            {puedeUsarQr && (
-              <div className="mt-5">
-                <CompartirPagina
-                  nombre={nombre}
-                  tema={esClaro ? "claro" : "oscuro"}
-                />
-              </div>
-            )}
+              {/* Redes Sociales compactas */}
+              {redesSociales.map((red) => (
+                <a
+                  key={`hero-${red.nombre}`}
+                  href={red.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={red.nombre}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/30 backdrop-blur-md text-white transition hover:bg-white/20"
+                >
+                  {red.nombre === "Instagram" ? (
+                    <span className="relative block h-4 w-4 rounded-[4px] border-2 border-current">
+                      <span className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-current" />
+                      <span className="absolute right-[1px] top-[1px] h-[2px] w-[2px] rounded-full bg-current" />
+                    </span>
+                  ) : red.nombre === "Facebook" ? (
+                    <span className="text-base font-bold leading-none">f</span>
+                  ) : (
+                    <Music2 className="h-4 w-4" />
+                  )}
+                </a>
+              ))}
+            </div>
           </div>
+
+          {/* Tarjeta de Producto Flotante en la Derecha (Estilo Veluno) */}
+          {productoDestacado && (
+            <div className="hidden md:block absolute right-8 lg:right-12 bottom-12 z-20 pointer-events-auto">
+              <a
+                href="#productos"
+                className="group flex items-center gap-3.5 rounded-3xl border border-white/30 bg-white/95 p-3.5 shadow-2xl backdrop-blur-xl transition duration-300 hover:scale-105 dark:border-zinc-800/80 dark:bg-zinc-900/95"
+              >
+                <div className="h-16 w-16 overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-800 shrink-0">
+                  <img
+                    src={productoDestacado.imagenUrl || productoDestacado.imagenes[0]}
+                    alt={productoDestacado.nombre}
+                    className="h-full w-full object-cover transition duration-300 group-hover:scale-110"
+                  />
+                </div>
+                <div className="pr-4 max-w-[170px]">
+                  <p className="truncate text-xs font-bold text-slate-900 dark:text-white">
+                    {productoDestacado.nombre}
+                  </p>
+                  <p className="mt-0.5 line-clamp-1 text-[10px] text-slate-500 dark:text-zinc-400">
+                    {productoDestacado.descripcion || "Disponible en catálogo"}
+                  </p>
+                  <p className="mt-1 text-xs font-extrabold text-slate-950 dark:text-white">
+                    ${Number(productoDestacado.precio).toLocaleString("es-AR")}
+                  </p>
+                </div>
+              </a>
+            </div>
+          )}
         </div>
       </section>
 
       {/* TARJETAS DE INFORMACIÓN */}
-      <section className="relative z-10 -mt-6 sm:-mt-10">
+      <section className="relative z-10">
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-3 px-4 pb-8 sm:gap-4 sm:px-8 sm:pb-12 md:grid-cols-2 lg:grid-cols-4">
           {mostrarHorarios && (
             <InfoCard
@@ -711,13 +701,13 @@ export default async function NegocioPage({ params }: PageProps) {
         <section id="productos" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-12 sm:px-8 sm:py-20">
           <div className="max-w-2xl">
             <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colorPrincipal }}>
-              {esRestaurante ? "Menú" : "Catálogo"}
+              {esRestaurante ? "Menú" : "Colección"}
             </p>
             <h2 className="mt-2 text-2xl font-extrabold tracking-tight sm:text-4xl">
-              {esRestaurante ? "Carta" : "Productos"}
+              {esRestaurante ? "Carta" : "Catálogo de productos"}
             </h2>
             <p className={`mt-2 text-sm sm:text-base ${claseTextoSecundario}`}>
-              {esRestaurante ? "Explorá nuestras entradas, platos principales, bebidas y postres." : "Productos disponibles en este negocio."}
+              {esRestaurante ? "Explorá nuestras entradas, platos principales, bebidas y postres." : "Descubrí todos los productos disponibles en nuestra tienda."}
             </p>
           </div>
 
@@ -793,7 +783,7 @@ export default async function NegocioPage({ params }: PageProps) {
           <div className="mx-auto max-w-7xl px-4 py-12 sm:px-8 sm:py-20">
             <div className="max-w-2xl">
               <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colorPrincipal }}>
-                Imágenes
+                Espacio
               </p>
               <h2 className="mt-2 text-2xl font-extrabold tracking-tight sm:text-4xl">
                 Galería de fotos
@@ -931,49 +921,6 @@ export default async function NegocioPage({ params }: PageProps) {
                   </div>
                 </details>
               ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* REDES SOCIALES */}
-      {redesSociales.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 pt-8 sm:px-8 sm:pt-12">
-          <div className={`rounded-3xl border p-6 sm:p-10 ${claseSeccionAlterna}`}>
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colorPrincipal }}>
-                  Nuestras redes
-                </p>
-                <h2 className="mt-1 text-xl font-extrabold tracking-tight sm:text-3xl">
-                  Seguinos y enterate de novedades
-                </h2>
-              </div>
-              <div className="flex flex-wrap items-center gap-3">
-                {redesSociales.map((red) => (
-                  <a
-                    key={red.nombre}
-                    href={red.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`Abrir ${red.nombre}`}
-                    className="inline-flex items-center gap-2.5 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-800 shadow-sm transition hover:bg-slate-50 active:scale-95 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:hover:bg-zinc-900"
-                  >
-                    {red.nombre === "Instagram" ? (
-                      <span className="relative block h-4 w-4 rounded-[5px] border-2 border-current">
-                        <span className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-current" />
-                        <span className="absolute right-[2px] top-[2px] h-[2px] w-[2px] rounded-full bg-current" />
-                      </span>
-                    ) : red.nombre === "Facebook" ? (
-                      <span className="text-lg font-bold leading-none">f</span>
-                    ) : (
-                      <Music2 className="h-4 w-4" />
-                    )}
-                    <span>{red.nombre}</span>
-                    <ExternalLink className="h-3.5 w-3.5 text-zinc-400" />
-                  </a>
-                ))}
-              </div>
             </div>
           </div>
         </section>
@@ -1133,7 +1080,7 @@ export default async function NegocioPage({ params }: PageProps) {
       )}
 
       {/* FOOTER */}
-      <footer className="border-t border-slate-200/80 dark:border-zinc-800/80">
+      <footer className="border-t border-slate-200/80 dark:border-zinc-800/80 bg-white dark:bg-[#0c0d0e]">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-10 text-sm text-slate-500 dark:text-zinc-500 sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <div>
             <p className="font-bold text-slate-900 dark:text-zinc-200">
