@@ -299,17 +299,12 @@ export default async function NegocioPage({ params }: PageProps) {
   const logoOscuroUrl = pagina.logoOscuroUrl?.trim() || "";
   const esClaro = pagina.tema === "claro";
 
-  // Las 3 imágenes dedicadas de portada
   const portadaUrl = pagina.portadaUrl?.trim() || "";
   const portadaUrl2 = (pagina as any).portadaUrl2?.trim() || "";
   const portadaUrl3 = (pagina as any).portadaUrl3?.trim() || "";
 
   const imagenesHero = [portadaUrl, portadaUrl2, portadaUrl3].filter(Boolean);
 
-  // Producto destacado para el widget flotante del estilo Veluno
-  const productoDestacado = productosTienda.find((p) => p.imagenUrl || p.imagenes.length > 0) || productosTienda[0];
-
-  // Galería de fotos del local (independiente, máx 6 fotos)
   const galeria = Array.isArray(pagina.galeria) ? pagina.galeria.filter((url): url is string => typeof url === "string" && url.trim().length > 0).slice(0, 6) : [];
 
   const telefonoLimpio = empresa.telefono?.replace(/\D/g, "") || "";
@@ -470,10 +465,10 @@ export default async function NegocioPage({ params }: PageProps) {
         </div>
       </header>
 
-      {/* HERO FLOTANTE ENMARCADO (ESTILO VELUNO) */}
-      <section id="inicio" className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 pt-2 pb-8 sm:py-6">
-        <div className="relative min-h-[520px] sm:min-h-[580px] lg:min-h-[620px] w-full overflow-hidden rounded-[2rem] sm:rounded-[2.75rem] shadow-xl border border-black/5 dark:border-white/10 flex flex-col justify-end p-6 sm:p-12 lg:p-16">
-          {/* Slider de Fondo */}
+      {/* HERO FLOTANTE LIMPIO (ESTILO VELUNO EXACTO) */}
+      <section id="inicio" className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 pt-2 pb-6 sm:py-5">
+        <div className="relative min-h-[500px] sm:min-h-[560px] lg:min-h-[600px] w-full overflow-hidden rounded-[2rem] sm:rounded-[2.75rem] shadow-xl border border-black/5 dark:border-white/10 flex flex-col justify-end p-6 sm:p-12 lg:p-16">
+          {/* Slider de Fondo nítido */}
           {imagenesHero.length > 0 ? (
             <HeroSlider
               imagenes={imagenesHero}
@@ -489,14 +484,14 @@ export default async function NegocioPage({ params }: PageProps) {
             />
           )}
 
-          {/* Contenido Principal Izquierda */}
-          <div className="relative z-10 max-w-2xl text-white">
+          {/* Textos y botones limpios (sin producto a la derecha) */}
+          <div className="relative z-10 max-w-xl text-white">
             {empresa.rubro && (
               <div
-                className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold backdrop-blur-md mb-4"
+                className="inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1 text-[11px] font-medium backdrop-blur-md mb-3"
                 style={{
-                  borderColor: "rgba(255,255,255,0.2)",
-                  backgroundColor: "rgba(0,0,0,0.35)",
+                  borderColor: "rgba(255,255,255,0.25)",
+                  backgroundColor: "rgba(0,0,0,0.3)",
                 }}
               >
                 <Sparkles className="h-3 w-3 text-amber-300" />
@@ -504,32 +499,33 @@ export default async function NegocioPage({ params }: PageProps) {
               </div>
             )}
 
-            <h1 className="text-3xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl text-white leading-[1.1]">
+            {/* Tipografía fina, compacta y elegante estilo Veluno */}
+            <h1 className="text-3xl sm:text-5xl lg:text-[3.5rem] font-medium tracking-normal text-white leading-[1.15] drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
               {textoPrincipal || nombre}
             </h1>
 
             {textoSecundario && (
-              <p className="mt-3 sm:mt-4 text-xs sm:text-base text-zinc-200/90 leading-relaxed max-w-xl font-normal">
+              <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-zinc-100/90 leading-relaxed font-normal max-w-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.7)]">
                 {textoSecundario}
               </p>
             )}
 
-            {/* Botón Principal Cápsula Minimalista */}
-            <div className="mt-6 sm:mt-8 flex flex-wrap items-center gap-3">
+            {/* Botones estilizados en píldora */}
+            <div className="mt-6 sm:mt-8 flex flex-wrap items-center gap-2.5">
               {mostrarProductos && productos.length > 0 ? (
                 <a
                   href="#productos"
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 text-xs sm:text-sm font-bold text-slate-950 shadow-lg transition hover:bg-zinc-100 hover:scale-[1.02] active:scale-95"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-xs sm:text-sm font-medium text-slate-950 shadow-md transition hover:bg-zinc-100 hover:scale-[1.02] active:scale-95"
                 >
                   Ver catálogo
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="h-3.5 w-3.5" />
                 </a>
               ) : puedeMostrarReserva ? (
                 <a
                   href="#reservar"
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 text-xs sm:text-sm font-bold text-slate-950 shadow-lg transition hover:bg-zinc-100 hover:scale-[1.02] active:scale-95"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-xs sm:text-sm font-medium text-slate-950 shadow-md transition hover:bg-zinc-100 hover:scale-[1.02] active:scale-95"
                 >
-                  <Clock3 className="h-4 w-4" />
+                  <Clock3 className="h-3.5 w-3.5" />
                   Reservar ahora
                 </a>
               ) : mostrarWhatsApp ? (
@@ -537,9 +533,9 @@ export default async function NegocioPage({ params }: PageProps) {
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 text-xs sm:text-sm font-bold text-slate-950 shadow-lg transition hover:bg-zinc-100 hover:scale-[1.02] active:scale-95"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-xs sm:text-sm font-medium text-slate-950 shadow-md transition hover:bg-zinc-100 hover:scale-[1.02] active:scale-95"
                 >
-                  <MessageCircle className="h-4 w-4" />
+                  <MessageCircle className="h-3.5 w-3.5" />
                   Contactar por WhatsApp
                 </a>
               ) : null}
@@ -549,9 +545,9 @@ export default async function NegocioPage({ params }: PageProps) {
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-black/30 backdrop-blur-md px-5 py-3 text-xs sm:text-sm font-semibold text-white transition hover:bg-black/50"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/40 backdrop-blur-md px-5 py-2.5 text-xs sm:text-sm font-normal text-white transition hover:bg-black/60"
                 >
-                  <MessageCircle className="h-4 w-4" />
+                  <MessageCircle className="h-3.5 w-3.5" />
                   WhatsApp
                 </a>
               )}
@@ -564,60 +560,31 @@ export default async function NegocioPage({ params }: PageProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={red.nombre}
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/30 backdrop-blur-md text-white transition hover:bg-white/20"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/40 backdrop-blur-md text-white transition hover:bg-white/20"
                 >
                   {red.nombre === "Instagram" ? (
-                    <span className="relative block h-4 w-4 rounded-[4px] border-2 border-current">
-                      <span className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-current" />
-                      <span className="absolute right-[1px] top-[1px] h-[2px] w-[2px] rounded-full bg-current" />
+                    <span className="relative block h-3.5 w-3.5 rounded-[3px] border-2 border-current">
+                      <span className="absolute left-1/2 top-1/2 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full border border-current" />
+                      <span className="absolute right-[0.5px] top-[0.5px] h-[1.5px] w-[1.5px] rounded-full bg-current" />
                     </span>
                   ) : red.nombre === "Facebook" ? (
-                    <span className="text-base font-bold leading-none">f</span>
+                    <span className="text-sm font-bold leading-none">f</span>
                   ) : (
-                    <Music2 className="h-4 w-4" />
+                    <Music2 className="h-3.5 w-3.5" />
                   )}
                 </a>
               ))}
             </div>
           </div>
-
-          {/* Tarjeta de Producto Flotante en la Derecha (Estilo Veluno) */}
-          {productoDestacado && (
-            <div className="hidden md:block absolute right-8 lg:right-12 bottom-12 z-20 pointer-events-auto">
-              <a
-                href="#productos"
-                className="group flex items-center gap-3.5 rounded-3xl border border-white/30 bg-white/95 p-3.5 shadow-2xl backdrop-blur-xl transition duration-300 hover:scale-105 dark:border-zinc-800/80 dark:bg-zinc-900/95"
-              >
-                <div className="h-16 w-16 overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-800 shrink-0">
-                  <img
-                    src={productoDestacado.imagenUrl || productoDestacado.imagenes[0]}
-                    alt={productoDestacado.nombre}
-                    className="h-full w-full object-cover transition duration-300 group-hover:scale-110"
-                  />
-                </div>
-                <div className="pr-4 max-w-[170px]">
-                  <p className="truncate text-xs font-bold text-slate-900 dark:text-white">
-                    {productoDestacado.nombre}
-                  </p>
-                  <p className="mt-0.5 line-clamp-1 text-[10px] text-slate-500 dark:text-zinc-400">
-                    {productoDestacado.descripcion || "Disponible en catálogo"}
-                  </p>
-                  <p className="mt-1 text-xs font-extrabold text-slate-950 dark:text-white">
-                    ${Number(productoDestacado.precio).toLocaleString("es-AR")}
-                  </p>
-                </div>
-              </a>
-            </div>
-          )}
         </div>
       </section>
 
-      {/* TARJETAS DE INFORMACIÓN */}
-      <section className="relative z-10">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-3 px-4 pb-8 sm:gap-4 sm:px-8 sm:pb-12 md:grid-cols-2 lg:grid-cols-4">
+      {/* TARJETAS DE INFORMACIÓN (OVALADAS, FINAS Y LIMPIAS ESTILO VELUNO) */}
+      <section className="relative z-10 mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 pb-8 pt-1">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
           {mostrarHorarios && (
-            <InfoCard
-              icono={<Clock3 className="h-5 w-5" />}
+            <InfoCardMinimal
+              icono={<Clock3 className="h-4 w-4" />}
               titulo="Horarios"
               valor={empresa.horarios || ""}
               color={colorPrincipal}
@@ -627,11 +594,11 @@ export default async function NegocioPage({ params }: PageProps) {
           {mostrarDireccion && (
             <a
               href="#ubicacion"
-              className="block rounded-2xl transition hover:-translate-y-1"
+              className="block transition hover:-translate-y-0.5"
               aria-label="Ir al mapa y ver cómo llegar"
             >
-              <InfoCard
-                icono={<MapPin className="h-5 w-5" />}
+              <InfoCardMinimal
+                icono={<MapPin className="h-4 w-4" />}
                 titulo="Cómo llegar"
                 valor={empresa.direccion || ""}
                 color={colorPrincipal}
@@ -640,8 +607,8 @@ export default async function NegocioPage({ params }: PageProps) {
           )}
 
           {mostrarWhatsApp && (
-            <InfoCard
-              icono={<Phone className="h-5 w-5" />}
+            <InfoCardMinimal
+              icono={<Phone className="h-4 w-4" />}
               titulo="Teléfono"
               valor={empresa.telefono || ""}
               color={colorPrincipal}
@@ -649,8 +616,8 @@ export default async function NegocioPage({ params }: PageProps) {
           )}
 
           {mostrarEmail && (
-            <InfoCard
-              icono={<Mail className="h-5 w-5" />}
+            <InfoCardMinimal
+              icono={<Mail className="h-4 w-4" />}
               titulo="Correo"
               valor={empresa.email || ""}
               color={colorPrincipal}
@@ -1259,18 +1226,24 @@ function CatalogoCard({
   );
 }
 
-function InfoCard({ icono, titulo, valor, color }: { icono: React.ReactNode; titulo: string; valor: string; color: string; }) {
+{/* TARJETAS COMPACTAS OVALADAS Y FINAS (ESTILO VELUNO) */}
+function InfoCardMinimal({ icono, titulo, valor, color }: { icono: React.ReactNode; titulo: string; valor: string; color: string; }) {
   return (
-    <div className="h-full rounded-2xl border border-slate-200/80 bg-white/90 p-4 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/80 sm:rounded-3xl sm:p-5">
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl sm:h-11 sm:w-11 sm:rounded-2xl" style={{ backgroundColor: `${color}15`, color }}>
+    <div className="flex items-center gap-3.5 rounded-full border border-slate-200/90 bg-white/95 px-4 py-2.5 shadow-sm backdrop-blur transition hover:border-slate-300 dark:border-zinc-800/90 dark:bg-zinc-900/90">
+      <div 
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full" 
+        style={{ backgroundColor: `${color}15`, color }}
+      >
         {icono}
       </div>
-      <p className="mt-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
-        {titulo}
-      </p>
-      <p className="mt-1 whitespace-pre-line break-words text-xs font-medium leading-relaxed text-slate-800 dark:text-zinc-200 sm:text-sm">
-        {valor}
-      </p>
+      <div className="min-w-0 pr-1">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
+          {titulo}
+        </p>
+        <p className="truncate text-xs font-medium text-slate-800 dark:text-zinc-200">
+          {valor}
+        </p>
+      </div>
     </div>
   );
 }

@@ -33,12 +33,12 @@ export default function HeroSlider({
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      {/* Imágenes en transición suave */}
+      {/* Imágenes nítidas sin opacidad ni filtros oscuros */}
       {imagenes.map((url, i) => (
         <div
           key={`${url}-${i}`}
           className={`absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-in-out ${
-            i === indiceActual ? "opacity-100 scale-105" : "opacity-0 scale-100"
+            i === indiceActual ? "opacity-100 scale-100" : "opacity-0 scale-95"
           }`}
           style={{
             backgroundImage: `url("${url}")`,
@@ -46,18 +46,9 @@ export default function HeroSlider({
         />
       ))}
 
-      {/* Degradado para legibilidad del texto en la izquierda e inferior */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/20 sm:bg-gradient-to-r sm:from-black/85 sm:via-black/50 sm:to-transparent" />
-      <div
-        className="absolute inset-0 opacity-20"
-        style={{
-          background: `radial-gradient(circle at 20% 50%, ${colorPrincipal}55, transparent 70%)`,
-        }}
-      />
-
-      {/* Puntos de paginación inferiores (dots) */}
+      {/* Puntos de paginación inferiores (dots estilo Veluno) */}
       {imagenes.length > 1 && (
-        <div className="absolute bottom-6 inset-x-0 flex justify-center items-center gap-2 pointer-events-auto z-20">
+        <div className="absolute bottom-5 inset-x-0 flex justify-center items-center gap-2 pointer-events-auto z-20">
           {imagenes.map((_, i) => (
             <button
               key={`dot-${i}`}
@@ -69,7 +60,7 @@ export default function HeroSlider({
               aria-label={`Ir a imagen ${i + 1}`}
               className={`h-2 rounded-full transition-all duration-300 ${
                 i === indiceActual
-                  ? "w-7 bg-white shadow-md"
+                  ? "w-6 bg-white shadow"
                   : "w-2 bg-white/40 hover:bg-white/70"
               }`}
             />
