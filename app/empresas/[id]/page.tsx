@@ -397,9 +397,10 @@ export default function ConfigurarAgentePage() {
       return;
     }
 
-    const TAMANO_MAXIMO = 5 * 1024 * 1024;
+    // AUMENTADO DE 5 MB A 10 MB
+    const TAMANO_MAXIMO = 10 * 1024 * 1024;
     if (archivo.size > TAMANO_MAXIMO) {
-      setError("La imagen no puede superar los 5 MB.");
+      setError("La imagen no puede superar los 10 MB.");
       return;
     }
 
@@ -497,7 +498,7 @@ export default function ConfigurarAgentePage() {
         setPaginaGaleria((actual) => [...actual, url].slice(0, 6));
       }
 
-      setMensaje("Imagen cargada con éxito. Hacé clic en 'Guardar cambios' para publicarla.");
+      setMensaje("Imagen cargada con éxito. Hacé clic en 'Guardar cambios' para aplicarla.");
     } catch (uploadError) {
       console.error("Error al subir imagen:", uploadError);
       setError(uploadError instanceof Error ? uploadError.message : "Error al procesar la imagen.");
@@ -548,7 +549,7 @@ export default function ConfigurarAgentePage() {
     const respuestaLimpia = preguntaFrecuenteRespuesta.trim();
 
     if (!preguntaLimpia || !respuestaLimpia) {
-      setError("Completá la pregunta y la respuesta.");
+      setError("Completá el pregunta y la respuesta.");
       return;
     }
 
@@ -1030,21 +1031,21 @@ export default function ConfigurarAgentePage() {
                 />
               </div>
 
-              {/* IDENTIDAD VISUAL: LOGOS Y HASTA 3 PORTADAS */}
+              {/* IDENTIDAD VISUAL: TAMAÑOS, FORMATOS Y LÍMITES DETALLADOS */}
               <div className="md:col-span-2">
                 <div className="mb-2 sm:mb-3">
                   <p className="text-xs font-medium text-slate-700 dark:text-zinc-200 sm:text-sm">
                     Identidad visual
                   </p>
                   <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs">
-                    Cargá los logos del negocio y hasta 3 imágenes exclusivas para el carrusel de portada.
+                    Cargá los logos y hasta 3 fotos de portada. Formatos permitidos: JPG, PNG o WebP (hasta 10 MB por imagen).
                   </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-3">
                   <ImagenUploader
                     titulo="Logo claro / principal"
-                    descripcion="PNG, JPG o WebP · Se usa en modo oscuro y en el encabezado."
+                    descripcion="PNG, JPG o WebP · máx. 10 MB · recomendado 512 × 512 px (cuadrado)."
                     imagenUrl={paginaLogoUrl}
                     cargando={subiendoImagen === "logo"}
                     onSeleccionar={(archivo) => void subirImagenPagina(archivo, "logo")}
@@ -1054,7 +1055,7 @@ export default function ConfigurarAgentePage() {
 
                   <ImagenUploader
                     titulo="Logo secundario (Oscuro)"
-                    descripcion="Opcional. Se muestra automáticamente cuando el tema de la página es Claro."
+                    descripcion="PNG, JPG o WebP · máx. 10 MB · recomendado 512 × 512 px. Se usa en modo claro."
                     imagenUrl={paginaLogoOscuroUrl}
                     cargando={subiendoImagen === "logoOscuro"}
                     onSeleccionar={(archivo) => void subirImagenPagina(archivo, "logoOscuro")}
@@ -1064,7 +1065,7 @@ export default function ConfigurarAgentePage() {
 
                   <ImagenUploader
                     titulo="Portada 1 (Principal)"
-                    descripcion="Primera foto de portada · recomendado 1600 × 900 px."
+                    descripcion="JPG, PNG o WebP · máx. 10 MB · recomendado 1920 × 1080 px (16:9 horizontal)."
                     imagenUrl={paginaPortadaUrl}
                     cargando={subiendoImagen === "portada"}
                     onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada")}
@@ -1074,7 +1075,7 @@ export default function ConfigurarAgentePage() {
 
                   <ImagenUploader
                     titulo="Portada 2 (Opcional)"
-                    descripcion="Segunda foto del slider · ideal promociones o novedades."
+                    descripcion="JPG, PNG o WebP · máx. 10 MB · recomendado 1920 × 1080 px (16:9 horizontal)."
                     imagenUrl={paginaPortadaUrl2}
                     cargando={subiendoImagen === "portada2"}
                     onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada2")}
@@ -1084,7 +1085,7 @@ export default function ConfigurarAgentePage() {
 
                   <ImagenUploader
                     titulo="Portada 3 (Opcional)"
-                    descripcion="Tercera foto del slider · novedades o banner visual."
+                    descripcion="JPG, PNG o WebP · máx. 10 MB · recomendado 1920 × 1080 px (16:9 horizontal)."
                     imagenUrl={paginaPortadaUrl3}
                     cargando={subiendoImagen === "portada3"}
                     onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada3")}
@@ -1101,7 +1102,7 @@ export default function ConfigurarAgentePage() {
                         Galería de fotos del local
                       </p>
                       <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs">
-                        {paginaGaleria.length}/6 imágenes cargadas · fotos de tu local, equipo o espacio
+                        {paginaGaleria.length}/6 fotos cargadas · JPG, PNG o WebP · máx. 10 MB c/u · recomendado 1200 × 900 px (4:3)
                       </p>
                     </div>
 
