@@ -544,10 +544,10 @@ export default async function NegocioPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* FOTOS EN MÓVIL: DOS IMÁGENES HORIZONTALES (ARRIBA Y ABAJO) */}
-        <div className="sm:hidden flex flex-col gap-2 w-full">
+{/* FOTOS EN MÓVIL: AGRANDADAS PARA LLENAR EL ESPACIO VERTICAL */}
+        <div className="sm:hidden flex flex-1 flex-col gap-3 w-full py-1">
           {/* Imagen Superior */}
-          <div className="w-full aspect-[21/9] overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
+          <div className="relative w-full flex-1 min-h-[140px] overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
             {imagenesHero[0] ? (
               <img
                 src={imagenesHero[0]}
@@ -559,7 +559,7 @@ export default async function NegocioPage({ params }: PageProps) {
             )}
           </div>
           {/* Imagen Inferior */}
-          <div className="w-full aspect-[21/9] overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
+          <div className="relative w-full flex-1 min-h-[140px] overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
             {imagenesHero[1] || imagenesHero[0] ? (
               <img
                 src={imagenesHero[1] || imagenesHero[0]}
