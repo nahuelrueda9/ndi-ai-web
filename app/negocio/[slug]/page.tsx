@@ -308,7 +308,9 @@ export default async function NegocioPage({ params }: PageProps) {
   const portadaUrl5 = (pagina as any).portadaUrl5?.trim() || "";
   const portadaUrl6 = (pagina as any).portadaUrl6?.trim() || "";
 
+  // 6 imágenes para portadas
   const imagenesHero = [portadaUrl, portadaUrl2, portadaUrl3, portadaUrl4, portadaUrl5, portadaUrl6].filter(Boolean);
+  // 10 imágenes para galería
   const galeria = Array.isArray(pagina.galeria) ? pagina.galeria.filter((url): url is string => typeof url === "string" && url.trim().length > 0).slice(0, 10) : [];
 
   const telefonoLimpio = empresa.telefono?.replace(/\D/g, "") || "";
@@ -365,7 +367,7 @@ export default async function NegocioPage({ params }: PageProps) {
     >
       <PublicAnalytics slug={slug} />
 
-      {/* HEADER LIMPIO */}
+      {/* HEADER */}
       <header className="sticky top-0 z-50 h-16 bg-[#f8f9fa]/90 backdrop-blur-xl transition-colors dark:bg-[#0c0d0e]/90 border-b border-slate-200/40 dark:border-zinc-800/40">
         <div className="mx-auto flex h-full max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-8">
           <a href="#inicio" className="group flex min-w-0 items-center gap-3">
@@ -488,74 +490,86 @@ export default async function NegocioPage({ params }: PageProps) {
             </p>
           )}
 
-          {/* FILA ÚNICA CONTINUA DE BOTONES Y REDES */}
-          <div className="flex items-center justify-between gap-1 pt-1">
-            <div className="flex items-center gap-1.5 shrink-0">
-              {mostrarProductos && productos.length > 0 ? (
-                <a
-                  href="#productos"
-                  className="inline-flex shrink-0 items-center gap-1 rounded-full bg-slate-950 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 active:scale-95"
-                >
-                  {esRestaurante ? "Ver carta" : esAlojamiento ? "Ver habitaciones" : "Ver catálogo"}
-                  <ArrowRight className="h-3 w-3" />
-                </a>
-              ) : puedeMostrarReserva ? (
-                <a
-                  href="#reservar"
-                  className="inline-flex shrink-0 items-center gap-1 rounded-full bg-slate-950 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 active:scale-95"
-                >
-                  <Clock3 className="h-3 w-3" />
-                  Reservar
-                </a>
-              ) : null}
+          {/* FILA COMPACTA CON REDES ALINEADAS A LA IZQUIERDA AL LADO DE WHATSAPP */}
+          <div className="flex items-center gap-1.5 pt-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {mostrarProductos && productos.length > 0 ? (
+              <a
+                href="#productos"
+                className="inline-flex shrink-0 items-center gap-1 rounded-full bg-slate-950 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 active:scale-95"
+              >
+                {esRestaurante ? "Ver carta" : esAlojamiento ? "Ver habitaciones" : "Ver catálogo"}
+                <ArrowRight className="h-3 w-3" />
+              </a>
+            ) : puedeMostrarReserva ? (
+              <a
+                href="#reservar"
+                className="inline-flex shrink-0 items-center gap-1 rounded-full bg-slate-950 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 active:scale-95"
+              >
+                <Clock3 className="h-3 w-3" />
+                Reservar
+              </a>
+            ) : null}
 
-              {mostrarWhatsApp && (
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-1.5 text-[11px] font-semibold text-white shadow-sm transition hover:bg-emerald-500 active:scale-95"
-                >
-                  <FaWhatsapp className="h-3 w-3" />
-                  WhatsApp
-                </a>
-              )}
-            </div>
+            {mostrarWhatsApp && (
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-1.5 text-[11px] font-semibold text-white shadow-sm transition hover:bg-emerald-500 active:scale-95"
+              >
+                <FaWhatsapp className="h-3 w-3" />
+                WhatsApp
+              </a>
+            )}
 
-            <div className="flex items-center gap-1 shrink-0">
-              {redesSociales.map((red) => (
-                <a
-                  key={`hero-mobile-${red.nombre}`}
-                  href={red.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={red.nombre}
-                  className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 transition active:scale-95"
-                >
-                  {red.nombre === "Instagram" ? (
-                    <FaInstagram className="h-3.5 w-3.5 text-[#E1306C]" />
-                  ) : red.nombre === "Facebook" ? (
-                    <FaFacebookF className="h-3 w-3 text-[#1877F2]" />
-                  ) : (
-                    <FaTiktok className="h-3 w-3" />
-                  )}
-                </a>
-              ))}
-            </div>
+            {/* ÍCONOS DE REDES INMEDIATAMENTE AL LADO */}
+            {redesSociales.map((red) => (
+              <a
+                key={`hero-mobile-${red.nombre}`}
+                href={red.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={red.nombre}
+                className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 transition active:scale-95"
+              >
+                {red.nombre === "Instagram" ? (
+                  <FaInstagram className="h-3.5 w-3.5 text-[#E1306C]" />
+                ) : red.nombre === "Facebook" ? (
+                  <FaFacebookF className="h-3 w-3 text-[#1877F2]" />
+                ) : (
+                  <FaTiktok className="h-3 w-3" />
+                )}
+              </a>
+            ))}
           </div>
         </div>
 
-        {/* FOTO EN MÓVIL: HORIZONTAL NATURAL / EN ESCRITORIO: SLIDER */}
-        <div className="sm:hidden w-full overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 shadow-md aspect-[16/9] relative">
-          {imagenesHero.length > 0 ? (
-            <HeroSlider
-              imagenes={imagenesHero}
-              nombre={nombre}
-              colorPrincipal={colorPrincipal}
-            />
-          ) : (
-            <div className="w-full h-full bg-zinc-800" />
-          )}
+        {/* FOTOS EN MÓVIL: DOS IMÁGENES HORIZONTALES (ARRIBA Y ABAJO) */}
+        <div className="sm:hidden flex flex-col gap-2 w-full">
+          {/* Imagen Superior */}
+          <div className="w-full aspect-[21/9] overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
+            {imagenesHero[0] ? (
+              <img
+                src={imagenesHero[0]}
+                alt={`${nombre} - Portada principal`}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-zinc-800" />
+            )}
+          </div>
+          {/* Imagen Inferior */}
+          <div className="w-full aspect-[21/9] overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
+            {imagenesHero[1] || imagenesHero[0] ? (
+              <img
+                src={imagenesHero[1] || imagenesHero[0]}
+                alt={`${nombre} - Portada secundaria`}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-zinc-800" />
+            )}
+          </div>
         </div>
 
         {/* CONTENEDOR ESCRITORIO (SLIDER CON HASTA 6 FOTOS) */}
@@ -641,7 +655,7 @@ export default async function NegocioPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* 4 TARJETAS DE INFORMACIÓN COMPACTAS */}
+        {/* 4 TARJETAS DE INFORMACIÓN */}
         {tieneInfo && (
           <div className="mt-2.5 grid grid-cols-2 md:grid-cols-4 gap-2 text-slate-700 dark:text-zinc-300">
             {mostrarHorarios && empresa.horarios && (
@@ -808,7 +822,7 @@ export default async function NegocioPage({ params }: PageProps) {
         </section>
       )}
 
-      {/* GALERÍA DE FOTOS (HASTA 10 FOTOS) */}
+      {/* GALERÍA DE FOTOS */}
       {mostrarGaleria && galeria.length > 0 && (
         <section id="galeria" className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}>
           <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-10 sm:py-16">
