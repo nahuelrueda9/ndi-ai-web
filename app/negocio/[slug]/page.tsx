@@ -308,11 +308,9 @@ export default async function NegocioPage({ params }: PageProps) {
   const portadaUrl5 = (pagina as any).portadaUrl5?.trim() || "";
   const portadaUrl6 = (pagina as any).portadaUrl6?.trim() || "";
 
-  // 6 imágenes totales para portada y 10 para galería
   const imagenesHero = [portadaUrl, portadaUrl2, portadaUrl3, portadaUrl4, portadaUrl5, portadaUrl6].filter(Boolean);
   const galeria = Array.isArray(pagina.galeria) ? pagina.galeria.filter((url): url is string => typeof url === "string" && url.trim().length > 0).slice(0, 10) : [];
 
-  // Split de rotación en móvil: primeras 3 arriba y siguientes 3 abajo
   const portadasSuperiores = imagenesHero.slice(0, 3);
   const portadasInferiores =
     imagenesHero.length > 3
@@ -484,10 +482,10 @@ export default async function NegocioPage({ params }: PageProps) {
       {/* HERO RESPONSIVO */}
       <section
         id="inicio"
-        className="mx-auto flex w-full max-w-[1440px] flex-col justify-between p-3 sm:p-5 lg:p-7 min-h-[calc(100svh-4rem)]"
+        className="mx-auto flex w-full max-w-[1440px] flex-col justify-between p-2.5 sm:p-5 lg:p-7 min-h-[calc(100svh-4rem)]"
       >
         {/* BLOQUE MÓVIL EDITORIAL */}
-        <div className="flex flex-col gap-2 px-1 pb-2 sm:hidden text-slate-900 dark:text-white">
+        <div className="flex flex-col gap-1.5 px-1 pb-1.5 sm:hidden text-slate-900 dark:text-white">
           <h1 className="text-2xl font-bold tracking-tight leading-[1.15]">
             {textoPrincipal || nombre}
           </h1>
@@ -498,8 +496,8 @@ export default async function NegocioPage({ params }: PageProps) {
             </p>
           )}
 
-          {/* BOTONES Y REDES ALINEADOS A LA IZQUIERDA EN UNA SOLA FILA */}
-          <div className="flex items-center gap-1.5 pt-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {/* BOTONES Y REDES */}
+          <div className="flex items-center gap-1.5 pt-0.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {mostrarProductos && productos.length > 0 ? (
               <a
                 href="#productos"
@@ -551,10 +549,10 @@ export default async function NegocioPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* FOTOS EN MÓVIL: DOS SLIDERS DEL MISMO TAMAÑO IDÉNTICO */}
-        <div className="sm:hidden flex flex-col gap-2.5 w-full">
-          {/* Slider Superior (Portadas 1 a 3) */}
-          <div className="relative w-full aspect-[16/9] overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
+        {/* FOTOS EN MÓVIL: AGRANDADAS CON PROPORCIÓN 16:10 Y ESPACIOS REDUCIDOS */}
+        <div className="sm:hidden flex flex-col gap-1.5 w-full my-0.5">
+          {/* Slider Superior */}
+          <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
             {portadasSuperiores.length > 0 ? (
               <HeroSlider
                 imagenes={portadasSuperiores}
@@ -566,8 +564,8 @@ export default async function NegocioPage({ params }: PageProps) {
             )}
           </div>
 
-          {/* Slider Inferior (Portadas 4 a 6) */}
-          <div className="relative w-full aspect-[16/9] overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
+          {/* Slider Inferior */}
+          <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
             {portadasInferiores.length > 0 ? (
               <HeroSlider
                 imagenes={portadasInferiores}
@@ -580,7 +578,7 @@ export default async function NegocioPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* CONTENEDOR ESCRITORIO (SLIDER CON HASTA 6 FOTOS) */}
+        {/* CONTENEDOR ESCRITORIO */}
         <div className="hidden sm:flex relative flex-1 w-full overflow-hidden rounded-[2.75rem] shadow-xl border border-black/5 dark:border-white/10 flex-col justify-end p-10 lg:p-14 min-h-[350px]">
           {imagenesHero.length > 0 ? (
             <HeroSlider
@@ -665,7 +663,7 @@ export default async function NegocioPage({ params }: PageProps) {
 
         {/* 4 TARJETAS DE INFORMACIÓN */}
         {tieneInfo && (
-          <div className="mt-2.5 grid grid-cols-2 md:grid-cols-4 gap-2 text-slate-700 dark:text-zinc-300">
+          <div className="mt-1.5 grid grid-cols-2 md:grid-cols-4 gap-2 text-slate-700 dark:text-zinc-300">
             {mostrarHorarios && empresa.horarios && (
               <div className="flex items-center gap-2 rounded-xl bg-white/80 dark:bg-zinc-900/80 px-3 py-2 border border-slate-200/70 dark:border-zinc-800/70 shadow-sm backdrop-blur-md">
                 <Clock3 className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-zinc-500" />
