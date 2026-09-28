@@ -108,6 +108,9 @@ interface Empresa {
     portadaUrl?: string;
     portadaUrl2?: string;
     portadaUrl3?: string;
+    portadaUrl4?: string;
+    portadaUrl5?: string;
+    portadaUrl6?: string;
     galeria?: string[];
 
     mostrarWhatsApp?: boolean;
@@ -190,9 +193,12 @@ export default function ConfigurarAgentePage() {
   const [paginaPortadaUrl, setPaginaPortadaUrl] = useState("");
   const [paginaPortadaUrl2, setPaginaPortadaUrl2] = useState("");
   const [paginaPortadaUrl3, setPaginaPortadaUrl3] = useState("");
+  const [paginaPortadaUrl4, setPaginaPortadaUrl4] = useState("");
+  const [paginaPortadaUrl5, setPaginaPortadaUrl5] = useState("");
+  const [paginaPortadaUrl6, setPaginaPortadaUrl6] = useState("");
   const [paginaGaleria, setPaginaGaleria] = useState<string[]>([]);
   const [subiendoImagen, setSubiendoImagen] = useState<
-    "logo" | "logoOscuro" | "portada" | "portada2" | "portada3" | "galeria" | null
+    "logo" | "logoOscuro" | "portada" | "portada2" | "portada3" | "portada4" | "portada5" | "portada6" | "galeria" | null
   >(null);
 
   const [paginaMostrarWhatsApp, setPaginaMostrarWhatsApp] = useState(true);
@@ -310,10 +316,13 @@ export default function ConfigurarAgentePage() {
         setPaginaPortadaUrl(empresa.paginaPublica?.portadaUrl || "");
         setPaginaPortadaUrl2(empresa.paginaPublica?.portadaUrl2 || "");
         setPaginaPortadaUrl3(empresa.paginaPublica?.portadaUrl3 || "");
+        setPaginaPortadaUrl4(empresa.paginaPublica?.portadaUrl4 || "");
+        setPaginaPortadaUrl5(empresa.paginaPublica?.portadaUrl5 || "");
+        setPaginaPortadaUrl6(empresa.paginaPublica?.portadaUrl6 || "");
 
         setPaginaGaleria(
           Array.isArray(empresa.paginaPublica?.galeria)
-            ? empresa.paginaPublica!.galeria!.filter((url): url is string => typeof url === "string" && url.trim().length > 0).slice(0, 6)
+            ? empresa.paginaPublica!.galeria!.filter((url): url is string => typeof url === "string" && url.trim().length > 0).slice(0, 10)
             : [],
         );
 
@@ -388,7 +397,7 @@ export default function ConfigurarAgentePage() {
 
   const subirImagenPagina = async (
     archivo: File,
-    destino: "logo" | "logoOscuro" | "portada" | "portada2" | "portada3" | "galeria",
+    destino: "logo" | "logoOscuro" | "portada" | "portada2" | "portada3" | "portada4" | "portada5" | "portada6" | "galeria",
   ) => {
     if (!user || !empresaId) return;
 
@@ -397,15 +406,14 @@ export default function ConfigurarAgentePage() {
       return;
     }
 
-    // AUMENTADO DE 5 MB A 10 MB
     const TAMANO_MAXIMO = 10 * 1024 * 1024;
     if (archivo.size > TAMANO_MAXIMO) {
       setError("La imagen no puede superar los 10 MB.");
       return;
     }
 
-    if (destino === "galeria" && paginaGaleria.length >= 6) {
-      setError("Podés cargar hasta 6 imágenes en la galería.");
+    if (destino === "galeria" && paginaGaleria.length >= 10) {
+      setError("Podés cargar hasta 10 imágenes en la galería.");
       return;
     }
 
@@ -494,8 +502,14 @@ export default function ConfigurarAgentePage() {
         setPaginaPortadaUrl2(url);
       } else if (destino === "portada3") {
         setPaginaPortadaUrl3(url);
+      } else if (destino === "portada4") {
+        setPaginaPortadaUrl4(url);
+      } else if (destino === "portada5") {
+        setPaginaPortadaUrl5(url);
+      } else if (destino === "portada6") {
+        setPaginaPortadaUrl6(url);
       } else {
-        setPaginaGaleria((actual) => [...actual, url].slice(0, 6));
+        setPaginaGaleria((actual) => [...actual, url].slice(0, 10));
       }
 
       setMensaje("Imagen cargada con éxito. Hacé clic en 'Guardar cambios' para aplicarla.");
@@ -672,6 +686,9 @@ export default function ConfigurarAgentePage() {
         "paginaPublica.portadaUrl": paginaPortadaUrl,
         "paginaPublica.portadaUrl2": paginaPortadaUrl2,
         "paginaPublica.portadaUrl3": paginaPortadaUrl3,
+        "paginaPublica.portadaUrl4": paginaPortadaUrl4,
+        "paginaPublica.portadaUrl5": paginaPortadaUrl5,
+        "paginaPublica.portadaUrl6": paginaPortadaUrl6,
         "paginaPublica.galeria": paginaGaleria,
         "paginaPublica.mostrarWhatsApp": paginaMostrarWhatsApp,
         "paginaPublica.mostrarEmail": paginaMostrarEmail,
@@ -1031,14 +1048,14 @@ export default function ConfigurarAgentePage() {
                 />
               </div>
 
-              {/* IDENTIDAD VISUAL: TAMAÑOS, FORMATOS Y LÍMITES DETALLADOS */}
+              {/* IDENTIDAD VISUAL: HASTA 6 PORTADAS Y LÍMITE DE 10 MB */}
               <div className="md:col-span-2">
                 <div className="mb-2 sm:mb-3">
                   <p className="text-xs font-medium text-slate-700 dark:text-zinc-200 sm:text-sm">
                     Identidad visual
                   </p>
                   <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs">
-                    Cargá los logos y hasta 3 fotos de portada. Formatos permitidos: JPG, PNG o WebP (hasta 10 MB por imagen).
+                    Cargá los logos y hasta 6 fotos de portada. Formatos permitidos: JPG, PNG o WebP (hasta 10 MB por imagen).
                   </p>
                 </div>
 
@@ -1092,9 +1109,39 @@ export default function ConfigurarAgentePage() {
                     onQuitar={() => setPaginaPortadaUrl3("")}
                     aspectClass="aspect-[16/9]"
                   />
+
+                  <ImagenUploader
+                    titulo="Portada 4 (Opcional)"
+                    descripcion="JPG, PNG o WebP · máx. 10 MB · recomendado 1920 × 1080 px (16:9 horizontal)."
+                    imagenUrl={paginaPortadaUrl4}
+                    cargando={subiendoImagen === "portada4"}
+                    onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada4")}
+                    onQuitar={() => setPaginaPortadaUrl4("")}
+                    aspectClass="aspect-[16/9]"
+                  />
+
+                  <ImagenUploader
+                    titulo="Portada 5 (Opcional)"
+                    descripcion="JPG, PNG o WebP · máx. 10 MB · recomendado 1920 × 1080 px (16:9 horizontal)."
+                    imagenUrl={paginaPortadaUrl5}
+                    cargando={subiendoImagen === "portada5"}
+                    onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada5")}
+                    onQuitar={() => setPaginaPortadaUrl5("")}
+                    aspectClass="aspect-[16/9]"
+                  />
+
+                  <ImagenUploader
+                    titulo="Portada 6 (Opcional)"
+                    descripcion="JPG, PNG o WebP · máx. 10 MB · recomendado 1920 × 1080 px (16:9 horizontal)."
+                    imagenUrl={paginaPortadaUrl6}
+                    cargando={subiendoImagen === "portada6"}
+                    onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada6")}
+                    onQuitar={() => setPaginaPortadaUrl6("")}
+                    aspectClass="aspect-[16/9]"
+                  />
                 </div>
 
-                {/* SECCIÓN GALERÍA INDEPENDIENTE */}
+                {/* SECCIÓN GALERÍA INDEPENDIENTE (HASTA 10 FOTOS) */}
                 <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/50 sm:mt-5 sm:rounded-2xl sm:p-4">
                   <div className="flex items-center justify-between gap-2 sm:flex-wrap sm:gap-3">
                     <div>
@@ -1102,7 +1149,7 @@ export default function ConfigurarAgentePage() {
                         Galería de fotos del local
                       </p>
                       <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs">
-                        {paginaGaleria.length}/6 fotos cargadas · JPG, PNG o WebP · máx. 10 MB c/u · recomendado 1200 × 900 px (4:3)
+                        {paginaGaleria.length}/10 fotos cargadas · JPG, PNG o WebP · máx. 10 MB c/u · recomendado 1200 × 900 px (4:3)
                       </p>
                     </div>
 
@@ -1112,7 +1159,7 @@ export default function ConfigurarAgentePage() {
                         type="file"
                         accept="image/*"
                         className="hidden"
-                        disabled={paginaGaleria.length >= 6 || subiendoImagen === "galeria"}
+                        disabled={paginaGaleria.length >= 10 || subiendoImagen === "galeria"}
                         onChange={(event) => {
                           const archivo = event.target.files?.[0];
                           if (archivo) {
@@ -1124,7 +1171,7 @@ export default function ConfigurarAgentePage() {
                       <label
                         htmlFor="galeria-upload-input"
                         className={`inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-[10px] font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm ${
-                          paginaGaleria.length >= 6 || subiendoImagen === "galeria"
+                          paginaGaleria.length >= 10 || subiendoImagen === "galeria"
                             ? "pointer-events-none opacity-50"
                             : ""
                         }`}
@@ -1136,7 +1183,7 @@ export default function ConfigurarAgentePage() {
                   </div>
 
                   {paginaGaleria.length > 0 ? (
-                    <div className="mt-3 grid grid-cols-3 gap-2 sm:mt-4 sm:gap-3">
+                    <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:mt-4 sm:gap-3">
                       {paginaGaleria.map((url, indice) => (
                         <div
                           key={`${url}-${indice}`}
