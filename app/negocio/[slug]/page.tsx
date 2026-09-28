@@ -6,12 +6,12 @@ import {
   Mail,
   MapPin,
   MessageCircle,
-  Music2,
   Package,
   Phone,
   Quote,
   ArrowRight,
 } from "lucide-react";
+import { FaInstagram, FaFacebookF, FaTiktok, FaWhatsapp } from "react-icons/fa6";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Script from "next/script";
@@ -91,6 +91,9 @@ interface Empresa {
     portadaUrl?: string;
     portadaUrl2?: string;
     portadaUrl3?: string;
+    portadaUrl4?: string;
+    portadaUrl5?: string;
+    portadaUrl6?: string;
     galeria?: string[];
     mostrarWhatsApp?: boolean;
     mostrarEmail?: boolean;
@@ -301,10 +304,15 @@ export default async function NegocioPage({ params }: PageProps) {
   const portadaUrl = pagina.portadaUrl?.trim() || "";
   const portadaUrl2 = (pagina as any).portadaUrl2?.trim() || "";
   const portadaUrl3 = (pagina as any).portadaUrl3?.trim() || "";
+  const portadaUrl4 = (pagina as any).portadaUrl4?.trim() || "";
+  const portadaUrl5 = (pagina as any).portadaUrl5?.trim() || "";
+  const portadaUrl6 = (pagina as any).portadaUrl6?.trim() || "";
 
-  const imagenesHero = [portadaUrl, portadaUrl2, portadaUrl3].filter(Boolean);
+  // Hasta 6 imágenes para la portada
+  const imagenesHero = [portadaUrl, portadaUrl2, portadaUrl3, portadaUrl4, portadaUrl5, portadaUrl6].filter(Boolean);
 
-  const galeria = Array.isArray(pagina.galeria) ? pagina.galeria.filter((url): url is string => typeof url === "string" && url.trim().length > 0).slice(0, 6) : [];
+  // Hasta 10 imágenes para la galería
+  const galeria = Array.isArray(pagina.galeria) ? pagina.galeria.filter((url): url is string => typeof url === "string" && url.trim().length > 0).slice(0, 10) : [];
 
   const telefonoLimpio = empresa.telefono?.replace(/\D/g, "") || "";
   const whatsappUrl = telefonoLimpio ? `https://wa.me/${telefonoLimpio}` : "";
@@ -466,7 +474,7 @@ export default async function NegocioPage({ params }: PageProps) {
         </div>
       </header>
 
-      {/* HERO RESPONSIVO EDITORIAL CON BOTONES EN 1 FILA Y TARJETAS COMPACTAS */}
+      {/* HERO RESPONSIVO EDITORIAL */}
       <section
         id="inicio"
         className="mx-auto flex w-full max-w-[1440px] flex-col justify-between p-3 sm:p-5 lg:p-7 min-h-[calc(100svh-4rem)]"
@@ -483,8 +491,8 @@ export default async function NegocioPage({ params }: PageProps) {
             </p>
           )}
 
-          {/* FILA ÚNICA COMPACTA: BOTÓN PRINCIPAL + WHATSAPP + REDES */}
-          <div className="flex items-center gap-1.5 pt-0.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {/* FILA DE ACCIONES Y REDES */}
+          <div className="flex flex-wrap items-center gap-2 pt-0.5">
             {mostrarProductos && productos.length > 0 ? (
               <a
                 href="#productos"
@@ -508,38 +516,64 @@ export default async function NegocioPage({ params }: PageProps) {
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="WhatsApp"
-                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white shadow-sm transition hover:bg-emerald-500 active:scale-95"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-500 active:scale-95"
               >
-                <MessageCircle className="h-4 w-4" />
+                <FaWhatsapp className="h-3.5 w-3.5" />
+                WhatsApp
               </a>
             )}
 
-            {redesSociales.map((red) => (
-              <a
-                key={`hero-mobile-${red.nombre}`}
-                href={red.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={red.nombre}
-                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 transition active:scale-95"
-              >
-                {red.nombre === "Instagram" ? (
-                  <span className="relative block h-3 w-3 rounded-[2.5px] border-[1.5px] border-current">
-                    <span className="absolute left-1/2 top-1/2 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full border-[1.5px] border-current" />
-                  </span>
-                ) : red.nombre === "Facebook" ? (
-                  <span className="text-xs font-bold leading-none">f</span>
-                ) : (
-                  <Music2 className="h-3.5 w-3.5" />
-                )}
-              </a>
-            ))}
+            <div className="flex items-center gap-1.5 ml-auto">
+              {redesSociales.map((red) => (
+                <a
+                  key={`hero-mobile-${red.nombre}`}
+                  href={red.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={red.nombre}
+                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 transition active:scale-95"
+                >
+                  {red.nombre === "Instagram" ? (
+                    <FaInstagram className="h-4 w-4 text-[#E1306C]" />
+                  ) : red.nombre === "Facebook" ? (
+                    <FaFacebookF className="h-3.5 w-3.5 text-[#1877F2]" />
+                  ) : (
+                    <FaTiktok className="h-3.5 w-3.5" />
+                  )}
+                </a>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* FOTO COMPLETA (ALTURA AJUSTADA PARA NO DESBORDAR LA PANTALLA) */}
-        <div className="relative flex-1 w-full overflow-hidden rounded-[2rem] sm:rounded-[2.75rem] shadow-xl border border-black/5 dark:border-white/10 flex flex-col justify-end p-5 sm:p-10 lg:p-14 min-h-[260px] sm:min-h-[350px]">
+        {/* FOTO EN MÓVIL: DOBLE FOTO (GRID 2 COLUMNAS) / EN DESKTOP: SLIDER COMPLETO */}
+        <div className="sm:hidden grid grid-cols-2 gap-2 w-full h-[220px]">
+          <div className="relative w-full h-full overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 shadow-md">
+            {imagenesHero[0] ? (
+              <img
+                src={imagenesHero[0]}
+                alt={`${nombre} - Portada principal`}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-zinc-800" />
+            )}
+          </div>
+          <div className="relative w-full h-full overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 shadow-md">
+            {imagenesHero[1] || imagenesHero[0] ? (
+              <img
+                src={imagenesHero[1] || imagenesHero[0]}
+                alt={`${nombre} - Portada secundaria`}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-zinc-800" />
+            )}
+          </div>
+        </div>
+
+        {/* CONTENEDOR ESCRITORIO (SLIDER CON HASTA 6 FOTOS) */}
+        <div className="hidden sm:flex relative flex-1 w-full overflow-hidden rounded-[2.75rem] shadow-xl border border-black/5 dark:border-white/10 flex-col justify-end p-10 lg:p-14 min-h-[350px]">
           {imagenesHero.length > 0 ? (
             <HeroSlider
               imagenes={imagenesHero}
@@ -555,23 +589,22 @@ export default async function NegocioPage({ params }: PageProps) {
             />
           )}
 
-          {/* CAPA DE TEXTO EN ESCRITORIO */}
-          <div className="relative z-10 max-w-xl text-white hidden sm:block">
-            <h1 className="text-2xl sm:text-4xl lg:text-[3rem] font-medium tracking-normal text-white leading-[1.12] drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
+          <div className="relative z-10 max-w-xl text-white">
+            <h1 className="text-3xl lg:text-[3rem] font-medium tracking-normal text-white leading-[1.12] drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
               {textoPrincipal || nombre}
             </h1>
 
             {textoSecundario && (
-              <p className="mt-2 sm:mt-2.5 text-xs sm:text-sm text-zinc-100/90 leading-relaxed font-normal max-w-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
+              <p className="mt-2.5 text-sm text-zinc-100/90 leading-relaxed font-normal max-w-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
                 {textoSecundario}
               </p>
             )}
 
-            <div className="mt-4 sm:mt-5 flex flex-wrap items-center gap-2 sm:gap-2.5">
+            <div className="mt-5 flex flex-wrap items-center gap-2.5">
               {mostrarProductos && productos.length > 0 ? (
                 <a
                   href="#productos"
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2 text-xs sm:text-sm font-medium text-slate-950 shadow-md transition hover:bg-zinc-100 active:scale-95"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2 text-sm font-medium text-slate-950 shadow-md transition hover:bg-zinc-100 active:scale-95"
                 >
                   {esRestaurante ? "Ver carta" : esAlojamiento ? "Ver habitaciones" : "Ver catálogo"}
                   <ArrowRight className="h-3.5 w-3.5" />
@@ -579,36 +612,26 @@ export default async function NegocioPage({ params }: PageProps) {
               ) : puedeMostrarReserva ? (
                 <a
                   href="#reservar"
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2 text-xs sm:text-sm font-medium text-slate-950 shadow-md transition hover:bg-zinc-100 active:scale-95"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2 text-sm font-medium text-slate-950 shadow-md transition hover:bg-zinc-100 active:scale-95"
                 >
                   <Clock3 className="h-3.5 w-3.5" />
                   Reservar ahora
                 </a>
-              ) : mostrarWhatsApp ? (
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2 text-xs sm:text-sm font-medium text-slate-950 shadow-md transition hover:bg-zinc-100 active:scale-95"
-                >
-                  <MessageCircle className="h-3.5 w-3.5" />
-                  WhatsApp
-                </a>
               ) : null}
 
-              {mostrarWhatsApp && (mostrarProductos || puedeMostrarReserva) && (
+              {mostrarWhatsApp && (
                 <a
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/40 backdrop-blur-md px-4 py-2 text-xs sm:text-sm font-normal text-white transition hover:bg-black/60"
+                  className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-emerald-500 active:scale-95"
                 >
-                  <MessageCircle className="h-3.5 w-3.5" />
+                  <FaWhatsapp className="h-4 w-4" />
                   WhatsApp
                 </a>
               )}
 
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 ml-2">
                 {redesSociales.map((red) => (
                   <a
                     key={`hero-desktop-${red.nombre}`}
@@ -616,16 +639,14 @@ export default async function NegocioPage({ params }: PageProps) {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={red.nombre}
-                    className="inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full border border-white/20 bg-black/40 backdrop-blur-md text-white transition hover:bg-white/20"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/40 backdrop-blur-md text-white transition hover:bg-white/20"
                   >
                     {red.nombre === "Instagram" ? (
-                      <span className="relative block h-3 w-3 rounded-[2.5px] border-[1.5px] border-current">
-                        <span className="absolute left-1/2 top-1/2 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full border-[1.5px] border-current" />
-                      </span>
+                      <FaInstagram className="h-4 w-4" />
                     ) : red.nombre === "Facebook" ? (
-                      <span className="text-xs font-bold leading-none">f</span>
+                      <FaFacebookF className="h-3.5 w-3.5" />
                     ) : (
-                      <Music2 className="h-3.5 w-3.5" />
+                      <FaTiktok className="h-3.5 w-3.5" />
                     )}
                   </a>
                 ))}
@@ -801,7 +822,7 @@ export default async function NegocioPage({ params }: PageProps) {
         </section>
       )}
 
-      {/* GALERÍA DE FOTOS */}
+      {/* GALERÍA DE FOTOS (HASTA 10 FOTOS) */}
       {mostrarGaleria && galeria.length > 0 && (
         <section id="galeria" className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}>
           <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-10 sm:py-16">
@@ -1030,7 +1051,7 @@ export default async function NegocioPage({ params }: PageProps) {
                       rel="noopener noreferrer"
                       className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-emerald-500 active:scale-95"
                     >
-                      <MessageCircle className="h-3.5 w-3.5" />
+                      <FaWhatsapp className="h-4 w-4" />
                       WhatsApp
                     </a>
                   )}
@@ -1213,7 +1234,7 @@ function CatalogoCard({
                 rel="noopener noreferrer"
                 className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-500 active:scale-95"
               >
-                <MessageCircle className="h-3 w-3" />
+                <FaWhatsapp className="h-3.5 w-3.5" />
                 Consultar
               </a>
             )}
