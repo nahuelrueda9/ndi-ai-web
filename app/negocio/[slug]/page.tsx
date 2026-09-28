@@ -308,10 +308,7 @@ export default async function NegocioPage({ params }: PageProps) {
   const portadaUrl5 = (pagina as any).portadaUrl5?.trim() || "";
   const portadaUrl6 = (pagina as any).portadaUrl6?.trim() || "";
 
-  // Hasta 6 imágenes para la portada
   const imagenesHero = [portadaUrl, portadaUrl2, portadaUrl3, portadaUrl4, portadaUrl5, portadaUrl6].filter(Boolean);
-
-  // Hasta 10 imágenes para la galería
   const galeria = Array.isArray(pagina.galeria) ? pagina.galeria.filter((url): url is string => typeof url === "string" && url.trim().length > 0).slice(0, 10) : [];
 
   const telefonoLimpio = empresa.telefono?.replace(/\D/g, "") || "";
@@ -480,8 +477,8 @@ export default async function NegocioPage({ params }: PageProps) {
         className="mx-auto flex w-full max-w-[1440px] flex-col justify-between p-3 sm:p-5 lg:p-7 min-h-[calc(100svh-4rem)]"
       >
         {/* BLOQUE MÓVIL EDITORIAL */}
-        <div className="flex flex-col gap-2.5 px-1 pb-3 sm:hidden text-slate-900 dark:text-white">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight leading-[1.15]">
+        <div className="flex flex-col gap-2 px-1 pb-2 sm:hidden text-slate-900 dark:text-white">
+          <h1 className="text-2xl font-bold tracking-tight leading-[1.15]">
             {textoPrincipal || nombre}
           </h1>
 
@@ -491,39 +488,41 @@ export default async function NegocioPage({ params }: PageProps) {
             </p>
           )}
 
-          {/* FILA DE ACCIONES Y REDES */}
-          <div className="flex flex-wrap items-center gap-2 pt-0.5">
-            {mostrarProductos && productos.length > 0 ? (
-              <a
-                href="#productos"
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-slate-950 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 active:scale-95"
-              >
-                {esRestaurante ? "Ver carta" : esAlojamiento ? "Ver habitaciones" : "Ver catálogo"}
-                <ArrowRight className="h-3 w-3" />
-              </a>
-            ) : puedeMostrarReserva ? (
-              <a
-                href="#reservar"
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-slate-950 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 active:scale-95"
-              >
-                <Clock3 className="h-3 w-3" />
-                Reservar
-              </a>
-            ) : null}
+          {/* FILA ÚNICA CONTINUA DE BOTONES Y REDES */}
+          <div className="flex items-center justify-between gap-1 pt-1">
+            <div className="flex items-center gap-1.5 shrink-0">
+              {mostrarProductos && productos.length > 0 ? (
+                <a
+                  href="#productos"
+                  className="inline-flex shrink-0 items-center gap-1 rounded-full bg-slate-950 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 active:scale-95"
+                >
+                  {esRestaurante ? "Ver carta" : esAlojamiento ? "Ver habitaciones" : "Ver catálogo"}
+                  <ArrowRight className="h-3 w-3" />
+                </a>
+              ) : puedeMostrarReserva ? (
+                <a
+                  href="#reservar"
+                  className="inline-flex shrink-0 items-center gap-1 rounded-full bg-slate-950 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 active:scale-95"
+                >
+                  <Clock3 className="h-3 w-3" />
+                  Reservar
+                </a>
+              ) : null}
 
-            {mostrarWhatsApp && (
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-500 active:scale-95"
-              >
-                <FaWhatsapp className="h-3.5 w-3.5" />
-                WhatsApp
-              </a>
-            )}
+              {mostrarWhatsApp && (
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-1.5 text-[11px] font-semibold text-white shadow-sm transition hover:bg-emerald-500 active:scale-95"
+                >
+                  <FaWhatsapp className="h-3 w-3" />
+                  WhatsApp
+                </a>
+              )}
+            </div>
 
-            <div className="flex items-center gap-1.5 ml-auto">
+            <div className="flex items-center gap-1 shrink-0">
               {redesSociales.map((red) => (
                 <a
                   key={`hero-mobile-${red.nombre}`}
@@ -531,14 +530,14 @@ export default async function NegocioPage({ params }: PageProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={red.nombre}
-                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 transition active:scale-95"
+                  className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 transition active:scale-95"
                 >
                   {red.nombre === "Instagram" ? (
-                    <FaInstagram className="h-4 w-4 text-[#E1306C]" />
+                    <FaInstagram className="h-3.5 w-3.5 text-[#E1306C]" />
                   ) : red.nombre === "Facebook" ? (
-                    <FaFacebookF className="h-3.5 w-3.5 text-[#1877F2]" />
+                    <FaFacebookF className="h-3 w-3 text-[#1877F2]" />
                   ) : (
-                    <FaTiktok className="h-3.5 w-3.5" />
+                    <FaTiktok className="h-3 w-3" />
                   )}
                 </a>
               ))}
@@ -546,30 +545,17 @@ export default async function NegocioPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* FOTO EN MÓVIL: DOBLE FOTO (GRID 2 COLUMNAS) / EN DESKTOP: SLIDER COMPLETO */}
-        <div className="sm:hidden grid grid-cols-2 gap-2 w-full h-[220px]">
-          <div className="relative w-full h-full overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 shadow-md">
-            {imagenesHero[0] ? (
-              <img
-                src={imagenesHero[0]}
-                alt={`${nombre} - Portada principal`}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full bg-zinc-800" />
-            )}
-          </div>
-          <div className="relative w-full h-full overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 shadow-md">
-            {imagenesHero[1] || imagenesHero[0] ? (
-              <img
-                src={imagenesHero[1] || imagenesHero[0]}
-                alt={`${nombre} - Portada secundaria`}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full bg-zinc-800" />
-            )}
-          </div>
+        {/* FOTO EN MÓVIL: HORIZONTAL NATURAL / EN ESCRITORIO: SLIDER */}
+        <div className="sm:hidden w-full overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 shadow-md aspect-[16/9] relative">
+          {imagenesHero.length > 0 ? (
+            <HeroSlider
+              imagenes={imagenesHero}
+              nombre={nombre}
+              colorPrincipal={colorPrincipal}
+            />
+          ) : (
+            <div className="w-full h-full bg-zinc-800" />
+          )}
         </div>
 
         {/* CONTENEDOR ESCRITORIO (SLIDER CON HASTA 6 FOTOS) */}
