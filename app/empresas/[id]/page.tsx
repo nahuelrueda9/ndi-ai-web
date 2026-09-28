@@ -1048,9 +1048,9 @@ export default function ConfigurarAgentePage() {
                 />
               </div>
 
-              {/* IDENTIDAD VISUAL: HASTA 6 PORTADAS Y LÍMITE DE 10 MB */}
-              <div className="md:col-span-2">
-                <div className="mb-2 sm:mb-3">
+              {/* IDENTIDAD VISUAL: FILA 1 LOGOS (2), FILA 2 PORTADAS (3), FILA 3 PORTADAS (3) */}
+              <div className="md:col-span-2 space-y-5">
+                <div>
                   <p className="text-xs font-medium text-slate-700 dark:text-zinc-200 sm:text-sm">
                     Identidad visual
                   </p>
@@ -1059,86 +1059,108 @@ export default function ConfigurarAgentePage() {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-3">
-                  <ImagenUploader
-                    titulo="Logo claro / principal"
-                    descripcion="PNG, JPG o WebP · máx. 10 MB · recomendado 512 × 512 px (cuadrado)."
-                    imagenUrl={paginaLogoUrl}
-                    cargando={subiendoImagen === "logo"}
-                    onSeleccionar={(archivo) => void subirImagenPagina(archivo, "logo")}
-                    onQuitar={() => setPaginaLogoUrl("")}
-                    aspectClass="aspect-square max-w-[180px]"
-                  />
+                {/* FILA 1: LOGOS DE LA MARCA (2 COLUMNAS) */}
+                <div className="space-y-1.5">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
+                    Logos de la marca
+                  </p>
+                  <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-2 lg:max-w-2xl">
+                    <ImagenUploader
+                      titulo="Logo claro / principal"
+                      descripcion="PNG, JPG o WebP · máx. 10 MB · recomendado 512 × 512 px (cuadrado)."
+                      imagenUrl={paginaLogoUrl}
+                      cargando={subiendoImagen === "logo"}
+                      onSeleccionar={(archivo) => void subirImagenPagina(archivo, "logo")}
+                      onQuitar={() => setPaginaLogoUrl("")}
+                      aspectClass="aspect-square max-w-[180px]"
+                    />
 
-                  <ImagenUploader
-                    titulo="Logo secundario (Oscuro)"
-                    descripcion="PNG, JPG o WebP · máx. 10 MB · recomendado 512 × 512 px. Se usa en modo claro."
-                    imagenUrl={paginaLogoOscuroUrl}
-                    cargando={subiendoImagen === "logoOscuro"}
-                    onSeleccionar={(archivo) => void subirImagenPagina(archivo, "logoOscuro")}
-                    onQuitar={() => setPaginaLogoOscuroUrl("")}
-                    aspectClass="aspect-square max-w-[180px]"
-                  />
+                    <ImagenUploader
+                      titulo="Logo secundario (Oscuro)"
+                      descripcion="PNG, JPG o WebP · máx. 10 MB · recomendado 512 × 512 px. Se usa en modo claro."
+                      imagenUrl={paginaLogoOscuroUrl}
+                      cargando={subiendoImagen === "logoOscuro"}
+                      onSeleccionar={(archivo) => void subirImagenPagina(archivo, "logoOscuro")}
+                      onQuitar={() => setPaginaLogoOscuroUrl("")}
+                      aspectClass="aspect-square max-w-[180px]"
+                    />
+                  </div>
+                </div>
 
-                  <ImagenUploader
-                    titulo="Portada 1 (Principal)"
-                    descripcion="JPG, PNG o WebP · máx. 10 MB · recomendado 1920 × 1080 px (16:9 horizontal)."
-                    imagenUrl={paginaPortadaUrl}
-                    cargando={subiendoImagen === "portada"}
-                    onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada")}
-                    onQuitar={() => setPaginaPortadaUrl("")}
-                    aspectClass="aspect-[16/9]"
-                  />
+                {/* FILA 2: PORTADAS 1 A 3 (3 COLUMNAS) */}
+                <div className="space-y-1.5">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
+                    Portadas superiores (1 a 3)
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4">
+                    <ImagenUploader
+                      titulo="Portada 1 (Principal)"
+                      descripcion="JPG, PNG o WebP · máx. 10 MB · recomendado 1920 × 1080 px (16:9 horizontal)."
+                      imagenUrl={paginaPortadaUrl}
+                      cargando={subiendoImagen === "portada"}
+                      onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada")}
+                      onQuitar={() => setPaginaPortadaUrl("")}
+                      aspectClass="aspect-[16/9]"
+                    />
 
-                  <ImagenUploader
-                    titulo="Portada 2 (Opcional)"
-                    descripcion="JPG, PNG o WebP · máx. 10 MB · recomendado 1920 × 1080 px (16:9 horizontal)."
-                    imagenUrl={paginaPortadaUrl2}
-                    cargando={subiendoImagen === "portada2"}
-                    onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada2")}
-                    onQuitar={() => setPaginaPortadaUrl2("")}
-                    aspectClass="aspect-[16/9]"
-                  />
+                    <ImagenUploader
+                      titulo="Portada 2 (Opcional)"
+                      descripcion="JPG, PNG o WebP · máx. 10 MB · recomendado 1920 × 1080 px (16:9 horizontal)."
+                      imagenUrl={paginaPortadaUrl2}
+                      cargando={subiendoImagen === "portada2"}
+                      onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada2")}
+                      onQuitar={() => setPaginaPortadaUrl2("")}
+                      aspectClass="aspect-[16/9]"
+                    />
 
-                  <ImagenUploader
-                    titulo="Portada 3 (Opcional)"
-                    descripcion="JPG, PNG o WebP · máx. 10 MB · recomendado 1920 × 1080 px (16:9 horizontal)."
-                    imagenUrl={paginaPortadaUrl3}
-                    cargando={subiendoImagen === "portada3"}
-                    onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada3")}
-                    onQuitar={() => setPaginaPortadaUrl3("")}
-                    aspectClass="aspect-[16/9]"
-                  />
+                    <ImagenUploader
+                      titulo="Portada 3 (Opcional)"
+                      descripcion="JPG, PNG o WebP · máx. 10 MB · recomendado 1920 × 1080 px (16:9 horizontal)."
+                      imagenUrl={paginaPortadaUrl3}
+                      cargando={subiendoImagen === "portada3"}
+                      onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada3")}
+                      onQuitar={() => setPaginaPortadaUrl3("")}
+                      aspectClass="aspect-[16/9]"
+                    />
+                  </div>
+                </div>
 
-                  <ImagenUploader
-                    titulo="Portada 4 (Opcional)"
-                    descripcion="JPG, PNG o WebP · máx. 10 MB · recomendado 1920 × 1080 px (16:9 horizontal)."
-                    imagenUrl={paginaPortadaUrl4}
-                    cargando={subiendoImagen === "portada4"}
-                    onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada4")}
-                    onQuitar={() => setPaginaPortadaUrl4("")}
-                    aspectClass="aspect-[16/9]"
-                  />
+                {/* FILA 3: PORTADAS 4 A 6 (3 COLUMNAS) */}
+                <div className="space-y-1.5">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
+                    Portadas inferiores (4 a 6)
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4">
+                    <ImagenUploader
+                      titulo="Portada 4 (Opcional)"
+                      descripcion="JPG, PNG o WebP · máx. 10 MB · recomendado 1920 × 1080 px (16:9 horizontal)."
+                      imagenUrl={paginaPortadaUrl4}
+                      cargando={subiendoImagen === "portada4"}
+                      onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada4")}
+                      onQuitar={() => setPaginaPortadaUrl4("")}
+                      aspectClass="aspect-[16/9]"
+                    />
 
-                  <ImagenUploader
-                    titulo="Portada 5 (Opcional)"
-                    descripcion="JPG, PNG o WebP · máx. 10 MB · recomendado 1920 × 1080 px (16:9 horizontal)."
-                    imagenUrl={paginaPortadaUrl5}
-                    cargando={subiendoImagen === "portada5"}
-                    onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada5")}
-                    onQuitar={() => setPaginaPortadaUrl5("")}
-                    aspectClass="aspect-[16/9]"
-                  />
+                    <ImagenUploader
+                      titulo="Portada 5 (Opcional)"
+                      descripcion="JPG, PNG o WebP · máx. 10 MB · recomendado 1920 × 1080 px (16:9 horizontal)."
+                      imagenUrl={paginaPortadaUrl5}
+                      cargando={subiendoImagen === "portada5"}
+                      onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada5")}
+                      onQuitar={() => setPaginaPortadaUrl5("")}
+                      aspectClass="aspect-[16/9]"
+                    />
 
-                  <ImagenUploader
-                    titulo="Portada 6 (Opcional)"
-                    descripcion="JPG, PNG o WebP · máx. 10 MB · recomendado 1920 × 1080 px (16:9 horizontal)."
-                    imagenUrl={paginaPortadaUrl6}
-                    cargando={subiendoImagen === "portada6"}
-                    onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada6")}
-                    onQuitar={() => setPaginaPortadaUrl6("")}
-                    aspectClass="aspect-[16/9]"
-                  />
+                    <ImagenUploader
+                      titulo="Portada 6 (Opcional)"
+                      descripcion="JPG, PNG o WebP · máx. 10 MB · recomendado 1920 × 1080 px (16:9 horizontal)."
+                      imagenUrl={paginaPortadaUrl6}
+                      cargando={subiendoImagen === "portada6"}
+                      onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada6")}
+                      onQuitar={() => setPaginaPortadaUrl6("")}
+                      aspectClass="aspect-[16/9]"
+                    />
+                  </div>
                 </div>
 
                 {/* SECCIÓN GALERÍA INDEPENDIENTE (HASTA 10 FOTOS) */}
