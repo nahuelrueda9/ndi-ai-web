@@ -308,10 +308,18 @@ export default async function NegocioPage({ params }: PageProps) {
   const portadaUrl5 = (pagina as any).portadaUrl5?.trim() || "";
   const portadaUrl6 = (pagina as any).portadaUrl6?.trim() || "";
 
-  // 6 imágenes para portadas
+  // 6 imágenes totales para portada y 10 para galería
   const imagenesHero = [portadaUrl, portadaUrl2, portadaUrl3, portadaUrl4, portadaUrl5, portadaUrl6].filter(Boolean);
-  // 10 imágenes para galería
   const galeria = Array.isArray(pagina.galeria) ? pagina.galeria.filter((url): url is string => typeof url === "string" && url.trim().length > 0).slice(0, 10) : [];
+
+  // Split de rotación en móvil: primeras 3 arriba y siguientes 3 abajo
+  const portadasSuperiores = imagenesHero.slice(0, 3);
+  const portadasInferiores =
+    imagenesHero.length > 3
+      ? imagenesHero.slice(3, 6)
+      : imagenesHero.length > 1
+      ? imagenesHero.slice(1).concat(imagenesHero.slice(0, 1))
+      : portadasSuperiores;
 
   const telefonoLimpio = empresa.telefono?.replace(/\D/g, "") || "";
   const whatsappUrl = telefonoLimpio ? `https://wa.me/${telefonoLimpio}` : "";
@@ -473,7 +481,7 @@ export default async function NegocioPage({ params }: PageProps) {
         </div>
       </header>
 
-      {/* HERO RESPONSIVO EDITORIAL */}
+      {/* HERO RESPONSIVO */}
       <section
         id="inicio"
         className="mx-auto flex w-full max-w-[1440px] flex-col justify-between p-3 sm:p-5 lg:p-7 min-h-[calc(100svh-4rem)]"
@@ -490,7 +498,7 @@ export default async function NegocioPage({ params }: PageProps) {
             </p>
           )}
 
-          {/* FILA COMPACTA CON REDES ALINEADAS A LA IZQUIERDA AL LADO DE WHATSAPP */}
+          {/* BOTONES Y REDES ALINEADOS A LA IZQUIERDA EN UNA SOLA FILA */}
           <div className="flex items-center gap-1.5 pt-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {mostrarProductos && productos.length > 0 ? (
               <a
@@ -522,7 +530,6 @@ export default async function NegocioPage({ params }: PageProps) {
               </a>
             )}
 
-            {/* ÍCONOS DE REDES INMEDIATAMENTE AL LADO */}
             {redesSociales.map((red) => (
               <a
                 key={`hero-mobile-${red.nombre}`}
@@ -544,27 +551,28 @@ export default async function NegocioPage({ params }: PageProps) {
           </div>
         </div>
 
-{/* FOTOS EN MÓVIL: AGRANDADAS PARA LLENAR EL ESPACIO VERTICAL */}
-        <div className="sm:hidden flex flex-1 flex-col gap-3 w-full py-1">
-          {/* Imagen Superior */}
-          <div className="relative w-full flex-1 min-h-[140px] overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
-            {imagenesHero[0] ? (
-              <img
-                src={imagenesHero[0]}
-                alt={`${nombre} - Portada principal`}
-                className="w-full h-full object-cover"
+        {/* FOTOS EN MÓVIL: DOS SLIDERS DEL MISMO TAMAÑO IDÉNTICO */}
+        <div className="sm:hidden flex flex-col gap-2.5 w-full">
+          {/* Slider Superior (Portadas 1 a 3) */}
+          <div className="relative w-full aspect-[16/9] overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
+            {portadasSuperiores.length > 0 ? (
+              <HeroSlider
+                imagenes={portadasSuperiores}
+                nombre={nombre}
+                colorPrincipal={colorPrincipal}
               />
             ) : (
               <div className="w-full h-full bg-zinc-800" />
             )}
           </div>
-          {/* Imagen Inferior */}
-          <div className="relative w-full flex-1 min-h-[140px] overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
-            {imagenesHero[1] || imagenesHero[0] ? (
-              <img
-                src={imagenesHero[1] || imagenesHero[0]}
-                alt={`${nombre} - Portada secundaria`}
-                className="w-full h-full object-cover"
+
+          {/* Slider Inferior (Portadas 4 a 6) */}
+          <div className="relative w-full aspect-[16/9] overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
+            {portadasInferiores.length > 0 ? (
+              <HeroSlider
+                imagenes={portadasInferiores}
+                nombre={nombre}
+                colorPrincipal={colorPrincipal}
               />
             ) : (
               <div className="w-full h-full bg-zinc-800" />
