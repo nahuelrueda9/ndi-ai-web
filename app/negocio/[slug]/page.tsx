@@ -10,7 +10,6 @@ import {
   Package,
   Phone,
   Quote,
-  Sparkles,
   ArrowRight,
 } from "lucide-react";
 import type { Metadata } from "next";
@@ -467,7 +466,7 @@ export default async function NegocioPage({ params }: PageProps) {
         </div>
       </header>
 
-      {/* HERO AJUSTADO EXACTO A PANTALLA COMPLETA (NO ASOMA EL CATÁLOGO) */}
+      {/* HERO AJUSTADO EXACTO A PANTALLA COMPLETA */}
       <section
         id="inicio"
         className="mx-auto flex w-full max-w-[1440px] flex-col justify-between p-3 sm:p-5 lg:p-7 min-h-[calc(100svh-4rem)]"
@@ -491,19 +490,6 @@ export default async function NegocioPage({ params }: PageProps) {
 
           {/* Textos y Botones */}
           <div className="relative z-10 max-w-xl text-white">
-            {empresa.rubro && (
-              <div
-                className="inline-flex items-center gap-1.5 rounded-full border px-3 py-0.5 text-[10px] font-medium backdrop-blur-md mb-2.5"
-                style={{
-                  borderColor: "rgba(255,255,255,0.25)",
-                  backgroundColor: "rgba(0,0,0,0.3)",
-                }}
-              >
-                <Sparkles className="h-3 w-3 text-amber-300" />
-                {empresa.rubro}
-              </div>
-            )}
-
             <h1 className="text-2xl sm:text-4xl lg:text-[3rem] font-medium tracking-normal text-white leading-[1.12] drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
               {textoPrincipal || nombre}
             </h1>
@@ -520,7 +506,7 @@ export default async function NegocioPage({ params }: PageProps) {
                   href="#productos"
                   className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2 text-xs sm:text-sm font-medium text-slate-950 shadow-md transition hover:bg-zinc-100 active:scale-95"
                 >
-                  Ver catálogo
+                  {esRestaurante ? "Ver carta" : esAlojamiento ? "Ver habitaciones" : "Ver catálogo"}
                   <ArrowRight className="h-3.5 w-3.5" />
                 </a>
               ) : puedeMostrarReserva ? (
@@ -581,7 +567,7 @@ export default async function NegocioPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* 4 TARJETAS DE INFORMACIÓN: ENTRAN EN EL ESPACIO BLANCO PERFECTAMENTE */}
+        {/* 4 TARJETAS DE INFORMACIÓN */}
         {tieneInfo && (
           <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2 text-slate-700 dark:text-zinc-300">
             {mostrarHorarios && empresa.horarios && (
@@ -630,7 +616,7 @@ export default async function NegocioPage({ params }: PageProps) {
         )}
       </section>
 
-      {/* SECCIÓN PRODUCTOS / CARTA (TÍTULOS ESTILIZADOS Y FINOS) */}
+      {/* SECCIÓN PRODUCTOS / CARTA */}
       {mostrarProductos && productos.length > 0 && (
         <section id="productos" className="mx-auto max-w-[1440px] scroll-mt-20 px-4 py-10 sm:px-10 sm:py-16">
           <div className="max-w-2xl">
@@ -674,7 +660,7 @@ export default async function NegocioPage({ params }: PageProps) {
         </section>
       )}
 
-      {/* SECCIÓN SERVICIOS (TÍTULOS ESTILIZADOS Y FINOS) */}
+      {/* SECCIÓN SERVICIOS */}
       {mostrarServicios && servicios.length > 0 && (
         <section id="servicios" className="mx-auto max-w-[1440px] scroll-mt-20 px-4 py-10 sm:px-10 sm:py-16">
           <div className="max-w-2xl">
@@ -748,7 +734,7 @@ export default async function NegocioPage({ params }: PageProps) {
         </section>
       )}
 
-      {/* GALERÍA DE FOTOS (TÍTULOS ESTILIZADOS Y FINOS) */}
+      {/* GALERÍA DE FOTOS */}
       {mostrarGaleria && galeria.length > 0 && (
         <section id="galeria" className={`scroll-mt-24 border-y ${claseSeccionAlterna}`}>
           <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-10 sm:py-16">
