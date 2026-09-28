@@ -466,13 +466,91 @@ export default async function NegocioPage({ params }: PageProps) {
         </div>
       </header>
 
-      {/* HERO AJUSTADO EXACTO A PANTALLA COMPLETA */}
+      {/* HERO RESPONSIVO EDITORIAL (TITULAR ARRIBA EN MÓVIL, BANNER EN ESCRITORIO) */}
       <section
         id="inicio"
         className="mx-auto flex w-full max-w-[1440px] flex-col justify-between p-3 sm:p-5 lg:p-7 min-h-[calc(100svh-4rem)]"
       >
-        {/* Banner Curvo Portada */}
-        <div className="relative flex-1 w-full overflow-hidden rounded-[2rem] sm:rounded-[2.75rem] shadow-xl border border-black/5 dark:border-white/10 flex flex-col justify-end p-5 sm:p-10 lg:p-14 min-h-[350px]">
+        {/* BLOQUE MÓVIL EDITORIAL */}
+        <div className="flex flex-col gap-3 px-1 pb-4 sm:hidden text-slate-900 dark:text-white">
+          <h1 className="text-3xl font-bold tracking-tight leading-[1.15]">
+            {textoPrincipal || nombre}
+          </h1>
+
+          {textoSecundario && (
+            <p className="text-xs text-slate-600 dark:text-zinc-400 leading-relaxed font-normal line-clamp-3">
+              {textoSecundario}
+            </p>
+          )}
+
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            {mostrarProductos && productos.length > 0 ? (
+              <a
+                href="#productos"
+                className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 active:scale-95"
+              >
+                {esRestaurante ? "Ver carta" : esAlojamiento ? "Ver habitaciones" : "Ver catálogo"}
+                <ArrowRight className="h-3.5 w-3.5" />
+              </a>
+            ) : puedeMostrarReserva ? (
+              <a
+                href="#reservar"
+                className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 active:scale-95"
+              >
+                <Clock3 className="h-3.5 w-3.5" />
+                Reservar ahora
+              </a>
+            ) : mostrarWhatsApp ? (
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-500 active:scale-95"
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+                WhatsApp
+              </a>
+            ) : null}
+
+            {mostrarWhatsApp && (mostrarProductos || puedeMostrarReserva) && (
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 px-4 py-2 text-xs font-medium text-slate-800 dark:text-zinc-200 transition active:scale-95"
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+                WhatsApp
+              </a>
+            )}
+
+            <div className="flex items-center gap-1.5 ml-auto">
+              {redesSociales.map((red) => (
+                <a
+                  key={`hero-mobile-${red.nombre}`}
+                  href={red.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={red.nombre}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 transition active:scale-95"
+                >
+                  {red.nombre === "Instagram" ? (
+                    <span className="relative block h-3 w-3 rounded-[2.5px] border-[1.5px] border-current">
+                      <span className="absolute left-1/2 top-1/2 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full border-[1.5px] border-current" />
+                    </span>
+                  ) : red.nombre === "Facebook" ? (
+                    <span className="text-xs font-bold leading-none">f</span>
+                  ) : (
+                    <Music2 className="h-3.5 w-3.5" />
+                  )}
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* CONTENEDOR FOTOGRÁFICO: LIMPIO EN MÓVIL, SUPERPUESTO EN ESCRITORIO */}
+        <div className="relative flex-1 w-full overflow-hidden rounded-[2rem] sm:rounded-[2.75rem] shadow-xl border border-black/5 dark:border-white/10 flex flex-col justify-end p-5 sm:p-10 lg:p-14 min-h-[300px] sm:min-h-[350px]">
           {imagenesHero.length > 0 ? (
             <HeroSlider
               imagenes={imagenesHero}
@@ -488,14 +566,14 @@ export default async function NegocioPage({ params }: PageProps) {
             />
           )}
 
-          {/* Textos y Botones */}
-          <div className="relative z-10 max-w-xl text-white">
+          {/* CAPA DE TEXTO EN ESCRITORIO (OCULTA EN MÓVIL) */}
+          <div className="relative z-10 max-w-xl text-white hidden sm:block">
             <h1 className="text-2xl sm:text-4xl lg:text-[3rem] font-medium tracking-normal text-white leading-[1.12] drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
               {textoPrincipal || nombre}
             </h1>
 
             {textoSecundario && (
-              <p className="mt-2 sm:mt-2.5 text-xs sm:text-sm text-zinc-100/90 leading-relaxed font-normal max-w-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)] line-clamp-2 sm:line-clamp-none">
+              <p className="mt-2 sm:mt-2.5 text-xs sm:text-sm text-zinc-100/90 leading-relaxed font-normal max-w-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
                 {textoSecundario}
               </p>
             )}
@@ -544,7 +622,7 @@ export default async function NegocioPage({ params }: PageProps) {
               <div className="flex items-center gap-1.5">
                 {redesSociales.map((red) => (
                   <a
-                    key={`hero-${red.nombre}`}
+                    key={`hero-desktop-${red.nombre}`}
                     href={red.url}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -1146,7 +1224,7 @@ function CatalogoCard({
                 rel="noopener noreferrer"
                 className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-500 active:scale-95"
               >
-                <MessageCircle className="h-3 w-3" />
+                <MessageCircle className="h-3.5 w-3.5" />
                 Consultar
               </a>
             )}
