@@ -307,13 +307,14 @@ export default function TiendaCatalogoPedidos({
 
   return (
     <>
-      <div className="mt-5 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-4 md:grid-cols-2 lg:mt-5 lg:grid-cols-3 lg:gap-4">
+      {/* GRILLA COMPACTA: 2 COLUMNAS EN MÓVIL, 3 EN TABLET, 4 EN DESKTOP */}
+      <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-6 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
         {productos.map((producto) => {
           const imagenesItem = obtenerImagenes(producto);
           return (
-            <article key={producto.id} className={`group flex h-full flex-col overflow-hidden rounded-2xl border transition duration-300 hover:-translate-y-1 hover:shadow-xl ${estiloCard}`}>
+            <article key={producto.id} className={`group flex h-full flex-col overflow-hidden rounded-xl sm:rounded-2xl border transition duration-300 hover:-translate-y-1 hover:shadow-lg ${estiloCard}`}>
               {imagenesItem.length > 0 && (
-                <div className={`relative aspect-[4/5] overflow-hidden border-b ${claro ? "border-slate-100 bg-slate-50" : "border-zinc-800 bg-zinc-950"} sm:aspect-[5/6] lg:aspect-[4/5]`}>
+                <div className={`relative aspect-[4/5] overflow-hidden border-b ${claro ? "border-slate-100 bg-slate-50" : "border-zinc-800 bg-zinc-950"}`}>
                   <div className="flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     {imagenesItem.map((url, indice) => (
                       <img key={`${url}-${indice}`} src={url} alt={`${producto.nombre} - foto ${indice + 1}`} loading="lazy" className="h-full w-full shrink-0 snap-center object-cover" />
@@ -322,17 +323,17 @@ export default function TiendaCatalogoPedidos({
                 </div>
               )}
 
-              <div className="flex flex-1 flex-col p-3 sm:p-4">
-                <h3 className={`line-clamp-2 text-[13px] font-semibold leading-[1.25] sm:text-base sm:leading-5 ${claro ? "text-slate-900" : "text-white"}`}>
+              <div className="flex flex-1 flex-col p-2.5 sm:p-3.5">
+                <h3 className={`line-clamp-2 text-xs sm:text-sm font-semibold leading-tight ${claro ? "text-slate-900" : "text-white"}`}>
                   {producto.nombre}
                 </h3>
 
-                <div className={`mt-3 flex flex-wrap items-end justify-between gap-2 border-t pt-3 sm:mt-4 sm:gap-3 sm:pt-4 ${claro ? "border-slate-100" : "border-zinc-800"}`}>
+                <div className={`mt-2 flex flex-wrap items-end justify-between gap-1 border-t pt-2 sm:mt-3 sm:pt-2.5 ${claro ? "border-slate-100" : "border-zinc-800"}`}>
                   <div>
                     {Boolean(producto.precio) && (
                       <>
-                        <p className={`text-[10px] uppercase tracking-wide sm:text-xs ${claseSecundario}`}>Precio</p>
-                        <p className="mt-0.5 text-sm font-bold sm:mt-1 sm:text-lg" style={{ color: colorPrincipal }}>
+                        <p className={`text-[9px] uppercase tracking-wider ${claseSecundario}`}>Precio</p>
+                        <p className="mt-0.5 text-xs sm:text-base font-bold" style={{ color: colorPrincipal }}>
                           {formatoPrecio(producto.precio || 0)}
                         </p>
                       </>
@@ -340,7 +341,7 @@ export default function TiendaCatalogoPedidos({
                   </div>
                 </div>
 
-                <div className="mt-3 flex flex-wrap gap-1.5 sm:mt-4 sm:gap-2">
+                <div className="mt-2.5 sm:mt-3">
                   <ProductoDetalleTienda
                     producto={producto}
                     colorPrincipal={colorPrincipal}
@@ -362,17 +363,17 @@ export default function TiendaCatalogoPedidos({
         <button
           type="button"
           onClick={() => { setCarritoAbierto(true); setError(""); }}
-          className="fixed bottom-20 left-4 z-[70] inline-flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-white shadow-2xl transition hover:-translate-y-0.5 hover:brightness-110 sm:bottom-6 sm:left-6"
+          className="fixed bottom-20 left-4 z-[70] inline-flex items-center gap-2.5 rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-2xl transition hover:-translate-y-0.5 hover:brightness-110 sm:bottom-6 sm:left-6"
           style={{ backgroundColor: colorPrincipal }}
         >
           <span className="relative">
-            <ShoppingBag className="h-5 w-5" />
-            <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-white px-1 text-[9px] font-black text-slate-950">
+            <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="absolute -right-2 -top-2 flex h-3.5 min-w-3.5 sm:h-4 sm:min-w-4 items-center justify-center rounded-full bg-white px-1 text-[8px] sm:text-[9px] font-black text-slate-950">
               {cantidadTotal}
             </span>
           </span>
           <span>Ver pedido</span>
-          <span className="opacity-80">{formatoPrecio(total)}</span>
+          <span className="opacity-80 font-bold">{formatoPrecio(total)}</span>
         </button>
       )}
 
