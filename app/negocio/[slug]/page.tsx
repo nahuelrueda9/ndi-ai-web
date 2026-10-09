@@ -542,16 +542,15 @@ export default async function NegocioPage({ params }: PageProps) {
                 ) : red.nombre === "Facebook" ? (
                   <FaFacebookF className="h-3 w-3 text-[#1877F2]" />
                 ) : (
-                  <FaTiktok className="h-3 w-3" />
+                  <FaTiktok className="h-3.5 w-3.5" />
                 )}
               </a>
             ))}
           </div>
         </div>
 
-        {/* FOTOS EN MÓVIL: AGRANDADAS CON PROPORCIÓN 16:10 Y ESPACIOS REDUCIDOS */}
+        {/* FOTOS EN MÓVIL: AGRANDADAS CON PROPORCIÓN 16:10 */}
         <div className="sm:hidden flex flex-col gap-1.5 w-full my-0.5">
-          {/* Slider Superior */}
           <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
             {portadasSuperiores.length > 0 ? (
               <HeroSlider
@@ -564,7 +563,6 @@ export default async function NegocioPage({ params }: PageProps) {
             )}
           </div>
 
-          {/* Slider Inferior */}
           <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
             {portadasInferiores.length > 0 ? (
               <HeroSlider
@@ -712,7 +710,7 @@ export default async function NegocioPage({ params }: PageProps) {
 
       {/* SECCIÓN PRODUCTOS / CARTA */}
       {mostrarProductos && productos.length > 0 && (
-        <section id="productos" className="mx-auto max-w-[1440px] scroll-mt-20 px-4 py-10 sm:px-10 sm:py-16">
+        <section id="productos" className="mx-auto max-w-[1440px] scroll-mt-20 px-4 py-8 sm:px-10 sm:py-14">
           <div className="max-w-2xl">
             <p className="text-xs font-medium uppercase tracking-wider" style={{ color: colorPrincipal }}>
               {esRestaurante ? "Menú" : "Colección"}
@@ -725,7 +723,7 @@ export default async function NegocioPage({ params }: PageProps) {
             </p>
           </div>
 
-          <div className="mt-6 sm:mt-8">
+          <div className="mt-5 sm:mt-7">
             {esRestaurante ? (
               <RestauranteCartaPedidos
                 slug={slug}
@@ -754,9 +752,9 @@ export default async function NegocioPage({ params }: PageProps) {
         </section>
       )}
 
-      {/* SECCIÓN SERVICIOS */}
+      {/* SECCIÓN SERVICIOS: AHORA EN 4 COLUMNAS EN PC Y TARJETAS COMPACTAS */}
       {mostrarServicios && servicios.length > 0 && (
-        <section id="servicios" className="mx-auto max-w-[1440px] scroll-mt-20 px-4 py-10 sm:px-10 sm:py-16">
+        <section id="servicios" className="mx-auto max-w-[1440px] scroll-mt-20 px-4 py-8 sm:px-10 sm:py-14">
           <div className="max-w-2xl">
             <p className="text-xs font-medium uppercase tracking-wider" style={{ color: colorPrincipal }}>
               Lo que ofrecemos
@@ -769,7 +767,8 @@ export default async function NegocioPage({ params }: PageProps) {
             </p>
           </div>
 
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {/* Grilla 4 columnas en desktop / 2 columnas compactas en móvil */}
+          <div className="mt-5 grid grid-cols-2 gap-2.5 sm:mt-7 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
             {servicios.map((servicio) => (
               <CatalogoCard
                 key={servicio.id}
@@ -1150,9 +1149,9 @@ function CatalogoCard({
   }
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/90 dark:hover:border-zinc-700">
+    <article className="group flex h-full flex-col overflow-hidden rounded-xl sm:rounded-2xl border border-slate-200/80 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/90 dark:hover:border-zinc-700">
       {imagenesItem.length > 0 && (
-        <div className={`relative overflow-hidden border-b border-slate-100 bg-slate-100 dark:border-zinc-800/80 dark:bg-zinc-950 ${esTienda && item.tipo === "producto" ? "aspect-[4/5] sm:aspect-[5/6] lg:aspect-[4/5]" : "aspect-[4/3]"}`}>
+        <div className={`relative overflow-hidden border-b border-slate-100 bg-slate-100 dark:border-zinc-800/80 dark:bg-zinc-950 ${esTienda && item.tipo === "producto" ? "aspect-[4/5]" : "aspect-[16/10]"}`}>
           <div className="flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {imagenesItem.map((url, indice) => (
               <img key={`${url}-${indice}`} src={url} alt={`${item.nombre} - foto ${indice + 1}`} loading="lazy" className="h-full w-full shrink-0 snap-center object-cover" />
@@ -1161,22 +1160,22 @@ function CatalogoCard({
         </div>
       )}
 
-      <div className="flex flex-1 flex-col p-3.5 sm:p-4">
-        <h3 className="line-clamp-2 text-xs sm:text-sm font-semibold leading-snug">
+      <div className="flex flex-1 flex-col p-2.5 sm:p-3.5">
+        <h3 className="line-clamp-2 text-xs sm:text-sm font-semibold leading-tight">
           {item.nombre}
         </h3>
 
-        <div className="mt-3 flex flex-wrap items-end justify-between gap-1.5 border-t border-slate-100 pt-2.5 dark:border-zinc-800/80">
+        <div className="mt-2 flex flex-wrap items-end justify-between gap-1 border-t border-slate-100 pt-2 dark:border-zinc-800/80 sm:mt-2.5 sm:pt-2.5">
           <div>
             {Boolean(item.precio) && (
               <>
                 <p className="text-[9px] font-medium uppercase tracking-wider text-slate-400 dark:text-zinc-500">
-                  {esAlojamiento && item.tipo === "servicio" ? "Precio por noche" : "Precio"}
+                  {esAlojamiento && item.tipo === "servicio" ? "Por noche" : "Precio"}
                 </p>
-                <p className="mt-0.5 text-sm sm:text-base font-bold" style={{ color }}>
+                <p className="mt-0.5 text-xs sm:text-base font-bold" style={{ color }}>
                   ${Number(item.precio).toLocaleString("es-AR")}
                   {esAlojamiento && item.tipo === "servicio" && (
-                    <span className="ml-1 text-[10px] font-normal text-slate-500 dark:text-zinc-400">
+                    <span className="ml-1 text-[9px] font-normal text-slate-500 dark:text-zinc-400">
                       / noche
                     </span>
                   )}
@@ -1190,7 +1189,7 @@ function CatalogoCard({
               <p className="text-[9px] font-medium uppercase tracking-wider text-slate-400 dark:text-zinc-500">
                 Duración
               </p>
-              <p className="mt-0.5 text-[11px] font-medium text-slate-700 dark:text-zinc-300">
+              <p className="mt-0.5 text-[10px] sm:text-xs font-medium text-slate-700 dark:text-zinc-300">
                 {item.duracionMinutos} min
               </p>
             </div>
@@ -1198,13 +1197,13 @@ function CatalogoCard({
         </div>
 
         {puedeReservar && mostrarHorariosRapidos && slug && (
-          <div className="mt-2.5">
+          <div className="mt-2">
             <ProximosHorarios slug={slug} servicioId={item.id} colorPrincipal={color} tema={tema} />
           </div>
         )}
 
         {(puedeReservar || whatsappItemUrl || mostrarContacto || (esAlojamiento && item.tipo === "servicio")) && (
-          <div className="mt-3 flex flex-wrap gap-1.5">
+          <div className="mt-2.5 flex flex-wrap gap-1.5 sm:mt-3">
             {esAlojamiento && item.tipo === "servicio" && (
               <AlojamientoDetalle
                 habitacion={{
@@ -1224,7 +1223,7 @@ function CatalogoCard({
             {puedeReservar && !esAlojamiento && (
               <a
                 href={`#reservar-servicio-${encodeURIComponent(item.id)}`}
-                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:brightness-110 active:scale-95"
+                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] sm:text-xs font-semibold text-white shadow-sm transition hover:brightness-110 active:scale-95"
                 style={{ backgroundColor: color }}
               >
                 <Clock3 className="h-3 w-3" />
@@ -1238,7 +1237,7 @@ function CatalogoCard({
                 data-analytics-event="whatsapp_click"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-500 active:scale-95"
+                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-2.5 py-1.5 text-[11px] sm:text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-500 active:scale-95"
               >
                 <FaWhatsapp className="h-3.5 w-3.5" />
                 Consultar
@@ -1248,7 +1247,7 @@ function CatalogoCard({
             {!puedeReservar && !whatsappItemUrl && mostrarContacto && (
               <a
                 href="#contacto"
-                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:brightness-110 active:scale-95"
+                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] sm:text-xs font-semibold text-white shadow-sm transition hover:brightness-110 active:scale-95"
                 style={{ backgroundColor: color }}
               >
                 <Mail className="h-3 w-3" />
