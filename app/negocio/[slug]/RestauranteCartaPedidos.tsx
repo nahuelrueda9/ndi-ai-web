@@ -93,7 +93,6 @@ export default function RestauranteCartaPedidos({
   const [error, setError] = useState("");
   const [exito, setExito] = useState<{ numero: string; total: number } | null>(null);
 
-  // Detecta dinámicamente si el documento tiene la clase 'dark' o si el tema prop es claro
   const [esClaro, setEsClaro] = useState(tema === "claro");
 
   useEffect(() => {
@@ -102,8 +101,7 @@ export default function RestauranteCartaPedidos({
       setEsClaro(root.classList.contains("dark") ? false : tema === "claro" || !root.classList.contains("dark"));
     };
     actualizarTema();
-    
-    // Observador por si cambia el tema en tiempo real
+
     const observer = new MutationObserver(actualizarTema);
     observer.observe(root, { attributes: true, attributeFilter: ["class"] });
     return () => observer.disconnect();
@@ -123,7 +121,7 @@ export default function RestauranteCartaPedidos({
         );
       }
     } catch {
-      // Ignorar si el carrito está roto
+      // Ignorar si el storage no es accesible
     }
   }, [slug]);
 
@@ -131,7 +129,7 @@ export default function RestauranteCartaPedidos({
     try {
       window.localStorage.setItem(`ndi-carrito-resto:${slug}`, JSON.stringify(carrito));
     } catch {
-      // localStorage no obligatorio
+      // No obligatorio
     }
   }, [carrito, slug]);
 
@@ -220,11 +218,10 @@ export default function RestauranteCartaPedidos({
     }
   }
 
-  // Estilos dinámicos basados estrictamente en la prop `tema` ("claro" u "oscuro")
   const estiloCard = claro
     ? "border-slate-200 bg-white text-slate-950 shadow-sm"
     : "border-zinc-800 bg-zinc-900 text-white shadow-none";
-  
+
   const estiloBotonSecundario = claro
     ? "border-slate-300 text-slate-800 hover:bg-slate-100"
     : "border-zinc-700 text-zinc-200 hover:bg-zinc-800";
@@ -237,26 +234,27 @@ export default function RestauranteCartaPedidos({
 
   return (
     <>
-      <div className="mt-10 space-y-12">
+      <div className="mt-6 space-y-10 sm:space-y-12">
         {categorias.map((categoria) => (
           <div key={categoria.id}>
-            <div className="mb-5 flex items-end justify-between gap-4">
-              <h3 className={`text-xl font-bold tracking-tight sm:text-2xl ${claro ? "text-slate-950" : "text-white"}`}>{categoria.titulo}</h3>
-              <span className={`text-xs ${claseSecundario}`}>
+            <div className="mb-3.5 flex items-end justify-between gap-4">
+              <h3 className={`text-lg font-bold tracking-tight sm:text-2xl ${claro ? "text-slate-950" : "text-white"}`}>{categoria.titulo}</h3>
+              <span className={`text-[11px] sm:text-xs ${claseSecundario}`}>
                 {categoria.items.length} {categoria.items.length === 1 ? "opción" : "opciones"}
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {/* GRILLA COMPACTA: 2 COLUMNAS EN MÓVIL, 3 EN TABLET, 4 EN DESKTOP */}
+            <div className="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
               {categoria.items.map((producto) => {
                 const imagenes = obtenerImagenes(producto);
                 const itemCarrito = carrito.find((item) => item.id === producto.id);
 
                 return (
-                  <article key={producto.id} className={`group overflow-hidden rounded-2xl border transition hover:-translate-y-0.5 hover:shadow-md ${estiloCard}`}>
+                  <article key={producto.id} className={`group flex h-full flex-col overflow-hidden rounded-xl sm:rounded-2xl border transition duration-300 hover:-translate-y-1 hover:shadow-lg ${estiloCard}`}>
                     {imagenes.length > 0 && (
-                      <div className={`relative aspect-[4/3] overflow-hidden border-b ${claro ? "border-slate-100" : "border-zinc-800"}`}>
-                        <div className="flex h-full w-full snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                      <div className={`relative aspect-[16/10] overflow-hidden border-b ${claro ? "border-slate-100 bg-slate-50" : "border-zinc-800 bg-zinc-950"}`}>
+                        <div className="flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                           {imagenes.map((url, indice) => (
                             <img
                               key={`${url}-${indice}`}
@@ -269,60 +267,66 @@ export default function RestauranteCartaPedidos({
                         </div>
 
                         {imagenes.length > 1 && (
-                          <span className="absolute bottom-2 right-2 rounded-lg bg-black/65 px-2 py-1 text-[10px] font-semibold text-white backdrop-blur">
+                          <span className="absolute bottom-1.5 right-1.5 rounded-md bg-black/65 px-1.5 py-0.5 text-[9px] font-semibold text-white backdrop-blur">
                             {imagenes.length} fotos
                           </span>
                         )}
                       </div>
                     )}
 
-                    <div className="p-3 sm:p-4">
-                      <h4 className={`line-clamp-2 text-sm font-bold leading-snug sm:text-base ${claro ? "text-slate-900" : "text-white"}`}>
+                    <div className="flex flex-1 flex-col p-2.5 sm:p-3.5">
+                      <h4 className={`line-clamp-2 text-xs sm:text-sm font-semibold leading-snug ${claro ? "text-slate-900" : "text-white"}`}>
                         {producto.nombre}
                       </h4>
 
-                      <p className="mt-2 text-sm font-bold sm:text-lg" style={{ color: colorPrincipal }}>
-                        {formatoPrecio(Math.max(0, Number(producto.precio || 0)))}
-                      </p>
+                      <div className={`mt-2 flex flex-wrap items-end justify-between gap-1 border-t pt-2 sm:mt-2.5 sm:pt-2.5 ${claro ? "border-slate-100" : "border-zinc-800"}`}>
+                        <div>
+                          <p className={`text-[9px] uppercase tracking-wider ${claseSecundario}`}>Precio</p>
+                          <p className="mt-0.5 text-xs sm:text-base font-bold" style={{ color: colorPrincipal }}>
+                            {formatoPrecio(Math.max(0, Number(producto.precio || 0)))}
+                          </p>
+                        </div>
+                      </div>
 
-                      <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                      {/* BOTONES EN 1 SOLA FILA COMPACTA */}
+                      <div className="mt-2.5 flex items-center gap-1.5 sm:mt-3">
                         <button
                           type="button"
                           onClick={() => setProductoDetalle(producto)}
-                          className={`inline-flex flex-1 items-center justify-center rounded-xl border px-3 py-2.5 text-xs font-semibold transition sm:text-sm ${estiloBotonSecundario}`}
+                          className={`inline-flex flex-1 items-center justify-center rounded-xl border px-2 py-1.5 text-[11px] sm:text-xs font-semibold transition active:scale-95 ${estiloBotonSecundario}`}
                         >
                           Ver plato
                         </button>
 
                         {pedidosHabilitados ? (
                           itemCarrito ? (
-                            <div className={`inline-flex flex-1 items-center justify-between rounded-xl border ${estiloContador}`}>
+                            <div className={`inline-flex shrink-0 items-center rounded-xl border ${estiloContador}`}>
                               <button
                                 type="button"
                                 onClick={() => cambiarCantidad(producto.id, -1)}
-                                className="flex h-10 w-10 items-center justify-center transition hover:opacity-70"
+                                className="flex h-7 w-7 items-center justify-center transition hover:opacity-70"
                                 aria-label="Quitar una unidad"
                               >
-                                <Minus className="h-3.5 w-3.5" />
+                                <Minus className="h-3 w-3" />
                               </button>
-                              <span className="min-w-7 text-center text-xs font-bold">{itemCarrito.cantidad}</span>
+                              <span className="min-w-5 text-center text-xs font-bold">{itemCarrito.cantidad}</span>
                               <button
                                 type="button"
                                 onClick={() => cambiarCantidad(producto.id, 1)}
-                                className="flex h-10 w-10 items-center justify-center transition hover:opacity-70"
+                                className="flex h-7 w-7 items-center justify-center transition hover:opacity-70"
                                 aria-label="Agregar una unidad"
                               >
-                                <Plus className="h-3.5 w-3.5" />
+                                <Plus className="h-3 w-3" />
                               </button>
                             </div>
                           ) : (
                             <button
                               type="button"
                               onClick={() => agregar(producto)}
-                              className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-xs font-semibold text-white transition hover:brightness-110 sm:flex-1 sm:text-sm"
+                              className="inline-flex shrink-0 items-center justify-center gap-1 rounded-xl px-2.5 py-1.5 text-[11px] sm:text-xs font-semibold text-white shadow-sm transition hover:brightness-110 active:scale-95"
                               style={{ backgroundColor: colorPrincipal }}
                             >
-                              <Plus className="h-4 w-4" /> Agregar
+                              <Plus className="h-3 w-3" /> Agregar
                             </button>
                           )
                         ) : null}
@@ -439,17 +443,17 @@ export default function RestauranteCartaPedidos({
         <button
           type="button"
           onClick={() => { setCarritoAbierto(true); setExito(null); setError(""); }}
-          className="fixed bottom-20 left-4 z-[70] inline-flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-white shadow-2xl transition hover:-translate-y-0.5 hover:brightness-110 sm:bottom-6 sm:left-6"
+          className="fixed bottom-20 left-4 z-[70] inline-flex items-center gap-2.5 rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-2xl transition hover:-translate-y-0.5 hover:brightness-110 sm:bottom-6 sm:left-6"
           style={{ backgroundColor: colorPrincipal }}
         >
           <span className="relative">
-            <ShoppingBag className="h-5 w-5" />
-            <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-white px-1 text-[9px] font-black text-slate-950">
+            <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="absolute -right-2 -top-2 flex h-3.5 min-w-3.5 sm:h-4 sm:min-w-4 items-center justify-center rounded-full bg-white px-1 text-[8px] sm:text-[9px] font-black text-slate-950">
               {cantidadTotal}
             </span>
           </span>
           <span>Ver pedido</span>
-          <span className="opacity-80">{formatoPrecio(total)}</span>
+          <span className="opacity-80 font-bold">{formatoPrecio(total)}</span>
         </button>
       )}
 
@@ -534,7 +538,7 @@ export default function RestauranteCartaPedidos({
                     <div className="space-y-4">
                       <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-500/20 dark:bg-blue-500/10">
                         <p className="text-sm font-bold text-blue-900 dark:text-blue-200">Retiro en el local</p>
-                        <p className="mt-1 text-xs leading-5 text-blue-700 dark:text-blue-300/80">En esta primera versión no hay delivery ni pago online. El restaurante acepta el pedido y coordina el retiro.</p>
+                        <p className="mt-1 text-xs leading-5 text-blue-700 dark:text-blue-300/80">El restaurante acepta el pedido y coordina el retiro en el local.</p>
                       </div>
                       <div>
                         <label className="mb-1.5 block text-xs font-medium">Nombre</label>
