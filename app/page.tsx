@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -10,7 +10,6 @@ import {
   Check,
   ChevronDown,
   Clock,
-  ExternalLink,
   FileText,
   Mail,
   MessageCircle,
@@ -19,7 +18,6 @@ import {
   QrCode,
   Sparkles,
   Sun,
-  UserRoundCheck,
 } from "lucide-react";
 
 import { useTheme } from "@/components/theme/ThemeProvider";
@@ -171,24 +169,6 @@ export default function HomePage() {
   const [faqAbierta, setFaqAbierta] = useState<number | null>(0);
   const { theme, setTheme } = useTheme();
 
-  const container3DRef = useRef<HTMLDivElement>(null);
-  const [rotacion3D, setRotacion3D] = useState(18);
-  const [elevacionY, setElevacionY] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!container3DRef.current) return;
-      const scrollY = window.scrollY;
-      const nuevaRotacion = Math.max(0, 18 - scrollY * 0.035);
-      const nuevaElevacion = Math.min(50, scrollY * 0.07);
-      setRotacion3D(nuevaRotacion);
-      setElevacionY(nuevaElevacion);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   const toggleFaq = (index: number) => {
     setFaqAbierta(faqAbierta === index ? null : index);
   };
@@ -198,65 +178,67 @@ export default function HomePage() {
   };
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#090a0b] text-zinc-100 transition-colors duration-200 selection:bg-blue-600 selection:text-white">
-      {/* HEADER */}
-      <header className="sticky top-0 z-50 border-b border-zinc-800/80 bg-[#090a0b]/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-8">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-blue-600 p-1.5 shadow-md shadow-blue-600/30">
+    <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 selection:bg-blue-600 selection:text-white">
+      {/* HEADER COMPACTO Y RESPONSIVE */}
+      <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/80 backdrop-blur-xl transition-colors dark:border-zinc-800/80 dark:bg-[#0c0d0e]/80">
+        <div className="mx-auto flex h-14 sm:h-16 max-w-7xl items-center justify-between px-3.5 sm:px-8">
+          <Link href="/" className="flex items-center gap-2 min-w-0">
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-xl bg-blue-600 p-1 shadow-sm shadow-blue-600/30">
               <Image
                 src="/logo-ndi.png"
                 alt="Logo NDI"
-                width={18}
-                height={18}
+                width={16}
+                height={16}
                 className="h-full w-full object-contain"
                 priority
               />
             </div>
-            <p className="text-base font-bold tracking-tight text-white">
-              NDI <span className="font-normal text-zinc-400">| Diseño & Web</span>
-            </p>
+            <div className="truncate">
+              <p className="text-xs sm:text-sm font-bold tracking-tight text-zinc-900 dark:text-white">
+                NDI <span className="font-normal text-zinc-500 dark:text-zinc-400">| Diseño & Web</span>
+              </p>
+            </div>
           </Link>
 
-          <nav className="hidden items-center gap-8 lg:flex">
-            <a href="#funciones" className="text-xs font-semibold uppercase tracking-wider text-zinc-400 transition hover:text-white">
+          <nav className="hidden items-center gap-7 lg:flex">
+            <a href="#funciones" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
               Servicios
             </a>
-            <a href="#como-funciona" className="text-xs font-semibold uppercase tracking-wider text-zinc-400 transition hover:text-white">
+            <a href="#como-funciona" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
               Proceso
             </a>
-            <a href="#planes" className="text-xs font-semibold uppercase tracking-wider text-zinc-400 transition hover:text-white">
+            <a href="#planes" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
               Planes
             </a>
-            <a href="#faq" className="text-xs font-semibold uppercase tracking-wider text-zinc-400 transition hover:text-white">
+            <a href="#faq" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
               Preguntas
             </a>
-            <a href="#contacto" className="text-xs font-semibold uppercase tracking-wider text-zinc-400 transition hover:text-white">
+            <a href="#contacto" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
               Contacto
             </a>
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
               onClick={alternarTema}
               type="button"
               aria-label="Cambiar tema"
-              className="flex h-8 w-8 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900/90 text-zinc-300 transition hover:bg-zinc-800"
+              className="flex h-8 w-8 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-700 shadow-sm transition hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
               <Sun className="h-4 w-4 hidden dark:block text-amber-400" />
-              <Moon className="h-4 w-4 block dark:hidden text-zinc-300" />
+              <Moon className="h-4 w-4 block dark:hidden text-zinc-700" />
             </button>
 
             <Link
               href="/login"
-              className="rounded-xl px-3 py-2 text-xs font-semibold text-zinc-300 transition hover:bg-zinc-900"
+              className="hidden sm:inline-flex rounded-xl px-3 py-1.5 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900"
             >
               Iniciar sesión
             </Link>
 
             <Link
               href="/register"
-              className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-blue-600/25 transition hover:bg-blue-500"
+              className="rounded-xl bg-blue-600 px-3 py-1.5 sm:px-4 sm:py-2 text-[11px] sm:text-xs font-bold text-white shadow-sm shadow-blue-600/25 transition hover:bg-blue-500 active:scale-95"
             >
               Quiero mi página
             </Link>
@@ -264,130 +246,120 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* HERO CENTRADO EDITORIAL */}
-      <section className="relative pt-12 pb-16 sm:pt-20 sm:pb-28 [perspective:1400px]">
-        {/* Glow de profundidad sutil */}
-        <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 h-[550px] w-full max-w-6xl">
-          <div className="absolute top-10 left-1/3 h-96 w-96 rounded-full bg-blue-600/15 blur-[140px]" />
-        </div>
+      {/* HERO ESTILO BENTO KELVIN */}
+      <section className="mx-auto max-w-7xl px-3 sm:px-8 pt-4 sm:pt-10 pb-12 sm:pb-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
+          
+          {/* MÓDULO 1: TITULAR & ACCIÓN DIRECTA (5 COLS) */}
+          <div className="lg:col-span-5 flex flex-col justify-between rounded-[2rem] border border-zinc-200/80 bg-white p-6 sm:p-9 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/60 min-h-[380px] sm:min-h-[460px]">
+            <div>
+              <div className="inline-flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                  DISEÑO & DESARROLLO WEB
+                </span>
+              </div>
 
-        <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-8">
-          <h1 className="text-3xl font-extrabold tracking-tight sm:text-6xl lg:text-[4.2rem] leading-[1.08] text-white">
-            Tené tu página web{" "}
-            <span className="bg-gradient-to-r from-blue-400 via-sky-300 to-blue-500 bg-clip-text text-transparent">
-              profesional hoy.
-            </span>
-          </h1>
+              <h1 className="mt-5 text-3xl sm:text-5xl font-black tracking-tight leading-[1.08] text-zinc-950 dark:text-white">
+                Páginas web pensadas para vender.
+              </h1>
 
-          <p className="mx-auto mt-5 max-w-2xl text-sm sm:text-lg leading-relaxed text-zinc-400 font-normal">
-            Diseñamos la presencia digital de tu negocio para que vendas más, destaques de tu competencia y recibas consultas organizadas directamente en tu WhatsApp.
-          </p>
-
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Link
-              href="/register"
-              className="inline-flex items-center gap-2 rounded-2xl bg-white px-7 py-3.5 text-sm font-bold text-zinc-950 shadow-xl transition hover:bg-zinc-200 active:scale-95"
-            >
-              Crear mi página
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-
-            <a
-              href="#contacto"
-              className="inline-flex items-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-900/80 px-6 py-3.5 text-sm font-semibold text-zinc-300 transition hover:border-zinc-700 hover:bg-zinc-800 active:scale-95"
-            >
-              Hablar con un asesor
-            </a>
-          </div>
-        </div>
-
-        {/* SHOWCASE 3D: DISEÑOS REALES EN DISPOSITIVO */}
-        <div
-          ref={container3DRef}
-          className="relative mx-auto mt-12 sm:mt-16 max-w-5xl px-3 sm:px-6 transition-transform duration-300 ease-out"
-          style={{
-            transform: `rotateX(${rotacion3D}deg) translateY(-${elevacionY}px)`,
-            transformStyle: "preserve-3d",
-          }}
-        >
-          <div className="absolute inset-x-8 -bottom-8 h-20 rounded-[3rem] bg-blue-600/10 blur-2xl" />
-
-          {/* Marco del Showcase */}
-          <div className="relative overflow-hidden rounded-[2rem] border border-zinc-800 bg-zinc-950 shadow-2xl ring-1 ring-white/5">
-            {/* Barra superior minimalista y sobria */}
-            <div className="flex items-center justify-between border-b border-zinc-800/80 bg-zinc-900/60 px-5 py-3">
-              <span className="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">
-                Proyectos reales desarrollados por NDI
-              </span>
-              <span className="text-xs font-semibold text-blue-400">
-                Diseño responsive & a medida
-              </span>
+              <p className="mt-4 text-xs sm:text-sm leading-relaxed text-zinc-600 dark:text-zinc-400 font-normal">
+                Diseñamos la web de tu negocio con catálogo, turnos online y pedidos ordenados directo a tu WhatsApp. Sin complicaciones ni plantillas vacías.
+              </p>
             </div>
 
-            {/* Grilla visual con 3 estilos de webs reales creadas */}
-            <div className="p-4 sm:p-6 bg-[#0c0d0e]">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Ejemplo 1: Gastronomía */}
-                <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/40 p-3">
-                  <div className="relative aspect-[16/10] w-full overflow-hidden rounded-lg">
-                    <img
-                      src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80"
-                      alt="Web Restaurante"
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  <div className="mt-3">
-                    <p className="text-xs font-bold text-white">Gastronomía & Bares</p>
-                    <p className="mt-0.5 text-[11px] text-zinc-400">Carta digital, reservas de mesa y pedidos online.</p>
-                  </div>
-                </div>
+            <div className="mt-8 flex flex-col sm:flex-row gap-2.5">
+              <Link
+                href="/register"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-zinc-950 px-6 py-3.5 text-xs sm:text-sm font-bold text-white shadow-md transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 active:scale-95"
+              >
+                Solicitar cotización →
+              </Link>
+              <a
+                href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Quiero consultar por una página web para mi negocio.")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-5 py-3.5 text-xs sm:text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              >
+                Hablar por WhatsApp
+              </a>
+            </div>
+          </div>
 
-                {/* Ejemplo 2: Indumentaria */}
-                <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/40 p-3">
-                  <div className="relative aspect-[16/10] w-full overflow-hidden rounded-lg">
-                    <img
-                      src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=600&q=80"
-                      alt="Web Tienda de Ropa"
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  <div className="mt-3">
-                    <p className="text-xs font-bold text-white">Tiendas & Indumentaria</p>
-                    <p className="mt-0.5 text-[11px] text-zinc-400">Catálogo con talles, fotos, stock y cobros online.</p>
-                  </div>
-                </div>
+          {/* MÓDULO 2: FOTO EDITORIAL DESTACADA (4 COLS) */}
+          <div className="lg:col-span-4 relative overflow-hidden rounded-[2rem] border border-zinc-200/80 bg-zinc-100 dark:border-zinc-800/80 dark:bg-zinc-900/60 min-h-[300px] lg:min-h-[460px] group">
+            <img
+              src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=900&q=80"
+              alt="Diseño Web Profesional NDI"
+              className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-transparent" />
+            <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+              <span className="rounded-full bg-black/60 px-3 py-1 font-mono text-[10px] font-semibold text-zinc-300 backdrop-blur-md border border-white/10">
+                Experiencia responsive
+              </span>
+              <span className="text-[10px] font-bold text-emerald-400">
+                100% autogestionable
+              </span>
+            </div>
+          </div>
 
-                {/* Ejemplo 3: Servicios & Barberías */}
-                <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/40 p-3">
-                  <div className="relative aspect-[16/10] w-full overflow-hidden rounded-lg">
-                    <img
-                      src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80"
-                      alt="Web Barbería y Estética"
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  <div className="mt-3">
-                    <p className="text-xs font-bold text-white">Estética & Profesionales</p>
-                    <p className="mt-0.5 text-[11px] text-zinc-400">Agenda de turnos online 24/7 sin intermediarios.</p>
-                  </div>
-                </div>
+          {/* MÓDULO 3: COLUMNA DERECHA DE MÉTRICAS & RUBROS (3 COLS) */}
+          <div className="lg:col-span-3 flex flex-col gap-3 sm:gap-4">
+            {/* Tarjeta superior: Métrica */}
+            <div className="flex-1 rounded-[2rem] border border-zinc-200/80 bg-white p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/60 flex flex-col justify-between">
+              <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                ENTREGA RÁPIDA
+              </p>
+              <div className="my-3">
+                <p className="text-3xl sm:text-4xl font-black text-zinc-950 dark:text-white">
+                  24 / 48 hs
+                </p>
+                <p className="mt-1 text-[11px] leading-tight text-zinc-500 dark:text-zinc-400">
+                  Tu sitio publicado y listo para compartir en redes.
+                </p>
+              </div>
+            </div>
+
+            {/* Tarjeta inferior: Rubros con flechitas */}
+            <div className="flex-1 rounded-[2rem] border border-zinc-200/80 bg-white p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/60 flex flex-col justify-between">
+              <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                ESPECIALIDADES
+              </p>
+              <div className="mt-3 space-y-2.5">
+                {[
+                  { nombre: "Gastronomía & Bares", href: "#funciones" },
+                  { nombre: "Tiendas & Indumentaria", href: "#funciones" },
+                  { nombre: "Barberías & Servicios", href: "#funciones" },
+                ].map((item, idx) => (
+                  <a
+                    key={idx}
+                    href={item.href}
+                    className="flex items-center justify-between text-xs sm:text-sm font-semibold text-zinc-800 hover:text-blue-600 dark:text-zinc-200 dark:hover:text-blue-400 transition"
+                  >
+                    <span>{item.nombre}</span>
+                    <span className="text-emerald-500">→</span>
+                  </a>
+                ))}
               </div>
             </div>
           </div>
+
         </div>
       </section>
 
       {/* SECCIÓN PROBLEMA */}
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-8 sm:py-24 border-t border-zinc-800/60">
+      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-14">
           <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-blue-500">
+            <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
               El problema actual
             </span>
-            <h2 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-4xl">
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-zinc-950 dark:text-white sm:text-4xl">
               Tener solo Instagram no es suficiente para vender ordenado.
             </h2>
-            <p className="mt-4 text-sm sm:text-base leading-relaxed text-zinc-400">
+            <p className="mt-4 text-xs sm:text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
               La gente no tiene tiempo de esperar horas por una respuesta en historias o mensajes privados. Un sitio web propio le da seriedad a tu marca y permite que tus clientes vean precios, servicios y reserven de inmediato.
             </p>
           </div>
@@ -396,12 +368,12 @@ export default function HomePage() {
             {problemas.map((problema) => (
               <div
                 key={problema}
-                className="flex items-start gap-3 rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-4 shadow-sm"
+                className="flex items-start gap-3 rounded-2xl border border-zinc-200 bg-white p-3.5 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/40"
               >
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-500/10 text-xs font-bold text-red-400">
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-500/10 text-xs font-bold text-red-500">
                   ✕
                 </div>
-                <p className="text-xs sm:text-sm text-zinc-300 leading-snug">
+                <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-snug">
                   {problema}
                 </p>
               </div>
@@ -410,33 +382,33 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* SERVICIOS / FUNCIONALIDADES: EXACTAMENTE 6 TARJETAS EN 2 FILAS DE 3 */}
-      <section id="funciones" className="mx-auto max-w-7xl px-4 py-16 sm:px-8 sm:py-24 border-t border-zinc-800/60">
+      {/* FUNCIONES: 6 TARJETAS SIMÉTRICAS EN 2 FILAS DE 3 */}
+      <section id="funciones" className="mx-auto max-w-7xl px-4 py-14 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="max-w-2xl">
-          <span className="text-xs font-bold uppercase tracking-wider text-blue-500">
+          <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
             Lo que incluye tu web
           </span>
-          <h2 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-4xl">
+          <h2 className="mt-2 text-2xl font-bold tracking-tight text-zinc-950 dark:text-white sm:text-4xl">
             Diseño y funcionalidad para tu negocio.
           </h2>
-          <p className="mt-2 text-sm text-zinc-400">
+          <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
             Herramientas pensadas para simplificar tus ventas diarias.
           </p>
         </div>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {funciones.map(({ titulo, descripcion, icono: Icono }) => (
             <article
               key={titulo}
-              className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 shadow-sm transition hover:border-zinc-700 hover:bg-zinc-900"
+              className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:border-zinc-700"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600/15 text-blue-400">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-600/15 dark:text-blue-400">
                 <Icono className="h-5 w-5" />
               </div>
-              <h3 className="mt-3.5 text-base font-bold text-white">
+              <h3 className="mt-3.5 text-sm sm:text-base font-bold text-zinc-950 dark:text-white">
                 {titulo}
               </h3>
-              <p className="mt-2 text-xs leading-relaxed text-zinc-400">
+              <p className="mt-1.5 text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
                 {descripcion}
               </p>
             </article>
@@ -444,30 +416,30 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* PROCESO */}
-      <section id="como-funciona" className="mx-auto max-w-7xl px-4 py-16 sm:px-8 sm:py-24 border-t border-zinc-800/60">
+      {/* PASO A PASO */}
+      <section id="como-funciona" className="mx-auto max-w-7xl px-4 py-14 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="max-w-3xl">
-          <span className="text-xs font-bold uppercase tracking-wider text-blue-500">
+          <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
             Paso a paso
           </span>
-          <h2 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-4xl">
+          <h2 className="mt-2 text-2xl font-bold tracking-tight text-zinc-950 dark:text-white sm:text-4xl">
             Cómo ponemos tu página en marcha.
           </h2>
         </div>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {pasos.map(({ numero, titulo, descripcion }) => (
             <div
               key={numero}
-              className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 shadow-sm"
+              className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/50"
             >
-              <span className="text-xs font-black text-blue-400">
+              <span className="text-xs font-black text-blue-600 dark:text-blue-400">
                 {numero}
               </span>
-              <h3 className="mt-2 text-base font-bold text-white">
+              <h3 className="mt-2 text-sm sm:text-base font-bold text-zinc-950 dark:text-white">
                 {titulo}
               </h3>
-              <p className="mt-2 text-xs leading-relaxed text-zinc-400">
+              <p className="mt-1.5 text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
                 {descripcion}
               </p>
             </div>
@@ -476,20 +448,20 @@ export default function HomePage() {
       </section>
 
       {/* PLANES */}
-      <section id="planes" className="mx-auto max-w-7xl px-4 py-16 sm:px-8 sm:py-24 border-t border-zinc-800/60">
+      <section id="planes" className="mx-auto max-w-7xl px-4 py-14 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="text-xs font-bold uppercase tracking-wider text-blue-500">
+          <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
             Planes y Precios
           </span>
-          <h2 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-4xl">
+          <h2 className="mt-2 text-2xl font-bold tracking-tight text-zinc-950 dark:text-white sm:text-4xl">
             Elegí cómo querés impulsar tu negocio.
           </h2>
-          <p className="mt-3 text-xs sm:text-sm text-zinc-400">
+          <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
             Puesta en marcha inicial y mantenimiento mensual accesible.
           </p>
         </div>
 
-        <div className="mt-10 grid gap-5 lg:grid-cols-3">
+        <div className="mt-8 grid gap-4 lg:grid-cols-3">
           <PlanCard
             nombre="Página Simple"
             descripcion="Para negocios y profesionales que quieren presencia web, servicios y agenda de turnos online."
@@ -521,34 +493,34 @@ export default function HomePage() {
       </section>
 
       {/* PREGUNTAS FRECUENTES (FAQ) */}
-      <section id="faq" className="mx-auto max-w-4xl px-4 py-16 sm:px-8 sm:py-24 border-t border-zinc-800/60">
+      <section id="faq" className="mx-auto max-w-4xl px-4 py-14 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="text-center">
-          <span className="text-xs font-bold uppercase tracking-wider text-blue-500">
+          <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
             Dudas frecuentes
           </span>
-          <h2 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-4xl">
+          <h2 className="mt-2 text-2xl font-bold tracking-tight text-zinc-950 dark:text-white sm:text-4xl">
             ¿Tenés preguntas? Te respondemos.
           </h2>
         </div>
 
-        <div className="mt-8 space-y-3">
+        <div className="mt-8 space-y-2.5">
           {faqs.map((faq, index) => {
             const abierta = faqAbierta === index;
             return (
               <div
                 key={faq.pregunta}
-                className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/60"
+                className="overflow-hidden rounded-2xl border border-zinc-200 bg-white transition dark:border-zinc-800 dark:bg-zinc-900/60"
               >
                 <button
                   type="button"
                   onClick={() => toggleFaq(index)}
-                  className="flex w-full items-center justify-between p-4 text-left font-semibold text-xs sm:text-sm text-zinc-200 transition hover:bg-zinc-800/50"
+                  className="flex w-full items-center justify-between p-4 text-left font-semibold text-xs sm:text-sm text-zinc-900 dark:text-zinc-200 transition hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
                 >
                   <span>{faq.pregunta}</span>
-                  <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${abierta ? "rotate-180 text-blue-400" : ""}`} />
+                  <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${abierta ? "rotate-180 text-blue-600 dark:text-blue-400" : ""}`} />
                 </button>
                 {abierta && (
-                  <div className="border-t border-zinc-800 px-4 pb-4 pt-3 text-xs leading-relaxed text-zinc-400 sm:text-sm">
+                  <div className="border-t border-zinc-100 px-4 pb-4 pt-3 text-xs leading-relaxed text-zinc-600 dark:border-zinc-800 dark:text-zinc-400 sm:text-sm">
                     {faq.respuesta}
                   </div>
                 )}
@@ -559,31 +531,31 @@ export default function HomePage() {
       </section>
 
       {/* CONTACTO Y SOPORTE OFICIAL COMPLETO */}
-      <section id="contacto" className="border-t border-zinc-800/80 bg-zinc-950/60 py-16 sm:py-24">
+      <section id="contacto" className="border-t border-zinc-200/80 bg-zinc-100/60 py-14 sm:py-20 dark:border-zinc-800/80 dark:bg-zinc-950/60">
         <div className="mx-auto max-w-5xl px-4 sm:px-8">
           <div className="grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-10">
             <div>
-              <span className="text-xs font-bold uppercase tracking-widest text-blue-500">
+              <span className="text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400">
                 Atención directa
               </span>
-              <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-4xl">
+              <h2 className="mt-2 text-2xl font-bold tracking-tight text-zinc-950 dark:text-white sm:text-4xl">
                 Empecemos tu proyecto hoy.
               </h2>
-              <p className="mt-3 text-xs leading-relaxed text-zinc-400 sm:text-sm">
+              <p className="mt-2.5 text-xs leading-relaxed text-zinc-600 dark:text-zinc-400 sm:text-sm">
                 Escribinos si tenés dudas específicas sobre cómo adaptar tu página o querés consultar por opciones personalizadas.
               </p>
 
-              <div className="mt-6 space-y-3 text-sm text-zinc-300 sm:mt-8 sm:space-y-4">
+              <div className="mt-6 space-y-3 text-sm text-zinc-700 dark:text-zinc-300">
                 <a
                   href={`mailto:${CORREO_CONTACTO}`}
-                  className="flex items-center gap-3.5 rounded-2xl border border-zinc-800 bg-zinc-900/80 p-3.5 transition hover:border-zinc-700 hover:text-white"
+                  className="flex items-center gap-3.5 rounded-2xl border border-zinc-200 bg-white p-3.5 shadow-sm transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/80 dark:hover:border-zinc-700"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600/15 text-blue-400">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-600/15 dark:text-blue-400">
                     <Mail className="h-5 w-5" />
                   </div>
                   <div>
                     <p className="text-[11px] text-zinc-500">Correo electrónico</p>
-                    <p className="text-xs font-semibold text-white sm:text-sm">{CORREO_CONTACTO}</p>
+                    <p className="text-xs font-semibold text-zinc-900 dark:text-white sm:text-sm">{CORREO_CONTACTO}</p>
                   </div>
                 </a>
 
@@ -591,43 +563,43 @@ export default function HomePage() {
                   href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Tengo una consulta sobre una página web para mi negocio.")}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3.5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 transition hover:bg-emerald-500/20"
+                  className="flex items-center gap-3.5 rounded-2xl border border-emerald-500/30 bg-emerald-50 p-3.5 transition hover:bg-emerald-100/70 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
                     <MessageCircle className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="text-[11px] text-emerald-400">WhatsApp directo</p>
-                    <p className="text-xs font-semibold text-emerald-300 sm:text-sm">+54 9 388 657-5664</p>
+                    <p className="text-[11px] text-emerald-600 dark:text-emerald-400">WhatsApp directo</p>
+                    <p className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 sm:text-sm">+54 9 388 657-5664</p>
                   </div>
                 </a>
 
-                <div className="flex items-center gap-3.5 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-3.5 text-zinc-400">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-800 text-zinc-400">
+                <div className="flex items-center gap-3.5 rounded-2xl border border-zinc-200 bg-white p-3.5 text-zinc-600 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/40 dark:text-zinc-400">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
                     <Clock className="h-5 w-5" />
                   </div>
                   <div>
                     <p className="text-[11px] text-zinc-500">Horario de atención</p>
-                    <p className="text-[11px] font-medium text-zinc-300 sm:text-xs">Lunes a sábados de 09:00 a 20:00 hs</p>
+                    <p className="text-[11px] font-medium text-zinc-800 dark:text-zinc-300 sm:text-xs">Lunes a sábados de 09:00 a 20:00 hs</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6 text-center shadow-xl sm:p-8">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600/15 text-blue-400">
+            <div className="rounded-3xl border border-zinc-200 bg-white p-6 text-center shadow-xl dark:border-zinc-800 dark:bg-zinc-900 sm:p-8">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-600/15 dark:text-blue-400">
                 <Sparkles className="h-6 w-6" />
               </div>
-              <h3 className="mt-4 text-lg font-bold text-white sm:text-xl">
+              <h3 className="mt-4 text-base sm:text-lg font-bold text-zinc-950 dark:text-white">
                 ¿Listo para poner tu negocio online?
               </h3>
-              <p className="mt-2 text-xs leading-relaxed text-zinc-400 sm:text-sm">
+              <p className="mt-1.5 text-xs text-zinc-600 dark:text-zinc-400">
                 Creá tu cuenta ahora y comenzá a configurar tu catálogo, servicios y turnos.
               </p>
-              <div className="mt-6 flex flex-col gap-3">
+              <div className="mt-5 flex flex-col gap-2.5">
                 <Link
                   href="/register"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-xs font-semibold text-white transition hover:bg-blue-500 shadow-md shadow-blue-600/20 sm:py-3.5 sm:text-sm"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-xs font-bold text-white shadow-md shadow-blue-600/20 transition hover:bg-blue-500"
                 >
                   Quiero mi página
                   <ArrowRight className="h-4 w-4" />
@@ -636,9 +608,9 @@ export default function HomePage() {
                   href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Quiero que me ayuden a armar mi página web.")}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-700 sm:py-3.5"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 py-3 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
                 >
-                  <MessageCircle className="h-4 w-4 text-emerald-400" />
+                  <MessageCircle className="h-4 w-4 text-emerald-500" />
                   Hablar con un asesor por WhatsApp
                 </a>
               </div>
@@ -648,7 +620,7 @@ export default function HomePage() {
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-zinc-800 py-8 text-center text-xs text-zinc-500">
+      <footer className="border-t border-zinc-200 dark:border-zinc-800 py-8 text-center text-xs text-zinc-500">
         <p>© 2026 NDI | Diseño & Web. Todos los derechos reservados.</p>
       </footer>
     </main>
@@ -676,12 +648,12 @@ function PlanCard({
 }) {
   return (
     <article
-      className={`relative flex flex-col justify-between rounded-3xl p-6 sm:p-8 ${
+      className={`relative flex flex-col justify-between rounded-3xl p-6 sm:p-7 ${
         destacado
-          ? "border-2 border-blue-500 bg-blue-950/20 shadow-2xl shadow-blue-950/40"
+          ? "border-2 border-blue-500 bg-blue-50/50 shadow-xl dark:bg-blue-950/20 shadow-blue-950/20"
           : lanzamiento
-          ? "border border-purple-500/40 bg-purple-950/20"
-          : "border border-zinc-800 bg-zinc-900/50"
+          ? "border border-purple-500/40 bg-purple-50/50 dark:bg-purple-950/20"
+          : "border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/50 shadow-sm"
       }`}
     >
       <div>
@@ -691,29 +663,29 @@ function PlanCard({
           </span>
         )}
 
-        <h3 className="text-xl font-bold text-white">{nombre}</h3>
-        <p className="mt-2 text-xs text-zinc-400 leading-relaxed">{descripcion}</p>
+        <h3 className="text-lg font-bold text-zinc-950 dark:text-white">{nombre}</h3>
+        <p className="mt-1.5 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">{descripcion}</p>
 
-        <div className="mt-5 rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4">
-          <p className="text-[10px] uppercase font-bold text-zinc-500">Puesta en marcha</p>
-          <p className="text-2xl sm:text-3xl font-black text-white">{inicial}</p>
-          <p className="mt-1 text-xs font-bold text-blue-400">+ {mensual}</p>
+        <div className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 p-3.5 dark:border-zinc-800 dark:bg-zinc-950/70">
+          <p className="text-[9px] uppercase font-bold text-zinc-500">Puesta en marcha</p>
+          <p className="text-2xl font-black text-zinc-950 dark:text-white">{inicial}</p>
+          <p className="mt-0.5 text-xs font-bold text-blue-600 dark:text-blue-400">+ {mensual}</p>
         </div>
 
-        <div className="mt-6 space-y-2.5">
+        <div className="mt-5 space-y-2">
           {features.map((feature) => (
-            <div key={feature} className="flex items-start gap-2.5 text-xs text-zinc-300">
-              <Check className="h-3.5 w-3.5 shrink-0 text-emerald-400 mt-0.5" />
+            <div key={feature} className="flex items-start gap-2 text-xs text-zinc-700 dark:text-zinc-300">
+              <Check className="h-3.5 w-3.5 shrink-0 text-emerald-500 mt-0.5" />
               <span>{feature}</span>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="mt-8 pt-4 border-t border-zinc-800">
+      <div className="mt-6 pt-3 border-t border-zinc-200 dark:border-zinc-800">
         <Link
           href="/register"
-          className="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 py-3 text-xs font-bold text-white transition hover:bg-blue-500"
+          className="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 py-2.5 text-xs font-bold text-white transition hover:bg-blue-500"
         >
           Quiero mi página
         </Link>
