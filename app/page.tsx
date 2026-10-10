@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -16,14 +16,62 @@ import {
   Moon,
   Package,
   QrCode,
-  Sparkles,
   Sun,
+  UserRoundCheck,
+  UtensilsCrossed,
+  Shirt,
+  Scissors,
 } from "lucide-react";
 
 import { useTheme } from "@/components/theme/ThemeProvider";
 
 const WHATSAPP_NUMERO = "5493886575664";
 const CORREO_CONTACTO = "soporte@ndiweb.com";
+
+const proyectosShowcase = [
+  {
+    id: "resto",
+    label: "Gastronomía",
+    icono: UtensilsCrossed,
+    titulo: "Sabores del Norte · Carta & Pedidos",
+    subtitulo: "Menú interactivo con pedidos directos a WhatsApp y reservas de mesa.",
+    portada: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=80",
+    badge: "Carta Digital",
+    items: [
+      { nombre: "Humita en chala regional", precio: "$ 11.500" },
+      { nombre: "Docena de empanadas criollas", precio: "$ 16.000" },
+      { nombre: "Cazuela norteña tradicional", precio: "$ 14.200" },
+    ],
+  },
+  {
+    id: "tienda",
+    label: "Indumentaria",
+    icono: Shirt,
+    titulo: "Norte Store · Catálogo & Stock",
+    subtitulo: "E-commerce ágil con control de talles, colores y cobros por Mercado Pago.",
+    portada: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1400&q=80",
+    badge: "Tienda Online",
+    items: [
+      { nombre: "Remera Oversize Heavyweight", precio: "$ 24.900" },
+      { nombre: "Buzo Canguro Fleece Urban", precio: "$ 44.900" },
+      { nombre: "Pantalón Cargo Ripstop", precio: "$ 38.500" },
+    ],
+  },
+  {
+    id: "servicios",
+    label: "Barbería & Turnos",
+    icono: Scissors,
+    titulo: "Black Crown · Agenda Online",
+    subtitulo: "Sistema de turnos automatizado 24/7 sin mensajes manuales.",
+    portada: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1400&q=80",
+    badge: "Turnos 24/7",
+    items: [
+      { nombre: "Corte Clásico & Fade Texturizado", precio: "$ 12.000" },
+      { nombre: "Perfilado de barba completo", precio: "$ 9.000" },
+      { nombre: "Combo Corte + Barba + Ritual", precio: "$ 18.500" },
+    ],
+  },
+];
 
 const problemas = [
   "Clientes preguntando precios por privado que no terminan comprando",
@@ -167,22 +215,38 @@ const planBusinessIA = [
 
 export default function HomePage() {
   const [faqAbierta, setFaqAbierta] = useState<number | null>(0);
+  const [rubroSeleccionado, setRubroSeleccionado] = useState(0);
   const { theme, setTheme } = useTheme();
 
-  const toggleFaq = (index: number) => {
-    setFaqAbierta(faqAbierta === index ? null : index);
-  };
+  const container3DRef = useRef<HTMLDivElement>(null);
+  const [inclinacion, setInclinacion] = useState(16);
+  const [elevacion, setElevacion] = useState(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY;
+      const nuevaInclinacion = Math.max(0, 16 - y * 0.03);
+      const nuevaElevacion = Math.min(45, y * 0.06);
+      setInclinacion(nuevaInclinacion);
+      setElevacion(nuevaElevacion);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const alternarTema = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
+  const proyectoActual = proyectosShowcase[rubroSeleccionado];
+
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 selection:bg-blue-600 selection:text-white">
-      {/* HEADER COMPACTO Y RESPONSIVE */}
-      <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/80 backdrop-blur-xl transition-colors dark:border-zinc-800/80 dark:bg-[#0c0d0e]/80">
+      {/* HEADER COMPACTO CON LOGO Y NAVEGACIÓN */}
+      <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/85 backdrop-blur-xl transition-colors dark:border-zinc-800/80 dark:bg-[#0c0d0e]/85">
         <div className="mx-auto flex h-14 sm:h-16 max-w-7xl items-center justify-between px-3.5 sm:px-8">
-          <Link href="/" className="flex items-center gap-2 min-w-0">
+          <Link href="/" className="flex items-center gap-2.5 min-w-0">
             <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-xl bg-blue-600 p-1 shadow-sm shadow-blue-600/30">
               <Image
                 src="/logo-ndi.png"
@@ -246,106 +310,129 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* HERO ESTILO BENTO KELVIN */}
-      <section className="mx-auto max-w-7xl px-3 sm:px-8 pt-4 sm:pt-10 pb-12 sm:pb-20">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
-          
-          {/* MÓDULO 1: TITULAR & ACCIÓN DIRECTA (5 COLS) */}
-          <div className="lg:col-span-5 flex flex-col justify-between rounded-[2rem] border border-zinc-200/80 bg-white p-6 sm:p-9 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/60 min-h-[380px] sm:min-h-[460px]">
-            <div>
-              <div className="inline-flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                  DISEÑO & DESARROLLO WEB
-                </span>
-              </div>
+      {/* HERO CENTRADO CON PERSPECTIVA 3D DE GRAN ESCALA */}
+      <section className="relative pt-12 pb-16 sm:pt-20 sm:pb-28 [perspective:1600px] overflow-hidden">
+        {/* Glow envolvente de fondo */}
+        <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 h-[650px] w-full max-w-7xl">
+          <div className="absolute top-10 left-1/3 h-96 w-96 rounded-full bg-blue-600/15 blur-[150px]" />
+          <div className="absolute top-20 right-1/4 h-80 w-80 rounded-full bg-emerald-500/10 blur-[140px]" />
+        </div>
 
-              <h1 className="mt-5 text-3xl sm:text-5xl font-black tracking-tight leading-[1.08] text-zinc-950 dark:text-white">
-                Páginas web pensadas para vender.
-              </h1>
-
-              <p className="mt-4 text-xs sm:text-sm leading-relaxed text-zinc-600 dark:text-zinc-400 font-normal">
-                Diseñamos la web de tu negocio con catálogo, turnos online y pedidos ordenados directo a tu WhatsApp. Sin complicaciones ni plantillas vacías.
-              </p>
-            </div>
-
-            <div className="mt-8 flex flex-col sm:flex-row gap-2.5">
-              <Link
-                href="/register"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-zinc-950 px-6 py-3.5 text-xs sm:text-sm font-bold text-white shadow-md transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 active:scale-95"
-              >
-                Solicitar cotización →
-              </Link>
-              <a
-                href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Quiero consultar por una página web para mi negocio.")}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-5 py-3.5 text-xs sm:text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
-              >
-                Hablar por WhatsApp
-              </a>
-            </div>
+        {/* Textos directos y comerciales */}
+        <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-8">
+          <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3.5 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400 mb-4">
+            <span>Estudio de Diseño & Desarrollo Digital</span>
           </div>
 
-          {/* MÓDULO 2: FOTO EDITORIAL DESTACADA (4 COLS) */}
-          <div className="lg:col-span-4 relative overflow-hidden rounded-[2rem] border border-zinc-200/80 bg-zinc-100 dark:border-zinc-800/80 dark:bg-zinc-900/60 min-h-[300px] lg:min-h-[460px] group">
-            <img
-              src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=900&q=80"
-              alt="Diseño Web Profesional NDI"
-              className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-transparent" />
-            <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
-              <span className="rounded-full bg-black/60 px-3 py-1 font-mono text-[10px] font-semibold text-zinc-300 backdrop-blur-md border border-white/10">
-                Experiencia responsive
-              </span>
-              <span className="text-[10px] font-bold text-emerald-400">
-                100% autogestionable
-              </span>
-            </div>
+          <h1 className="text-3xl sm:text-6xl lg:text-[4.3rem] font-black tracking-tight leading-[1.08] text-zinc-950 dark:text-white">
+            Tené tu página web{" "}
+            <span className="bg-gradient-to-r from-blue-600 via-sky-500 to-emerald-500 bg-clip-text text-transparent dark:from-blue-400 dark:via-sky-300 dark:to-emerald-400">
+              profesional hoy.
+            </span>
+          </h1>
+
+          <p className="mx-auto mt-4 sm:mt-5 max-w-2xl text-sm sm:text-lg leading-relaxed text-zinc-600 dark:text-zinc-400 font-normal">
+            Diseñamos la web de tu negocio con catálogo, turnos online y pedidos ordenados directo a tu WhatsApp. Sin complicaciones técnicas ni intermediarios.
+          </p>
+
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/register"
+              className="inline-flex items-center gap-2 rounded-2xl bg-zinc-950 px-7 py-3.5 text-sm font-bold text-white shadow-xl transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 active:scale-95"
+            >
+              Crear mi página
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+
+            <a
+              href="#contacto"
+              className="inline-flex items-center gap-2 rounded-2xl border border-zinc-300 bg-white px-6 py-3.5 text-sm font-semibold text-zinc-800 shadow-sm transition hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/90 dark:text-zinc-200 dark:hover:bg-zinc-800 active:scale-95"
+            >
+              Hablar con un asesor
+            </a>
           </div>
 
-          {/* MÓDULO 3: COLUMNA DERECHA DE MÉTRICAS & RUBROS (3 COLS) */}
-          <div className="lg:col-span-3 flex flex-col gap-3 sm:gap-4">
-            {/* Tarjeta superior: Métrica */}
-            <div className="flex-1 rounded-[2rem] border border-zinc-200/80 bg-white p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/60 flex flex-col justify-between">
-              <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-                ENTREGA RÁPIDA
-              </p>
-              <div className="my-3">
-                <p className="text-3xl sm:text-4xl font-black text-zinc-950 dark:text-white">
-                  24 / 48 hs
-                </p>
-                <p className="mt-1 text-[11px] leading-tight text-zinc-500 dark:text-zinc-400">
-                  Tu sitio publicado y listo para compartir en redes.
-                </p>
+          {/* Selector de Rubros para el Showcase */}
+          <div className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-2">
+            {proyectosShowcase.map((p, idx) => {
+              const Icono = p.icono;
+              const activo = rubroSeleccionado === idx;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setRubroSeleccionado(idx)}
+                  className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition active:scale-95 ${
+                    activo
+                      ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
+                      : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  }`}
+                >
+                  <Icono className="h-3.5 w-3.5" />
+                  {p.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* SHOWCASE 3D PANORÁMICO DE GRAN ESCALA */}
+        <div
+          ref={container3DRef}
+          className="relative mx-auto mt-10 sm:mt-14 max-w-6xl px-3 sm:px-8 transition-transform duration-300 ease-out"
+          style={{
+            transform: `rotateX(${inclinacion}deg) translateY(-${elevacion}px)`,
+            transformStyle: "preserve-3d",
+          }}
+        >
+          {/* Sombra de suelo realista */}
+          <div className="absolute inset-x-12 -bottom-10 h-28 rounded-[4rem] bg-black/60 dark:bg-black/90 blur-3xl" />
+
+          {/* Marco exterior pulido */}
+          <div className="relative overflow-hidden rounded-[2.2rem] border border-zinc-300/80 bg-white shadow-2xl ring-1 ring-black/5 dark:border-zinc-700/80 dark:bg-zinc-950 dark:ring-white/10">
+            {/* Barra de dirección de alta fidelidad */}
+            <div className="flex items-center justify-between border-b border-zinc-200 bg-zinc-100/90 px-5 py-3.5 dark:border-zinc-800 dark:bg-zinc-900/80">
+              <div className="flex items-center gap-2 text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+                <span className="font-bold text-zinc-900 dark:text-white">{proyectoActual.titulo}</span>
+              </div>
+              <div className="rounded-full bg-emerald-500/15 px-3 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                {proyectoActual.badge}
               </div>
             </div>
 
-            {/* Tarjeta inferior: Rubros con flechitas */}
-            <div className="flex-1 rounded-[2rem] border border-zinc-200/80 bg-white p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/60 flex flex-col justify-between">
-              <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-                ESPECIALIDADES
-              </p>
-              <div className="mt-3 space-y-2.5">
-                {[
-                  { nombre: "Gastronomía & Bares", href: "#funciones" },
-                  { nombre: "Tiendas & Indumentaria", href: "#funciones" },
-                  { nombre: "Barberías & Servicios", href: "#funciones" },
-                ].map((item, idx) => (
-                  <a
-                    key={idx}
-                    href={item.href}
-                    className="flex items-center justify-between text-xs sm:text-sm font-semibold text-zinc-800 hover:text-blue-600 dark:text-zinc-200 dark:hover:text-blue-400 transition"
+            {/* Contenido interior de la web con fotos reales y datos en pesos */}
+            <div className="p-4 sm:p-8 bg-zinc-50 dark:bg-[#0c0d0e]">
+              <div className="relative aspect-[21/9] sm:aspect-[2.6/1] w-full overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-md">
+                <img
+                  src={proyectoActual.portada}
+                  alt={proyectoActual.titulo}
+                  className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-5 sm:p-7 text-white">
+                  <p className="text-lg sm:text-2xl font-black">{proyectoActual.titulo}</p>
+                  <p className="mt-1 text-xs sm:text-sm text-zinc-300 max-w-xl">{proyectoActual.subtitulo}</p>
+                </div>
+              </div>
+
+              {/* Fila de 3 tarjetas de ítems */}
+              <div className="mt-4 sm:mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                {proyectoActual.items.map((item, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between rounded-xl border border-zinc-200 bg-white p-3.5 sm:p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60"
                   >
-                    <span>{item.nombre}</span>
-                    <span className="text-emerald-500">→</span>
-                  </a>
+                    <div>
+                      <p className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white">{item.nombre}</p>
+                      <p className="mt-0.5 text-xs font-extrabold text-emerald-600 dark:text-emerald-400">{item.precio}</p>
+                    </div>
+                    <span className="rounded-lg bg-blue-600/10 px-2.5 py-1 text-[10px] font-bold text-blue-600 dark:text-blue-400">
+                      Disponible
+                    </span>
+                  </div>
                 ))}
               </div>
             </div>
           </div>
-
         </div>
       </section>
 
@@ -382,7 +469,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FUNCIONES: 6 TARJETAS SIMÉTRICAS EN 2 FILAS DE 3 */}
+      {/* SERVICIOS: 6 TARJETAS SIMÉTRICAS */}
       <section id="funciones" className="mx-auto max-w-7xl px-4 py-14 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="max-w-2xl">
           <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
@@ -416,7 +503,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* PASO A PASO */}
+      {/* PROCESO */}
       <section id="como-funciona" className="mx-auto max-w-7xl px-4 py-14 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="max-w-3xl">
           <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
@@ -492,7 +579,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* PREGUNTAS FRECUENTES (FAQ) */}
+      {/* FAQ */}
       <section id="faq" className="mx-auto max-w-4xl px-4 py-14 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="text-center">
           <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
@@ -530,7 +617,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CONTACTO Y SOPORTE OFICIAL COMPLETO */}
+      {/* CONTACTO Y SOPORTE OFICIAL */}
       <section id="contacto" className="border-t border-zinc-200/80 bg-zinc-100/60 py-14 sm:py-20 dark:border-zinc-800/80 dark:bg-zinc-950/60">
         <div className="mx-auto max-w-5xl px-4 sm:px-8">
           <div className="grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-10">
@@ -587,10 +674,7 @@ export default function HomePage() {
             </div>
 
             <div className="rounded-3xl border border-zinc-200 bg-white p-6 text-center shadow-xl dark:border-zinc-800 dark:bg-zinc-900 sm:p-8">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-600/15 dark:text-blue-400">
-                <Sparkles className="h-6 w-6" />
-              </div>
-              <h3 className="mt-4 text-base sm:text-lg font-bold text-zinc-950 dark:text-white">
+              <h3 className="text-base sm:text-lg font-bold text-zinc-950 dark:text-white">
                 ¿Listo para poner tu negocio online?
               </h3>
               <p className="mt-1.5 text-xs text-zinc-600 dark:text-zinc-400">
