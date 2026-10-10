@@ -18,8 +18,9 @@ import {
   QrCode,
   Sun,
   UtensilsCrossed,
-  Shirt,
+  ShoppingBag,
   Scissors,
+  Stethoscope,
 } from "lucide-react";
 
 import { useTheme } from "@/components/theme/ThemeProvider";
@@ -29,46 +30,48 @@ const CORREO_CONTACTO = "soporte@ndiweb.com";
 
 const proyectosShowcase = [
   {
-    id: "resto",
-    label: "Gastronomía",
+    id: "restaurantes",
+    label: "Restaurantes",
     icono: UtensilsCrossed,
-    titulo: "Sabores del Norte · Carta & Pedidos",
-    subtitulo: "Menú interactivo con pedidos directos a WhatsApp y reservas de mesa.",
-    portada: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=80",
-    badge: "Carta Digital",
-    items: [
-      { nombre: "Humita en chala regional", precio: "$ 11.500" },
-      { nombre: "Docena de empanadas criollas", precio: "$ 16.000" },
-      { nombre: "Cazuela norteña tradicional", precio: "$ 14.200" },
-    ],
+    titulo: "Sabores del Norte",
+    categoria: "Gastronomía & Restaurantes",
+    subtitulo: "Carta digital con fotos, pedidos directos a WhatsApp y reservas de mesa.",
+    portada: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1600&q=80",
+    badge: "Carta & Pedidos",
+    urlDemo: "ndiweb.com/sabores-del-norte",
   },
   {
-    id: "tienda",
-    label: "Indumentaria",
-    icono: Shirt,
-    titulo: "Norte Store · Catálogo & Stock",
-    subtitulo: "E-commerce ágil con control de talles, colores y cobros por Mercado Pago.",
-    portada: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1400&q=80",
-    badge: "Tienda Online",
-    items: [
-      { nombre: "Remera Oversize Heavyweight", precio: "$ 24.900" },
-      { nombre: "Buzo Canguro Fleece Urban", precio: "$ 44.900" },
-      { nombre: "Pantalón Cargo Ripstop", precio: "$ 38.500" },
-    ],
+    id: "tiendas",
+    label: "Tiendas",
+    icono: ShoppingBag,
+    titulo: "Norte Store",
+    categoria: "Tiendas & Catálogo Online",
+    subtitulo: "Catálogo ágil con selección de variantes, stock en tiempo real y cobros integrados.",
+    portada: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1600&q=80",
+    badge: "Catálogo Online",
+    urlDemo: "ndiweb.com/norte-store",
   },
   {
-    id: "servicios",
-    label: "Barbería & Turnos",
+    id: "belleza",
+    label: "Barberías & Salones",
     icono: Scissors,
-    titulo: "Black Crown · Agenda Online",
-    subtitulo: "Sistema de turnos automatizado 24/7 sin mensajes manuales.",
-    portada: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1400&q=80",
-    badge: "Turnos 24/7",
-    items: [
-      { nombre: "Corte Clásico & Fade Texturizado", precio: "$ 12.000" },
-      { nombre: "Perfilado de barba completo", precio: "$ 9.000" },
-      { nombre: "Combo Corte + Barba + Ritual", precio: "$ 18.500" },
-    ],
+    titulo: "Black Crown Studio",
+    categoria: "Barberías & Salones de Belleza",
+    subtitulo: "Agenda de turnos online 24/7 para que los clientes elijan su día y horario sin demoras.",
+    portada: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1600&q=80",
+    badge: "Turnos Online",
+    urlDemo: "ndiweb.com/black-crown",
+  },
+  {
+    id: "consultorios",
+    label: "Consultorios",
+    icono: Stethoscope,
+    titulo: "Centro Médico & Salud",
+    categoria: "Consultorios & Profesionales",
+    subtitulo: "Gestión de citas médicas, especialidades, ubicación y atención profesional.",
+    portada: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1600&q=80",
+    badge: "Citas & Atención",
+    urlDemo: "ndiweb.com/consultorio-salud",
   },
 ];
 
@@ -222,14 +225,14 @@ export default function HomePage() {
   };
 
   const container3DRef = useRef<HTMLDivElement>(null);
-  const [inclinacion, setInclinacion] = useState(16);
+  const [inclinacion, setInclinacion] = useState(14);
   const [elevacion, setElevacion] = useState(0);
 
   useEffect(() => {
     const onScroll = () => {
       const y = window.scrollY;
-      const nuevaInclinacion = Math.max(0, 16 - y * 0.03);
-      const nuevaElevacion = Math.min(45, y * 0.06);
+      const nuevaInclinacion = Math.max(0, 14 - y * 0.03);
+      const nuevaElevacion = Math.min(40, y * 0.05);
       setInclinacion(nuevaInclinacion);
       setElevacion(nuevaElevacion);
     };
@@ -246,7 +249,7 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 selection:bg-blue-600 selection:text-white">
-      {/* HEADER COMPACTO CON LOGO Y NAVEGACIÓN */}
+      {/* HEADER COMPACTO Y RESPONSIVE */}
       <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/85 backdrop-blur-xl transition-colors dark:border-zinc-800/80 dark:bg-[#0c0d0e]/85">
         <div className="mx-auto flex h-14 sm:h-16 max-w-7xl items-center justify-between px-3.5 sm:px-8">
           <Link href="/" className="flex items-center gap-2.5 min-w-0">
@@ -313,15 +316,15 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* HERO CENTRADO CON PERSPECTIVA 3D DE GRAN ESCALA */}
+      {/* HERO CENTRADO CON PERSPECTIVA 3D SHOWCASE */}
       <section className="relative pt-12 pb-16 sm:pt-20 sm:pb-28 [perspective:1600px] overflow-hidden">
-        {/* Glow envolvente de fondo */}
+        {/* Glow de ambientación */}
         <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 h-[650px] w-full max-w-7xl">
           <div className="absolute top-10 left-1/3 h-96 w-96 rounded-full bg-blue-600/15 blur-[150px]" />
           <div className="absolute top-20 right-1/4 h-80 w-80 rounded-full bg-emerald-500/10 blur-[140px]" />
         </div>
 
-        {/* Textos directos y comerciales */}
+        {/* Textos principales */}
         <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-8">
           <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3.5 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400 mb-4">
             <span>Estudio de Diseño & Desarrollo Digital</span>
@@ -355,7 +358,7 @@ export default function HomePage() {
             </a>
           </div>
 
-          {/* Selector de Rubros para el Showcase */}
+          {/* SELECTOR DE LAS 4 CATEGORÍAS */}
           <div className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-2">
             {proyectosShowcase.map((p, idx) => {
               const Icono = p.icono;
@@ -379,60 +382,45 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* SHOWCASE 3D PANORÁMICO DE GRAN ESCALA */}
+        {/* SHOWCASE 3D PANORÁMICO LIMPIO */}
         <div
           ref={container3DRef}
-          className="relative mx-auto mt-10 sm:mt-14 max-w-6xl px-3 sm:px-8 transition-transform duration-300 ease-out"
+          className="relative mx-auto mt-10 sm:mt-14 max-w-5xl px-3 sm:px-8 transition-transform duration-300 ease-out"
           style={{
             transform: `rotateX(${inclinacion}deg) translateY(-${elevacion}px)`,
             transformStyle: "preserve-3d",
           }}
         >
-          {/* Sombra de suelo realista */}
+          {/* Sombra de apoyo */}
           <div className="absolute inset-x-12 -bottom-10 h-28 rounded-[4rem] bg-black/60 dark:bg-black/90 blur-3xl" />
 
-          {/* Marco exterior pulido */}
+          {/* Marco del Showcase */}
           <div className="relative overflow-hidden rounded-[2.2rem] border border-zinc-300/80 bg-white shadow-2xl ring-1 ring-black/5 dark:border-zinc-700/80 dark:bg-zinc-950 dark:ring-white/10">
-            {/* Barra de dirección de alta fidelidad */}
+            {/* Barra superior del proyecto */}
             <div className="flex items-center justify-between border-b border-zinc-200 bg-zinc-100/90 px-5 py-3.5 dark:border-zinc-800 dark:bg-zinc-900/80">
-              <div className="flex items-center gap-2 text-xs font-semibold text-zinc-600 dark:text-zinc-400">
-                <span className="font-bold text-zinc-900 dark:text-white">{proyectoActual.titulo}</span>
+              <div className="flex items-center gap-2.5">
+                <span className="font-mono text-xs text-zinc-500 dark:text-zinc-400">
+                  {proyectoActual.urlDemo}
+                </span>
               </div>
-              <div className="rounded-full bg-emerald-500/15 px-3 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+              <div className="rounded-full bg-emerald-500/15 px-3 py-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
                 {proyectoActual.badge}
               </div>
             </div>
 
-            {/* Contenido interior de la web con fotos reales y datos en pesos */}
-            <div className="p-4 sm:p-8 bg-zinc-50 dark:bg-[#0c0d0e]">
-              <div className="relative aspect-[21/9] sm:aspect-[2.6/1] w-full overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-md">
-                <img
-                  src={proyectoActual.portada}
-                  alt={proyectoActual.titulo}
-                  className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-5 sm:p-7 text-white">
-                  <p className="text-lg sm:text-2xl font-black">{proyectoActual.titulo}</p>
-                  <p className="mt-1 text-xs sm:text-sm text-zinc-300 max-w-xl">{proyectoActual.subtitulo}</p>
-                </div>
-              </div>
-
-              {/* Fila de 3 tarjetas de ítems */}
-              <div className="mt-4 sm:mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                {proyectoActual.items.map((item, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between rounded-xl border border-zinc-200 bg-white p-3.5 sm:p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60"
-                  >
-                    <div>
-                      <p className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white">{item.nombre}</p>
-                      <p className="mt-0.5 text-xs font-extrabold text-emerald-600 dark:text-emerald-400">{item.precio}</p>
-                    </div>
-                    <span className="rounded-lg bg-blue-600/10 px-2.5 py-1 text-[10px] font-bold text-blue-600 dark:text-blue-400">
-                      Disponible
-                    </span>
-                  </div>
-                ))}
+            {/* Imagen cinematográfica a pantalla completa */}
+            <div className="relative aspect-[16/9] sm:aspect-[2.2/1] w-full overflow-hidden bg-zinc-900">
+              <img
+                src={proyectoActual.portada}
+                alt={proyectoActual.titulo}
+                className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent flex flex-col justify-end p-6 sm:p-9 text-white">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-400">
+                  {proyectoActual.categoria}
+                </span>
+                <p className="mt-1 text-xl sm:text-3xl font-black tracking-tight">{proyectoActual.titulo}</p>
+                <p className="mt-1.5 text-xs sm:text-sm text-zinc-300 max-w-xl font-normal leading-relaxed">{proyectoActual.subtitulo}</p>
               </div>
             </div>
           </div>
@@ -620,7 +608,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CONTACTO Y SOPORTE OFICIAL */}
+      {/* CONTACTO Y SOPORTE OFICIAL COMPLETO */}
       <section id="contacto" className="border-t border-zinc-200/80 bg-zinc-100/60 py-14 sm:py-20 dark:border-zinc-800/80 dark:bg-zinc-950/60">
         <div className="mx-auto max-w-5xl px-4 sm:px-8">
           <div className="grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-10">
@@ -655,7 +643,7 @@ export default function HomePage() {
                   rel="noopener noreferrer"
                   className="flex items-center gap-3.5 rounded-2xl border border-emerald-500/30 bg-emerald-50 p-3.5 transition hover:bg-emerald-100/70 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400">
                     <MessageCircle className="h-5 w-5" />
                   </div>
                   <div>
