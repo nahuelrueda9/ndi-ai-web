@@ -17,7 +17,6 @@ import {
   Package,
   QrCode,
   Sun,
-  UserRoundCheck,
   UtensilsCrossed,
   Shirt,
   Scissors,
@@ -217,6 +216,10 @@ export default function HomePage() {
   const [faqAbierta, setFaqAbierta] = useState<number | null>(0);
   const [rubroSeleccionado, setRubroSeleccionado] = useState(0);
   const { theme, setTheme } = useTheme();
+
+  const toggleFaq = (index: number) => {
+    setFaqAbierta(faqAbierta === index ? null : index);
+  };
 
   const container3DRef = useRef<HTMLDivElement>(null);
   const [inclinacion, setInclinacion] = useState(16);
