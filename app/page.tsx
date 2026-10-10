@@ -6,10 +6,13 @@ import Image from "next/image";
 import {
   ArrowRight,
   Building2,
+  CalendarCheck,
   CalendarDays,
   Check,
+  CheckCircle2,
   ChevronDown,
   Clock,
+  ExternalLink,
   FileText,
   Globe2,
   Mail,
@@ -17,15 +20,102 @@ import {
   Moon,
   Package,
   QrCode,
+  Scissors,
+  Shirt,
   Sparkles,
   Sun,
   UserRoundCheck,
+  UtensilsCrossed,
 } from "lucide-react";
 
 import { useTheme } from "@/components/theme/ThemeProvider";
 
 const WHATSAPP_NUMERO = "5493886575664";
 const CORREO_CONTACTO = "soporte@ndiweb.com";
+
+interface DemoRubro {
+  id: "resto" | "tienda" | "barberia";
+  etiqueta: string;
+  icono: typeof UtensilsCrossed;
+  negocio: string;
+  rubroTexto: string;
+  fotoPortada: string;
+  itemDestacado: {
+    nombre: string;
+    precio: string;
+    detalle: string;
+  };
+  notificacion: {
+    icono: typeof MessageCircle;
+    titulo: string;
+    texto: string;
+    tiempo: string;
+  };
+  linkSlug: string;
+}
+
+const DEMOS: DemoRubro[] = [
+  {
+    id: "resto",
+    etiqueta: "Gastronomía",
+    icono: UtensilsCrossed,
+    negocio: "Sabores del Norte",
+    rubroTexto: "Restaurante & Sabores Regionales",
+    fotoPortada: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80",
+    itemDestacado: {
+      nombre: "Humita en chala & Empanadas",
+      precio: "$11.500",
+      detalle: "Carta digital y pedidos para retirar",
+    },
+    notificacion: {
+      icono: MessageCircle,
+      titulo: "Pedido para retirar recibido",
+      texto: "Mesa 4 · 2x Empanadas + Humita",
+      tiempo: "Hace 1 min",
+    },
+    linkSlug: "/negocio/sabores-del-norte",
+  },
+  {
+    id: "tienda",
+    etiqueta: "Indumentaria",
+    icono: Shirt,
+    negocio: "Norte Store",
+    rubroTexto: "Tienda Urbana & Colección",
+    fotoPortada: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80",
+    itemDestacado: {
+      nombre: "Remera Oversize Essential",
+      precio: "$24.900",
+      detalle: "Talles S a XL · Stock en tiempo real",
+    },
+    notificacion: {
+      icono: CheckCircle2,
+      titulo: "Pago acreditado Mercado Pago",
+      texto: "Remera Oversize (Talle L - Gris)",
+      tiempo: "Hace 4 min",
+    },
+    linkSlug: "/negocio/norte-store",
+  },
+  {
+    id: "barberia",
+    etiqueta: "Barberías & Estética",
+    icono: Scissors,
+    negocio: "Black Crown",
+    rubroTexto: "Barber Studio & Cuidado Personal",
+    fotoPortada: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80",
+    itemDestacado: {
+      nombre: "Corte Clásico & Fade",
+      precio: "$12.000",
+      detalle: "Duración 30 min · Agenda online",
+    },
+    notificacion: {
+      icono: CalendarCheck,
+      titulo: "Turno reservado online",
+      texto: "Mañana 16:30 hs con Lautaro",
+      tiempo: "Hace 2 min",
+    },
+    linkSlug: "/negocio/black-crown",
+  },
+];
 
 const problemas = [
   "Clientes preguntando siempre lo mismo",
@@ -204,6 +294,7 @@ const planBusinessIA = [
 
 export default function HomePage() {
   const [faqAbierta, setFaqAbierta] = useState<number | null>(0);
+  const [rubroActivo, setRubroActivo] = useState<DemoRubro>(DEMOS[0]);
   const { theme, setTheme } = useTheme();
 
   const toggleFaq = (index: number) => {
@@ -270,7 +361,6 @@ export default function HomePage() {
           </nav>
 
           <div className="flex items-center gap-1.5 sm:gap-2">
-            {/* BOTÓN ALTERNAR TEMA */}
             <button
               onClick={alternarTema}
               type="button"
@@ -298,99 +388,177 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* HERO */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-x-0 top-0 h-[620px] bg-[radial-gradient(circle_at_top,rgba(37,99,235,0.12),transparent_64%)] dark:bg-[radial-gradient(circle_at_top,rgba(37,99,235,0.18),transparent_64%)]" />
+      {/* HERO RENOVADO DE ALTA CONVERSIÓN */}
+      <section className="relative overflow-hidden pt-6 pb-12 sm:pt-12 sm:pb-20 lg:pt-16 lg:pb-24">
+        {/* Luces y resplandores de profundidad */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[620px] bg-[radial-gradient(circle_at_top,rgba(37,99,235,0.14),transparent_65%)] dark:bg-[radial-gradient(circle_at_top,rgba(37,99,235,0.22),transparent_65%)]" />
 
-        <div className="relative mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:px-8 sm:py-20 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:gap-14 lg:py-24">
+        <div className="relative mx-auto grid max-w-7xl gap-8 px-4 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-12">
+          {/* COLUMNA IZQUIERDA: PROPUESTA DE VALOR DIRECTA */}
           <div className="max-w-2xl">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400 sm:text-xs">
-              Páginas inteligentes para negocios
-            </p>
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3.5 py-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 backdrop-blur-md">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>Sin comisiones por venta · Tu negocio en 1 solo link</span>
+            </div>
 
-            <h1 className="mt-2.5 text-3xl font-bold leading-[1.1] tracking-tight text-zinc-950 dark:text-white sm:mt-4 sm:text-5xl lg:text-[3.6rem]">
-              Tu negocio,
-              <span className="block text-blue-600 dark:text-blue-400">
-                siempre disponible.
-              </span>
+            <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-zinc-950 dark:text-white sm:text-5xl lg:text-[3.5rem] leading-[1.1]">
+              Dejá de pasar precios por chat.{" "}
+              <span className="bg-gradient-to-r from-blue-600 via-sky-500 to-emerald-500 bg-clip-text text-transparent dark:from-blue-400 dark:via-sky-300 dark:to-emerald-400">
+                Tu catálogo, carta y turnos
+              </span>{" "}
+              en un link profesional.
             </h1>
 
             <p className="mt-3.5 max-w-xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400 sm:mt-5 sm:text-base sm:leading-7">
-              Mostrá lo que ofrecés, centralizá tu información y facilitá que tus
-              clientes te encuentren, consulten o reserven desde un solo lugar.
+              Centralizá fotos, cobros por transferencia o Mercado Pago y reservas automáticas las 24 horas. Tus clientes encuentran todo al instante sin esperarte en Instagram.
             </p>
 
-            <div className="mt-5 flex flex-wrap gap-2.5 sm:mt-7">
-              <Link
-                href="/register"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 shadow-lg shadow-blue-600/25 sm:px-6 sm:py-3.5"
-              >
-                Crear mi página
-                <ArrowRight className="h-4 w-4" />
-              </Link>
+            {/* SELECTOR INTERACTIVO DE RUBROS */}
+            <div className="mt-6">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                Mirá cómo se adapta a tu rubro en vivo:
+              </p>
+              <div className="mt-2.5 flex flex-wrap gap-2">
+                {DEMOS.map((demo) => {
+                  const Icono = demo.icono;
+                  const activo = rubroActivo.id === demo.id;
+                  return (
+                    <button
+                      key={demo.id}
+                      type="button"
+                      onClick={() => setRubroActivo(demo)}
+                      className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition active:scale-95 ${
+                        activo
+                          ? "border border-blue-500 bg-blue-600 text-white shadow-lg shadow-blue-500/20"
+                          : "border border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:border-zinc-700 dark:hover:bg-zinc-800"
+                      }`}
+                    >
+                      <Icono className="h-3.5 w-3.5" />
+                      {demo.etiqueta}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            <p className="mt-4 text-xs text-zinc-500 dark:text-zinc-400 sm:mt-6">
-              Página propia · WhatsApp · Turnos · Asistente IA
-            </p>
+            {/* BOTONES PRINCIPALES */}
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Link
+                href="/register"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white shadow-xl shadow-blue-600/25 transition hover:bg-blue-500 active:scale-95"
+              >
+                Quiero mi página
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+
+              <a
+                href={rubroActivo.linkSlug}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-5 py-3.5 text-sm font-semibold text-zinc-800 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/90 dark:text-zinc-200 dark:hover:border-zinc-700 dark:hover:bg-zinc-800 active:scale-95"
+              >
+                <ExternalLink className="h-4 w-4 text-zinc-400" />
+                Ver demo de {rubroActivo.etiqueta}
+              </a>
+            </div>
+
+            {/* PRUEBA SOCIAL */}
+            <div className="mt-8 flex items-center gap-3 border-t border-zinc-200/80 pt-6 dark:border-zinc-800/80">
+              <div className="flex -space-x-2">
+                <span className="inline-block h-8 w-8 rounded-full border-2 border-white bg-emerald-600 text-center text-xs font-bold leading-7 text-white dark:border-zinc-950">R</span>
+                <span className="inline-block h-8 w-8 rounded-full border-2 border-white bg-blue-600 text-center text-xs font-bold leading-7 text-white dark:border-zinc-950">N</span>
+                <span className="inline-block h-8 w-8 rounded-full border-2 border-white bg-purple-600 text-center text-xs font-bold leading-7 text-white dark:border-zinc-950">B</span>
+              </div>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                <strong className="text-zinc-900 dark:text-white">Negocios reales</strong> ya automatizan pedidos y turnos sin intermediarios.
+              </p>
+            </div>
           </div>
 
-          {/* VISTA PREVIA */}
-          <div className="relative mx-auto w-full max-w-xl lg:max-w-none">
-            <div className="absolute -inset-6 rounded-[2.5rem] bg-blue-600/10 blur-3xl" />
-
-            <div className="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl transition dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-3xl">
-              <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-800 sm:px-5 sm:py-3">
-                <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-zinc-300 dark:bg-zinc-700 sm:h-2.5 sm:w-2.5" />
-                  <span className="h-2 w-2 rounded-full bg-zinc-300 dark:bg-zinc-700 sm:h-2.5 sm:w-2.5" />
-                  <span className="h-2 w-2 rounded-full bg-zinc-300 dark:bg-zinc-700 sm:h-2.5 sm:w-2.5" />
-                </div>
-
-                <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-zinc-500 sm:text-xs">
-                  Ejemplo de página NDI AI
+          {/* COLUMNA DERECHA: MOCKUP INTERACTIVO EN VIVO */}
+          <div className="relative mx-auto w-full max-w-[420px] lg:max-w-none">
+            {/* Notificación flotante 1: Ventas en tiempo real */}
+            <div className="absolute -top-3 -left-3 z-20 flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white/95 px-3.5 py-2.5 shadow-xl backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/95">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                <rubroActivo.notificacion.icono className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-zinc-900 dark:text-white leading-tight">
+                  {rubroActivo.notificacion.titulo}
+                </p>
+                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  {rubroActivo.notificacion.texto} · <span className="font-semibold text-emerald-600 dark:text-emerald-400">{rubroActivo.notificacion.tiempo}</span>
                 </p>
               </div>
+            </div>
 
-              <div className="relative min-h-[260px] bg-gradient-to-br from-blue-50 via-white to-zinc-100 p-4 transition dark:from-blue-600/15 dark:via-zinc-950 dark:to-zinc-900 sm:min-h-[390px] sm:p-8">
-                <div className="mx-auto flex max-w-lg flex-col items-center justify-center text-center">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-blue-500/20 bg-blue-500/10 text-blue-600 dark:text-blue-400 sm:h-12 sm:w-12">
-                    <Globe2 className="h-5 w-5 sm:h-6 sm:w-6" />
+            {/* MARCO DEL DISPOSITIVO */}
+            <div className="relative overflow-hidden rounded-[2.5rem] border border-zinc-200 bg-white p-3.5 shadow-2xl transition dark:border-zinc-800 dark:bg-zinc-950">
+              <div className="overflow-hidden rounded-[2rem] border border-zinc-200/80 bg-zinc-50 dark:border-zinc-800/80 dark:bg-[#0c0d0e]">
+                {/* Header simulado del negocio */}
+                <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-xs font-bold text-white">
+                      {rubroActivo.negocio.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-zinc-900 dark:text-white">{rubroActivo.negocio}</p>
+                      <p className="text-[9px] text-zinc-500 dark:text-zinc-400">{rubroActivo.rubroTexto}</p>
+                    </div>
+                  </div>
+                  <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[9px] font-semibold text-emerald-600 dark:text-emerald-400">
+                    Abierto
+                  </span>
+                </div>
+
+                {/* Banner de foto dinámico */}
+                <div className="relative aspect-[16/9] w-full overflow-hidden">
+                  <img
+                    src={rubroActivo.fotoPortada}
+                    alt={rubroActivo.negocio}
+                    className="h-full w-full object-cover transition duration-700 hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-transparent opacity-80" />
+                </div>
+
+                {/* Tarjeta de producto o servicio en catálogo */}
+                <div className="p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                      Destacado en el link
+                    </p>
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400">Entrega rápida</span>
                   </div>
 
-                  <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-400 sm:text-xs">
-                    Tu página puede verse así
-                  </p>
+                  <div className="rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900/70">
+                    <p className="text-xs font-bold text-zinc-900 dark:text-white">
+                      {rubroActivo.itemDestacado.nombre}
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400">
+                      {rubroActivo.itemDestacado.detalle}
+                    </p>
+                    <div className="mt-2.5 flex items-center justify-between border-t border-zinc-100 pt-2 dark:border-zinc-800/80">
+                      <span className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400">
+                        {rubroActivo.itemDestacado.precio}
+                      </span>
+                      <span className="rounded-lg bg-blue-600 px-2.5 py-1 text-[10px] font-semibold text-white">
+                        {rubroActivo.id === "barberia" ? "Reservar" : "Pedir ahora"}
+                      </span>
+                    </div>
+                  </div>
 
-                  <h2 className="mt-2 max-w-md text-xl font-bold leading-snug text-zinc-950 dark:text-white sm:text-3xl">
-                    Una página clara, profesional y pensada para tu negocio.
-                  </h2>
-
-                  <p className="mt-2.5 max-w-md text-xs leading-relaxed text-zinc-600 dark:text-zinc-400 sm:text-sm sm:leading-6">
-                    Acá podés mostrar tus servicios, productos, horarios, ubicación, reservas y botones de contacto directo.
-                  </p>
-
-                  <div className="mt-5 grid w-full max-w-md grid-cols-3 gap-2 sm:gap-2.5">
-                    {[
-                      "Servicios",
-                      "Ubicación",
-                      "Contacto",
-                    ].map((item) => (
-                      <div
-                        key={item}
-                        className="rounded-xl border border-zinc-200 bg-white/90 px-2 py-2 text-[10px] font-medium text-zinc-700 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/80 dark:text-zinc-300 sm:py-3 sm:text-xs"
-                      >
-                        {item}
-                      </div>
-                    ))}
+                  {/* Acciones directas integradas */}
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <div className="rounded-lg border border-zinc-200 bg-zinc-100/60 p-2 text-center dark:border-zinc-800 dark:bg-zinc-900/50">
+                      <p className="text-[9px] text-zinc-500 dark:text-zinc-400">Pagos</p>
+                      <p className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200">Mercado Pago / CVU</p>
+                    </div>
+                    <div className="rounded-lg border border-zinc-200 bg-zinc-100/60 p-2 text-center dark:border-zinc-800 dark:bg-zinc-900/50">
+                      <p className="text-[9px] text-zinc-500 dark:text-zinc-400">Pedidos</p>
+                      <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">Directo a WhatsApp</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              <div className="border-t border-zinc-200 px-4 py-2.5 text-center dark:border-zinc-800 sm:px-5 sm:py-3">
-                <p className="text-[10px] text-zinc-500 sm:text-xs">
-                  Adaptable a celulares, tablets y computadoras.
-                </p>
               </div>
             </div>
           </div>
