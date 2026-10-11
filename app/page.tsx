@@ -35,10 +35,9 @@ const proyectosShowcase = [
     icono: UtensilsCrossed,
     titulo: "Sabores del Norte",
     categoria: "Gastronomía & Restaurantes",
-    subtitulo: "Carta digital con fotos, pedidos directos a WhatsApp y reservas de mesa.",
+    subtitulo: "Carta digital con fotos de platos, pedidos directos a WhatsApp y reservas de mesa.",
     portada: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1600&q=80",
     badge: "Carta & Pedidos",
-    urlDemo: "ndiweb.com/sabores-del-norte",
   },
   {
     id: "tiendas",
@@ -46,10 +45,9 @@ const proyectosShowcase = [
     icono: ShoppingBag,
     titulo: "Norte Store",
     categoria: "Tiendas & Catálogo Online",
-    subtitulo: "Catálogo ágil con selección de variantes, stock en tiempo real y cobros integrados.",
+    subtitulo: "Catálogo ágil con selección de variantes, stock en tiempo real y cobros online.",
     portada: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1600&q=80",
     badge: "Catálogo Online",
-    urlDemo: "ndiweb.com/norte-store",
   },
   {
     id: "belleza",
@@ -60,7 +58,6 @@ const proyectosShowcase = [
     subtitulo: "Agenda de turnos online 24/7 para que los clientes elijan su día y horario sin demoras.",
     portada: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1600&q=80",
     badge: "Turnos Online",
-    urlDemo: "ndiweb.com/black-crown",
   },
   {
     id: "consultorios",
@@ -71,7 +68,6 @@ const proyectosShowcase = [
     subtitulo: "Gestión de citas médicas, especialidades, ubicación y atención profesional.",
     portada: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1600&q=80",
     badge: "Citas & Atención",
-    urlDemo: "ndiweb.com/consultorio-salud",
   },
 ];
 
@@ -225,19 +221,13 @@ export default function HomePage() {
     setFaqAbierta(faqAbierta === index ? null : index);
   };
 
-  const container3DRef = useRef<HTMLDivElement>(null);
-  const [inclinacion, setInclinacion] = useState(14);
-  const [elevacion, setElevacion] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onScroll = () => {
       const y = window.scrollY;
-      const nuevaInclinacion = Math.max(0, 14 - y * 0.03);
-      const nuevaElevacion = Math.min(40, y * 0.05);
-      setInclinacion(nuevaInclinacion);
-      setElevacion(nuevaElevacion);
-
-      setMostrarBotonHeader(y > 350);
+      // El botón de header se oculta al inicio y aparece recién al scrollear 280px
+      setMostrarBotonHeader(y > 280);
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -252,9 +242,9 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 selection:bg-blue-600 selection:text-white">
-      {/* HEADER COMPACTO Y DINÁMICO */}
+      {/* HEADER COMPACTO: INICIAR SESIÓN SIEMPRE VISIBLE Y BOTÓN CONDICIONAL */}
       <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/85 backdrop-blur-xl transition-colors dark:border-zinc-800/80 dark:bg-[#0c0d0e]/85">
-        <div className="mx-auto flex h-13 sm:h-16 max-w-7xl items-center justify-between px-3.5 sm:px-8">
+        <div className="mx-auto flex h-14 sm:h-16 max-w-7xl items-center justify-between px-3.5 sm:px-8">
           <Link href="/" className="flex items-center gap-2 min-w-0">
             <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-xl bg-blue-600 p-1 shadow-sm shadow-blue-600/30">
               <Image
@@ -291,30 +281,32 @@ export default function HomePage() {
             </a>
           </nav>
 
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={alternarTema}
               type="button"
               aria-label="Cambiar tema"
-              className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-700 shadow-sm transition hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              className="flex h-8 w-8 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-700 shadow-sm transition hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
               <Sun className="h-3.5 w-3.5 sm:h-4 sm:w-4 hidden dark:block text-amber-400" />
               <Moon className="h-3.5 w-3.5 sm:h-4 sm:w-4 block dark:hidden text-zinc-700" />
             </button>
 
+            {/* INICIAR SESIÓN VISIBLE TANTO EN CELULAR COMO EN PC */}
             <Link
               href="/login"
-              className="hidden sm:inline-flex rounded-xl px-3 py-1.5 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900"
+              className="inline-flex rounded-xl px-2.5 py-1.5 sm:px-3 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900"
             >
               Iniciar sesión
             </Link>
 
+            {/* BOTÓN "QUIERO MI PÁGINA": DESAPARECE AL INICIO Y APARECE SOLO AL SCROLLEAR (EN PC Y MÓVIL) */}
             <Link
               href="/register"
               className={`rounded-xl bg-blue-600 px-3 py-1.5 sm:px-4 sm:py-2 text-[11px] sm:text-xs font-bold text-white shadow-sm shadow-blue-600/25 transition-all duration-300 active:scale-95 ${
                 mostrarBotonHeader
                   ? "opacity-100 pointer-events-auto translate-y-0"
-                  : "opacity-0 pointer-events-none -translate-y-1 sm:opacity-100 sm:pointer-events-auto sm:translate-y-0"
+                  : "opacity-0 pointer-events-none -translate-y-2"
               }`}
             >
               Quiero mi página
@@ -323,9 +315,9 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* HERO CENTRADO */}
-      <section className="relative pt-8 pb-12 sm:pt-20 sm:pb-28 [perspective:1600px] overflow-hidden">
-        <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 h-[550px] w-full max-w-7xl">
+      {/* HERO CENTRADO EDITORIAL */}
+      <section className="relative pt-8 pb-12 sm:pt-20 sm:pb-24 overflow-hidden">
+        <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 h-[500px] w-full max-w-7xl">
           <div className="absolute top-10 left-1/3 h-80 w-80 rounded-full bg-blue-600/15 blur-[140px]" />
           <div className="absolute top-20 right-1/4 h-72 w-72 rounded-full bg-emerald-500/10 blur-[130px]" />
         </div>
@@ -335,7 +327,7 @@ export default function HomePage() {
             <span>Estudio de Diseño & Desarrollo Digital</span>
           </div>
 
-          <h1 className="text-2xl sm:text-6xl lg:text-[4.3rem] font-black tracking-tight leading-[1.12] sm:leading-[1.08] text-zinc-950 dark:text-white">
+          <h1 className="text-2xl sm:text-6xl lg:text-[4.2rem] font-black tracking-tight leading-[1.12] sm:leading-[1.08] text-zinc-950 dark:text-white">
             Tené tu página web{" "}
             <span className="bg-gradient-to-r from-blue-600 via-sky-500 to-emerald-500 bg-clip-text text-transparent dark:from-blue-400 dark:via-sky-300 dark:to-emerald-400">
               profesional hoy.
@@ -346,7 +338,7 @@ export default function HomePage() {
             Diseñamos la web de tu negocio con catálogo, turnos online y pedidos ordenados directo a tu WhatsApp. Sin complicaciones técnicas ni intermediarios.
           </p>
 
-          {/* BOTONES EN 1 SOLA FILA COMPACTA */}
+          {/* BOTONES PRINCIPALES EN UNA FILA */}
           <div className="mt-5 sm:mt-7 flex items-center justify-center gap-2 sm:gap-3 max-w-sm sm:max-w-none mx-auto">
             <Link
               href="/register"
@@ -364,7 +356,7 @@ export default function HomePage() {
             </a>
           </div>
 
-          {/* PESTAÑAS HORIZONTALES CON SCROLL FLUIDO */}
+          {/* SELECTOR DE 4 RUBROS CON SCROLL FLUIDO */}
           <div className="mt-6 sm:mt-10 flex items-center justify-start sm:justify-center gap-1.5 overflow-x-auto px-1 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {proyectosShowcase.map((p, idx) => {
               const Icono = p.icono;
@@ -374,13 +366,13 @@ export default function HomePage() {
                   key={p.id}
                   type="button"
                   onClick={() => setRubroSeleccionado(idx)}
-                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg sm:rounded-xl px-3 py-1.5 sm:px-4 sm:py-2 text-[11px] sm:text-xs font-bold transition active:scale-95 ${
+                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl px-3.5 py-2 text-[11px] sm:text-xs font-bold transition active:scale-95 ${
                     activo
-                      ? "bg-blue-600 text-white shadow-sm shadow-blue-600/30"
+                      ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
                       : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:bg-zinc-800"
                   }`}
                 >
-                  <Icono className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  <Icono className="h-3.5 w-3.5" />
                   <span>{p.label}</span>
                 </button>
               );
@@ -388,46 +380,40 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* SHOWCASE 3D PANORÁMICO */}
+        {/* SHOWCASE LIMPIO SIN FALSAS BARRAS DE NAVEGADOR NI URLS QUE GENEREN RUIDO */}
         <div
-          ref={container3DRef}
-          className="relative mx-auto mt-6 sm:mt-14 max-w-5xl px-3 sm:px-8 transition-transform duration-300 ease-out"
-          style={{
-            transform: `rotateX(${inclinacion}deg) translateY(-${elevacion}px)`,
-            transformStyle: "preserve-3d",
-          }}
+          ref={containerRef}
+          className="relative mx-auto mt-6 sm:mt-10 max-w-5xl px-3 sm:px-8"
         >
-          <div className="absolute inset-x-12 -bottom-8 h-20 rounded-[4rem] bg-black/50 dark:bg-black/90 blur-2xl" />
-
-          <div className="relative overflow-hidden rounded-2xl sm:rounded-[2rem] border border-zinc-300/80 bg-white shadow-xl ring-1 ring-black/5 dark:border-zinc-700/80 dark:bg-zinc-950 dark:ring-white/10">
-            <div className="flex items-center justify-between border-b border-zinc-200 bg-zinc-100/90 px-3.5 py-2.5 sm:px-5 sm:py-3.5 dark:border-zinc-800 dark:bg-zinc-900/80">
-              <span className="font-mono text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 truncate max-w-[190px] sm:max-w-none">
-                {proyectoActual.urlDemo}
+          <div className="relative overflow-hidden rounded-2xl sm:rounded-[2.5rem] border border-zinc-200/90 bg-white shadow-2xl ring-1 ring-black/5 dark:border-zinc-800/90 dark:bg-zinc-950 dark:ring-white/10 group">
+            
+            {/* Cabecera sutil e integrada */}
+            <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3 sm:px-6 sm:py-3.5 dark:border-zinc-800/80 bg-zinc-50/70 dark:bg-zinc-900/40">
+              <span className="text-[11px] sm:text-xs font-bold text-zinc-900 dark:text-white tracking-wide">
+                {proyectoActual.categoria}
               </span>
-              <div className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
+              <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
                 {proyectoActual.badge}
-              </div>
+              </span>
             </div>
 
-            <div className="relative aspect-[16/10] sm:aspect-[2.2/1] w-full overflow-hidden bg-zinc-900">
+            {/* Imagen cinematográfica limpia y con tipografía moderna */}
+            <div className="relative aspect-[16/10] sm:aspect-[2.3/1] w-full overflow-hidden bg-zinc-900">
               <img
                 src={proyectoActual.portada}
                 alt={proyectoActual.titulo}
-                className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-102"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent flex flex-col justify-end p-3.5 sm:p-9 text-white">
-                <span className="text-[9px] sm:text-[11px] font-semibold uppercase tracking-wider text-emerald-400">
-                  {proyectoActual.categoria}
-                </span>
-                <p className="mt-0.5 text-base sm:text-3xl font-black tracking-tight">{proyectoActual.titulo}</p>
-                <p className="mt-0.5 text-[10px] sm:text-sm text-zinc-300 max-w-xl font-normal leading-relaxed line-clamp-2 sm:line-clamp-none">{proyectoActual.subtitulo}</p>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-4 sm:p-9 text-white">
+                <p className="text-xl sm:text-3xl font-black tracking-tight">{proyectoActual.titulo}</p>
+                <p className="mt-1 text-xs sm:text-sm text-zinc-300 max-w-xl font-normal leading-relaxed">{proyectoActual.subtitulo}</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* SECCIÓN PROBLEMA: COMPACTADA EN MÓVIL */}
+      {/* SECCIÓN PROBLEMA */}
       <section className="mx-auto max-w-7xl px-3.5 py-10 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="grid gap-6 lg:grid-cols-2 lg:items-center lg:gap-14">
           <div>
@@ -460,7 +446,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* SERVICIOS: 6 TARJETAS EN MÓVIL COMPACTAS */}
+      {/* SERVICIOS */}
       <section id="funciones" className="mx-auto max-w-7xl px-3.5 py-10 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="max-w-2xl">
           <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
@@ -494,7 +480,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* PROCESO PASO A PASO */}
+      {/* PROCESO */}
       <section id="como-funciona" className="mx-auto max-w-7xl px-3.5 py-10 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="max-w-3xl">
           <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
