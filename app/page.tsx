@@ -218,6 +218,7 @@ const planBusinessIA = [
 export default function HomePage() {
   const [faqAbierta, setFaqAbierta] = useState<number | null>(0);
   const [rubroSeleccionado, setRubroSeleccionado] = useState(0);
+  const [mostrarBotonHeader, setMostrarBotonHeader] = useState(false);
   const { theme, setTheme } = useTheme();
 
   const toggleFaq = (index: number) => {
@@ -235,6 +236,9 @@ export default function HomePage() {
       const nuevaElevacion = Math.min(40, y * 0.05);
       setInclinacion(nuevaInclinacion);
       setElevacion(nuevaElevacion);
+
+      // Muestra el botón del header solo cuando el usuario baja más de 350px
+      setMostrarBotonHeader(y > 350);
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -249,7 +253,7 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 selection:bg-blue-600 selection:text-white">
-      {/* HEADER COMPACTO Y RESPONSIVE */}
+      {/* HEADER COMPACTO Y DINÁMICO */}
       <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/85 backdrop-blur-xl transition-colors dark:border-zinc-800/80 dark:bg-[#0c0d0e]/85">
         <div className="mx-auto flex h-14 sm:h-16 max-w-7xl items-center justify-between px-3.5 sm:px-8">
           <Link href="/" className="flex items-center gap-2.5 min-w-0">
@@ -306,9 +310,14 @@ export default function HomePage() {
               Iniciar sesión
             </Link>
 
+            {/* BOTÓN HEADER: SE OCULTA AL COMIENZO Y APARECE SUAVEMENTE CUANDO SCROLLEAMOS */}
             <Link
               href="/register"
-              className="rounded-xl bg-blue-600 px-3 py-1.5 sm:px-4 sm:py-2 text-[11px] sm:text-xs font-bold text-white shadow-sm shadow-blue-600/25 transition hover:bg-blue-500 active:scale-95"
+              className={`rounded-xl bg-blue-600 px-3 py-1.5 sm:px-4 sm:py-2 text-[11px] sm:text-xs font-bold text-white shadow-sm shadow-blue-600/25 transition-all duration-300 active:scale-95 ${
+                mostrarBotonHeader
+                  ? "opacity-100 pointer-events-auto translate-y-0"
+                  : "opacity-0 pointer-events-none -translate-y-1 sm:opacity-100 sm:pointer-events-auto sm:translate-y-0"
+              }`}
             >
               Quiero mi página
             </Link>
@@ -316,9 +325,9 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* HERO CENTRADO CON PERSPECTIVA 3D SHOWCASE */}
-      <section className="relative pt-12 pb-16 sm:pt-20 sm:pb-28 [perspective:1600px] overflow-hidden">
-        {/* Glow de ambientación */}
+      {/* HERO CENTRADO CON PERSPECTIVA 3D */}
+      <section className="relative pt-10 pb-16 sm:pt-20 sm:pb-28 [perspective:1600px] overflow-hidden">
+        {/* Glow envolvente de fondo */}
         <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 h-[650px] w-full max-w-7xl">
           <div className="absolute top-10 left-1/3 h-96 w-96 rounded-full bg-blue-600/15 blur-[150px]" />
           <div className="absolute top-20 right-1/4 h-80 w-80 rounded-full bg-emerald-500/10 blur-[140px]" />
@@ -326,7 +335,7 @@ export default function HomePage() {
 
         {/* Textos principales */}
         <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-8">
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3.5 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400 mb-4">
+          <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3.5 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400 mb-3.5">
             <span>Estudio de Diseño & Desarrollo Digital</span>
           </div>
 
@@ -337,29 +346,30 @@ export default function HomePage() {
             </span>
           </h1>
 
-          <p className="mx-auto mt-4 sm:mt-5 max-w-2xl text-sm sm:text-lg leading-relaxed text-zinc-600 dark:text-zinc-400 font-normal">
+          <p className="mx-auto mt-3.5 sm:mt-5 max-w-2xl text-xs sm:text-base leading-relaxed text-zinc-600 dark:text-zinc-400 font-normal">
             Diseñamos la web de tu negocio con catálogo, turnos online y pedidos ordenados directo a tu WhatsApp. Sin complicaciones técnicas ni intermediarios.
           </p>
 
-          <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+          {/* BOTONES PRINCIPALES: EN LA MISMA FILA EN MÓVIL Y DESKTOP */}
+          <div className="mt-6 sm:mt-7 grid grid-cols-2 gap-2 max-w-xs sm:max-w-none sm:flex sm:flex-wrap sm:items-center sm:justify-center sm:gap-3 mx-auto">
             <Link
               href="/register"
-              className="inline-flex items-center gap-2 rounded-2xl bg-zinc-950 px-7 py-3.5 text-sm font-bold text-white shadow-xl transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 active:scale-95"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl sm:rounded-2xl bg-zinc-950 px-3 py-3 sm:px-7 sm:py-3.5 text-xs sm:text-sm font-bold text-white shadow-xl transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 active:scale-95 text-center"
             >
               Crear mi página
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
             </Link>
 
             <a
               href="#contacto"
-              className="inline-flex items-center gap-2 rounded-2xl border border-zinc-300 bg-white px-6 py-3.5 text-sm font-semibold text-zinc-800 shadow-sm transition hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/90 dark:text-zinc-200 dark:hover:bg-zinc-800 active:scale-95"
+              className="inline-flex items-center justify-center gap-1 rounded-xl sm:rounded-2xl border border-zinc-300 bg-white px-3 py-3 sm:px-6 sm:py-3.5 text-xs sm:text-sm font-semibold text-zinc-800 shadow-sm transition hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/90 dark:text-zinc-200 dark:hover:bg-zinc-800 active:scale-95 text-center"
             >
-              Hablar con un asesor
+              Hablar con asesor
             </a>
           </div>
 
-          {/* SELECTOR DE LAS 4 CATEGORÍAS */}
-          <div className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-2">
+          {/* SELECTOR DE RUBROS: SCROLL HORIZONTAL TÁCTIL EN CELULAR */}
+          <div className="mt-7 sm:mt-10 flex items-center justify-start sm:justify-center gap-2 overflow-x-auto px-1 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {proyectosShowcase.map((p, idx) => {
               const Icono = p.icono;
               const activo = rubroSeleccionado === idx;
@@ -368,14 +378,14 @@ export default function HomePage() {
                   key={p.id}
                   type="button"
                   onClick={() => setRubroSeleccionado(idx)}
-                  className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition active:scale-95 ${
+                  className={`inline-flex shrink-0 items-center gap-1.5 sm:gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition active:scale-95 ${
                     activo
                       ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
                       : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:bg-zinc-800"
                   }`}
                 >
                   <Icono className="h-3.5 w-3.5" />
-                  {p.label}
+                  <span>{p.label}</span>
                 </button>
               );
             })}
@@ -385,7 +395,7 @@ export default function HomePage() {
         {/* SHOWCASE 3D PANORÁMICO LIMPIO */}
         <div
           ref={container3DRef}
-          className="relative mx-auto mt-10 sm:mt-14 max-w-5xl px-3 sm:px-8 transition-transform duration-300 ease-out"
+          className="relative mx-auto mt-8 sm:mt-14 max-w-5xl px-3 sm:px-8 transition-transform duration-300 ease-out"
           style={{
             transform: `rotateX(${inclinacion}deg) translateY(-${elevacion}px)`,
             transformStyle: "preserve-3d",
@@ -395,32 +405,32 @@ export default function HomePage() {
           <div className="absolute inset-x-12 -bottom-10 h-28 rounded-[4rem] bg-black/60 dark:bg-black/90 blur-3xl" />
 
           {/* Marco del Showcase */}
-          <div className="relative overflow-hidden rounded-[2.2rem] border border-zinc-300/80 bg-white shadow-2xl ring-1 ring-black/5 dark:border-zinc-700/80 dark:bg-zinc-950 dark:ring-white/10">
+          <div className="relative overflow-hidden rounded-[2rem] border border-zinc-300/80 bg-white shadow-2xl ring-1 ring-black/5 dark:border-zinc-700/80 dark:bg-zinc-950 dark:ring-white/10">
             {/* Barra superior del proyecto */}
-            <div className="flex items-center justify-between border-b border-zinc-200 bg-zinc-100/90 px-5 py-3.5 dark:border-zinc-800 dark:bg-zinc-900/80">
-              <div className="flex items-center gap-2.5">
-                <span className="font-mono text-xs text-zinc-500 dark:text-zinc-400">
+            <div className="flex items-center justify-between border-b border-zinc-200 bg-zinc-100/90 px-4 py-3 sm:px-5 sm:py-3.5 dark:border-zinc-800 dark:bg-zinc-900/80">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 truncate max-w-[200px] sm:max-w-none">
                   {proyectoActual.urlDemo}
                 </span>
               </div>
-              <div className="rounded-full bg-emerald-500/15 px-3 py-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+              <div className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
                 {proyectoActual.badge}
               </div>
             </div>
 
             {/* Imagen cinematográfica a pantalla completa */}
-            <div className="relative aspect-[16/9] sm:aspect-[2.2/1] w-full overflow-hidden bg-zinc-900">
+            <div className="relative aspect-[16/10] sm:aspect-[2.2/1] w-full overflow-hidden bg-zinc-900">
               <img
                 src={proyectoActual.portada}
                 alt={proyectoActual.titulo}
                 className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent flex flex-col justify-end p-6 sm:p-9 text-white">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-400">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent flex flex-col justify-end p-4 sm:p-9 text-white">
+                <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-emerald-400">
                   {proyectoActual.categoria}
                 </span>
-                <p className="mt-1 text-xl sm:text-3xl font-black tracking-tight">{proyectoActual.titulo}</p>
-                <p className="mt-1.5 text-xs sm:text-sm text-zinc-300 max-w-xl font-normal leading-relaxed">{proyectoActual.subtitulo}</p>
+                <p className="mt-1 text-lg sm:text-3xl font-black tracking-tight">{proyectoActual.titulo}</p>
+                <p className="mt-1 text-[11px] sm:text-sm text-zinc-300 max-w-xl font-normal leading-relaxed line-clamp-2 sm:line-clamp-none">{proyectoActual.subtitulo}</p>
               </div>
             </div>
           </div>
@@ -643,7 +653,7 @@ export default function HomePage() {
                   rel="noopener noreferrer"
                   className="flex items-center gap-3.5 rounded-2xl border border-emerald-500/30 bg-emerald-50 p-3.5 transition hover:bg-emerald-100/70 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
                     <MessageCircle className="h-5 w-5" />
                   </div>
                   <div>
