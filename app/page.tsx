@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -10,7 +10,6 @@ import {
   Check,
   ChevronDown,
   Clock,
-  ExternalLink,
   FileText,
   Mail,
   MessageCircle,
@@ -22,7 +21,6 @@ import {
   ShoppingBag,
   Scissors,
   Stethoscope,
-  Sparkles,
 } from "lucide-react";
 
 import { useTheme } from "@/components/theme/ThemeProvider";
@@ -36,48 +34,44 @@ const proyectosShowcase = [
     label: "Restaurantes",
     icono: UtensilsCrossed,
     titulo: "Sabores del Norte",
-    categoria: "Gastronomía, Bares & Cafeterías",
-    subtitulo: "Menú digital interactivo con pedidos directos a tu WhatsApp, comandas organizadas y reserva de mesas.",
+    categoria: "Gastronomía & Bares",
+    subtitulo: "Menú digital interactivo con pedidos directos a tu WhatsApp, fotos de platos y reserva de mesas.",
     portada: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1800&q=80",
-    badge: "Carta Digital & WhatsApp",
-    demoSlug: "/negocio/sabores-del-norte",
-    caracteristicas: ["Carta con fotos y precios", "Pedidos listos a WhatsApp", "Sin comisiones por pedido"],
+    badge: "Carta & Pedidos",
+    caracteristicas: ["Carta con fotos y precios", "Pedidos listos a WhatsApp"],
   },
   {
     id: "tiendas",
     label: "Tiendas",
     icono: ShoppingBag,
     titulo: "Norte Store",
-    categoria: "Indumentaria, Calzado & Accesorios",
-    subtitulo: "Catálogo online con selector de talles, colores, control de stock y cobros por transferencia o Mercado Pago.",
+    categoria: "Indumentaria & Productos",
+    subtitulo: "Catálogo online con variantes de talles, colores, stock en tiempo real y cobros integrados.",
     portada: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1800&q=80",
-    badge: "Catálogo Online & Pagos",
-    demoSlug: "/negocio/norte-store",
-    caracteristicas: ["Control de talles y colores", "Cobro inmediato con CVU/Alias", "Carrito autogestionable"],
+    badge: "Catálogo Online",
+    caracteristicas: ["Control de talles y stock", "Cobros con CVU y Mercado Pago"],
   },
   {
     id: "belleza",
     label: "Barberías & Salones",
     icono: Scissors,
     titulo: "Black Crown Studio",
-    categoria: "Barberías, Peluquerías & Estética",
-    subtitulo: "Agenda de turnos online disponible las 24 horas. Tus clientes eligen profesional, servicio y horario en segundos.",
+    categoria: "Barberías & Estética",
+    subtitulo: "Agenda de turnos online disponible las 24 horas para que el cliente elija servicio y horario sin esperas.",
     portada: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1800&q=80",
-    badge: "Agenda Online 24/7",
-    demoSlug: "/negocio/black-crown",
-    caracteristicas: ["Turnos confirmados al instante", "Recordatorio automático", "Sin superposición de horarios"],
+    badge: "Turnos 24/7",
+    caracteristicas: ["Turnos confirmados al instante", "Agenda autogestionable"],
   },
   {
     id: "consultorios",
     label: "Consultorios",
     icono: Stethoscope,
     titulo: "Centro Médico & Salud",
-    categoria: "Consultorios, Clínicas & Profesionales",
-    subtitulo: "Presencia formal con gestión de citas, ficha de profesionales, ubicación en mapa y contacto directo.",
+    categoria: "Consultorios & Profesionales",
+    subtitulo: "Gestión de citas previas, información de especialidades, ubicación en mapa y contacto directo.",
     portada: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1800&q=80",
     badge: "Atención Profesional",
-    demoSlug: "/negocio/consultorio-salud",
-    caracteristicas: ["Especialidades y horarios", "Ubicación en Google Maps", "Formulario de contacto seguro"],
+    caracteristicas: ["Citas y horarios disponibles", "Ubicación en Google Maps"],
   },
 ];
 
@@ -233,8 +227,7 @@ export default function HomePage() {
 
   useEffect(() => {
     const onScroll = () => {
-      const y = window.scrollY;
-      setMostrarBotonHeader(y > 320);
+      setMostrarBotonHeader(window.scrollY > 300);
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -249,11 +242,9 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 selection:bg-blue-600 selection:text-white">
-      {/* HEADER COMPACTO: NUNCA SE PISAN LOS TEXTOS EN MÓVIL */}
+      {/* HEADER */}
       <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/90 backdrop-blur-xl transition-colors dark:border-zinc-800/80 dark:bg-[#0c0d0e]/90">
         <div className="mx-auto flex h-14 sm:h-16 max-w-7xl items-center justify-between px-3.5 sm:px-8 gap-2">
-          
-          {/* Logo con corte adaptativo en móvil */}
           <Link href="/" className="flex items-center gap-2 shrink-0">
             <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-xl bg-blue-600 p-1 shadow-sm shadow-blue-600/30">
               <Image
@@ -266,11 +257,10 @@ export default function HomePage() {
               />
             </div>
             <p className="text-xs sm:text-sm font-bold tracking-tight text-zinc-900 dark:text-white whitespace-nowrap">
-              NDI <span className="hidden xs:inline font-normal text-zinc-500 dark:text-zinc-400">| Diseño & Web</span>
+              NDI <span className="hidden sm:inline font-normal text-zinc-500 dark:text-zinc-400">| Diseño & Web</span>
             </p>
           </Link>
 
-          {/* Menú Desktop */}
           <nav className="hidden items-center gap-7 lg:flex">
             <a href="#funciones" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
               Servicios
@@ -289,8 +279,7 @@ export default function HomePage() {
             </a>
           </nav>
 
-          {/* Acciones del Header */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
               onClick={alternarTema}
               type="button"
@@ -301,7 +290,6 @@ export default function HomePage() {
               <Moon className="h-4 w-4 block dark:hidden text-zinc-700" />
             </button>
 
-            {/* Iniciar sesión visible y proporcionado */}
             <Link
               href="/login"
               className="inline-flex items-center justify-center rounded-xl px-2.5 py-1.5 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900 whitespace-nowrap"
@@ -309,11 +297,10 @@ export default function HomePage() {
               Iniciar sesión
             </Link>
 
-            {/* Botón flotante: condicional tanto en móvil como en escritorio */}
             {mostrarBotonHeader && (
               <Link
                 href="/register"
-                className="animate-in fade-in zoom-in-95 duration-200 rounded-xl bg-blue-600 px-3 py-1.5 sm:px-4 sm:py-2 text-[11px] sm:text-xs font-bold text-white shadow-sm shadow-blue-600/25 transition hover:bg-blue-500 whitespace-nowrap"
+                className="rounded-xl bg-blue-600 px-3 py-1.5 sm:px-4 sm:py-2 text-[11px] sm:text-xs font-bold text-white shadow-sm shadow-blue-600/25 transition hover:bg-blue-500 whitespace-nowrap"
               >
                 Quiero mi página
               </Link>
@@ -322,7 +309,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* HERO CENTRADO EDITORIAL */}
+      {/* HERO */}
       <section className="relative pt-8 pb-12 sm:pt-16 sm:pb-24 overflow-hidden">
         <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 h-[500px] w-full max-w-7xl">
           <div className="absolute top-10 left-1/3 h-80 w-80 rounded-full bg-blue-600/15 blur-[140px]" />
@@ -330,7 +317,7 @@ export default function HomePage() {
         </div>
 
         <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-8">
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 px-3.5 py-1 text-[11px] sm:text-xs font-semibold text-blue-600 dark:text-blue-400 mb-3">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-[11px] sm:text-xs font-semibold text-blue-600 dark:text-blue-400 mb-3">
             <span>Estudio de Diseño & Desarrollo Digital</span>
           </div>
 
@@ -345,7 +332,6 @@ export default function HomePage() {
             Diseñamos la web de tu negocio con catálogo, turnos online y pedidos ordenados directo a tu WhatsApp. Sin complicaciones técnicas ni intermediarios.
           </p>
 
-          {/* BOTONES PRINCIPALES: EN UNA SOLA FILA */}
           <div className="mt-5 sm:mt-7 flex items-center justify-center gap-2 sm:gap-3 max-w-sm sm:max-w-none mx-auto">
             <Link
               href="/register"
@@ -363,8 +349,7 @@ export default function HomePage() {
             </a>
           </div>
 
-          {/* SELECTOR DE 4 RUBROS CON SCROLL FLUIDO */}
-          <div className="mt-6 sm:mt-10 flex items-center justify-start sm:justify-center gap-1.5 overflow-x-auto px-1 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="mt-6 sm:mt-10 flex items-center justify-start sm:justify-center gap-1.5 overflow-x-auto px-4 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {proyectosShowcase.map((p, idx) => {
               const Icono = p.icono;
               const activo = rubroSeleccionado === idx;
@@ -387,48 +372,41 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* SHOWCASE EDITORIAL PANORÁMICO DE ALTO IMPACTO (MÁS GRANDE Y PROFESIONAL) */}
-        <div className="relative mx-auto mt-6 sm:mt-12 max-w-6xl px-3 sm:px-8">
+        <div className="relative mx-auto mt-6 sm:mt-12 max-w-6xl px-3.5 sm:px-8">
           <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-zinc-300/80 bg-white shadow-2xl dark:border-zinc-800 dark:bg-zinc-950 ring-1 ring-black/5 dark:ring-white/10 group">
-            
-            {/* Cabecera minimalista y funcional */}
-            <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3 sm:px-6 sm:py-4 dark:border-zinc-800/80 bg-zinc-50/80 dark:bg-zinc-900/50">
+            <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-2.5 sm:px-6 sm:py-4 dark:border-zinc-800/80 bg-zinc-50/80 dark:bg-zinc-900/50">
               <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white">
-                  {proyectoActual.titulo}
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[11px] sm:text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-wider">
+                  {proyectoActual.categoria}
                 </span>
-                <span className="hidden sm:inline text-xs text-zinc-400">· {proyectoActual.categoria}</span>
               </div>
-              <span className="rounded-full bg-blue-600/10 border border-blue-500/20 px-3 py-1 text-[10px] sm:text-xs font-bold text-blue-600 dark:text-blue-400">
+              <span className="rounded-full bg-blue-600/10 border border-blue-500/20 px-2.5 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold text-blue-600 dark:text-blue-400">
                 {proyectoActual.badge}
               </span>
             </div>
 
-            {/* Imagen cinematográfica grande con datos comerciales integrados */}
             <div className="relative aspect-[16/10] sm:aspect-[2.1/1] w-full overflow-hidden bg-zinc-950">
               <img
                 src={proyectoActual.portada}
                 alt={proyectoActual.titulo}
                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-102"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent flex flex-col justify-end p-5 sm:p-10 text-white">
-                
-                {/* Badges de características comerciales */}
-                <div className="flex flex-wrap items-center gap-2 mb-2 sm:mb-3">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-transparent flex flex-col justify-end p-4 sm:p-10 text-white">
+                <div className="flex flex-wrap items-center gap-1.5 mb-2 sm:mb-3">
                   {proyectoActual.caracteristicas.map((caract, i) => (
                     <span
                       key={i}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-black/60 backdrop-blur-md px-2.5 py-1 text-[10px] sm:text-xs font-semibold text-emerald-400 border border-white/10"
+                      className="inline-flex items-center gap-1 rounded-md bg-black/60 backdrop-blur-md px-2 py-0.5 text-[9px] sm:text-xs font-medium text-emerald-400 border border-white/10"
                     >
-                      <Check className="h-3 w-3 shrink-0" />
+                      <Check className="h-2.5 w-2.5 shrink-0" />
                       {caract}
                     </span>
                   ))}
                 </div>
 
-                <h2 className="text-xl sm:text-4xl font-black tracking-tight">{proyectoActual.titulo}</h2>
-                <p className="mt-1 sm:mt-2 text-xs sm:text-base text-zinc-300 max-w-2xl font-normal leading-relaxed">
+                <h2 className="text-lg sm:text-4xl font-black tracking-tight">{proyectoActual.titulo}</h2>
+                <p className="mt-0.5 sm:mt-2 text-[11px] sm:text-base text-zinc-300 max-w-2xl font-normal leading-relaxed line-clamp-2 sm:line-clamp-none">
                   {proyectoActual.subtitulo}
                 </p>
               </div>
@@ -437,7 +415,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* SECCIÓN PROBLEMA */}
+      {/* PROBLEMA */}
       <section className="mx-auto max-w-7xl px-3.5 py-10 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="grid gap-6 lg:grid-cols-2 lg:items-center lg:gap-14">
           <div>
@@ -664,7 +642,7 @@ export default function HomePage() {
 
                 <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3 text-zinc-600 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/40 dark:text-zinc-400">
                   <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-                    <Clock className="h-5 w-5" />
+                    <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
                   <div>
                     <p className="text-[10px] sm:text-[11px] text-zinc-500">Horario de atención</p>
