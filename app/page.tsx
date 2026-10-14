@@ -4,12 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  ArrowRight,
   CalendarDays,
   Check,
   ChevronDown,
   ExternalLink,
-  Eye,
   FileText,
   Mail,
   MapPin,
@@ -17,10 +15,8 @@ import {
   Moon,
   Package,
   Palette,
-  QrCode,
   ShieldCheck,
   Sparkles,
-  Star,
   Sun,
   UserCheck,
   UtensilsCrossed,
@@ -35,59 +31,27 @@ const WHATSAPP_NUMERO = "5493886575664";
 const CORREO_CONTACTO = "soporte@ndiweb.com";
 const BEHANCE_URL = "https://www.behance.net/nahuelrueda";
 
-const proyectosShowcase = [
-  {
-    id: "restaurantes",
-    label: "Restaurantes",
-    icono: UtensilsCrossed,
-    titulo: "Sabores del Norte",
-    categoria: "Gastronomía & Bares",
-    subtitulo: "Menú digital interactivo con pedidos directos a WhatsApp, fotos de platos y reserva de mesas.",
-    portada: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1800&q=80",
-    badge: "Carta & Pedidos",
-    esReal: false,
-    urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Gastronomía y Bares.")}`,
-    caracteristicas: ["Carta con fotos y precios", "Pedidos listos a WhatsApp"],
-  },
-  {
-    id: "tiendas",
-    label: "Tiendas",
-    icono: ShoppingBag,
-    titulo: "Norte Store",
-    categoria: "Indumentaria & Productos",
-    subtitulo: "Catálogo online con variantes de talles, colores, stock en tiempo real y cobros integrados.",
-    portada: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1800&q=80",
-    badge: "Catálogo Online",
-    esReal: false,
-    urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Tiendas e Indumentaria.")}`,
-    caracteristicas: ["Control de talles y stock", "Cobros con CVU y Mercado Pago"],
-  },
-  {
-    id: "belleza",
-    label: "Barberías & Salones",
-    icono: Scissors,
-    titulo: "Black Crown Studio",
-    categoria: "Barberías & Estética",
-    subtitulo: "Agenda de turnos online disponible las 24 horas para que el cliente elija servicio y horario sin esperas.",
-    portada: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1800&q=80",
-    badge: "Turnos 24/7",
-    esReal: false,
-    urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Barberías y Salones.")}`,
-    caracteristicas: ["Turnos confirmados al instante", "Agenda autogestionable"],
-  },
-  {
-    id: "consultorios",
-    label: "Consultorios",
-    icono: Stethoscope,
-    titulo: "Centro Médico & Salud",
-    categoria: "Consultorios & Profesionales",
-    subtitulo: "Gestión de citas previas, información de especialidades, ubicación en mapa y contacto directo.",
-    portada: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1800&q=80",
-    badge: "Atención Profesional",
-    esReal: false,
-    urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Consultorios Profesionales.")}`,
-    caracteristicas: ["Citas y horarios disponibles", "Ubicación en Google Maps"],
-  },
+// Galería con tus archivos reales de public/portfolio/
+const galeriaPortfolio = [
+  { id: 2, src: "/portfolio/imagen2.jpg", titulo: "Identidad & Branding" },
+  { id: 3, src: "/portfolio/imagen3.jpg", titulo: "Diseño Gráfico" },
+  { id: 4, src: "/portfolio/imagen4.jpg", titulo: "Piezas para Redes" },
+  { id: 5, src: "/portfolio/imagen5.jpg", titulo: "Diseño Web & Mockup" },
+  { id: 6, src: "/portfolio/imagen6.jpg", titulo: "Branding Comercial" },
+  { id: 7, src: "/portfolio/imagen7.jpg", titulo: "Diseño Editorial" },
+  { id: 8, src: "/portfolio/imagen8.jpg", titulo: "Identidad Visual" },
+  { id: 9, src: "/portfolio/imagen9.jpg", titulo: "Gráfica Publicitaria" },
+  { id: 10, src: "/portfolio/imagen10.jpg", titulo: "Desarrollo Web" },
+  { id: 11, src: "/portfolio/imagen11.jpg", titulo: "Contenido Digital" },
+  { id: 12, src: "/portfolio/imagen12.jpg", titulo: "Diseño de Marca" },
+  { id: 13, src: "/portfolio/imagen13.jpg", titulo: "Papelería & Cartelería" },
+  { id: 14, src: "/portfolio/imagen14.jpg", titulo: "Carta & Menú Digital" },
+  { id: 15, src: "/portfolio/imagen15.jpg", titulo: "Branding Integral" },
+  { id: 16, src: "/portfolio/imagen16.jpg", titulo: "Diseño para Emprendedores" },
+  { id: 17, src: "/portfolio/imagen17.jpg", titulo: "Diseño UI / Web" },
+  { id: 18, src: "/portfolio/imagen18.png", titulo: "Pieza Promocional" },
+  { id: 19, src: "/portfolio/imagen19.png", titulo: "Identidad Gráfica" },
+  { id: 20, src: "/portfolio/imagen20.png", titulo: "Flyer & Redes" },
 ];
 
 const beneficios = [
@@ -218,7 +182,7 @@ export default function HomePage() {
               Servicios
             </a>
             <a href="#trabajos" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
-              Ejemplos
+              Trabajos
             </a>
             <a href="#quien-soy" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
               Quién soy
@@ -258,47 +222,32 @@ export default function HomePage() {
             </Link>
 
             {mostrarBotonHeader && (
-              <Link
-                href="/register"
+              <a
+                href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por el diseño de una página web y gráfica para mi negocio.")}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="rounded-xl bg-[var(--brand)] px-3 py-1.5 sm:px-4 sm:py-2 text-[11px] sm:text-xs font-bold text-white shadow-xs shadow-blue-500/20 transition hover:opacity-90 whitespace-nowrap"
               >
-                Quiero mi página
-              </Link>
+                Consultar por WhatsApp
+              </a>
             )}
           </div>
         </div>
       </header>
 
-      {/* PORTADA ESTUDIO CREATIVO (ESTRUCTURA REFERENCIA IMAGEN 1) */}
-      <section className="relative pt-10 pb-16 sm:pt-14 sm:pb-24 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
+      {/* PORTADA ESTILO ESTUDIO (REFERENCIA COMPOSICIÓN LIMPIA) */}
+      <section className="relative pt-10 pb-16 sm:pt-16 sm:pb-24 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
         <div className="mx-auto max-w-6xl px-4 sm:px-8">
           
-          {/* ENCABEZADO CENTRADO CON ESPACIO Y AIRE */}
+          {/* ENCABEZADO CENTRADO LIMPIO */}
           <div className="mx-auto max-w-4xl text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3.5 py-1 text-xs font-semibold text-zinc-700 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 mb-4">
               <span className="h-2 w-2 rounded-full bg-[var(--brand)]" />
               <span>Diseño Gráfico & Desarrollo Web</span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl lg:text-[3.5rem] font-bold tracking-tight text-zinc-950 dark:text-white leading-[1.12]">
-              Tené la página web de tu negocio{" "}
-              <span className="relative inline-block whitespace-nowrap">
-                lista para vender.
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 280 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="absolute -bottom-2 left-0 w-full text-[var(--brand)] overflow-visible"
-                >
-                  <path
-                    d="M3 14C60 6 180 4 277 12C210 16 90 18 12 16"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </span>
+            <h1 className="text-3xl sm:text-5xl lg:text-[3.6rem] font-bold tracking-tight text-zinc-950 dark:text-white leading-[1.12]">
+              Tené la página web de tu negocio lista para vender.
             </h1>
 
             <p className="mx-auto mt-4 max-w-2xl text-sm sm:text-base text-zinc-600 dark:text-zinc-400 font-normal leading-relaxed">
@@ -306,110 +255,66 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* LIENZO COMPUESTO CON CARDS FLOTANTES SUPERPUESTAS */}
+          {/* CONTENEDOR DE LA COMPOSICIÓN (MUESCA Y TARJETA TAL CUAL LA REFERENCIA) */}
           <div className="relative mt-12 sm:mt-16 mx-auto max-w-4xl">
             
-            {/* 1. LIENZO PRINCIPAL CENTRAL: ENTORNO VISUAL REAL DE DISEÑO */}
-            <div className="relative overflow-hidden rounded-[2rem] sm:rounded-[2.8rem] border border-zinc-200/80 bg-zinc-900 shadow-2xl dark:border-zinc-800 aspect-[16/10] sm:aspect-[16/9] w-full">
+            {/* TARJETA NEGRA SUPERIOR IZQUIERDA */}
+            <div className="absolute -top-5 -left-2 sm:-top-7 sm:-left-6 rounded-2xl sm:rounded-3xl bg-zinc-950 p-4 sm:p-5 text-white shadow-2xl border border-zinc-800 text-left max-w-[170px] sm:max-w-[220px] z-20">
+              <p className="text-2xl sm:text-3xl font-bold tracking-tight text-white leading-none">
+                100%
+              </p>
+              <p className="mt-1.5 text-[11px] sm:text-xs text-zinc-400 font-medium leading-snug">
+                autogestionable en todos los dispositivos.
+              </p>
+            </div>
+
+            {/* LIENZO PRINCIPAL CON TU IMAGEN DE TRABAJO */}
+            <div className="relative overflow-hidden rounded-[2.2rem] sm:rounded-[3rem] border border-zinc-200/80 bg-zinc-900 shadow-xl dark:border-zinc-800 aspect-[16/10] sm:aspect-[16/9] w-full">
               <img
-                src="https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1800&q=80"
-                alt="Diseño web y gráfico en proceso"
-                className="h-full w-full object-cover object-center opacity-80"
+                src="/portfolio/imagen1.jpg"
+                alt="Showcase de Diseño Gráfico y Desarrollo Web NDI"
+                className="h-full w-full object-cover object-center"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-              {/* MOCKUP INTERACTIVO SIMULADO ADENTRO DEL LIENZO */}
-              <div className="absolute inset-x-4 bottom-4 sm:bottom-6 sm:inset-x-8 flex items-end justify-between">
-                <div className="rounded-2xl bg-white/95 p-3 sm:p-4 backdrop-blur-md dark:bg-zinc-950/95 border border-white/20 shadow-lg text-left max-w-xs sm:max-w-sm hidden sm:block">
-                  <div className="flex items-center gap-2">
-                    <div className="h-6 w-6 rounded-lg bg-[var(--brand)] flex items-center justify-center text-white text-[10px] font-bold">
-                      NDI
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-zinc-900 dark:text-white">Carta Digital & WhatsApp</p>
-                      <p className="text-[10px] text-zinc-500">Pedidos directos sin comisiones</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
             </div>
 
-            {/* 2. CARD FLOTANTE SUPERIOR IZQUIERDA: MÉTRICA OSCURA DE IMPACTO */}
-            <div className="absolute -top-6 -left-3 sm:-top-8 sm:-left-8 rounded-2xl sm:rounded-3xl bg-zinc-950 p-4 sm:p-5 text-white shadow-2xl border border-zinc-800 text-left max-w-[170px] sm:max-w-[210px] z-20">
-              <p className="text-2xl sm:text-4xl font-bold tracking-tight text-white leading-none">
-                +100%
-              </p>
-              <p className="mt-2 text-[11px] sm:text-xs text-zinc-400 font-medium leading-snug">
-                Autogestionable desde tu celular, sin intermediarios.
-              </p>
-            </div>
-
-            {/* 3. CARD FLOTANTE SUPERIOR DERECHA: CONFIANZA Y VALORACIÓN */}
-            <div className="absolute -top-4 -right-3 sm:-top-6 sm:-right-8 rounded-2xl sm:rounded-3xl bg-white p-3.5 sm:p-4 text-zinc-900 shadow-xl border border-zinc-200/80 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 dark:text-white text-left z-20">
-              <div className="flex items-center gap-1.5">
-                <span className="text-xl sm:text-2xl font-bold tracking-tight">4.9</span>
-                <div className="flex text-amber-400">
-                  <Star className="h-4 w-4 fill-amber-400" />
-                  <Star className="h-4 w-4 fill-amber-400" />
-                  <Star className="h-4 w-4 fill-amber-400" />
-                  <Star className="h-4 w-4 fill-amber-400" />
-                  <Star className="h-4 w-4 fill-amber-400" />
-                </div>
-              </div>
-              <p className="mt-1 text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-medium">
-                Atención personalizada y soporte continuo
-              </p>
-            </div>
-
-            {/* 4. CARD FLOTANTE INFERIOR IZQUIERDA: ATENCIÓN LOCAL DIRECTA */}
-            <div className="absolute -bottom-6 -left-2 sm:-bottom-8 sm:-left-6 rounded-2xl sm:rounded-3xl bg-white p-3.5 sm:p-4 text-zinc-900 shadow-xl border border-zinc-200/80 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 dark:text-white text-left z-20">
-              <p className="text-xs sm:text-sm font-bold text-zinc-950 dark:text-white">
-                Trato directo 1 a 1
-              </p>
-              <p className="mt-0.5 text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400">
-                Diseñado desde Ledesma, Jujuy
-              </p>
-            </div>
-
-            {/* 5. PÍLDORAS FLOTANTES INFERIOR DERECHA: SERVICIOS CLAVE */}
-            <div className="absolute -bottom-6 -right-2 sm:-bottom-8 sm:-right-6 rounded-2xl sm:rounded-3xl bg-white/95 p-2.5 sm:p-3 shadow-xl border border-zinc-200/80 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 z-20">
-              <div className="grid grid-cols-2 gap-1.5 text-[10px] sm:text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2.5 py-1 text-center">
-                  Diseño Gráfico
+            {/* BLOQUE INFERIOR DERECHO QUE ENCASTRA EN LA FOTO */}
+            <div className="absolute -bottom-4 -right-2 sm:-bottom-6 sm:-right-6 rounded-2xl sm:rounded-3xl bg-white/95 p-3 sm:p-4 shadow-xl border border-zinc-200/90 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 z-20 max-w-[280px] sm:max-w-[340px]">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
+                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2.5 py-1.5 text-center">
+                  Diseño
                 </span>
-                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2.5 py-1 text-center">
+                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2.5 py-1.5 text-center">
                   Branding
                 </span>
-                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2.5 py-1 text-center">
-                  Páginas Web
+                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2.5 py-1.5 text-center">
+                  Logos
                 </span>
-                <span className="rounded-xl bg-[var(--brand)]/10 text-[var(--brand-contrast)] dark:text-[var(--brand)] px-2.5 py-1 text-center font-bold">
-                  Catálogo & QR
+                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2.5 py-1.5 text-center">
+                  Redes Sociales
+                </span>
+                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2.5 py-1.5 text-center">
+                  Diseño Editorial
+                </span>
+                <span className="rounded-xl bg-[var(--brand)]/15 text-[var(--brand-contrast)] dark:text-[var(--brand)] px-2.5 py-1.5 text-center font-bold">
+                  Páginas Web
                 </span>
               </div>
             </div>
 
           </div>
 
-          {/* BOTONES DE LLAMADA A LA ACCIÓN INFERIORES */}
-          <div className="mt-14 sm:mt-16 flex flex-wrap items-center justify-center gap-3">
+          {/* ÚNICO BOTÓN PRINCIPAL CENTRADO A WHATSAPP */}
+          <div className="mt-12 sm:mt-16 flex justify-center">
             <a
               href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por el diseño de una página web y gráfica para mi negocio.")}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--brand)] hover:opacity-90 px-6 py-3.5 text-xs sm:text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition active:scale-95"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--brand)] hover:opacity-90 px-8 py-3.5 sm:px-9 sm:py-4 text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition active:scale-95"
             >
-              <MessageCircle className="h-4 w-4" />
+              <MessageCircle className="h-5 w-5" />
               <span>Consultar por WhatsApp</span>
             </a>
-
-            <Link
-              href="/register"
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-zinc-300 bg-white px-5 py-3.5 text-xs sm:text-sm font-semibold text-zinc-800 shadow-xs transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 active:scale-95"
-            >
-              Quiero mi página
-              <ArrowRight className="h-4 w-4" />
-            </Link>
           </div>
 
         </div>
@@ -553,90 +458,55 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* MODELOS DE MUESTRA */}
+      {/* SECCIÓN TRABAJOS: PORTFOLIO REAL DE DISEÑO & WEB */}
       <section id="trabajos" className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div className="max-w-2xl">
             <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
-              Estructuras disponibles
+              Portfolio de trabajos
             </span>
             <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white">
-              Modelos de muestra listos para adaptar.
+              Diseño gráfico y proyectos recientes.
             </h2>
             <p className="mt-1.5 text-sm text-zinc-600 dark:text-zinc-400">
-              Diseños creados para cada tipo de actividad comercial.
+              Identidades de marca, gráfica para redes, diseño editorial y sitios web.
             </p>
           </div>
 
-          <div className="inline-flex items-center gap-2 self-start rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 text-xs font-medium text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
-            <span className="h-2 w-2 rounded-full bg-[var(--brand)]" />
-            <span>Todos los modelos incluyen panel autogestionable</span>
-          </div>
+          <a
+            href={BEHANCE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 self-start rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-800 shadow-xs transition hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          >
+            <Palette className="h-3.5 w-3.5 text-[var(--brand)]" />
+            <span>Ver más en Behance ↗</span>
+          </a>
         </div>
 
-        <div className="mt-8 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {proyectosShowcase.map((p) => {
-            const Icono = p.icono;
-            return (
-              <article
-                key={p.id}
-                className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xs transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/60"
-              >
-                <div>
-                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-zinc-900">
-                    <img
-                      src={p.portada}
-                      alt={p.titulo}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <div className="absolute top-2.5 left-2.5">
-                      <span className="rounded-full bg-black/70 backdrop-blur-md border border-white/20 px-2.5 py-0.5 text-[9px] font-bold text-white uppercase tracking-wider">
-                        {p.esReal ? "Cliente online" : "Ejemplo de diseño"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="p-5">
-                    <div className="flex items-center gap-1.5 text-[var(--brand-contrast)] dark:text-[var(--brand)] text-xs font-semibold">
-                      <Icono className="h-3.5 w-3.5" />
-                      <span>{p.categoria}</span>
-                    </div>
-
-                    <h3 className="mt-1.5 text-base font-bold text-zinc-950 dark:text-white">
-                      {p.titulo}
-                    </h3>
-
-                    <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed line-clamp-2">
-                      {p.subtitulo}
-                    </p>
-
-                    <div className="mt-3.5 flex flex-wrap gap-1">
-                      {p.caracteristicas.map((c, i) => (
-                        <span
-                          key={i}
-                          className="rounded-md bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-                        >
-                          {c}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-5 pt-0">
-                  <a
-                    href={p.urlDemo}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 py-2.5 text-xs font-bold text-zinc-800 transition hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-800/80 dark:text-zinc-200 dark:hover:bg-zinc-700"
-                  >
-                    <span>Consultar por este diseño</span>
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
-                </div>
-              </article>
-            );
-          })}
+        {/* Mosaico con tus imágenes reales */}
+        <div className="mt-8 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {galeriaPortfolio.map((item) => (
+            <article
+              key={item.id}
+              className="group overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xs transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/60"
+            >
+              <div className="relative aspect-[4/3] w-full overflow-hidden bg-zinc-900">
+                <img
+                  src={item.src}
+                  alt={item.titulo}
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
+                />
+              </div>
+              <div className="p-4 flex items-center justify-between">
+                <p className="text-xs font-bold text-zinc-900 dark:text-white">
+                  {item.titulo}
+                </p>
+                <span className="text-[10px] text-zinc-500 font-medium">NDI</span>
+              </div>
+            </article>
+          ))}
         </div>
       </section>
 
@@ -867,24 +737,17 @@ export default function HomePage() {
                 ¿Listo para poner tu negocio online?
               </h3>
               <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-                Creá tu cuenta ahora y comenzá a configurar tu catálogo, servicios y turnos.
+                Escribime para armar la identidad visual y la web de tu negocio a medida.
               </p>
               <div className="mt-5 flex flex-col gap-2.5">
-                <Link
-                  href="/register"
-                  className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-[var(--brand)] py-3 text-xs sm:text-sm font-bold text-white shadow-xs shadow-blue-500/20 transition hover:opacity-90"
-                >
-                  Quiero mi página
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
                 <a
-                  href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Quiero que hablemos sobre el diseño de mi página web.")}`}
+                  href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Quiero que hablemos sobre el diseño de mi página web y gráfica.")}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 py-3 text-xs sm:text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand)] py-3 text-xs sm:text-sm font-bold text-white shadow-xs shadow-blue-500/20 transition hover:opacity-90"
                 >
-                  <MessageCircle className="h-4 w-4 text-emerald-500" />
-                  Hablar por WhatsApp
+                  <MessageCircle className="h-4 w-4 text-white" />
+                  <span>Consultar por WhatsApp</span>
                 </a>
               </div>
             </div>
@@ -922,7 +785,7 @@ export default function HomePage() {
               </p>
               <ul className="mt-3 space-y-2 text-xs text-zinc-600 dark:text-zinc-400">
                 <li><a href="#servicios" className="hover:text-[var(--brand)] transition">Servicios</a></li>
-                <li><a href="#trabajos" className="hover:text-[var(--brand)] transition">Modelos</a></li>
+                <li><a href="#trabajos" className="hover:text-[var(--brand)] transition">Trabajos</a></li>
                 <li><a href="#quien-soy" className="hover:text-[var(--brand)] transition">Quién soy</a></li>
                 <li><a href={BEHANCE_URL} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--brand)] transition">Behance Portfolio ↗</a></li>
                 <li><a href="#planes" className="hover:text-[var(--brand)] transition">Planes</a></li>
@@ -1046,16 +909,18 @@ function PlanCard({
       </div>
 
       <div className="mt-6 pt-5 border-t border-zinc-200 dark:border-zinc-800">
-        <Link
-          href="/register"
+        <a
+          href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(`¡Hola Nahuel! Me interesa el plan ${nombre} para mi negocio.`)}`}
+          target="_blank"
+          rel="noopener noreferrer"
           className={`inline-flex w-full items-center justify-center rounded-xl py-3 text-xs font-bold transition shadow-xs ${
             destacado
               ? "bg-[var(--brand)] text-white hover:opacity-90 shadow-blue-500/20"
               : "bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white"
           }`}
         >
-          Quiero mi página
-        </Link>
+          Consultar por WhatsApp
+        </a>
       </div>
     </article>
   );
