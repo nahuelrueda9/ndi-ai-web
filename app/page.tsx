@@ -222,7 +222,7 @@ const planBusinessIA = [
   "Sin marca comercial en el pie de página",
 ];
 
-// Componente para que cada modelo rote automáticamente sus 3 imágenes
+// Componente para rotar automáticamente las 3 imágenes de cada modelo
 function TarjetaModelo({
   p,
 }: {
@@ -261,7 +261,6 @@ function TarjetaModelo({
                 i === slide ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"
               }`}
               onError={(e) => {
-                // Si la extensión era .jpg en lugar de .png
                 e.currentTarget.src = img.replace(".png", ".jpg");
               }}
             />
@@ -273,7 +272,6 @@ function TarjetaModelo({
             </span>
           </div>
 
-          {/* Indicador de 3 puntos del carrusel */}
           <div className="absolute bottom-2.5 right-2.5 z-10 flex gap-1 bg-black/40 px-2 py-1 rounded-full backdrop-blur-xs">
             {p.imagenes.map((_, i) => (
               <span
@@ -335,7 +333,7 @@ export default function HomePage() {
   const [imagenActiva, setImagenActiva] = useState(0);
   const { theme, setTheme } = useTheme();
 
-  // Transición 3D cada 4 segundos
+  // Transición 3D en cascada cada 4 segundos
   useEffect(() => {
     const interval = setInterval(() => {
       setImagenActiva((prev) => (prev + 1) % IMAGENES_PORTFOLIO.length);
@@ -359,6 +357,9 @@ export default function HomePage() {
   const alternarTema = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
+
+  const idxAnterior = (imagenActiva - 1 + IMAGENES_PORTFOLIO.length) % IMAGENES_PORTFOLIO.length;
+  const idxSiguiente = (imagenActiva + 1) % IMAGENES_PORTFOLIO.length;
 
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 selection:bg-[var(--brand)] selection:text-white">
@@ -439,11 +440,10 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* PORTADA CON CARRUSEL 3D CASCADA REAL */}
+      {/* PORTADA CON EFECTO 3D EN CASCADA HACIA ABAJO */}
       <section className="relative pt-10 pb-16 sm:pt-16 sm:pb-24 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
         <div className="mx-auto max-w-7xl px-4 sm:px-8">
           
-          {/* TÍTULO EN 2 LÍNEAS EXACTO */}
           <div className="mx-auto max-w-4xl text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3.5 py-1 text-xs font-semibold text-zinc-700 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 mb-4">
               <span className="h-2 w-2 rounded-full bg-[var(--brand)]" />
@@ -462,10 +462,8 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* ESCENA 3D CON PERSPECTIVA Y MOVIMIENTO EN CASCADA HACIA ABAJO */}
           <div className="relative mt-12 sm:mt-16 mx-auto max-w-6xl [perspective:1400px]">
             
-            {/* TARJETA NEGRA SUPERIOR IZQUIERDA */}
             <div className="absolute -top-5 -left-2 sm:-top-7 sm:-left-6 rounded-2xl sm:rounded-3xl bg-zinc-950 p-4 sm:p-5 text-white shadow-2xl border border-zinc-800 text-left max-w-[170px] sm:max-w-[220px] z-30">
               <p className="text-2xl sm:text-3xl font-bold tracking-tight text-white leading-none">
                 100%
@@ -475,26 +473,18 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* MARCO GRANDE 3D CON CASCADA */}
             <div className="relative overflow-hidden rounded-[2.2rem] sm:rounded-[3.2rem] border border-zinc-200/90 bg-zinc-950 shadow-2xl dark:border-zinc-800 aspect-[16/10] sm:aspect-[16/9] w-full min-h-[380px] sm:min-h-[560px] flex items-center justify-center">
               
               {IMAGENES_PORTFOLIO.map((imagen, index) => {
                 const diff = (index - imagenActiva + IMAGENES_PORTFOLIO.length) % IMAGENES_PORTFOLIO.length;
-                
-                // 0: Activa en centro y agrandada
-                // 1: Siguiente asomando abajo
-                // IMAGENES_PORTFOLIO.length - 1: Anterior arriba
                 let estiloClase = "opacity-0 scale-75 pointer-events-none";
 
                 if (diff === 0) {
-                  // CENTRO: ENTRA BAJANDO, SE AGRANDA Y SE QUEDA 4 SEG
                   estiloClase = "opacity-100 scale-100 translate-y-0 z-20 shadow-2xl";
                 } else if (diff === 1) {
-                  // SIGUIENTE: ESPERANDO ABAJO
-                  estiloClase = "opacity-35 scale-90 translate-y-28 sm:translate-y-40 [transform:rotateX(-14deg)] z-10 pointer-events-none blur-[0.5px]";
+                  estiloClase = "opacity-35 scale-90 translate-y-32 sm:translate-y-48 [transform:rotateX(-16deg)] z-10 pointer-events-none blur-[1px]";
                 } else if (diff === IMAGENES_PORTFOLIO.length - 1) {
-                  // ANTERIOR: SALIÓ POR ARRIBA
-                  estiloClase = "opacity-0 scale-95 -translate-y-36 sm:-translate-y-48 [transform:rotateX(14deg)] z-0 pointer-events-none";
+                  estiloClase = "opacity-0 scale-95 -translate-y-36 sm:-translate-y-52 [transform:rotateX(16deg)] z-0 pointer-events-none";
                 }
 
                 return (
@@ -517,7 +507,6 @@ export default function HomePage() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none z-25" />
             </div>
 
-            {/* BLOQUE INFERIOR DERECHO */}
             <div className="absolute -bottom-4 -right-2 sm:-bottom-6 sm:-right-6 rounded-2xl sm:rounded-3xl bg-white/95 p-3 sm:p-4 shadow-2xl border border-zinc-200/90 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 z-30 max-w-[300px] sm:max-w-[420px] w-full">
               <div className="grid grid-cols-3 gap-1.5 text-[10px] sm:text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
                 <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-2 text-center flex items-center justify-center">
@@ -543,7 +532,6 @@ export default function HomePage() {
 
           </div>
 
-          {/* BOTÓN CENTRADO A WHATSAPP */}
           <div className="mt-12 sm:mt-16 flex justify-center">
             <a
               href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por diseño gráfico y una página web para mi negocio.")}`}
@@ -559,7 +547,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 1. SERVICIOS INTEGRALES (SUBIDO ARRIBA CON TÍTULO EN 2 LÍNEAS Y REORDENAMIENTO DE CARDS) */}
+      {/* 1. SERVICIOS INTEGRALES (TÍTULO EN 2 LÍNEAS Y CARDS REORGANIZADAS) */}
       <section id="servicios" className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="max-w-2xl">
           <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
@@ -575,7 +563,7 @@ export default function HomePage() {
         </div>
 
         <div className="mt-8 grid gap-4 lg:grid-cols-12">
-          {/* Card 1: Identidad Gráfica & Branding (PRIMERA) */}
+          {/* Card 1: Identidad Gráfica & Branding (ARRIBA IZQUIERDA) */}
           <article className="lg:col-span-7 rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between">
@@ -600,7 +588,7 @@ export default function HomePage() {
             </div>
           </article>
 
-          {/* Card 2: Catálogo & Carta Digital (DERECHA) */}
+          {/* Card 2: Catálogo & Carta Digital (ARRIBA DERECHA) */}
           <article className="lg:col-span-5 rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between">
@@ -624,7 +612,7 @@ export default function HomePage() {
             </div>
           </article>
 
-          {/* Card 3: Turnos y reservas online automáticas (BAJADA ABAJO A LA IZQUIERDA) */}
+          {/* Card 3: Turnos y reservas (ABAJO IZQUIERDA) */}
           <article className="lg:col-span-4 rounded-2xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/40">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               <CalendarDays className="h-4 w-4" />
@@ -659,7 +647,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 2. BENEFICIOS ("DEJÁ DE PERDER TIEMPO..." ABAJO Y SIN CAJA DE RUIDO) */}
+      {/* 2. BENEFICIOS (ABAJO) */}
       <section className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="grid gap-8 lg:grid-cols-12 lg:items-start lg:gap-12">
           <div className="lg:col-span-5">
@@ -697,7 +685,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* MODELOS DE MUESTRA (3 ARRIBA Y 2 CENTRADOS ABAJO, CON CARRUSEL DE 3 IMÁGENES CADA UNO) */}
+      {/* MODELOS DE MUESTRA (3 ARRIBA Y 2 CENTRADOS ABAJO CON CARRUSEL DE 3 FOTOS CADA UNO) */}
       <section id="trabajos" className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div className="max-w-2xl">
@@ -718,14 +706,12 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* 3 MODELOS ARRIBA */}
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {modelosArriba.map((p) => (
             <TarjetaModelo key={p.id} p={p} />
           ))}
         </div>
 
-        {/* 2 MODELOS CENTRADOS ABAJO */}
         <div className="mt-6 flex flex-col sm:flex-row justify-center gap-6 max-w-4xl mx-auto">
           {modelosAbajo.map((p) => (
             <div key={p.id} className="flex-1 max-w-md mx-auto sm:mx-0 w-full">
@@ -1136,7 +1122,7 @@ function PlanCard({
 
       <div className="mt-6 pt-5 border-t border-zinc-200 dark:border-zinc-800">
         <a
-          href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(`¡Hola Nahuel! Me interesa el plan ${nombre} para mi negocio.`)}`}
+          href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(`¡Hola Nahuel! Me interesa el plan ${nombre} para min egocio.`)}`}
           target="_blank"
           rel="noopener noreferrer"
           className={`inline-flex w-full items-center justify-center rounded-xl py-3 text-xs font-bold transition shadow-xs ${
