@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -32,7 +32,7 @@ const WHATSAPP_NUMERO = "5493886575664";
 const CORREO_CONTACTO = "soporte@ndiweb.com";
 const BEHANCE_URL = "https://www.behance.net/nahuelrueda";
 
-// 20 imágenes del portfolio
+// 20 imágenes del portfolio real
 const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen1.jpg",
   "/portfolio/imagen2.jpg",
@@ -56,7 +56,7 @@ const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen20.png",
 ];
 
-// Modelos de muestra con sus 3 capturas reales para carrusel individual
+// Modelos de muestra
 const modelosArriba = [
   {
     id: "restaurantes",
@@ -222,22 +222,8 @@ const planBusinessIA = [
   "Sin marca comercial en el pie de página",
 ];
 
-// Componente para rotar automáticamente las 3 imágenes de cada modelo
-function TarjetaModelo({
-  p,
-}: {
-  p: {
-    id: string;
-    titulo: string;
-    categoria: string;
-    subtitulo: string;
-    imagenes: string[];
-    badge: string;
-    urlDemo: string;
-    caracteristicas: string[];
-    icono: any;
-  };
-}) {
+// Tarjeta con carrusel automático para los 5 modelos
+function TarjetaModelo({ p }: { p: any }) {
   const [slide, setSlide] = useState(0);
   const Icono = p.icono;
 
@@ -252,7 +238,7 @@ function TarjetaModelo({
     <article className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xs transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/60 w-full">
       <div>
         <div className="relative aspect-[16/10] w-full overflow-hidden bg-zinc-950">
-          {p.imagenes.map((img, i) => (
+          {p.imagenes.map((img: string, i: number) => (
             <img
               key={img}
               src={img}
@@ -273,7 +259,7 @@ function TarjetaModelo({
           </div>
 
           <div className="absolute bottom-2.5 right-2.5 z-10 flex gap-1 bg-black/40 px-2 py-1 rounded-full backdrop-blur-xs">
-            {p.imagenes.map((_, i) => (
+            {p.imagenes.map((_: any, i: number) => (
               <span
                 key={i}
                 className={`h-1.5 rounded-full transition-all ${
@@ -299,7 +285,7 @@ function TarjetaModelo({
           </p>
 
           <div className="mt-3.5 flex flex-wrap gap-1">
-            {p.caracteristicas.map((c, i) => (
+            {p.caracteristicas.map((c: string, i: number) => (
               <span
                 key={i}
                 className="rounded-md bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
@@ -330,15 +316,57 @@ export default function HomePage() {
   const [faqAbierta, setFaqAbierta] = useState<number | null>(0);
   const [mostrarBotonHeader, setMostrarBotonHeader] = useState(false);
   const [errorFotoNahuel, setErrorFotoNahuel] = useState(false);
-  const [imagenActiva, setImagenActiva] = useState(0);
   const { theme, setTheme } = useTheme();
+  
+  // Referencias para la esfera 3D interactiva
+  const stageRef = useRef<HTMLDivElement>(null);
+  const sphereRef = useRef<HTMLDivElement>(null);
 
-  // Transición 3D en cascada cada 4 segundos
+  // Inicializar interacción táctil / mouse para rotar la esfera 3D
   useEffect(() => {
-    const interval = setInterval(() => {
-      setImagenActiva((prev) => (prev + 1) % IMAGENES_PORTFOLIO.length);
-    }, 4000);
-    return () => clearInterval(interval);
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let rotX = 0;
+    let rotY = 0;
+
+    const handleMouseDown = (e: MouseEvent) => {
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+      const deltaX = e.clientX - startX;
+      const deltaY = e.clientY - startY;
+      rotY += deltaX * 0.3;
+      rotX -= deltaY * 0.3;
+      if (sphereRef.current) {
+        sphereRef.current.style.transform = `translateZ(-1300px) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+      }
+      startX = e.clientX;
+      startY = e.clientY;
+    };
+
+    const handleMouseUp = () => {
+      isDragging = false;
+    };
+
+    const stageEl = stageRef.current;
+    if (stageEl) {
+      stageEl.addEventListener("mousedown", handleMouseDown);
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+    }
+
+    return () => {
+      if (stageEl) {
+        stageEl.removeEventListener("mousedown", handleMouseDown);
+      }
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
   }, []);
 
   const toggleFaq = (index: number) => {
@@ -349,7 +377,6 @@ export default function HomePage() {
     const onScroll = () => {
       setMostrarBotonHeader(window.scrollY > 300);
     };
-
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -358,8 +385,24 @@ export default function HomePage() {
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
-  const idxAnterior = (imagenActiva - 1 + IMAGENES_PORTFOLIO.length) % IMAGENES_PORTFOLIO.length;
-  const idxSiguiente = (imagenActiva + 1) % IMAGENES_PORTFOLIO.length;
+  // Generar coordenadas distribuidas para las 20 imágenes en la esfera 3D
+  // Distribuimos las 20 imágenes recorriendo la matriz de items del CodePen
+  const itemsEsfera = IMAGENES_PORTFOLIO.map((img, idx) => {
+    // Coordenadas calculadas distribuidas en la malla esférica
+    const coords = [
+      { x: -37, y: -4 }, { x: -37, y: -2 }, { x: -37, y: 0 }, { x: -37, y: 2 }, { x: -37, y: 4 },
+      { x: -35, y: -3 }, { x: -35, y: -1 }, { x: -35, y: 1 }, { x: -35, y: 3 }, { x: -35, y: 5 },
+      { x: -33, y: -4 }, { x: -33, y: -2 }, { x: -33, y: 0 }, { x: -33, y: 2 }, { x: -33, y: 4 },
+      { x: -31, y: -3 }, { x: -31, y: -1 }, { x: -31, y: 1 }, { x: -31, y: 3 }, { x: -31, y: 5 },
+    ][idx];
+
+    return {
+      id: idx + 1,
+      src: img,
+      x: coords?.x || -25,
+      y: coords?.y || (idx % 5) - 2,
+    };
+  });
 
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 selection:bg-[var(--brand)] selection:text-white">
@@ -440,7 +483,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* PORTADA CON EFECTO 3D EN CASCADA HACIA ABAJO */}
+      {/* PORTADA CON LA ESFERA 3D INTERACTIVA (CODEPEN SPHERE) */}
       <section className="relative pt-10 pb-16 sm:pt-16 sm:pb-24 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
         <div className="mx-auto max-w-7xl px-4 sm:px-8">
           
@@ -458,75 +501,71 @@ export default function HomePage() {
             </h1>
 
             <p className="mx-auto mt-4 max-w-2xl text-sm sm:text-base text-zinc-600 dark:text-zinc-400 font-normal leading-relaxed">
-              Diseño la identidad visual de tu marca y tu web a medida. Tus clientes ven productos, agendan turnos y te hacen pedidos directos por WhatsApp.
+              Diseño la identidad visual de tu marca y tu web a medida. Arrastrá para explorar los trabajos o tocá cualquiera para ampliarlo.
             </p>
           </div>
 
-          <div className="relative mt-12 sm:mt-16 mx-auto max-w-6xl [perspective:1400px]">
+          {/* CONTENEDOR ESFERA 3D INTERACTIVA */}
+          <div className="relative mt-12 sm:mt-16 mx-auto max-w-6xl h-[420px] sm:h-[580px] flex items-center justify-center overflow-hidden rounded-[2.5rem] border border-zinc-200/90 bg-zinc-950 shadow-2xl dark:border-zinc-800">
             
-            <div className="absolute -top-5 -left-2 sm:-top-7 sm:-left-6 rounded-2xl sm:rounded-3xl bg-zinc-950 p-4 sm:p-5 text-white shadow-2xl border border-zinc-800 text-left max-w-[170px] sm:max-w-[220px] z-30">
-              <p className="text-2xl sm:text-3xl font-bold tracking-tight text-white leading-none">
-                100%
-              </p>
-              <p className="mt-1.5 text-[11px] sm:text-xs text-zinc-400 font-medium leading-snug">
-                autogestionable en todos los dispositivos.
-              </p>
+            {/* TARJETA NEGRA SUPERIOR IZQUIERDA */}
+            <div className="absolute top-6 left-6 rounded-2xl sm:rounded-3xl bg-zinc-900/90 p-4 text-white shadow-xl border border-zinc-800 text-left max-w-[190px] z-30 backdrop-blur-md">
+              <p className="text-2xl font-bold text-white leading-none">100%</p>
+              <p className="mt-1 text-[11px] text-zinc-400">autogestionable en todos los dispositivos.</p>
             </div>
 
-            <div className="relative overflow-hidden rounded-[2.2rem] sm:rounded-[3.2rem] border border-zinc-200/90 bg-zinc-950 shadow-2xl dark:border-zinc-800 aspect-[16/10] sm:aspect-[16/9] w-full min-h-[380px] sm:min-h-[560px] flex items-center justify-center">
-              
-              {IMAGENES_PORTFOLIO.map((imagen, index) => {
-                const diff = (index - imagenActiva + IMAGENES_PORTFOLIO.length) % IMAGENES_PORTFOLIO.length;
-                let estiloClase = "opacity-0 scale-75 pointer-events-none";
-
-                if (diff === 0) {
-                  estiloClase = "opacity-100 scale-100 translate-y-0 z-20 shadow-2xl";
-                } else if (diff === 1) {
-                  estiloClase = "opacity-35 scale-90 translate-y-32 sm:translate-y-48 [transform:rotateX(-16deg)] z-10 pointer-events-none blur-[1px]";
-                } else if (diff === IMAGENES_PORTFOLIO.length - 1) {
-                  estiloClase = "opacity-0 scale-95 -translate-y-36 sm:-translate-y-52 [transform:rotateX(16deg)] z-0 pointer-events-none";
-                }
-
-                return (
-                  <div
-                    key={imagen}
-                    className={`absolute inset-4 sm:inset-6 rounded-[1.8rem] sm:rounded-[2.6rem] overflow-hidden bg-zinc-900 border border-white/10 transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] ${estiloClase}`}
-                  >
-                    <img
-                      src={imagen}
-                      alt={`Proyecto portfolio ${index + 1}`}
-                      className="w-full h-full object-contain sm:object-cover object-center bg-zinc-950"
-                      onError={(e) => {
-                        e.currentTarget.src = "/portfolio/imagen1.jpg";
+            {/* ESCENA 3D SPHERE */}
+            <div 
+              ref={stageRef} 
+              className="relative w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
+              style={{ perspective: "1300px" }}
+            >
+              <div 
+                ref={sphereRef} 
+                className="absolute inset-0 m-auto w-0 h-0 transition-transform duration-100 ease-out"
+                style={{ 
+                  transformStyle: "preserve-3d",
+                  transform: "translateZ(-1300px)"
+                }}
+              >
+                {itemsEsfera.map((item) => {
+                  const itemWidth = 140;
+                  const itemHeight = 140;
+                  return (
+                    <div
+                      key={item.id}
+                      className="absolute m-auto top-0 bottom-0 left-0 right-0 rounded-xl overflow-hidden shadow-md bg-zinc-900 border border-white/20 transition-transform duration-300 hover:scale-105"
+                      style={{
+                        width: `${itemWidth}px`,
+                        height: `${itemHeight}px`,
+                        transformStyle: "preserve-3d",
+                        transform: `rotateY(calc(360deg / 37 * ${item.x} / 2)) rotateX(calc(360deg / 37 * ${item.y} / 2)) translateZ(1300px)`,
                       }}
-                    />
-                  </div>
-                );
-              })}
-
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none z-25" />
+                    >
+                      <img
+                        src={item.src}
+                        alt={`Portfolio NDI ${item.id}`}
+                        className="w-full h-full object-cover pointer-events-none"
+                        draggable={false}
+                        onError={(e) => {
+                          e.currentTarget.src = "/portfolio/imagen1.jpg";
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
-            <div className="absolute -bottom-4 -right-2 sm:-bottom-6 sm:-right-6 rounded-2xl sm:rounded-3xl bg-white/95 p-3 sm:p-4 shadow-2xl border border-zinc-200/90 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 z-30 max-w-[300px] sm:max-w-[420px] w-full">
-              <div className="grid grid-cols-3 gap-1.5 text-[10px] sm:text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
-                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-2 text-center flex items-center justify-center">
-                  Diseño
-                </span>
-                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-2 text-center flex items-center justify-center">
-                  Branding
-                </span>
-                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-2 text-center flex items-center justify-center">
-                  Logos
-                </span>
-                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-2 text-center flex items-center justify-center">
-                  Redes Sociales
-                </span>
-                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-2 text-center flex items-center justify-center">
-                  Diseño Editorial
-                </span>
-                <span className="rounded-xl bg-[var(--brand)]/15 text-[var(--brand-contrast)] dark:text-[var(--brand)] px-2 py-2 text-center font-bold flex items-center justify-center">
-                  Páginas Web
-                </span>
+            {/* PÍLDORAS INFERIORES DERECHAS */}
+            <div className="absolute bottom-6 right-6 rounded-2xl bg-white/95 p-3 shadow-2xl border border-zinc-200/90 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 z-30 max-w-[380px] w-full hidden sm:block">
+              <div className="grid grid-cols-3 gap-1.5 text-[10px] font-semibold text-zinc-700 dark:text-zinc-300">
+                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800 px-2 py-1.5 text-center">Diseño</span>
+                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800 px-2 py-1.5 text-center">Branding</span>
+                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800 px-2 py-1.5 text-center">Logos</span>
+                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800 px-2 py-1.5 text-center">Redes Sociales</span>
+                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800 px-2 py-1.5 text-center">Editorial</span>
+                <span className="rounded-xl bg-[var(--brand)]/15 text-[var(--brand-contrast)] dark:text-[var(--brand)] px-2 py-1.5 text-center font-bold">Páginas Web</span>
               </div>
             </div>
 
@@ -547,7 +586,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 1. SERVICIOS INTEGRALES (TÍTULO EN 2 LÍNEAS Y CARDS REORGANIZADAS) */}
+      {/* 1. SERVICIOS INTEGRALES */}
       <section id="servicios" className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="max-w-2xl">
           <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
@@ -563,7 +602,6 @@ export default function HomePage() {
         </div>
 
         <div className="mt-8 grid gap-4 lg:grid-cols-12">
-          {/* Card 1: Identidad Gráfica & Branding (ARRIBA IZQUIERDA) */}
           <article className="lg:col-span-7 rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between">
@@ -588,7 +626,6 @@ export default function HomePage() {
             </div>
           </article>
 
-          {/* Card 2: Catálogo & Carta Digital (ARRIBA DERECHA) */}
           <article className="lg:col-span-5 rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between">
@@ -612,7 +649,6 @@ export default function HomePage() {
             </div>
           </article>
 
-          {/* Card 3: Turnos y reservas (ABAJO IZQUIERDA) */}
           <article className="lg:col-span-4 rounded-2xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/40">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               <CalendarDays className="h-4 w-4" />
@@ -623,7 +659,6 @@ export default function HomePage() {
             </p>
           </article>
 
-          {/* Card 4: Conexión a WhatsApp */}
           <article className="lg:col-span-4 rounded-2xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/40">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               <MessageCircle className="h-4 w-4" />
@@ -634,7 +669,6 @@ export default function HomePage() {
             </p>
           </article>
 
-          {/* Card 5: Cobros integrados */}
           <article className="lg:col-span-4 rounded-2xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/40">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
               <FileText className="h-4 w-4" />
@@ -647,7 +681,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 2. BENEFICIOS (ABAJO) */}
+      {/* 2. BENEFICIOS */}
       <section className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="grid gap-8 lg:grid-cols-12 lg:items-start lg:gap-12">
           <div className="lg:col-span-5">
@@ -685,7 +719,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* MODELOS DE MUESTRA (3 ARRIBA Y 2 CENTRADOS ABAJO CON CARRUSEL DE 3 FOTOS CADA UNO) */}
+      {/* MODELOS DE MUESTRA */}
       <section id="trabajos" className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div className="max-w-2xl">
@@ -1122,7 +1156,7 @@ function PlanCard({
 
       <div className="mt-6 pt-5 border-t border-zinc-200 dark:border-zinc-800">
         <a
-          href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(`¡Hola Nahuel! Me interesa el plan ${nombre} para min egocio.`)}`}
+          href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(`¡Hola Nahuel! Me interesa el plan ${nombre} para mi negocio.`)}`
           target="_blank"
           rel="noopener noreferrer"
           className={`inline-flex w-full items-center justify-center rounded-xl py-3 text-xs font-bold transition shadow-xs ${
