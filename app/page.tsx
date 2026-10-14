@@ -56,7 +56,7 @@ const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen20.png",
 ];
 
-// Modelos de muestra divididos: 3 primeros arriba, 2 abajo centrados
+// Modelos de muestra con sus 3 capturas reales para carrusel individual
 const modelosArriba = [
   {
     id: "restaurantes",
@@ -65,8 +65,11 @@ const modelosArriba = [
     titulo: "Sabores del Norte",
     categoria: "Gastronomía & Bares",
     subtitulo: "Menú digital interactivo con pedidos directos a WhatsApp, fotos de platos y reserva de mesas.",
-    portadaPrincipal: "/modelos/modelo-gastro1.png",
-    portadaSecundaria: "/modelos/modelo-gastro1.jpg",
+    imagenes: [
+      "/modelos/modelo-gastro1.png",
+      "/modelos/modelo-gastro2.png",
+      "/modelos/modelo-gastro3.png",
+    ],
     badge: "Carta & Pedidos",
     urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Gastronomía y Bares.")}`,
     caracteristicas: ["Carta con fotos y precios", "Pedidos listos a WhatsApp"],
@@ -78,8 +81,11 @@ const modelosArriba = [
     titulo: "Norte Store",
     categoria: "Indumentaria & Productos",
     subtitulo: "Catálogo online con variantes de talles, colores, stock en tiempo real y cobros integrados.",
-    portadaPrincipal: "/modelos/modelo-tienda1.png",
-    portadaSecundaria: "/modelos/modelo-tienda1.jpg",
+    imagenes: [
+      "/modelos/modelo-tienda1.png",
+      "/modelos/modelo-tienda2.png",
+      "/modelos/modelo-tienda3.png",
+    ],
     badge: "Catálogo Online",
     urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Tiendas e Indumentaria.")}`,
     caracteristicas: ["Control de talles y stock", "Cobros con CVU y Mercado Pago"],
@@ -91,8 +97,11 @@ const modelosArriba = [
     titulo: "Black Crown Studio",
     categoria: "Barberías & Estética",
     subtitulo: "Agenda de turnos online disponible las 24 horas para que el cliente elija servicio y horario sin esperas.",
-    portadaPrincipal: "/modelos/modelo-estetica1.png",
-    portadaSecundaria: "/modelos/modelo-estetica1.jpg",
+    imagenes: [
+      "/modelos/modelo-estetica1.png",
+      "/modelos/modelo-estetica2.png",
+      "/modelos/modelo-estetica3.png",
+    ],
     badge: "Turnos 24/7",
     urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Barberías y Salones.")}`,
     caracteristicas: ["Turnos confirmados al instante", "Agenda autogestionable"],
@@ -107,8 +116,11 @@ const modelosAbajo = [
     titulo: "Centro Médico & Salud",
     categoria: "Consultorios & Profesionales",
     subtitulo: "Gestión de citas previas, información de especialidades, ubicación en mapa y contacto directo.",
-    portadaPrincipal: "/modelos/modelo-salud1.png",
-    portadaSecundaria: "/modelos/modelo-salud1.jpg",
+    imagenes: [
+      "/modelos/modelo-salud1.png",
+      "/modelos/modelo-salud2.png",
+      "/modelos/modelo-salud3.png",
+    ],
     badge: "Atención Profesional",
     urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Consultorios Profesionales.")}`,
     caracteristicas: ["Citas y horarios disponibles", "Ubicación en Google Maps"],
@@ -120,8 +132,11 @@ const modelosAbajo = [
     titulo: "Hotel & Hospedaje",
     categoria: "Hotelería & Turismo",
     subtitulo: "Galería de habitaciones, consulta directa de disponibilidad y reservas conectadas.",
-    portadaPrincipal: "/modelos/modelo-hotel1.png",
-    portadaSecundaria: "/modelos/modelo-hotel1.jpg",
+    imagenes: [
+      "/modelos/modelo-hotel1.png",
+      "/modelos/modelo-hotel2.png",
+      "/modelos/modelo-hotel3.png",
+    ],
     badge: "Reservas & Estadías",
     urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Hoteles y Hospedajes.")}`,
     caracteristicas: ["Galería de habitaciones", "Consultas por WhatsApp"],
@@ -207,6 +222,112 @@ const planBusinessIA = [
   "Sin marca comercial en el pie de página",
 ];
 
+// Componente para que cada modelo rote automáticamente sus 3 imágenes
+function TarjetaModelo({
+  p,
+}: {
+  p: {
+    id: string;
+    titulo: string;
+    categoria: string;
+    subtitulo: string;
+    imagenes: string[];
+    badge: string;
+    urlDemo: string;
+    caracteristicas: string[];
+    icono: any;
+  };
+}) {
+  const [slide, setSlide] = useState(0);
+  const Icono = p.icono;
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSlide((prev) => (prev + 1) % p.imagenes.length);
+    }, 3500);
+    return () => clearInterval(timer);
+  }, [p.imagenes.length]);
+
+  return (
+    <article className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xs transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/60 w-full">
+      <div>
+        <div className="relative aspect-[16/10] w-full overflow-hidden bg-zinc-950">
+          {p.imagenes.map((img, i) => (
+            <img
+              key={img}
+              src={img}
+              alt={`${p.titulo} vista ${i + 1}`}
+              className={`absolute inset-0 h-full w-full object-cover object-top transition-all duration-700 ${
+                i === slide ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"
+              }`}
+              onError={(e) => {
+                // Si la extensión era .jpg en lugar de .png
+                e.currentTarget.src = img.replace(".png", ".jpg");
+              }}
+            />
+          ))}
+
+          <div className="absolute top-2.5 left-2.5 z-10">
+            <span className="rounded-full bg-black/70 backdrop-blur-md border border-white/20 px-2.5 py-0.5 text-[9px] font-bold text-white uppercase tracking-wider">
+              {p.badge}
+            </span>
+          </div>
+
+          {/* Indicador de 3 puntos del carrusel */}
+          <div className="absolute bottom-2.5 right-2.5 z-10 flex gap-1 bg-black/40 px-2 py-1 rounded-full backdrop-blur-xs">
+            {p.imagenes.map((_, i) => (
+              <span
+                key={i}
+                className={`h-1.5 rounded-full transition-all ${
+                  i === slide ? "w-3 bg-white" : "w-1.5 bg-white/40"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="p-5">
+          <div className="flex items-center gap-1.5 text-[var(--brand-contrast)] dark:text-[var(--brand)] text-xs font-semibold">
+            <Icono className="h-3.5 w-3.5" />
+            <span>{p.categoria}</span>
+          </div>
+
+          <h3 className="mt-1.5 text-base font-bold text-zinc-950 dark:text-white">
+            {p.titulo}
+          </h3>
+
+          <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed line-clamp-2">
+            {p.subtitulo}
+          </p>
+
+          <div className="mt-3.5 flex flex-wrap gap-1">
+            {p.caracteristicas.map((c, i) => (
+              <span
+                key={i}
+                className="rounded-md bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+              >
+                {c}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="p-5 pt-0">
+        <a
+          href={p.urlDemo}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 py-2.5 text-xs font-bold text-zinc-800 transition hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-800/80 dark:text-zinc-200 dark:hover:bg-zinc-700"
+        >
+          <span>Consultar por este diseño</span>
+          <ExternalLink className="h-3 w-3" />
+        </a>
+      </div>
+    </article>
+  );
+}
+
 export default function HomePage() {
   const [faqAbierta, setFaqAbierta] = useState<number | null>(0);
   const [mostrarBotonHeader, setMostrarBotonHeader] = useState(false);
@@ -214,7 +335,7 @@ export default function HomePage() {
   const [imagenActiva, setImagenActiva] = useState(0);
   const { theme, setTheme } = useTheme();
 
-  // Transición del carrusel 3D cada 4 segundos
+  // Transición 3D cada 4 segundos
   useEffect(() => {
     const interval = setInterval(() => {
       setImagenActiva((prev) => (prev + 1) % IMAGENES_PORTFOLIO.length);
@@ -238,10 +359,6 @@ export default function HomePage() {
   const alternarTema = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
-
-  // Índices para efecto de cascada en perspectiva 3D
-  const idxAnterior = (imagenActiva - 1 + IMAGENES_PORTFOLIO.length) % IMAGENES_PORTFOLIO.length;
-  const idxSiguiente = (imagenActiva + 1) % IMAGENES_PORTFOLIO.length;
 
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 selection:bg-[var(--brand)] selection:text-white">
@@ -322,11 +439,11 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* PORTADA PRINCIPAL (CON TÍTULO DE 2 LÍNEAS Y EFECTO CASCADA 3D) */}
+      {/* PORTADA CON CARRUSEL 3D CASCADA REAL */}
       <section className="relative pt-10 pb-16 sm:pt-16 sm:pb-24 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
         <div className="mx-auto max-w-7xl px-4 sm:px-8">
           
-          {/* TÍTULO EXACTO SOLICITADO */}
+          {/* TÍTULO EN 2 LÍNEAS EXACTO */}
           <div className="mx-auto max-w-4xl text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3.5 py-1 text-xs font-semibold text-zinc-700 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 mb-4">
               <span className="h-2 w-2 rounded-full bg-[var(--brand)]" />
@@ -345,7 +462,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* CONTENEDOR AMPLIO CON PERSPECTIVA 3D Y CASCADA DE IMÁGENES FLOTANTES */}
+          {/* ESCENA 3D CON PERSPECTIVA Y MOVIMIENTO EN CASCADA HACIA ABAJO */}
           <div className="relative mt-12 sm:mt-16 mx-auto max-w-6xl [perspective:1400px]">
             
             {/* TARJETA NEGRA SUPERIOR IZQUIERDA */}
@@ -358,44 +475,49 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* MARCO GRANDE CON COMPOSICIÓN 3D EN CASCADA (TIPO MOCKUPS FLOTANTES) */}
-            <div className="relative overflow-hidden rounded-[2.2rem] sm:rounded-[3.2rem] border border-zinc-200/90 bg-zinc-950 shadow-2xl dark:border-zinc-800 aspect-[16/10] sm:aspect-[16/9] w-full min-h-[360px] sm:min-h-[540px] flex items-center justify-center p-3 sm:p-6">
+            {/* MARCO GRANDE 3D CON CASCADA */}
+            <div className="relative overflow-hidden rounded-[2.2rem] sm:rounded-[3.2rem] border border-zinc-200/90 bg-zinc-950 shadow-2xl dark:border-zinc-800 aspect-[16/10] sm:aspect-[16/9] w-full min-h-[380px] sm:min-h-[560px] flex items-center justify-center">
               
-              {/* IMAGEN DE FONDO/ANTERIOR (ASOMANDO ARRIBA EN PERSPECTIVA) */}
-              <div className="absolute -top-8 w-[88%] h-[80%] rounded-[2rem] overflow-hidden opacity-30 blur-[1px] transform -translate-y-4 scale-95 [transform:rotateX(12deg)] transition-all duration-1000 ease-out z-0 pointer-events-none">
-                <img
-                  src={IMAGENES_PORTFOLIO[idxAnterior]}
-                  alt="Anterior"
-                  className="w-full h-full object-cover"
-                />
-              </div>
+              {IMAGENES_PORTFOLIO.map((imagen, index) => {
+                const diff = (index - imagenActiva + IMAGENES_PORTFOLIO.length) % IMAGENES_PORTFOLIO.length;
+                
+                // 0: Activa en centro y agrandada
+                // 1: Siguiente asomando abajo
+                // IMAGENES_PORTFOLIO.length - 1: Anterior arriba
+                let estiloClase = "opacity-0 scale-75 pointer-events-none";
 
-              {/* IMAGEN PRINCIPAL EN EL CENTRO (SE AGRANDA DURANTE 4 SEGUNDOS) */}
-              <div className="relative z-10 w-full h-full rounded-[1.8rem] sm:rounded-[2.6rem] overflow-hidden shadow-2xl border border-white/10 bg-zinc-900 transition-all duration-1000 ease-out transform scale-100 hover:scale-[1.01]">
-                <img
-                  key={IMAGENES_PORTFOLIO[imagenActiva]}
-                  src={IMAGENES_PORTFOLIO[imagenActiva]}
-                  alt="Proyecto en exhibición"
-                  className="w-full h-full object-contain sm:object-cover object-center transition-all duration-1000 animate-in fade-in zoom-in-95"
-                  onError={(e) => {
-                    e.currentTarget.src = "/portfolio/imagen1.jpg";
-                  }}
-                />
-              </div>
+                if (diff === 0) {
+                  // CENTRO: ENTRA BAJANDO, SE AGRANDA Y SE QUEDA 4 SEG
+                  estiloClase = "opacity-100 scale-100 translate-y-0 z-20 shadow-2xl";
+                } else if (diff === 1) {
+                  // SIGUIENTE: ESPERANDO ABAJO
+                  estiloClase = "opacity-35 scale-90 translate-y-28 sm:translate-y-40 [transform:rotateX(-14deg)] z-10 pointer-events-none blur-[0.5px]";
+                } else if (diff === IMAGENES_PORTFOLIO.length - 1) {
+                  // ANTERIOR: SALIÓ POR ARRIBA
+                  estiloClase = "opacity-0 scale-95 -translate-y-36 sm:-translate-y-48 [transform:rotateX(14deg)] z-0 pointer-events-none";
+                }
 
-              {/* IMAGEN SIGUIENTE (ASOMANDO ABAJO EN PERSPECTIVA) */}
-              <div className="absolute -bottom-10 w-[88%] h-[80%] rounded-[2rem] overflow-hidden opacity-30 blur-[1px] transform translate-y-6 scale-95 [transform:rotateX(-12deg)] transition-all duration-1000 ease-out z-0 pointer-events-none">
-                <img
-                  src={IMAGENES_PORTFOLIO[idxSiguiente]}
-                  alt="Siguiente"
-                  className="w-full h-full object-cover"
-                />
-              </div>
+                return (
+                  <div
+                    key={imagen}
+                    className={`absolute inset-4 sm:inset-6 rounded-[1.8rem] sm:rounded-[2.6rem] overflow-hidden bg-zinc-900 border border-white/10 transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] ${estiloClase}`}
+                  >
+                    <img
+                      src={imagen}
+                      alt={`Proyecto portfolio ${index + 1}`}
+                      className="w-full h-full object-contain sm:object-cover object-center bg-zinc-950"
+                      onError={(e) => {
+                        e.currentTarget.src = "/portfolio/imagen1.jpg";
+                      }}
+                    />
+                  </div>
+                );
+              })}
 
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none z-15" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none z-25" />
             </div>
 
-            {/* BLOQUE INFERIOR DERECHO CON PÁGINAS WEB CENTRADO */}
+            {/* BLOQUE INFERIOR DERECHO */}
             <div className="absolute -bottom-4 -right-2 sm:-bottom-6 sm:-right-6 rounded-2xl sm:rounded-3xl bg-white/95 p-3 sm:p-4 shadow-2xl border border-zinc-200/90 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 z-30 max-w-[300px] sm:max-w-[420px] w-full">
               <div className="grid grid-cols-3 gap-1.5 text-[10px] sm:text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
                 <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-2 text-center flex items-center justify-center">
@@ -437,14 +559,15 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 1. SERVICIOS INTEGRALES (SUBIDO ARRIBA COMO PEDISTE) */}
+      {/* 1. SERVICIOS INTEGRALES (SUBIDO ARRIBA CON TÍTULO EN 2 LÍNEAS Y REORDENAMIENTO DE CARDS) */}
       <section id="servicios" className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="max-w-2xl">
           <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
             Servicios integrales
           </span>
-          <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white">
-            Diseño gráfico y desarrollo web a tu medida.
+          <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white leading-tight">
+            Diseño gráfico y desarrollo web <br className="hidden sm:inline" />
+            a tu medida.
           </h2>
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
             Una solución completa para que tu negocio se destaque tanto en lo visual como en lo técnico.
@@ -452,7 +575,33 @@ export default function HomePage() {
         </div>
 
         <div className="mt-8 grid gap-4 lg:grid-cols-12">
+          {/* Card 1: Identidad Gráfica & Branding (PRIMERA) */}
           <article className="lg:col-span-7 rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                  <Palette className="h-6 w-6" />
+                </div>
+                <span className="rounded-full bg-purple-500/10 px-3 py-1 text-xs font-bold text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                  Identidad Visual
+                </span>
+              </div>
+              <h3 className="mt-4 text-xl sm:text-2xl font-bold text-zinc-950 dark:text-white">
+                Identidad Gráfica & Branding
+              </h3>
+              <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-xl">
+                Logotipos, tipografías, paletas de colores, diseño editorial y piezas gráficas para redes sociales para que tu marca tenga una presencia sólida y profesional.
+              </p>
+            </div>
+            <div className="mt-6 flex flex-wrap gap-2 pt-4 border-t border-zinc-100 dark:border-zinc-800/80 text-xs text-zinc-600 dark:text-zinc-400">
+              <span className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 font-medium">✓ Logotipos & Manual de marca</span>
+              <span className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 font-medium">✓ Banners & Redes</span>
+              <span className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 font-medium">✓ Cartelería & Papelería</span>
+            </div>
+          </article>
+
+          {/* Card 2: Catálogo & Carta Digital (DERECHA) */}
+          <article className="lg:col-span-5 rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--brand)]/10 text-[var(--brand-contrast)] dark:text-[var(--brand)]">
@@ -465,50 +614,28 @@ export default function HomePage() {
               <h3 className="mt-4 text-xl sm:text-2xl font-bold text-zinc-950 dark:text-white">
                 Catálogo & Carta Digital con fotos y precios
               </h3>
-              <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-xl">
-                Tus productos o platos presentados de manera clara, con variantes de talles/gustos y precios actualizables desde tu teléfono.
+              <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                Tus productos o platos presentados de forma clara, con variantes de talles/gustos y precios actualizables desde tu celular.
               </p>
             </div>
             <div className="mt-6 flex flex-wrap gap-2 pt-4 border-t border-zinc-100 dark:border-zinc-800/80 text-xs text-zinc-600 dark:text-zinc-400">
               <span className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 font-medium">✓ Control de stock</span>
-              <span className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 font-medium">✓ Pausa de productos</span>
-              <span className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 font-medium">✓ Búsqueda rápida</span>
+              <span className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 font-medium">✓ Pedidos listos a WhatsApp</span>
             </div>
           </article>
 
-          <article className="lg:col-span-5 rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                  <CalendarDays className="h-6 w-6" />
-                </div>
-                <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                  Turnos 24/7
-                </span>
-              </div>
-              <h3 className="mt-4 text-xl sm:text-2xl font-bold text-zinc-950 dark:text-white">
-                Turnos y reservas online automáticas
-              </h3>
-              <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                Tus clientes eligen fecha y hora según los turnos libres. Sin demoras ni mensajes manuales cruzados.
-              </p>
-            </div>
-            <div className="mt-6 flex flex-wrap gap-2 pt-4 border-t border-zinc-100 dark:border-zinc-800/80 text-xs text-zinc-600 dark:text-zinc-400">
-              <span className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 font-medium">✓ Barberías y Salones</span>
-              <span className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 font-medium">✓ Consultorios</span>
-            </div>
-          </article>
-
+          {/* Card 3: Turnos y reservas online automáticas (BAJADA ABAJO A LA IZQUIERDA) */}
           <article className="lg:col-span-4 rounded-2xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/40">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
-              <Palette className="h-4 w-4" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <CalendarDays className="h-4 w-4" />
             </div>
-            <h4 className="mt-3 text-sm font-bold text-zinc-950 dark:text-white">Identidad Gráfica & Branding</h4>
+            <h4 className="mt-3 text-sm font-bold text-zinc-950 dark:text-white">Turnos & Reservas 24/7</h4>
             <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-              Logotipos, tipografías, banners y estética para que tu negocio tenga coherencia en redes y en la web.
+              Tus clientes eligen día y horario libre desde tu web para salones, barberías o consultorios.
             </p>
           </article>
 
+          {/* Card 4: Conexión a WhatsApp */}
           <article className="lg:col-span-4 rounded-2xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/40">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               <MessageCircle className="h-4 w-4" />
@@ -519,6 +646,7 @@ export default function HomePage() {
             </p>
           </article>
 
+          {/* Card 5: Cobros integrados */}
           <article className="lg:col-span-4 rounded-2xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/40">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
               <FileText className="h-4 w-4" />
@@ -531,7 +659,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 2. BENEFICIOS ("DEJÁ DE PERDER TIEMPO..." PASADO ABAJO SIN LA CAJA DE RUIDO) */}
+      {/* 2. BENEFICIOS ("DEJÁ DE PERDER TIEMPO..." ABAJO Y SIN CAJA DE RUIDO) */}
       <section className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="grid gap-8 lg:grid-cols-12 lg:items-start lg:gap-12">
           <div className="lg:col-span-5">
@@ -569,7 +697,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* MODELOS DE MUESTRA (3 ARRIBA Y 2 CENTRADOS ABAJO) */}
+      {/* MODELOS DE MUESTRA (3 ARRIBA Y 2 CENTRADOS ABAJO, CON CARRUSEL DE 3 IMÁGENES CADA UNO) */}
       <section id="trabajos" className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div className="max-w-2xl">
@@ -590,142 +718,20 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* FILA 1: 3 MODELOS ARRIBA */}
+        {/* 3 MODELOS ARRIBA */}
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {modelosArriba.map((p) => {
-            const Icono = p.icono;
-            return (
-              <article
-                key={p.id}
-                className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xs transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/60"
-              >
-                <div>
-                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-zinc-900">
-                    <img
-                      src={p.portadaPrincipal}
-                      alt={p.titulo}
-                      className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
-                      onError={(e) => {
-                        e.currentTarget.src = p.portadaSecundaria;
-                      }}
-                    />
-                    <div className="absolute top-2.5 left-2.5">
-                      <span className="rounded-full bg-black/70 backdrop-blur-md border border-white/20 px-2.5 py-0.5 text-[9px] font-bold text-white uppercase tracking-wider">
-                        {p.badge}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="p-5">
-                    <div className="flex items-center gap-1.5 text-[var(--brand-contrast)] dark:text-[var(--brand)] text-xs font-semibold">
-                      <Icono className="h-3.5 w-3.5" />
-                      <span>{p.categoria}</span>
-                    </div>
-
-                    <h3 className="mt-1.5 text-base font-bold text-zinc-950 dark:text-white">
-                      {p.titulo}
-                    </h3>
-
-                    <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed line-clamp-2">
-                      {p.subtitulo}
-                    </p>
-
-                    <div className="mt-3.5 flex flex-wrap gap-1">
-                      {p.caracteristicas.map((c, i) => (
-                        <span
-                          key={i}
-                          className="rounded-md bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-                        >
-                          {c}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-5 pt-0">
-                  <a
-                    href={p.urlDemo}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 py-2.5 text-xs font-bold text-zinc-800 transition hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-800/80 dark:text-zinc-200 dark:hover:bg-zinc-700"
-                  >
-                    <span>Consultar por este diseño</span>
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
-                </div>
-              </article>
-            );
-          })}
+          {modelosArriba.map((p) => (
+            <TarjetaModelo key={p.id} p={p} />
+          ))}
         </div>
 
-        {/* FILA 2: 2 MODELOS CENTRADOS */}
+        {/* 2 MODELOS CENTRADOS ABAJO */}
         <div className="mt-6 flex flex-col sm:flex-row justify-center gap-6 max-w-4xl mx-auto">
-          {modelosAbajo.map((p) => {
-            const Icono = p.icono;
-            return (
-              <article
-                key={p.id}
-                className="group flex-1 flex flex-col justify-between overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xs transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/60 max-w-md mx-auto sm:mx-0 w-full"
-              >
-                <div>
-                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-zinc-900">
-                    <img
-                      src={p.portadaPrincipal}
-                      alt={p.titulo}
-                      className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
-                      onError={(e) => {
-                        e.currentTarget.src = p.portadaSecundaria;
-                      }}
-                    />
-                    <div className="absolute top-2.5 left-2.5">
-                      <span className="rounded-full bg-black/70 backdrop-blur-md border border-white/20 px-2.5 py-0.5 text-[9px] font-bold text-white uppercase tracking-wider">
-                        {p.badge}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="p-5">
-                    <div className="flex items-center gap-1.5 text-[var(--brand-contrast)] dark:text-[var(--brand)] text-xs font-semibold">
-                      <Icono className="h-3.5 w-3.5" />
-                      <span>{p.categoria}</span>
-                    </div>
-
-                    <h3 className="mt-1.5 text-base font-bold text-zinc-950 dark:text-white">
-                      {p.titulo}
-                    </h3>
-
-                    <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed line-clamp-2">
-                      {p.subtitulo}
-                    </p>
-
-                    <div className="mt-3.5 flex flex-wrap gap-1">
-                      {p.caracteristicas.map((c, i) => (
-                        <span
-                          key={i}
-                          className="rounded-md bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-                        >
-                          {c}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-5 pt-0">
-                  <a
-                    href={p.urlDemo}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 py-2.5 text-xs font-bold text-zinc-800 transition hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-800/80 dark:text-zinc-200 dark:hover:bg-zinc-700"
-                  >
-                    <span>Consultar por este diseño</span>
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
-                </div>
-              </article>
-            );
-          })}
+          {modelosAbajo.map((p) => (
+            <div key={p.id} className="flex-1 max-w-md mx-auto sm:mx-0 w-full">
+              <TarjetaModelo p={p} />
+            </div>
+          ))}
         </div>
       </section>
 
@@ -774,7 +780,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* QUIÉN SOY (CON TEXTOS Y SUBTÍTULO EXACTOS) */}
+      {/* QUIÉN SOY */}
       <section id="quien-soy" className="mx-auto max-w-4xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="text-center max-w-xl mx-auto">
           <div className="relative mx-auto h-24 w-24 sm:h-28 sm:w-28 overflow-hidden rounded-full border-2 border-[var(--brand)]/40 bg-zinc-100 shadow-md ring-4 ring-[var(--brand)]/10 dark:bg-zinc-800">
