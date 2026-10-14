@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
@@ -16,8 +16,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+});
+
 export const metadata: Metadata = {
-  title: "NDI | Diseño & Web · Páginas web para tu negocio",
+  title: "ND Diseño Gráfico · Páginas web para tu negocio",
   description:
     "Diseño gráfico y desarrollo de páginas web para emprendimientos, negocios y profesionales. Tu sitio a medida, fácil de usar y listo para vender.",
   metadataBase: new URL("https://ndiweb.com"),
@@ -25,17 +31,17 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "NDI | Diseño & Web · Páginas web para tu negocio",
+    title: "ND Diseño Gráfico · Páginas web para tu negocio",
     description:
       "Diseño gráfico y desarrollo de páginas web para emprendimientos, negocios y profesionales. Tu sitio a medida, fácil de usar y listo para vender.",
     url: "https://ndiweb.com",
-    siteName: "NDI | Diseño & Web",
+    siteName: "ND Diseño Gráfico",
     locale: "es_AR",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "NDI | Diseño & Web · Páginas web para tu negocio",
+    title: "ND Diseño Gráfico · Páginas web para tu negocio",
     description:
       "Diseño gráfico y desarrollo de páginas web para emprendimientos, negocios y profesionales. Tu sitio a medida, fácil de usar y listo para vender.",
   },
@@ -50,7 +56,7 @@ export default function RootLayout({
     <html
       lang="es"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
       <body className="min-h-full">
         <ThemeProvider>
