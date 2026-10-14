@@ -17,9 +17,28 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NDI AI",
+  title: "NDI | Diseño & Web · Páginas web para tu negocio",
   description:
-    "Atención inteligente con IA para WhatsApp y gestión de clientes.",
+    "Diseño gráfico y desarrollo de páginas web para emprendimientos, negocios y profesionales. Tu sitio a medida, fácil de usar y listo para vender.",
+  metadataBase: new URL("https://ndiweb.com"),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "NDI | Diseño & Web · Páginas web para tu negocio",
+    description:
+      "Diseño gráfico y desarrollo de páginas web para emprendimientos, negocios y profesionales. Tu sitio a medida, fácil de usar y listo para vender.",
+    url: "https://ndiweb.com",
+    siteName: "NDI | Diseño & Web",
+    locale: "es_AR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "NDI | Diseño & Web · Páginas web para tu negocio",
+    description:
+      "Diseño gráfico y desarrollo de páginas web para emprendimientos, negocios y profesionales. Tu sitio a medida, fácil de usar y listo para vender.",
+  },
 };
 
 export default function RootLayout({

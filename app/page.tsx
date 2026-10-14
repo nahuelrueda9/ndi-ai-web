@@ -10,17 +10,24 @@ import {
   Check,
   ChevronDown,
   Clock,
+  ExternalLink,
+  Eye,
   FileText,
   Mail,
+  MapPin,
   MessageCircle,
   Moon,
   Package,
   QrCode,
+  ShieldCheck,
+  Sparkles,
   Sun,
+  UserCheck,
   UtensilsCrossed,
   ShoppingBag,
   Scissors,
   Stethoscope,
+  Zap,
 } from "lucide-react";
 
 import { useTheme } from "@/components/theme/ThemeProvider";
@@ -38,6 +45,8 @@ const proyectosShowcase = [
     subtitulo: "Menú digital interactivo con pedidos directos a tu WhatsApp, fotos de platos y reserva de mesas.",
     portada: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1800&q=80",
     badge: "Carta & Pedidos",
+    esReal: false,
+    urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Gastronomía y Bares.")}`,
     caracteristicas: ["Carta con fotos y precios", "Pedidos listos a WhatsApp"],
   },
   {
@@ -49,6 +58,8 @@ const proyectosShowcase = [
     subtitulo: "Catálogo online con variantes de talles, colores, stock en tiempo real y cobros integrados.",
     portada: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1800&q=80",
     badge: "Catálogo Online",
+    esReal: false,
+    urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Tiendas e Indumentaria.")}`,
     caracteristicas: ["Control de talles y stock", "Cobros con CVU y Mercado Pago"],
   },
   {
@@ -60,6 +71,8 @@ const proyectosShowcase = [
     subtitulo: "Agenda de turnos online disponible las 24 horas para que el cliente elija servicio y horario sin esperas.",
     portada: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1800&q=80",
     badge: "Turnos 24/7",
+    esReal: false,
+    urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Barberías y Salones.")}`,
     caracteristicas: ["Turnos confirmados al instante", "Agenda autogestionable"],
   },
   {
@@ -71,110 +84,83 @@ const proyectosShowcase = [
     subtitulo: "Gestión de citas previas, información de especialidades, ubicación en mapa y contacto directo.",
     portada: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1800&q=80",
     badge: "Atención Profesional",
+    esReal: false,
+    urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Consultorios Profesionales.")}`,
     caracteristicas: ["Citas y horarios disponibles", "Ubicación en Google Maps"],
   },
 ];
 
-const problemas = [
-  "Clientes preguntando precios por privado que no terminan comprando",
-  "Consultas que entran a deshora y quedan sin responder",
-  "Precios e información desactualizada repartida entre publicaciones",
-  "Turnos y pedidos anotados a mano que generan confusiones",
-  "Depender únicamente de Instagram sin tener un sitio propio",
-  "Falta de imagen profesional frente a negocios que sí tienen su web",
-];
-
-const funciones = [
+const beneficios = [
   {
-    titulo: "Diseño Web Profesional",
-    descripcion:
-      "Una página moderna y adaptada a la identidad visual de tu marca, con tus colores, logo y fotos de calidad.",
-    icono: Building2,
+    titulo: "Catálogo o menú siempre al día",
+    detalle: "Cambiás fotos y precios desde tu celu cuando quieras, sin depender de nadie ni pagar costos extra.",
   },
   {
-    titulo: "Catálogo & Menú Digital",
-    descripcion:
-      "Exhibí tus productos, platos o servicios con fotos, descripciones claras y precios actualizados al instante.",
-    icono: Package,
+    titulo: "Pedidos organizados y completos",
+    detalle: "Te llega el detalle exacto de lo que el cliente quiere, sin mensajes cruzados ni confusiones.",
   },
   {
-    titulo: "Turnos y Reservas Online",
-    descripcion:
-      "Tus clientes reservan su cita o mesa en horarios disponibles sin tener que coordinar manualmente por mensaje.",
-    icono: CalendarDays,
+    titulo: "Turnos sin idas y vueltas",
+    detalle: "El cliente elige el día y horario disponible en segundos, sin tener que coordinar manualmente.",
   },
   {
-    titulo: "Conexión Directa a WhatsApp",
-    descripcion:
-      "Los pedidos y consultas llegan a tu WhatsApp con el detalle exacto de lo que el cliente seleccionó.",
-    icono: MessageCircle,
-  },
-  {
-    titulo: "Cobros Online Integrados",
-    descripcion:
-      "Facilitá transferencias directas (CVU/Alias) o cobros con Mercado Pago para confirmar pedidos al instante.",
-    icono: FileText,
-  },
-  {
-    titulo: "Acceso Rápido por Código QR",
-    descripcion:
-      "Generamos tu código QR para colocar en mesas, vidrieras, folletos o tarjetas de presentación.",
-    icono: QrCode,
+    titulo: "Presencia seria y confiable",
+    detalle: "Un link propio con tu marca que transmite seguridad y profesionalismo en cada consulta.",
   },
 ];
 
 const pasos = [
   {
     numero: "01",
-    titulo: "Coordinamos tu proyecto",
+    titulo: "Me contás sobre tu negocio",
     descripcion:
-      "Nos contás sobre tu negocio, tus productos o servicios y definimos la estructura ideal para tu web.",
+      "Hablamos por WhatsApp sobre qué vendés, qué estilo te gusta y qué necesitás en tu web.",
   },
   {
     numero: "02",
-    titulo: "Diseñamos y cargamos todo",
+    titulo: "Diseño y cargo todo",
     descripcion:
-      "Configuramos la identidad visual, fotos, lista de precios, horarios de atención y botones de contacto.",
+      "Preparo la estructura, fotos, lista de precios, horarios y botones de contacto de tu negocio.",
   },
   {
     numero: "03",
-    titulo: "Tu página online",
+    titulo: "Revisamos y publicamos",
     descripcion:
-      "Publicamos tu sitio en 24 a 48 hs hábiles con certificado de seguridad SSL y link listo para compartir.",
+      "Mirás cómo quedó, ajustamos lo que haga falta y la dejamos online con seguridad SSL lista para compartir.",
   },
   {
     numero: "04",
-    titulo: "Administración simple",
+    titulo: "La manejás vos",
     descripcion:
-      "Tenés acceso a tu panel para cambiar precios, pausar ítems o sumar novedades cuando lo necesites.",
+      "Te explico en 5 minutos cómo cambiar precios o pausar productos desde tu panel sin depender de nadie.",
   },
 ];
 
 const faqs = [
   {
-    pregunta: "¿Cuánto tiempo tarda en estar lista mi página web?",
+    pregunta: "¿Cuánto tarda en estar lista?",
     respuesta:
-      "Si elegís configurarla desde el panel, tenés acceso instantáneo. Si elegís el armado asistido con nosotros, te la entregamos 100% lista y publicada en un plazo de 24 a 48 horas hábiles.",
+      "Entre 24 y 48 horas hábiles desde que me pasás la información y las fotos de tu negocio.",
   },
   {
-    pregunta: "¿Puedo actualizar los precios, fotos o servicios después?",
+    pregunta: "¿Puedo cambiar precios y fotos después?",
     respuesta:
-      "Sí, totalmente. Contás con un panel de administración autogestionable disponible las 24 hs para cambiar precios, pausar productos o editar horarios sin costos extras.",
+      "Sí, totalmente. Tenés tu propio panel para editar lo que quieras las 24 horas desde la compu o el celular, sin tener que pagarle a nadie para actualizar un precio.",
   },
   {
-    pregunta: "¿Necesito conocimientos técnicos o de programación?",
+    pregunta: "¿Necesito saber de computación o programación?",
     respuesta:
-      "Para nada. El panel es intuitivo y pensado para dueños de negocios. Además, nuestro equipo se encarga de la puesta en marcha inicial por vos.",
+      "Para nada. El panel es súper simple e intuitivo. Además, yo te dejo todo listo y configurado desde el primer día.",
   },
   {
-    pregunta: "¿Qué medios de pago aceptan para la contratación?",
+    pregunta: "¿Cómo se abona?",
     respuesta:
-      "Aceptamos transferencias bancarias (CVU / Alias) y pagos con Mercado Pago. Una vez confirmado el pago de la puesta en marcha, comenzamos con tu proyecto de inmediato.",
+      "Podés pagar por transferencia bancaria (CVU / Alias) o con tarjeta mediante Mercado Pago.",
   },
   {
-    pregunta: "¿La página incluye seguridad SSL (HTTPS)?",
+    pregunta: "¿Tiene costo de mantenimiento?",
     respuesta:
-      "Sí, todas las páginas cuentan con certificado de seguridad SSL cifrado (HTTPS) incluido sin costo adicional, garantizando una navegación segura y profesional.",
+      "Sí, un abono mensual accesible que cubre el servidor rápido, certificado de seguridad HTTPS y soporte directo cuando lo necesites.",
   },
 ];
 
@@ -219,6 +205,7 @@ export default function HomePage() {
   const [faqAbierta, setFaqAbierta] = useState<number | null>(0);
   const [rubroSeleccionado, setRubroSeleccionado] = useState(0);
   const [mostrarBotonHeader, setMostrarBotonHeader] = useState(false);
+  const [errorFotoNahuel, setErrorFotoNahuel] = useState(false);
   const { theme, setTheme } = useTheme();
 
   const toggleFaq = (index: number) => {
@@ -265,8 +252,14 @@ export default function HomePage() {
             <a href="#funciones" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
               Servicios
             </a>
+            <a href="#trabajos" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
+              Ejemplos
+            </a>
             <a href="#como-funciona" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
               Proceso
+            </a>
+            <a href="#quien-soy" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
+              Quién soy
             </a>
             <a href="#planes" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
               Planes
@@ -317,19 +310,19 @@ export default function HomePage() {
         </div>
 
         <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-8">
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-[11px] sm:text-xs font-semibold text-blue-600 dark:text-blue-400 mb-3">
-            <span>Estudio de Diseño & Desarrollo Digital</span>
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 px-3.5 py-1 text-[11px] sm:text-xs font-semibold text-blue-600 dark:text-blue-400 mb-3">
+            <span>Diseño gráfico & desarrollo web</span>
           </div>
 
           <h1 className="text-2xl sm:text-6xl lg:text-[4.2rem] font-black tracking-tight leading-[1.12] sm:leading-[1.08] text-zinc-950 dark:text-white">
-            Tené tu página web{" "}
+            Tené la página web de tu negocio{" "}
             <span className="bg-gradient-to-r from-blue-600 via-sky-500 to-emerald-500 bg-clip-text text-transparent dark:from-blue-400 dark:via-sky-300 dark:to-emerald-400">
-              profesional hoy.
+              lista para vender.
             </span>
           </h1>
 
           <p className="mx-auto mt-2.5 sm:mt-5 max-w-2xl text-xs sm:text-base leading-relaxed text-zinc-600 dark:text-zinc-400 font-normal">
-            Diseñamos la web de tu negocio con catálogo, turnos online y pedidos ordenados directo a tu WhatsApp. Sin complicaciones técnicas ni intermediarios.
+            Diseño tu sitio a medida para que muestres tus productos, organices tus turnos y recibas pedidos claros directo a tu WhatsApp. Sin vueltas técnicas y con atención directa de persona a persona.
           </p>
 
           <div className="mt-5 sm:mt-7 flex items-center justify-center gap-2 sm:gap-3 max-w-sm sm:max-w-none mx-auto">
@@ -342,10 +335,13 @@ export default function HomePage() {
             </Link>
 
             <a
-              href="#contacto"
-              className="inline-flex flex-1 sm:flex-initial items-center justify-center gap-1 rounded-xl sm:rounded-2xl border border-zinc-300 bg-white px-3.5 py-2.5 sm:px-6 sm:py-3.5 text-xs sm:text-sm font-semibold text-zinc-800 shadow-sm transition hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/90 dark:text-zinc-200 dark:hover:bg-zinc-800 active:scale-95 text-center"
+              href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría consultar por una página web para mi negocio.")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex flex-1 sm:flex-initial items-center justify-center gap-1.5 rounded-xl sm:rounded-2xl border border-zinc-300 bg-white px-3.5 py-2.5 sm:px-6 sm:py-3.5 text-xs sm:text-sm font-semibold text-zinc-800 shadow-sm transition hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/90 dark:text-zinc-200 dark:hover:bg-zinc-800 active:scale-95 text-center"
             >
-              Hablar con asesor
+              <MessageCircle className="h-3.5 w-3.5 text-emerald-500" />
+              Hablar por WhatsApp
             </a>
           </div>
 
@@ -380,6 +376,9 @@ export default function HomePage() {
                 <span className="text-[11px] sm:text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-wider">
                   {proyectoActual.categoria}
                 </span>
+                <span className="hidden sm:inline-flex items-center rounded-md bg-zinc-200/80 px-2 py-0.5 text-[10px] font-semibold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                  Ejemplo de diseño
+                </span>
               </div>
               <span className="rounded-full bg-blue-600/10 border border-blue-500/20 px-2.5 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold text-blue-600 dark:text-blue-400">
                 {proyectoActual.badge}
@@ -405,99 +404,285 @@ export default function HomePage() {
                   ))}
                 </div>
 
-                <h2 className="text-lg sm:text-4xl font-black tracking-tight">{proyectoActual.titulo}</h2>
-                <p className="mt-0.5 sm:mt-2 text-[11px] sm:text-base text-zinc-300 max-w-2xl font-normal leading-relaxed line-clamp-2 sm:line-clamp-none">
-                  {proyectoActual.subtitulo}
-                </p>
+                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+                  <div>
+                    <h2 className="text-lg sm:text-4xl font-black tracking-tight">{proyectoActual.titulo}</h2>
+                    <p className="mt-0.5 sm:mt-2 text-[11px] sm:text-base text-zinc-300 max-w-2xl font-normal leading-relaxed line-clamp-2 sm:line-clamp-none">
+                      {proyectoActual.subtitulo}
+                    </p>
+                  </div>
+
+                  <a
+                    href={proyectoActual.urlDemo}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 self-start sm:self-auto rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-md px-3.5 py-2 text-[11px] sm:text-xs font-bold text-white transition active:scale-95 border border-white/20 whitespace-nowrap"
+                  >
+                    <Eye className="h-3.5 w-3.5" />
+                    <span>Consultar por este modelo</span>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* PROBLEMA */}
-      <section className="mx-auto max-w-7xl px-3.5 py-10 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
-        <div className="grid gap-6 lg:grid-cols-2 lg:items-center lg:gap-14">
-          <div>
+      {/* POR QUÉ TENER TU WEB (BLOQUE ASIMÉTRICO EDITORIAL) */}
+      <section className="mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
+        <div className="grid gap-8 lg:grid-cols-12 lg:items-start lg:gap-12">
+          <div className="lg:col-span-5">
             <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-              El problema actual
+              Vender más simple
             </span>
-            <h2 className="mt-1 text-xl sm:text-4xl font-extrabold tracking-tight text-zinc-950 dark:text-white leading-tight">
-              Tener solo Instagram no es suficiente para vender ordenado.
+            <h2 className="mt-2 text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-zinc-950 dark:text-white leading-[1.1]">
+              Dejá de perder tiempo respondiendo precios por privado.
             </h2>
-            <p className="mt-2.5 text-xs sm:text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-              La gente no tiene tiempo de esperar horas por una respuesta en historias o mensajes privados. Un sitio web propio le da seriedad a tu marca y permite que tus clientes vean precios, servicios y reserven de inmediato.
+            <p className="mt-3.5 text-xs sm:text-base leading-relaxed text-zinc-600 dark:text-zinc-400 font-normal">
+              Depender únicamente de mensajes en historias o chats te hace perder ventas todos los días. Con tu propia página, tus clientes ven lo que ofrecés, conocen los precios actualizados y te mandan el pedido o la reserva armada al WhatsApp, a cualquier hora.
             </p>
+
+            <div className="mt-6 rounded-2xl border border-blue-500/20 bg-blue-50/50 p-4 dark:border-blue-500/20 dark:bg-blue-950/20">
+              <p className="text-xs font-bold text-blue-900 dark:text-blue-200">
+                💡 Menos tiempo respondiendo lo mismo = más foco en atender y vender.
+              </p>
+            </div>
           </div>
 
-          <div className="grid gap-2 sm:grid-cols-2 sm:gap-3">
-            {problemas.map((problema) => (
+          <div className="lg:col-span-7 grid gap-3 sm:grid-cols-2">
+            {beneficios.map((b, i) => (
               <div
-                key={problema}
-                className="flex items-center gap-2.5 rounded-xl border border-zinc-200 bg-white p-2.5 sm:p-3.5 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/40"
+                key={b.titulo}
+                className="relative flex flex-col justify-between rounded-2xl border border-zinc-200 bg-white p-4 sm:p-5 shadow-sm transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:border-zinc-700"
               >
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-500/10 text-[10px] font-bold text-red-500">
-                  ✕
+                <div>
+                  <span className="text-[10px] font-black text-blue-600 dark:text-blue-400">
+                    0{i + 1}
+                  </span>
+                  <h3 className="mt-1 text-sm sm:text-base font-bold text-zinc-950 dark:text-white">
+                    {b.titulo}
+                  </h3>
+                  <p className="mt-1.5 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                    {b.detalle}
+                  </p>
                 </div>
-                <p className="text-[11px] sm:text-xs text-zinc-700 dark:text-zinc-300 leading-snug">
-                  {problema}
-                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* SERVICIOS */}
-      <section id="funciones" className="mx-auto max-w-7xl px-3.5 py-10 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
+      {/* BENTO GRID: TODO LO QUE INCLUYE TU PÁGINA */}
+      <section id="funciones" className="mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="max-w-2xl">
           <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-            Lo que incluye tu web
+            Todo lo que incluye tu página
           </span>
-          <h2 className="mt-1 text-xl sm:text-4xl font-extrabold tracking-tight text-zinc-950 dark:text-white">
-            Diseño y funcionalidad para tu negocio.
+          <h2 className="mt-1.5 text-2xl sm:text-4xl font-extrabold tracking-tight text-zinc-950 dark:text-white">
+            Pensado para que trabajes más cómodo y atiendas mejor.
           </h2>
-          <p className="mt-1 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-            Herramientas pensadas para simplificar tus ventas diarias.
+          <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
+            Cada función resuelve una tarea concreta de tu rutina comercial.
           </p>
         </div>
 
-        <div className="mt-5 grid gap-2.5 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {funciones.map(({ titulo, descripcion, icono: Icono }) => (
-            <article
-              key={titulo}
-              className="rounded-xl sm:rounded-2xl border border-zinc-200 bg-white p-3.5 sm:p-5 shadow-sm transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:border-zinc-700"
-            >
-              <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-600/15 dark:text-blue-400">
-                <Icono className="h-4 w-4 sm:h-5 sm:w-5" />
+        {/* Bento Grid Layout */}
+        <div className="mt-8 grid gap-4 lg:grid-cols-12">
+          {/* Card Destacada 1: Catálogo & Menú Digital (Ancha) */}
+          <article className="lg:col-span-7 rounded-2xl sm:rounded-3xl border border-zinc-200 bg-white p-5 sm:p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between">
+                <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-600/15 dark:text-blue-400">
+                  <Package className="h-5 w-5 sm:h-6 sm:w-6" />
+                </div>
+                <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-blue-600 dark:bg-blue-600/15 dark:text-blue-400 border border-blue-500/20">
+                  Función principal
+                </span>
               </div>
-              <h3 className="mt-2.5 text-xs sm:text-base font-bold text-zinc-950 dark:text-white">
-                {titulo}
+              <h3 className="mt-4 text-base sm:text-2xl font-bold text-zinc-950 dark:text-white">
+                Catálogo & Carta Digital con fotos y precios
               </h3>
-              <p className="mt-1 text-[11px] sm:text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
-                {descripcion}
+              <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-xl">
+                Tus platos, productos o servicios ordenados con fotos de calidad, variantes de talles/gustos y precios que actualizás en un segundo desde tu teléfono.
               </p>
-            </article>
-          ))}
+            </div>
+            <div className="mt-6 flex flex-wrap gap-2 pt-4 border-t border-zinc-100 dark:border-zinc-800/80 text-[11px] text-zinc-600 dark:text-zinc-400">
+              <span className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 font-medium">✓ Control de stock</span>
+              <span className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 font-medium">✓ Pausa de productos</span>
+              <span className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 font-medium">✓ Búsqueda rápida</span>
+            </div>
+          </article>
+
+          {/* Card Destacada 2: Turnos & Reservas 24/7 (Ancha complementaria) */}
+          <article className="lg:col-span-5 rounded-2xl sm:rounded-3xl border border-zinc-200 bg-white p-5 sm:p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between">
+                <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-600/15 dark:text-emerald-400">
+                  <CalendarDays className="h-5 w-5 sm:h-6 sm:w-6" />
+                </div>
+                <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-600 dark:bg-emerald-600/15 dark:text-emerald-400 border border-emerald-500/20">
+                  Autogestionable
+                </span>
+              </div>
+              <h3 className="mt-4 text-base sm:text-2xl font-bold text-zinc-950 dark:text-white">
+                Turnos y reservas online 24/7
+              </h3>
+              <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                Tus clientes eligen fecha y hora según los turnos libres que tengas cargados. Confirmación inmediata sin coordinar mensaje por mensaje.
+              </p>
+            </div>
+            <div className="mt-6 flex flex-wrap gap-2 pt-4 border-t border-zinc-100 dark:border-zinc-800/80 text-[11px] text-zinc-600 dark:text-zinc-400">
+              <span className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 font-medium">✓ Barberías y Salones</span>
+              <span className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 font-medium">✓ Consultorios</span>
+            </div>
+          </article>
+
+          {/* 4 Cards compactas inferiores */}
+          <article className="lg:col-span-3 rounded-2xl border border-zinc-200 bg-white p-4 sm:p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/40">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-600/15 dark:text-blue-400">
+              <Building2 className="h-4 w-4" />
+            </div>
+            <h4 className="mt-3 text-sm font-bold text-zinc-950 dark:text-white">Diseño a tu medida</h4>
+            <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              Armado con tus colores, logo y fotos de tu negocio, con terminación profesional.
+            </p>
+          </article>
+
+          <article className="lg:col-span-3 rounded-2xl border border-zinc-200 bg-white p-4 sm:p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/40">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-600/15 dark:text-emerald-400">
+              <MessageCircle className="h-4 w-4" />
+            </div>
+            <h4 className="mt-3 text-sm font-bold text-zinc-950 dark:text-white">Conexión a WhatsApp</h4>
+            <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              Cada pedido llega a tu chat con el listado detallado para que solo tengas que cobrar y entregar.
+            </p>
+          </article>
+
+          <article className="lg:col-span-3 rounded-2xl border border-zinc-200 bg-white p-4 sm:p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/40">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-600/15 dark:text-amber-400">
+              <FileText className="h-4 w-4" />
+            </div>
+            <h4 className="mt-3 text-sm font-bold text-zinc-950 dark:text-white">Cobros integrados</h4>
+            <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              Botón de Mercado Pago y datos de transferencia con Alias / CVU directo al cliente.
+            </p>
+          </article>
+
+          <article className="lg:col-span-3 rounded-2xl border border-zinc-200 bg-white p-4 sm:p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/40">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-600/15 dark:text-purple-400">
+              <QrCode className="h-4 w-4" />
+            </div>
+            <h4 className="mt-3 text-sm font-bold text-zinc-950 dark:text-white">Código QR exclusivo</h4>
+            <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              Listo en alta resolución para colocar en mesas, vidrieras, folletos o tarjetas.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      {/* MODELOS DE MUESTRA */}
+      <section id="trabajos" className="mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div className="max-w-2xl">
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+              Estructuras disponibles
+            </span>
+            <h2 className="mt-1 text-xl sm:text-4xl font-extrabold tracking-tight text-zinc-950 dark:text-white">
+              Modelos de muestra listos para adaptar.
+            </h2>
+            <p className="mt-1 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
+              Diseños transparentes creados desde cero para cada tipo de actividad comercial.
+            </p>
+          </div>
+
+          <div className="inline-flex items-center gap-1.5 self-start rounded-full border border-zinc-200 bg-white px-3 py-1 text-[11px] font-medium text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+            <span className="h-2 w-2 rounded-full bg-blue-500" />
+            <span>Todos los modelos incluyen panel autogestionable</span>
+          </div>
+        </div>
+
+        <div className="mt-8 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {proyectosShowcase.map((p) => {
+            const Icono = p.icono;
+            return (
+              <article
+                key={p.id}
+                className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/60"
+              >
+                <div>
+                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-zinc-900">
+                    <img
+                      src={p.portada}
+                      alt={p.titulo}
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute top-2.5 left-2.5">
+                      <span className="rounded-full bg-black/70 backdrop-blur-md border border-white/20 px-2.5 py-0.5 text-[9px] font-bold text-white uppercase tracking-wider">
+                        {p.esReal ? "Cliente online" : "Ejemplo de diseño"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-4 sm:p-5">
+                    <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 text-xs font-semibold">
+                      <Icono className="h-3.5 w-3.5" />
+                      <span>{p.categoria}</span>
+                    </div>
+
+                    <h3 className="mt-1.5 text-base font-bold text-zinc-950 dark:text-white">
+                      {p.titulo}
+                    </h3>
+
+                    <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed line-clamp-2">
+                      {p.subtitulo}
+                    </p>
+
+                    <div className="mt-3 flex flex-wrap gap-1">
+                      {p.caracteristicas.map((c, i) => (
+                        <span
+                          key={i}
+                          className="rounded-md bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                        >
+                          {c}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 pt-0 sm:p-5 sm:pt-0">
+                  <a
+                    href={p.urlDemo}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 py-2 text-xs font-bold text-zinc-800 transition hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-800/80 dark:text-zinc-200 dark:hover:bg-zinc-700"
+                  >
+                    <span>Consultar por este diseño</span>
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 
       {/* PROCESO */}
-      <section id="como-funciona" className="mx-auto max-w-7xl px-3.5 py-10 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
+      <section id="como-funciona" className="mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="max-w-3xl">
           <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
             Paso a paso
           </span>
           <h2 className="mt-1 text-xl sm:text-4xl font-extrabold tracking-tight text-zinc-950 dark:text-white">
-            Cómo ponemos tu página en marcha.
+            Cómo trabajamos juntos.
           </h2>
         </div>
 
-        <div className="mt-5 grid gap-2.5 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-6 grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {pasos.map(({ numero, titulo, descripcion }) => (
             <div
               key={numero}
-              className="rounded-xl sm:rounded-2xl border border-zinc-200 bg-white p-3.5 sm:p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/50"
+              className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/50"
             >
               <span className="text-xs font-black text-blue-600 dark:text-blue-400">
                 {numero}
@@ -513,21 +698,89 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* PLANES */}
-      <section id="planes" className="mx-auto max-w-7xl px-3.5 py-10 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
+      {/* QUIÉN SOY */}
+      <section id="quien-soy" className="mx-auto max-w-5xl px-3.5 py-12 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
+        <div className="text-center max-w-2xl mx-auto">
+          <div className="relative mx-auto h-24 w-24 sm:h-28 sm:w-28 overflow-hidden rounded-full border-2 border-blue-500/40 bg-zinc-100 shadow-md ring-4 ring-blue-500/10 dark:bg-zinc-800">
+            {!errorFotoNahuel ? (
+              <Image
+                src="/nahuel.jpg"
+                alt="Nahuel - NDI | Diseño & Web"
+                width={112}
+                height={112}
+                className="h-full w-full object-cover"
+                onError={() => setErrorFotoNahuel(true)}
+                priority
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center font-black text-lg sm:text-xl text-blue-600 dark:text-blue-400">
+                ND
+              </div>
+            )}
+          </div>
+
+          <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[11px] font-semibold text-zinc-600 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+            <MapPin className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+            <span>Libertador General San Martín, Jujuy</span>
+          </div>
+
+          <h2 className="mt-3 text-2xl sm:text-4xl font-extrabold tracking-tight text-zinc-950 dark:text-white">
+            Hola, soy Nahuel.
+          </h2>
+
+          <p className="mt-3 text-xs sm:text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
+            Soy diseñador gráfico y desarrollador web. Trabajo desde Libertador General San Martín, Jujuy, ayudando a negocios, emprendimientos y profesionales a tener su presencia online propia y ordenada.
+          </p>
+
+          <p className="mt-2 text-xs sm:text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+            Acá no hablás con intermediarios ni ejecutivos de cuentas: coordinás el diseño, la carga de datos y las dudas directamente conmigo por WhatsApp o llamada.
+          </p>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-[11px] sm:text-xs">
+            <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-2 font-medium text-zinc-800 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200">
+              <UserCheck className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+              <span>Atención 1 a 1 sin intermediarios</span>
+            </div>
+            <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-2 font-medium text-zinc-800 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200">
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+              <span>Soporte y mantenimiento continuo</span>
+            </div>
+            <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-2 font-medium text-zinc-800 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200">
+              <Clock className="h-3.5 w-3.5 text-amber-500" />
+              <span>Entrega en 24 a 48 hs hábiles</span>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <a
+              href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por una página web para mi negocio.")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-sm shadow-blue-600/30 transition hover:bg-blue-500 active:scale-95"
+            >
+              <MessageCircle className="h-4 w-4" />
+              <span>Hablar directo con Nahuel</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* PLANES CON JERARQUÍA FÍSICA CLARA */}
+      <section id="planes" className="mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="mx-auto max-w-2xl text-center">
           <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
             Planes y Precios
           </span>
-          <h2 className="mt-1 text-xl sm:text-4xl font-extrabold tracking-tight text-zinc-950 dark:text-white">
+          <h2 className="mt-1 text-2xl sm:text-4xl font-extrabold tracking-tight text-zinc-950 dark:text-white">
             Elegí cómo querés impulsar tu negocio.
           </h2>
-          <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+          <p className="mt-1.5 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
             Puesta en marcha inicial y mantenimiento mensual accesible.
           </p>
         </div>
 
-        <div className="mt-6 sm:mt-8 grid gap-3.5 sm:gap-4 lg:grid-cols-3">
+        <div className="mt-8 grid gap-4 lg:grid-cols-3 lg:items-center">
+          {/* Plan Simple */}
           <PlanCard
             nombre="Página Simple"
             descripcion="Para negocios y profesionales que quieren presencia web, servicios y agenda de turnos online."
@@ -536,9 +789,10 @@ export default function HomePage() {
             features={planSimple}
           />
 
+          {/* Plan Completa - Destacado con escala visual */}
           <PlanCard
             nombre="Página Completa"
-            etiqueta="Más elegido"
+            etiqueta="Recomendado"
             descripcion="Para comercios que necesitan catálogo de productos, carta gastronómica y cobros online."
             inicial="$ 159.999"
             mensual="$ 9.999/mes"
@@ -546,6 +800,7 @@ export default function HomePage() {
             destacado
           />
 
+          {/* Plan Business IA */}
           <PlanCard
             nombre="Business IA"
             etiqueta="Lanzamiento"
@@ -559,34 +814,34 @@ export default function HomePage() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="mx-auto max-w-4xl px-3.5 py-10 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
+      <section id="faq" className="mx-auto max-w-4xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="text-center">
           <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
             Dudas frecuentes
           </span>
           <h2 className="mt-1 text-xl sm:text-4xl font-extrabold tracking-tight text-zinc-950 dark:text-white">
-            ¿Tenés preguntas? Te respondemos.
+            ¿Tenés preguntas? Te respondo.
           </h2>
         </div>
 
-        <div className="mt-5 space-y-2">
+        <div className="mt-6 space-y-2">
           {faqs.map((faq, index) => {
             const abierta = faqAbierta === index;
             return (
               <div
                 key={faq.pregunta}
-                className="overflow-hidden rounded-xl sm:rounded-2xl border border-zinc-200 bg-white transition dark:border-zinc-800 dark:bg-zinc-900/60"
+                className="overflow-hidden rounded-2xl border border-zinc-200 bg-white transition dark:border-zinc-800 dark:bg-zinc-900/60"
               >
                 <button
                   type="button"
                   onClick={() => toggleFaq(index)}
-                  className="flex w-full items-center justify-between p-3.5 sm:p-4 text-left font-semibold text-xs sm:text-sm text-zinc-900 dark:text-zinc-200 transition hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                  className="flex w-full items-center justify-between p-4 text-left font-semibold text-xs sm:text-sm text-zinc-900 dark:text-zinc-200 transition hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
                 >
                   <span>{faq.pregunta}</span>
                   <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${abierta ? "rotate-180 text-blue-600 dark:text-blue-400" : ""}`} />
                 </button>
                 {abierta && (
-                  <div className="border-t border-zinc-100 px-3.5 pb-3.5 pt-2.5 text-xs leading-relaxed text-zinc-600 dark:border-zinc-800 dark:text-zinc-400 sm:text-sm">
+                  <div className="border-t border-zinc-100 px-4 pb-4 pt-3 text-xs leading-relaxed text-zinc-600 dark:border-zinc-800 dark:text-zinc-400 sm:text-sm">
                     {faq.respuesta}
                   </div>
                 )}
@@ -597,26 +852,26 @@ export default function HomePage() {
       </section>
 
       {/* CONTACTO */}
-      <section id="contacto" className="border-t border-zinc-200/80 bg-zinc-100/60 py-10 sm:py-20 dark:border-zinc-800/80 dark:bg-zinc-950/60">
+      <section id="contacto" className="border-t border-zinc-200/80 bg-zinc-100/60 py-12 sm:py-24 dark:border-zinc-800/80 dark:bg-zinc-950/60">
         <div className="mx-auto max-w-5xl px-3.5 sm:px-8">
-          <div className="grid gap-6 lg:grid-cols-2 lg:items-center lg:gap-10">
+          <div className="grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-12">
             <div>
               <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400">
                 Atención directa
               </span>
-              <h2 className="mt-1 text-xl sm:text-4xl font-extrabold tracking-tight text-zinc-950 dark:text-white">
+              <h2 className="mt-1 text-2xl sm:text-4xl font-extrabold tracking-tight text-zinc-950 dark:text-white">
                 Empecemos tu proyecto hoy.
               </h2>
-              <p className="mt-1.5 text-xs leading-relaxed text-zinc-600 dark:text-zinc-400 sm:text-sm">
-                Escribinos si tenés dudas específicas sobre cómo adaptar tu página o querés consultar por opciones personalizadas.
+              <p className="mt-2 text-xs leading-relaxed text-zinc-600 dark:text-zinc-400 sm:text-sm">
+                Escribime si tenés dudas específicas sobre cómo adaptar tu página o querés consultar por opciones personalizadas.
               </p>
 
-              <div className="mt-4 space-y-2.5 text-xs sm:text-sm text-zinc-700 dark:text-zinc-300">
+              <div className="mt-5 space-y-2.5 text-xs sm:text-sm text-zinc-700 dark:text-zinc-300">
                 <a
                   href={`mailto:${CORREO_CONTACTO}`}
-                  className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3 shadow-sm transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/80 dark:hover:border-zinc-700"
+                  className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-3.5 shadow-sm transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/80 dark:hover:border-zinc-700"
                 >
-                  <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-600/15 dark:text-blue-400">
+                  <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-600/15 dark:text-blue-400">
                     <Mail className="h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
                   <div>
@@ -629,9 +884,9 @@ export default function HomePage() {
                   href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Tengo una consulta sobre una página web para mi negocio.")}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 rounded-xl border border-emerald-500/30 bg-emerald-50 p-3 transition hover:bg-emerald-100/70 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20"
+                  className="flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-50 p-3.5 transition hover:bg-emerald-100/70 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20"
                 >
-                  <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                  <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
                     <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
                   <div>
@@ -640,8 +895,8 @@ export default function HomePage() {
                   </div>
                 </a>
 
-                <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3 text-zinc-600 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/40 dark:text-zinc-400">
-                  <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                <div className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-3.5 text-zinc-600 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/40 dark:text-zinc-400">
+                  <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
                     <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
                   <div>
@@ -652,17 +907,17 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-zinc-200 bg-white p-4 text-center shadow-md dark:border-zinc-800 dark:bg-zinc-900 sm:p-8">
-              <h3 className="text-sm sm:text-lg font-bold text-zinc-950 dark:text-white">
+            <div className="rounded-3xl border border-zinc-200 bg-white p-6 text-center shadow-md dark:border-zinc-800 dark:bg-zinc-900 sm:p-8">
+              <h3 className="text-base sm:text-xl font-bold text-zinc-950 dark:text-white">
                 ¿Listo para poner tu negocio online?
               </h3>
-              <p className="mt-1 text-[11px] sm:text-xs text-zinc-600 dark:text-zinc-400">
+              <p className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
                 Creá tu cuenta ahora y comenzá a configurar tu catálogo, servicios y turnos.
               </p>
-              <div className="mt-4 flex flex-col gap-2">
+              <div className="mt-5 flex flex-col gap-2.5">
                 <Link
                   href="/register"
-                  className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-blue-600 py-2.5 text-xs font-bold text-white shadow-sm shadow-blue-600/20 transition hover:bg-blue-500 sm:py-3.5 sm:text-sm"
+                  className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-blue-600 py-3 text-xs font-bold text-white shadow-sm shadow-blue-600/20 transition hover:bg-blue-500 sm:text-sm"
                 >
                   Quiero mi página
                   <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -671,10 +926,10 @@ export default function HomePage() {
                   href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Quiero que me ayuden a armar mi página web.")}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 py-2.5 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 sm:py-3.5"
+                  className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 py-3 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
                 >
                   <MessageCircle className="h-4 w-4 text-emerald-500" />
-                  Hablar con un asesor por WhatsApp
+                  Hablar por WhatsApp
                 </a>
               </div>
             </div>
@@ -683,7 +938,7 @@ export default function HomePage() {
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-zinc-200 dark:border-zinc-800 py-6 text-center text-[11px] text-zinc-500">
+      <footer className="border-t border-zinc-200 dark:border-zinc-800 py-8 text-center text-xs text-zinc-500">
         <p>© 2026 NDI | Diseño & Web. Todos los derechos reservados.</p>
       </footer>
     </main>
@@ -711,44 +966,53 @@ function PlanCard({
 }) {
   return (
     <article
-      className={`relative flex flex-col justify-between rounded-2xl p-4 sm:p-7 ${
+      className={`relative flex flex-col justify-between rounded-3xl p-5 sm:p-8 transition-all ${
         destacado
-          ? "border-2 border-blue-500 bg-blue-50/50 shadow-lg dark:bg-blue-950/20 shadow-blue-950/20"
+          ? "border-2 border-blue-600 bg-white shadow-xl dark:border-blue-500 dark:bg-zinc-900 lg:-translate-y-2 ring-1 ring-blue-600/20"
           : lanzamiento
-          ? "border border-purple-500/40 bg-purple-50/50 dark:bg-purple-950/20"
-          : "border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/50 shadow-sm"
+          ? "border border-purple-500/30 bg-white dark:border-zinc-800 dark:bg-zinc-900/60 shadow-sm"
+          : "border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/60 shadow-sm"
       }`}
     >
       <div>
         {etiqueta && (
-          <span className="absolute -top-2.5 left-5 rounded-full bg-blue-600 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
+          <span
+            className={`absolute -top-3 left-6 inline-flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm ${
+              destacado ? "bg-blue-600" : "bg-purple-600"
+            }`}
+          >
+            {destacado && <Sparkles className="h-3 w-3" />}
             {etiqueta}
           </span>
         )}
 
-        <h3 className="text-base sm:text-lg font-bold text-zinc-950 dark:text-white">{nombre}</h3>
-        <p className="mt-1 text-[11px] sm:text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">{descripcion}</p>
+        <h3 className="text-lg sm:text-xl font-bold text-zinc-950 dark:text-white">{nombre}</h3>
+        <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">{descripcion}</p>
 
-        <div className="mt-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/70">
-          <p className="text-[8px] sm:text-[9px] uppercase font-bold text-zinc-500">Puesta en marcha</p>
-          <p className="text-xl sm:text-2xl font-black text-zinc-950 dark:text-white">{inicial}</p>
-          <p className="mt-0.5 text-[11px] font-bold text-blue-600 dark:text-blue-400">+ {mensual}</p>
+        <div className="mt-4 rounded-2xl border border-zinc-200/80 bg-zinc-50/80 p-3.5 dark:border-zinc-800 dark:bg-zinc-950/80">
+          <p className="text-[9px] uppercase font-bold text-zinc-500">Puesta en marcha inicial</p>
+          <p className="text-2xl sm:text-3xl font-black text-zinc-950 dark:text-white">{inicial}</p>
+          <p className="mt-0.5 text-xs font-bold text-blue-600 dark:text-blue-400">+ {mensual}</p>
         </div>
 
-        <div className="mt-4 space-y-1.5 sm:space-y-2">
+        <div className="mt-5 space-y-2">
           {features.map((feature) => (
-            <div key={feature} className="flex items-start gap-2 text-[11px] sm:text-xs text-zinc-700 dark:text-zinc-300">
-              <Check className="h-3.5 w-3.5 shrink-0 text-emerald-500 mt-0.5" />
+            <div key={feature} className="flex items-start gap-2 text-xs text-zinc-700 dark:text-zinc-300">
+              <Check className="h-4 w-4 shrink-0 text-emerald-500 mt-0.5" />
               <span>{feature}</span>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="mt-4 pt-3 border-t border-zinc-200 dark:border-zinc-800">
+      <div className="mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800">
         <Link
           href="/register"
-          className="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 py-2 text-xs font-bold text-white transition hover:bg-blue-500"
+          className={`inline-flex w-full items-center justify-center rounded-xl py-2.5 text-xs font-bold transition shadow-sm ${
+            destacado
+              ? "bg-blue-600 text-white hover:bg-blue-500 shadow-blue-600/30"
+              : "bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white"
+          }`}
         >
           Quiero mi página
         </Link>

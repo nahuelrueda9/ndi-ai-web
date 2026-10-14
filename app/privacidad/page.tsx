@@ -1,41 +1,49 @@
+"use client";
+
 import type { ReactNode } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 const SECCIONES = [
-  { id: "responsable", titulo: "1. Responsable" },
-  { id: "datos", titulo: "2. Qué datos podemos tratar" },
-  { id: "finalidades", titulo: "3. Para qué usamos los datos" },
-  { id: "negocios", titulo: "4. Datos cargados por los negocios" },
-  { id: "visitantes", titulo: "5. Visitantes de páginas públicas" },
-  { id: "ia", titulo: "6. Inteligencia artificial" },
-  { id: "proveedores", titulo: "7. Proveedores y transferencias" },
-  { id: "pagos", titulo: "8. Pagos" },
-  { id: "seguridad", titulo: "9. Seguridad y confidencialidad" },
-  { id: "conservacion", titulo: "10. Conservación" },
-  { id: "derechos", titulo: "11. Tus derechos" },
-  { id: "menores", titulo: "12. Personas menores de edad" },
-  { id: "tecnologias", titulo: "13. Cookies y tecnologías similares" },
-  { id: "cambios", titulo: "14. Cambios en esta política" },
-  { id: "contacto", titulo: "15. Contacto" },
+  { id: "responsable", titulo: "1. Responsable del tratamiento" },
+  { id: "datos", titulo: "2. Datos objeto de tratamiento" },
+  { id: "finalidades", titulo: "3. Finalidades del tratamiento" },
+  { id: "negocios", titulo: "4. Datos de comercios y negocios" },
+  { id: "visitantes", titulo: "5. Visitantes de páginas web" },
+  { id: "ia", titulo: "6. Uso de modelos de lenguaje" },
+  { id: "proveedores", titulo: "7. Proveedores tecnológicos" },
+  { id: "pagos", titulo: "8. Gestión de cobros y pagos" },
+  { id: "seguridad", titulo: "9. Medidas de seguridad" },
+  { id: "conservacion", titulo: "10. Plazo de conservación" },
+  { id: "derechos", titulo: "11. Derechos del titular (Ley 25.326)" },
+  { id: "menores", titulo: "12. Menores de edad" },
+  { id: "tecnologias", titulo: "13. Cookies y almacenamiento local" },
+  { id: "cambios", titulo: "14. Modificaciones a la política" },
+  { id: "contacto", titulo: "15. Contacto y ejercicio de derechos" },
 ];
 
 export default function PrivacidadPage() {
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-950 dark:bg-zinc-950 dark:text-white">
-      <div className="border-b border-slate-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-5 sm:px-8">
+    <main className="min-h-screen bg-zinc-50 text-zinc-950 dark:bg-[#0c0d0e] dark:text-zinc-100">
+      <div className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4 sm:px-8">
           <Link
             href="/"
-            className="flex items-center gap-3 font-semibold text-slate-950 dark:text-white"
+            className="flex items-center gap-2.5 font-semibold text-zinc-950 dark:text-white"
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-600 text-sm font-bold text-white">
-              N
-            </span>
-
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-blue-600 p-1">
+              <Image
+                src="/logo-ndi.png"
+                alt="Logo NDI"
+                width={16}
+                height={16}
+                className="h-full w-full object-contain"
+              />
+            </div>
             <div>
-              <p className="text-sm font-bold">NDI AI</p>
-              <p className="text-xs font-normal text-slate-500 dark:text-zinc-500">
-                Páginas inteligentes para negocios
+              <p className="text-sm font-bold leading-tight">NDI | Diseño & Web</p>
+              <p className="text-[11px] font-normal text-zinc-500 dark:text-zinc-400">
+                Diseño y páginas web para negocios
               </p>
             </div>
           </Link>
@@ -43,62 +51,59 @@ export default function PrivacidadPage() {
           <div className="flex items-center gap-2">
             <Link
               href="/terminos"
-              className="hidden rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 sm:inline-flex dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+              className="rounded-xl border border-zinc-300 bg-white px-3.5 py-2 text-xs sm:text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
             >
               Términos
             </Link>
 
             <Link
               href="/"
-              className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+              className="rounded-xl border border-zinc-300 bg-white px-3.5 py-2 text-xs sm:text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
             >
-              Volver
+              Volver al inicio
             </Link>
           </div>
         </div>
       </div>
 
-      <section className="border-b border-slate-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
-        <div className="mx-auto max-w-6xl px-5 py-14 sm:px-8 sm:py-20">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-400">
-            Privacidad y datos personales
+      <section className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
+        <div className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-16">
+          <p className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+            Protección de datos personales
           </p>
 
-          <h1 className="mt-4 max-w-4xl text-4xl font-bold tracking-tight sm:text-5xl">
-            Política de Privacidad de NDI AI
+          <h1 className="mt-3 max-w-4xl text-3xl font-black tracking-tight sm:text-4xl text-zinc-950 dark:text-white">
+            Política de Privacidad
           </h1>
 
-          <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600 dark:text-zinc-400">
-            Esta política explica qué información puede tratar NDI AI, para qué
-            la utiliza, con quién puede compartirla, durante cuánto tiempo puede
-            conservarla y cómo ejercer tus derechos sobre tus datos personales.
+          <p className="mt-3 max-w-3xl text-sm sm:text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
+            En cumplimiento de la Ley N° 25.326 de Protección de los Datos Personales de la República Argentina, esta política describe el tratamiento, conservación y protección de la información recabada a través de NDI | Diseño & Web.
           </p>
 
-          <div className="mt-6 flex flex-wrap gap-3 text-sm text-slate-500 dark:text-zinc-500">
-            <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 dark:border-zinc-800 dark:bg-zinc-900">
-              Última actualización: 11 de agosto de 2026
+          <div className="mt-5 flex flex-wrap gap-2.5 text-xs text-zinc-500 dark:text-zinc-400">
+            <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 dark:border-zinc-800 dark:bg-zinc-900">
+              Última actualización: Octubre de 2026
             </span>
-
-            <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 dark:border-zinc-800 dark:bg-zinc-900">
+            <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 dark:border-zinc-800 dark:bg-zinc-900">
               República Argentina
             </span>
           </div>
         </div>
       </section>
 
-      <div className="mx-auto grid max-w-6xl gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[260px_minmax(0,1fr)] lg:py-14">
-        <aside className="lg:sticky lg:top-6 lg:self-start">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-            <p className="px-2 pb-3 text-xs font-bold uppercase tracking-[0.16em] text-slate-500 dark:text-zinc-500">
+      <div className="mx-auto grid max-w-6xl gap-8 px-5 py-8 sm:px-8 lg:grid-cols-[250px_minmax(0,1fr)] lg:py-12">
+        <aside className="hidden lg:block lg:sticky lg:top-6 lg:self-start">
+          <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <p className="px-2 pb-2 text-[11px] font-bold uppercase tracking-wider text-zinc-500">
               Contenido
             </p>
 
-            <nav className="space-y-1">
+            <nav className="space-y-0.5">
               {SECCIONES.map((seccion) => (
                 <a
                   key={seccion.id}
                   href={`#${seccion.id}`}
-                  className="block rounded-lg px-2 py-2 text-sm text-slate-600 transition hover:bg-slate-100 hover:text-slate-950 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
+                  className="block rounded-lg px-2 py-1.5 text-xs text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
                 >
                   {seccion.titulo}
                 </a>
@@ -107,357 +112,109 @@ export default function PrivacidadPage() {
           </div>
         </aside>
 
-        <article className="space-y-6">
-          <LegalSection id="responsable" titulo="1. Responsable">
+        <article className="space-y-5">
+          <LegalSection id="responsable" titulo="1. Responsable del tratamiento">
             <p>
-              NDI AI es responsable del tratamiento de los datos personales que
-              recolecta directamente para crear cuentas, operar la plataforma,
-              administrar suscripciones, brindar soporte y mantener la seguridad
-              del servicio.
-            </p>
-
-            <p>
-              Cuando un negocio utiliza NDI AI para recibir consultas, reservas,
-              presupuestos u otros datos de sus propios clientes y visitantes,
-              ese negocio también puede actuar como responsable respecto de los
-              datos que decide solicitar y utilizar para su actividad.
-            </p>
-
-            <p>
-              El canal de contacto para consultas de privacidad y ejercicio de
-              derechos se encuentra disponible en la sección
-              <strong> Ayuda</strong> de NDI AI.
+              El responsable de los datos personales recabados para la gestión del servicio es NDI | Diseño & Web, con radicación en Libertador General San Martín, Jujuy, República Argentina, canalizando comunicaciones al correo <strong>soporte@ndiweb.com</strong>.
             </p>
           </LegalSection>
 
-          <LegalSection id="datos" titulo="2. Qué datos podemos tratar">
-            <p>
-              Dependiendo de cómo utilices NDI AI, podemos tratar las siguientes
-              categorías de información:
-            </p>
-
-            <ul className="list-disc space-y-2 pl-5">
-              <li>
-                Datos de cuenta, como nombre, correo electrónico, identificador
-                de usuario y datos necesarios para autenticación.
-              </li>
-
-              <li>
-                Información del negocio, como nombre comercial, rubro, teléfono,
-                correo, dirección, horarios, redes sociales, servicios,
-                productos, precios, imágenes y contenido de la página.
-              </li>
-
-              <li>
-                Información de configuración del asistente, base de conocimiento,
-                instrucciones y preferencias cargadas por el negocio.
-              </li>
-
-              <li>
-                Datos enviados por visitantes, por ejemplo nombre, teléfono,
-                correo electrónico, consultas, solicitudes de presupuesto y datos
-                necesarios para una reserva o turno.
-              </li>
-
-              <li>
-                Información operativa de la plataforma, como eventos de uso,
-                estado de suscripción, consumo de funciones, identificadores
-                técnicos, registros de errores y datos necesarios para prevenir
-                abuso o fraude.
-              </li>
-
-              <li>
-                Información vinculada con pagos, como identificadores de
-                operaciones, estado, importe y referencias técnicas del pago.
-                NDI AI no necesita almacenar los datos completos de una tarjeta
-                para registrar el resultado de una operación procesada por el
-                proveedor de pagos.
-              </li>
+          <LegalSection id="datos" titulo="2. Datos objeto de tratamiento">
+            <p>Podrán recopilarse y procesarse los siguientes datos:</p>
+            <ul className="list-disc space-y-1.5 pl-5">
+              <li><strong>Datos de contacto y cuenta:</strong> Nombre, dirección de correo electrónico, teléfono y credenciales de autenticación.</li>
+              <li><strong>Información comercial del negocio:</strong> Razón social o de fantasía, rubro, lista de productos/servicios, horarios y datos para transferencias.</li>
+              <li><strong>Datos de navegación técnica:</strong> Registros indispensables de seguridad, dirección IP, fecha/hora y métricas agregadas anónimas provistas por la infraestructura.</li>
             </ul>
+          </LegalSection>
 
+          <LegalSection id="finalidades" titulo="3. Finalidades del tratamiento">
             <p>
-              No solicitamos deliberadamente datos sensibles para el uso normal
-              de la plataforma. Los usuarios y negocios no deben cargar datos
-              sensibles que no sean estrictamente necesarios y legalmente
-              permitidos.
+              La información recolectada se utiliza exclusivamente para: proveer los servicios contratados, configurar las páginas web solicitadas, brindar asistencia técnica personalizada, procesar transacciones y cumplir obligaciones fiscales o reglamentarias. NDI | Diseño & Web no comercializa bases de datos.
             </p>
           </LegalSection>
 
-          <LegalSection id="finalidades" titulo="3. Para qué usamos los datos">
-            <p>Los datos pueden utilizarse para:</p>
-
-            <ul className="list-disc space-y-2 pl-5">
-              <li>Crear, autenticar y administrar cuentas.</li>
-              <li>Crear y publicar páginas de negocios.</li>
-              <li>Mostrar servicios, productos y datos de contacto.</li>
-              <li>Procesar consultas, reservas y solicitudes de presupuesto.</li>
-              <li>
-                Configurar y operar funciones de inteligencia artificial cuando
-                el plan contratado las incluya.
-              </li>
-              <li>Administrar planes, pagos y renovaciones.</li>
-              <li>Mostrar estadísticas de uso al negocio.</li>
-              <li>Prevenir fraude, abuso, accesos no autorizados y fallas.</li>
-              <li>Brindar soporte y resolver problemas técnicos.</li>
-              <li>
-                Cumplir obligaciones legales y atender requerimientos válidos de
-                autoridades competentes.
-              </li>
-            </ul>
-
+          <LegalSection id="negocios" titulo="4. Datos de comercios y negocios">
             <p>
-              Los datos no deben utilizarse para finalidades incompatibles con
-              aquellas que motivaron su recolección.
+              Cada cliente determina la información que incorpora en su catálogo o página. NDI | Diseño & Web actúa como prestador de la infraestructura técnica y no asume titularidad sobre los datos que los clientes publiquen u obtengan de terceros.
             </p>
           </LegalSection>
 
-          <LegalSection id="negocios" titulo="4. Datos cargados por los negocios">
+          <LegalSection id="visitantes" titulo="5. Visitantes de páginas web">
             <p>
-              Cada negocio decide qué información comercial carga en su panel y
-              qué datos solicita a sus clientes mediante formularios, consultas,
-              presupuestos o reservas.
-            </p>
-
-            <p>
-              El negocio es responsable de contar con una base legítima para
-              tratar los datos de sus propios clientes, informarles
-              adecuadamente sobre el tratamiento y responder las solicitudes que
-              correspondan.
-            </p>
-
-            <p>
-              NDI AI procesa esta información para prestar las funciones
-              solicitadas por el negocio y no adquiere propiedad sobre los datos
-              personales cargados por sus usuarios.
+              Los visitantes de las páginas web desarrolladas pueden consultar información sin necesidad de registro. En caso de remitir consultas por WhatsApp o turnos, la comunicación se efectúa en forma directa con el comercio correspondiente.
             </p>
           </LegalSection>
 
-          <LegalSection id="visitantes" titulo="5. Visitantes de páginas públicas">
+          <LegalSection id="ia" titulo="6. Uso de modelos de lenguaje">
             <p>
-              Cuando una persona visita una página creada con NDI AI puede
-              navegar información pública del negocio sin crear una cuenta.
-            </p>
-
-            <p>
-              Si decide enviar un formulario, una consulta, una solicitud de
-              presupuesto o una reserva, los datos proporcionados se registran
-              para permitir que el negocio atienda esa solicitud.
-            </p>
-
-            <p>
-              La página también puede registrar eventos básicos, como una visita,
-              un contacto, una reserva creada o un clic en WhatsApp, con el fin
-              de generar estadísticas para el negocio y medir el funcionamiento
-              de la página.
+              En caso de contratarse planes con asistente automatizado, la información comercial provista se transfiere al procesador del modelo con el único propósito de responder las consultas entrantes del visitante.
             </p>
           </LegalSection>
 
-          <LegalSection id="ia" titulo="6. Inteligencia artificial">
+          <LegalSection id="proveedores" titulo="7. Proveedores tecnológicos">
             <p>
-              En Business IA, determinados datos pueden enviarse a proveedores
-              tecnológicos de modelos de inteligencia artificial para generar
-              respuestas solicitadas por el usuario o visitante.
-            </p>
-
-            <p>
-              El contexto enviado puede incluir el mensaje de la consulta y la
-              información del negocio necesaria para responder, como servicios,
-              horarios, instrucciones o fragmentos de la base de conocimiento.
-            </p>
-
-            <p>
-              El negocio debe evitar incorporar datos personales o sensibles
-              innecesarios en instrucciones, documentos y bases de conocimiento.
-              NDI AI procura limitar la información utilizada por la IA a lo
-              necesario para ejecutar la función solicitada.
+              Se utilizan plataformas de infraestructura y hosting seguras (Vercel, Firebase/Google Cloud, Mercado Pago). Estos proveedores aplican estándares internacionales de protección y seguridad de la información.
             </p>
           </LegalSection>
 
-          <LegalSection id="proveedores" titulo="7. Proveedores y transferencias">
+          <LegalSection id="pagos" titulo="8. Gestión de cobros y pagos">
             <p>
-              NDI AI utiliza proveedores tecnológicos para poder prestar el
-              servicio. Según la función utilizada, pueden intervenir servicios
-              de infraestructura, alojamiento, autenticación, bases de datos,
-              almacenamiento, procesamiento de imágenes, inteligencia artificial
-              y pagos.
-            </p>
-
-            <p>
-              Entre las tecnologías utilizadas actualmente por NDI AI se
-              encuentran servicios de Firebase / Google, Vercel, ImageKit,
-              OpenRouter y Mercado Pago. Esta lista puede cambiar cuando sea
-              necesario sustituir o incorporar proveedores para operar la
-              plataforma.
-            </p>
-
-            <p>
-              Algunos proveedores pueden procesar o almacenar información fuera
-              de la República Argentina. En esos casos, el tratamiento y las
-              transferencias se realizan conforme a las reglas aplicables y a
-              las condiciones del proveedor correspondiente.
-            </p>
-
-            <p>
-              NDI AI no vende datos personales a anunciantes ni comercializa
-              bases de datos personales de usuarios o visitantes.
+              Las operaciones monetarias con tarjeta o dinero en cuenta se gestionan a través de Mercado Pago. NDI | Diseño & Web no almacena datos de tarjetas de crédito o débito en sus servidores propios.
             </p>
           </LegalSection>
 
-          <LegalSection id="pagos" titulo="8. Pagos">
+          <LegalSection id="seguridad" titulo="9. Medidas de seguridad">
             <p>
-              Los pagos de NDI AI pueden procesarse mediante Mercado Pago u otro
-              proveedor que se informe al momento de contratar.
-            </p>
-
-            <p>
-              El proveedor de pagos procesa la información necesaria para
-              autorizar la operación conforme a sus propias políticas y
-              condiciones. NDI AI recibe y conserva los datos técnicos necesarios
-              para identificar la transacción, acreditar el plan contratado y
-              administrar la facturación.
+              Se implementan protocolos de cifrado HTTPS/SSL, reglas de acceso restringido y mecanismos de autenticación seguros para preservar la integridad y confidencialidad de los datos.
             </p>
           </LegalSection>
 
-          <LegalSection id="seguridad" titulo="9. Seguridad y confidencialidad">
+          <LegalSection id="conservacion" titulo="10. Plazo de conservación">
             <p>
-              NDI AI aplica medidas técnicas y organizativas destinadas a
-              proteger los datos contra acceso no autorizado, alteración,
-              pérdida, divulgación o uso indebido.
-            </p>
-
-            <p>
-              Entre otras medidas, se utilizan autenticación, controles de
-              permisos por empresa, reglas de acceso a bases de datos, separación
-              de funciones de servidor y cliente y restricciones sobre campos de
-              facturación y operaciones internas.
-            </p>
-
-            <p>
-              Ningún sistema conectado a Internet puede garantizar seguridad
-              absoluta. Si se detectara un incidente relevante, se evaluarán las
-              medidas técnicas y legales correspondientes.
+              Los datos se conservan durante el período que perdure la relación contractual o mientras resulte exigible para dar cumplimiento a obligaciones contables o legales aplicables en el país.
             </p>
           </LegalSection>
 
-          <LegalSection id="conservacion" titulo="10. Conservación">
+          <LegalSection id="derechos" titulo="11. Derechos del titular (Ley 25.326)">
             <p>
-              Los datos se conservan durante el tiempo necesario para prestar el
-              servicio, mantener la cuenta, atender obligaciones contractuales,
-              resolver reclamos, prevenir fraude y cumplir obligaciones legales.
+              El titular de los datos personales tiene la facultad de ejercer el derecho de acceso a los mismos en forma gratuita a intervalos no inferiores a seis meses, salvo que se acredite un interés legítimo al efecto conforme lo establecido en el artículo 14, inciso 3 de la Ley Nº 25.326.
             </p>
-
             <p>
-              Cuando un dato deje de ser necesario para la finalidad que motivó
-              su recolección, podrá ser eliminado, anonimizado o conservado
-              únicamente cuando exista una obligación o fundamento legítimo para
-              hacerlo.
+              Asimismo, asiste el derecho de solicitar la rectificación, actualización o supresión de los datos registrados escribiendo a <strong>soporte@ndiweb.com</strong>.
             </p>
-
-            <p>
-              Los plazos pueden variar según el tipo de información. Los
-              registros vinculados con pagos, seguridad o cumplimiento legal
-              pueden requerir períodos de conservación distintos a los datos
-              operativos de una página o consulta.
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              La AGENCIA DE ACCESO A LA INFORMACIÓN PÚBLICA, en su carácter de Órgano de Control de la Ley N° 25.326, tiene la atribución de atender las denuncias y reclamos que se interpongan con relación al incumplimiento de las normas sobre protección de datos personales.
             </p>
           </LegalSection>
 
-          <LegalSection id="derechos" titulo="11. Tus derechos">
+          <LegalSection id="menores" titulo="12. Menores de edad">
             <p>
-              Conforme a la normativa argentina de protección de datos
-              personales, las personas titulares pueden solicitar información,
-              acceso, rectificación, actualización y, cuando corresponda,
-              supresión de sus datos personales.
-            </p>
-
-            <p>
-              Para ejercer estos derechos deberá acreditarse razonablemente la
-              identidad de la persona solicitante y especificarse el pedido.
-              Las solicitudes se pueden iniciar mediante el canal de privacidad
-              publicado en la sección Ayuda.
-            </p>
-
-            <p>
-              De acuerdo con la normativa vigente, el derecho de acceso debe ser
-              respondido dentro del plazo legal aplicable y las solicitudes de
-              rectificación, actualización o supresión deben atenderse dentro de
-              los plazos previstos por la Ley 25.326 y su reglamentación.
-            </p>
-
-            <p>
-              La Agencia de Acceso a la Información Pública (AAIP) es la
-              autoridad de control en materia de protección de datos personales
-              en Argentina y puede recibir denuncias por incumplimientos de la
-              normativa aplicable.
+              Los servicios están destinados a personas con capacidad legal para contratar. No se recaban deliberadamente datos personales de menores de edad.
             </p>
           </LegalSection>
 
-          <LegalSection id="menores" titulo="12. Personas menores de edad">
+          <LegalSection id="tecnologias" titulo="13. Cookies y almacenamiento local">
             <p>
-              NDI AI está orientado a la gestión de negocios y no está diseñado
-              específicamente para ser contratado por personas menores de edad.
-            </p>
-
-            <p>
-              Los negocios que utilicen la plataforma y reciban datos de menores
-              deben cumplir las obligaciones especiales que resulten aplicables
-              y evitar solicitar información innecesaria.
+              Se utiliza almacenamiento local exclusivamente con fines técnicos, como conservar la preferencia de tema visual (modo claro u oscuro) y mantener la sesión del usuario.
             </p>
           </LegalSection>
 
-          <LegalSection id="tecnologias" titulo="13. Cookies y tecnologías similares">
+          <LegalSection id="cambios" titulo="14. Modificaciones a la política">
             <p>
-              NDI AI puede utilizar cookies, almacenamiento local u otras
-              tecnologías equivalentes necesarias para mantener sesiones,
-              autenticación, seguridad, preferencias y funcionamiento de la
-              plataforma.
-            </p>
-
-            <p>
-              Si en el futuro se incorporan tecnologías adicionales con fines
-              publicitarios o de seguimiento que requieran información o
-              consentimiento específico, se actualizará esta política y, cuando
-              corresponda, se solicitará la elección del usuario.
+              Esta política puede actualizarse ante cambios normativos o técnicos. Cualquier modificación será publicada en esta misma página indicando la fecha de revisión.
             </p>
           </LegalSection>
 
-          <LegalSection id="cambios" titulo="14. Cambios en esta política">
+          <LegalSection id="contacto" titulo="15. Contacto y ejercicio de derechos">
             <p>
-              Esta política puede actualizarse por cambios legales, técnicos o
-              funcionales. La versión vigente indicará su fecha de última
-              actualización.
+              Para ejercer los derechos de acceso, rectificación o supresión, contactarse con:
             </p>
-
-            <p>
-              Cuando un cambio sea relevante para la forma en que se tratan datos
-              personales, NDI AI procurará informarlo mediante la plataforma u
-              otro canal disponible.
+            <p className="font-semibold text-zinc-900 dark:text-zinc-200">
+              Correo: soporte@ndiweb.com<br />
+              Domicilio: Libertador General San Martín, Jujuy, Argentina.
             </p>
           </LegalSection>
-
-          <LegalSection id="contacto" titulo="15. Contacto">
-            <p>
-              Para consultas de privacidad o para ejercer derechos sobre datos
-              personales, utilizá el canal de contacto publicado en la sección
-              <strong> Ayuda</strong> de NDI AI.
-            </p>
-
-            <p>
-              Para poder tramitar correctamente un pedido de acceso,
-              rectificación, actualización o supresión, puede ser necesario
-              verificar la identidad de la persona solicitante.
-            </p>
-          </LegalSection>
-
-          <div className="rounded-2xl border border-blue-200 bg-blue-50 p-5 text-sm leading-6 text-blue-900 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-200">
-            Esta Política de Privacidad complementa los{" "}
-            <Link
-              href="/terminos"
-              className="font-semibold underline underline-offset-2"
-            >
-              Términos y Condiciones de NDI AI
-            </Link>
-            .
-          </div>
         </article>
       </div>
     </main>
@@ -476,13 +233,13 @@ function LegalSection({
   return (
     <section
       id={id}
-      className="scroll-mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-zinc-800 dark:bg-zinc-900"
+      className="scroll-mt-6 rounded-2xl border border-zinc-200 bg-white p-5 sm:p-7 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
     >
-      <h2 className="text-xl font-bold tracking-tight text-slate-950 dark:text-white">
+      <h2 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-950 dark:text-white">
         {titulo}
       </h2>
 
-      <div className="mt-4 space-y-4 text-sm leading-7 text-slate-600 sm:text-base dark:text-zinc-400">
+      <div className="mt-3 space-y-3 text-xs sm:text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
         {children}
       </div>
     </section>

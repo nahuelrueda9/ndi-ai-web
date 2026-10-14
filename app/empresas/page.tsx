@@ -89,102 +89,43 @@ const NOMBRES_ROL: Record<
 };
 
 export default function EmpresasPage() {
-  const [authCargando, setAuthCargando] =
-    useState(true);
+  const [authCargando, setAuthCargando] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
 
-  const [user, setUser] =
-    useState<User | null>(null);
+  const [empresasPropias, setEmpresasPropias] = useState<Empresa[]>([]);
+  const [empresasCompartidas, setEmpresasCompartidas] = useState<Empresa[]>([]);
 
-  const [
-    empresasPropias,
-    setEmpresasPropias,
-  ] = useState<Empresa[]>([]);
+  const [cargandoPropias, setCargandoPropias] = useState(true);
+  const [cargandoCompartidas, setCargandoCompartidas] = useState(true);
 
-  const [
-    empresasCompartidas,
-    setEmpresasCompartidas,
-  ] = useState<Empresa[]>([]);
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
-  const [
-    cargandoPropias,
-    setCargandoPropias,
-  ] = useState(true);
+  const [nombre, setNombre] = useState("");
+  const [rubro, setRubro] = useState("");
+  const [email, setEmail] = useState("");
+  const [telefono, setTelefono] = useState("");
 
-  const [
-    cargandoCompartidas,
-    setCargandoCompartidas,
-  ] = useState(true);
+  const [guardando, setGuardando] = useState(false);
 
-  const [
-    mostrarFormulario,
-    setMostrarFormulario,
-  ] = useState(false);
+  const [errorFormulario, setErrorFormulario] = useState("");
+  const [errorPropias, setErrorPropias] = useState("");
+  const [errorCompartidas, setErrorCompartidas] = useState("");
 
-  const [nombre, setNombre] =
-    useState("");
-
-  const [rubro, setRubro] =
-    useState("");
-
-  const [email, setEmail] =
-    useState("");
-
-  const [telefono, setTelefono] =
-    useState("");
-
-  const [guardando, setGuardando] =
-    useState(false);
-
-  const [
-    errorFormulario,
-    setErrorFormulario,
-  ] = useState("");
-
-  const [
-    errorPropias,
-    setErrorPropias,
-  ] = useState("");
-
-  const [
-    errorCompartidas,
-    setErrorCompartidas,
-  ] = useState("");
-
-  const [
-    empresaAEliminar,
-    setEmpresaAEliminar,
-  ] = useState<Empresa | null>(null);
-
-  const [
-    confirmacionEliminacion,
-    setConfirmacionEliminacion,
-  ] = useState("");
-
-  const [
-    eliminandoEmpresa,
-    setEliminandoEmpresa,
-  ] = useState(false);
-
-  const [
-    errorEliminacion,
-    setErrorEliminacion,
-  ] = useState("");
+  const [empresaAEliminar, setEmpresaAEliminar] = useState<Empresa | null>(null);
+  const [confirmacionEliminacion, setConfirmacionEliminacion] = useState("");
+  const [eliminandoEmpresa, setEliminandoEmpresa] = useState(false);
+  const [errorEliminacion, setErrorEliminacion] = useState("");
 
   useEffect(() => {
-    const unsubscribeAuth =
-      onAuthStateChanged(
-        auth,
-        (currentUser) => {
-          if (!currentUser) {
-            window.location.href =
-              "/login";
-            return;
-          }
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+      if (!currentUser) {
+        window.location.href = "/login";
+        return;
+      }
 
-          setUser(currentUser);
-          setAuthCargando(false);
-        }
-      );
+      setUser(currentUser);
+      setAuthCargando(false);
+    });
 
     return () => unsubscribeAuth();
   }, []);
@@ -214,192 +155,124 @@ export default function EmpresasPage() {
       where("estado", "==", "activo")
     );
 
-    const unsubscribeEmpresas =
-      onSnapshot(
-        empresasQuery,
-        (snapshot) => {
-          if (!activo) {
-            return;
-          }
-
-          const empresasData =
-            snapshot.docs.map(
-              (documento) => ({
-                id: documento.id,
-                ...(documento.data() as Omit<
-                  Empresa,
-                  "id" | "acceso"
-                >),
-                acceso:
-                  "propietario" as const,
-              })
-            );
-
-          setEmpresasPropias(
-            empresasData
-          );
-
-          setErrorPropias("");
-          setCargandoPropias(false);
-        },
-        (firebaseError) => {
-          console.error(
-            "Error al cargar empresas propias:",
-            firebaseError
-          );
-
-          if (!activo) {
-            return;
-          }
-
-          setErrorPropias(
-            "No se pudieron cargar tus empresas."
-          );
-
-          setCargandoPropias(false);
+    const unsubscribeEmpresas = onSnapshot(
+      empresasQuery,
+      (snapshot) => {
+        if (!activo) {
+          return;
         }
-      );
 
-    const unsubscribeMembresias =
-      onSnapshot(
-        membresiasQuery,
-        async (snapshot) => {
-          const numeroCarga =
-            ++cargaCompartidasActual;
+        const empresasData = snapshot.docs.map((documento) => ({
+          id: documento.id,
+          ...(documento.data() as Omit<Empresa, "id" | "acceso">),
+          acceso: "propietario" as const,
+        }));
 
-          try {
-            const empresasPorId =
-              new Map<
-                string,
-                {
-                  rol: RolEquipo;
-                  referencia: DocumentReference;
-                }
-              >();
+        setEmpresasPropias(empresasData);
+        setErrorPropias("");
+        setCargandoPropias(false);
+      },
+      (firebaseError) => {
+        console.error("Error al cargar empresas propias:", firebaseError);
 
-            snapshot.docs.forEach(
-              (documento) => {
-                const empresaReferencia =
-                  documento.ref.parent.parent;
+        if (!activo) {
+          return;
+        }
 
-                if (!empresaReferencia) {
-                  return;
-                }
+        setErrorPropias("No se pudieron cargar tus empresas.");
+        setCargandoPropias(false);
+      }
+    );
 
-                const membresia =
-                  documento.data() as Membresia;
+    const unsubscribeMembresias = onSnapshot(
+      membresiasQuery,
+      async (snapshot) => {
+        const numeroCarga = ++cargaCompartidasActual;
 
-                empresasPorId.set(
-                  empresaReferencia.id,
-                  {
-                    rol:
-                      membresia.rol ??
-                      "operador",
-                    referencia:
-                      empresaReferencia,
-                  }
-                );
-              }
-            );
+        try {
+          const empresasPorId = new Map<
+            string,
+            {
+              rol: RolEquipo;
+              referencia: DocumentReference;
+            }
+          >();
 
-            const resultados =
-              await Promise.all(
-                Array.from(
-                  empresasPorId.entries()
-                ).map(
-                  async ([
-                    empresaId,
-                    acceso,
-                  ]) => {
-                    const empresaSnapshot =
-                      await getDoc(
-                        acceso.referencia
-                      );
+          snapshot.docs.forEach((documento) => {
+            const empresaReferencia = documento.ref.parent.parent;
 
-                    if (
-                      !empresaSnapshot.exists()
-                    ) {
-                      return null;
-                    }
-
-                    return {
-                      id: empresaId,
-                      ...(empresaSnapshot.data() as Omit<
-                        Empresa,
-                        | "id"
-                        | "acceso"
-                        | "rol"
-                      >),
-                      acceso:
-                        "miembro" as const,
-                      rol: acceso.rol,
-                    };
-                  }
-                )
-              );
-
-            if (
-              !activo ||
-              numeroCarga !==
-                cargaCompartidasActual
-            ) {
+            if (!empresaReferencia) {
               return;
             }
 
-            setEmpresasCompartidas(
-              resultados.filter(
-                (empresa) => empresa !== null
-              )
-            );
+            const membresia = documento.data() as Membresia;
 
-            setErrorCompartidas("");
-          } catch (firebaseError) {
-            console.error(
-              "Error al cargar empresas compartidas:",
-              firebaseError
-            );
+            empresasPorId.set(empresaReferencia.id, {
+              rol: membresia.rol ?? "operador",
+              referencia: empresaReferencia,
+            });
+          });
 
-            if (
-              activo &&
-              numeroCarga ===
-                cargaCompartidasActual
-            ) {
-              setErrorCompartidas(
-                "No se pudieron cargar las empresas donde participás."
-              );
-            }
-          } finally {
-            if (
-              activo &&
-              numeroCarga ===
-                cargaCompartidasActual
-            ) {
-              setCargandoCompartidas(
-                false
-              );
-            }
-          }
-        },
-        (firebaseError) => {
-          console.error(
-            "Error al cargar membresías:",
-            firebaseError
+          const resultados = await Promise.all(
+            Array.from(empresasPorId.entries()).map(
+              async ([empresaId, acceso]) => {
+                const empresaSnapshot = await getDoc(acceso.referencia);
+
+                if (!empresaSnapshot.exists()) {
+                  return null;
+                }
+
+                return {
+                  id: empresaId,
+                  ...(empresaSnapshot.data() as Omit<
+                    Empresa,
+                    "id" | "acceso" | "rol"
+                  >),
+                  acceso: "miembro" as const,
+                  rol: acceso.rol,
+                };
+              }
+            )
           );
 
-          if (!activo) {
+          if (!activo || numeroCarga !== cargaCompartidasActual) {
             return;
           }
 
-          setErrorCompartidas(
-            firebaseError.code ===
-              "failed-precondition"
-              ? "Firestore necesita crear un índice para mostrar las empresas compartidas."
-              : "No se pudieron cargar las empresas donde participás."
+          setEmpresasCompartidas(
+            resultados.filter((empresa) => empresa !== null)
           );
+          setErrorCompartidas("");
+        } catch (firebaseError) {
+          console.error("Error al cargar empresas compartidas:", firebaseError);
 
-          setCargandoCompartidas(false);
+          if (activo && numeroCarga === cargaCompartidasActual) {
+            setErrorCompartidas(
+              "No se pudieron cargar las empresas donde participás."
+            );
+          }
+        } finally {
+          if (activo && numeroCarga === cargaCompartidasActual) {
+            setCargandoCompartidas(false);
+          }
         }
-      );
+      },
+      (firebaseError) => {
+        console.error("Error al cargar membresías:", firebaseError);
+
+        if (!activo) {
+          return;
+        }
+
+        setErrorCompartidas(
+          firebaseError.code === "failed-precondition"
+            ? "Firestore necesita crear un índice para mostrar las empresas compartidas."
+            : "No se pudieron cargar las empresas donde participás."
+        );
+
+        setCargandoCompartidas(false);
+      }
+    );
 
     return () => {
       activo = false;
@@ -409,76 +282,45 @@ export default function EmpresasPage() {
   }, [user]);
 
   const empresas = useMemo(() => {
-    const resultado =
-      new Map<string, Empresa>();
+    const resultado = new Map<string, Empresa>();
 
-    empresasPropias.forEach(
-      (empresa) => {
-        resultado.set(
-          empresa.id,
-          empresa
-        );
+    empresasPropias.forEach((empresa) => {
+      resultado.set(empresa.id, empresa);
+    });
+
+    empresasCompartidas.forEach((empresa) => {
+      if (!resultado.has(empresa.id)) {
+        resultado.set(empresa.id, empresa);
       }
-    );
+    });
 
-    empresasCompartidas.forEach(
-      (empresa) => {
-        if (
-          !resultado.has(empresa.id)
-        ) {
-          resultado.set(
-            empresa.id,
-            empresa
-          );
-        }
-      }
-    );
-
-    return Array.from(
-      resultado.values()
-    );
-  }, [
-    empresasPropias,
-    empresasCompartidas,
-  ]);
+    return Array.from(resultado.values());
+  }, [empresasPropias, empresasCompartidas]);
 
   const loading =
     authCargando ||
-    (Boolean(user) &&
-      (cargandoPropias ||
-        cargandoCompartidas));
+    (Boolean(user) && (cargandoPropias || cargandoCompartidas));
 
   const error =
-    errorFormulario ||
-    errorPropias ||
-    errorCompartidas;
+    errorFormulario || errorPropias || errorCompartidas;
 
-  async function handleCrearEmpresa(
-    event: FormEvent<HTMLFormElement>
-  ) {
+  async function handleCrearEmpresa(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!user || guardando) {
       return;
     }
 
-    const nombreLimpio =
-      nombre.trim();
-
-    const rubroLimpio =
-      rubro.trim();
+    const nombreLimpio = nombre.trim();
+    const rubroLimpio = rubro.trim();
 
     if (!nombreLimpio) {
-      setErrorFormulario(
-        "Ingresá el nombre de la empresa."
-      );
+      setErrorFormulario("Ingresá el nombre de la empresa.");
       return;
     }
 
     if (!rubroLimpio) {
-      setErrorFormulario(
-        "Ingresá el rubro de la empresa."
-      );
+      setErrorFormulario("Ingresá el rubro de la empresa.");
       return;
     }
 
@@ -486,21 +328,16 @@ export default function EmpresasPage() {
     setGuardando(true);
 
     try {
-      await addDoc(
-        collection(db, "companies"),
-        {
-          nombre: nombreLimpio,
-          rubro: rubroLimpio,
-          email: email.trim(),
-          telefono: telefono.trim(),
-          userId: user.uid,
-          plan: "free",
-          createdAt:
-            serverTimestamp(),
-          updatedAt:
-            serverTimestamp(),
-        }
-      );
+      await addDoc(collection(db, "companies"), {
+        nombre: nombreLimpio,
+        rubro: rubroLimpio,
+        email: email.trim(),
+        telefono: telefono.trim(),
+        userId: user.uid,
+        plan: "free",
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
 
       setNombre("");
       setRubro("");
@@ -508,22 +345,14 @@ export default function EmpresasPage() {
       setTelefono("");
       setMostrarFormulario(false);
     } catch (firebaseError) {
-      console.error(
-        "Error al crear empresa:",
-        firebaseError
-      );
-
-      setErrorFormulario(
-        "No se pudo guardar la empresa."
-      );
+      console.error("Error al crear empresa:", firebaseError);
+      setErrorFormulario("No se pudo guardar la empresa.");
     } finally {
       setGuardando(false);
     }
   }
 
-  function abrirEliminarEmpresa(
-    empresa: Empresa,
-  ) {
+  function abrirEliminarEmpresa(empresa: Empresa) {
     setEmpresaAEliminar(empresa);
     setConfirmacionEliminacion("");
     setErrorEliminacion("");
@@ -540,23 +369,15 @@ export default function EmpresasPage() {
   }
 
   async function handleEliminarEmpresa() {
-    if (
-      !user ||
-      !empresaAEliminar ||
-      eliminandoEmpresa
-    ) {
+    if (!user || !empresaAEliminar || eliminandoEmpresa) {
       return;
     }
 
-    const confirmacion =
-      confirmacionEliminacion.trim();
+    const confirmacion = confirmacionEliminacion.trim();
 
-    if (
-      confirmacion !==
-      empresaAEliminar.nombre.trim()
-    ) {
+    if (confirmacion !== empresaAEliminar.nombre.trim()) {
       setErrorEliminacion(
-        "Escribí exactamente el nombre de la empresa para confirmar.",
+        "Escribí exactamente el nombre de la empresa para confirmar."
       );
       return;
     }
@@ -565,54 +386,38 @@ export default function EmpresasPage() {
     setErrorEliminacion("");
 
     try {
-      const idToken =
-        await user.getIdToken(true);
+      const idToken = await user.getIdToken(true);
 
-      const response =
-        await fetch(
-          "/api/companies/delete",
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type":
-                "application/json",
-              Authorization:
-                `Bearer ${idToken}`,
-            },
-            body: JSON.stringify({
-              empresaId:
-                empresaAEliminar.id,
-              confirmacion,
-            }),
-          },
-        );
+      const response = await fetch("/api/companies/delete", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          empresaId: empresaAEliminar.id,
+          confirmacion,
+        }),
+      });
 
-      const data =
-        (await response.json()) as {
-          ok?: boolean;
-          error?: string;
-        };
+      const data = (await response.json()) as {
+        ok?: boolean;
+        error?: string;
+      };
 
       if (!response.ok) {
-        throw new Error(
-          data.error ||
-            "No se pudo eliminar la empresa.",
-        );
+        throw new Error(data.error || "No se pudo eliminar la empresa.");
       }
 
       setEmpresaAEliminar(null);
       setConfirmacionEliminacion("");
       setErrorEliminacion("");
     } catch (deleteError) {
-      console.error(
-        "Error al eliminar empresa:",
-        deleteError,
-      );
-
+      console.error("Error al eliminar empresa:", deleteError);
       setErrorEliminacion(
         deleteError instanceof Error
           ? deleteError.message
-          : "No se pudo eliminar la empresa.",
+          : "No se pudo eliminar la empresa."
       );
     } finally {
       setEliminandoEmpresa(false);
@@ -624,14 +429,9 @@ export default function EmpresasPage() {
       <main className="flex min-h-screen items-center justify-center bg-background px-6 text-foreground">
         <Card className="w-full max-w-sm p-6 text-center">
           <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-zinc-700 dark:border-t-blue-500" />
-
-          <p className="font-medium">
-            Cargando empresas...
-          </p>
-
+          <p className="font-medium">Cargando empresas...</p>
           <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-zinc-500 sm:text-sm">
-            Estamos preparando tu espacio
-            de trabajo.
+            Estamos preparando tu espacio de trabajo.
           </p>
         </Card>
       </main>
@@ -660,7 +460,7 @@ export default function EmpresasPage() {
                         priority
                       />
                     </div>
-                    Tus espacios en NDI AI
+                    Tus espacios en NDI | Diseño & Web
                   </div>
 
                   <h1 className="mt-2 text-xl font-bold tracking-tight text-white sm:mt-3 sm:text-3xl">
@@ -680,10 +480,7 @@ export default function EmpresasPage() {
                         user?.email ||
                         "Usuario"
                       }
-                      src={
-                        user?.photoURL ||
-                        undefined
-                      }
+                      src={user?.photoURL || undefined}
                       size="sm"
                     />
 
@@ -701,11 +498,7 @@ export default function EmpresasPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      setMostrarFormulario(
-                        (estadoAnterior) =>
-                          !estadoAnterior
-                      );
-
+                      setMostrarFormulario((estadoAnterior) => !estadoAnterior);
                       setErrorFormulario("");
                     }}
                     className={`inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold transition sm:min-h-9 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-2 sm:text-xs ${
@@ -801,27 +594,19 @@ export default function EmpresasPage() {
                 </h2>
 
                 <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
-                  Cargá los datos principales.
-                  Después elegís el plan que querés
-                  contratar para este negocio.
+                  Cargá los datos principales. Después elegís el plan que querés contratar para este negocio.
                 </p>
               </div>
 
               <form
-                onSubmit={
-                  handleCrearEmpresa
-                }
+                onSubmit={handleCrearEmpresa}
                 className="grid gap-3 p-4 sm:gap-4 sm:p-5 md:grid-cols-2"
               >
                 <Input
                   id="nombre"
                   label="Nombre de la empresa"
                   value={nombre}
-                  onChange={(event) =>
-                    setNombre(
-                      event.target.value
-                    )
-                  }
+                  onChange={(event) => setNombre(event.target.value)}
                   placeholder="Ejemplo: Clínica Norte"
                   required
                 />
@@ -830,11 +615,7 @@ export default function EmpresasPage() {
                   id="rubro"
                   label="Rubro"
                   value={rubro}
-                  onChange={(event) =>
-                    setRubro(
-                      event.target.value
-                    )
-                  }
+                  onChange={(event) => setRubro(event.target.value)}
                   placeholder="Ejemplo: Consultorio odontológico"
                   required
                 />
@@ -844,11 +625,7 @@ export default function EmpresasPage() {
                   label="Correo"
                   type="email"
                   value={email}
-                  onChange={(event) =>
-                    setEmail(
-                      event.target.value
-                    )
-                  }
+                  onChange={(event) => setEmail(event.target.value)}
                   placeholder="contacto@tunegocio.com"
                 />
 
@@ -857,11 +634,7 @@ export default function EmpresasPage() {
                   label="Teléfono"
                   type="tel"
                   value={telefono}
-                  onChange={(event) =>
-                    setTelefono(
-                      event.target.value
-                    )
-                  }
+                  onChange={(event) => setTelefono(event.target.value)}
                   placeholder="+54 9 11 1234-5678"
                 />
 
@@ -870,25 +643,15 @@ export default function EmpresasPage() {
                     type="button"
                     variant="ghost"
                     onClick={() => {
-                      setMostrarFormulario(
-                        false
-                      );
-
-                      setErrorFormulario(
-                        ""
-                      );
+                      setMostrarFormulario(false);
+                      setErrorFormulario("");
                     }}
                   >
                     Cancelar
                   </Button>
 
-                  <Button
-                    type="submit"
-                    disabled={guardando}
-                  >
-                    {guardando
-                      ? "Guardando..."
-                      : "Guardar empresa"}
+                  <Button type="submit" disabled={guardando}>
+                    {guardando ? "Guardando..." : "Guardar empresa"}
                   </Button>
                 </div>
               </form>
@@ -914,16 +677,12 @@ export default function EmpresasPage() {
               </h2>
 
               <p className="mx-auto mt-1.5 max-w-md text-xs leading-5 text-slate-600 dark:text-zinc-500 sm:mt-2 sm:text-sm sm:leading-6">
-                Creá una empresa o aceptá una
-                invitación para comenzar a
-                trabajar en NDI AI.
+                Creá una empresa o aceptá una invitación para comenzar a administrar tu página en NDI | Diseño & Web.
               </p>
 
               <Button
                 className="mt-4 sm:mt-6"
-                onClick={() =>
-                  setMostrarFormulario(true)
-                }
+                onClick={() => setMostrarFormulario(true)}
               >
                 Crear primera empresa
               </Button>
@@ -931,34 +690,23 @@ export default function EmpresasPage() {
           ) : (
             <div className="grid gap-2.5 sm:gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {empresas.map((empresa) => {
-                const esPropietario =
-                  empresa.acceso ===
-                  "propietario";
+                const esPropietario = empresa.acceso === "propietario";
 
-                const nombreRol =
-                  empresa.rol
-                    ? NOMBRES_ROL[
-                        empresa.rol
-                      ]
-                    : "Propietario";
+                const nombreRol = empresa.rol
+                  ? NOMBRES_ROL[empresa.rol]
+                  : "Propietario";
 
                 const planInterno: PlanId =
-                  empresa.plan === "pro" ||
-                  empresa.plan === "business"
+                  empresa.plan === "pro" || empresa.plan === "business"
                     ? empresa.plan
                     : "free";
 
                 const suscripcionActiva =
-                  empresaTieneSuscripcionActiva(
-                    empresa
-                  );
+                  empresaTieneSuscripcionActiva(empresa);
 
-                const nombrePlan =
-                  suscripcionActiva
-                    ? obtenerNombrePlan(
-                        planInterno
-                      )
-                    : "Sin plan activo";
+                const nombrePlan = suscripcionActiva
+                  ? obtenerNombrePlan(planInterno)
+                  : "Sin plan activo";
 
                 return (
                   <Card
@@ -968,12 +716,7 @@ export default function EmpresasPage() {
                     <div className="flex flex-1 flex-col p-3 sm:p-4">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
-                          <Avatar
-                            name={
-                              empresa.nombre
-                            }
-                            size="sm"
-                          />
+                          <Avatar name={empresa.nombre} size="sm" />
 
                           <div className="min-w-0">
                             <h2 className="truncate text-[13px] font-semibold text-slate-950 dark:text-white sm:text-sm">
@@ -981,76 +724,50 @@ export default function EmpresasPage() {
                             </h2>
 
                             <p className="mt-0.5 truncate text-[11px] text-slate-600 dark:text-zinc-500 sm:text-xs">
-                              {empresa.rubro ||
-                                "Sin rubro"}
+                              {empresa.rubro || "Sin rubro"}
                             </p>
                           </div>
                         </div>
 
-                        <Badge
-                          variant={
-                            esPropietario
-                              ? "success"
-                              : "info"
-                          }
-                        >
-                          {esPropietario
-                            ? "Propietario"
-                            : nombreRol}
+                        <Badge variant={esPropietario ? "success" : "info"}>
+                          {esPropietario ? "Propietario" : nombreRol}
                         </Badge>
                       </div>
 
                       <div className="mt-2 space-y-1.5 rounded-lg border border-slate-200 bg-slate-50 p-2.5 dark:border-zinc-800 dark:bg-zinc-950/50 sm:mt-3 sm:space-y-2 sm:p-3">
                         <InfoRow
                           label="Correo"
-                          value={
-                            empresa.email ||
-                            "Sin correo"
-                          }
+                          value={empresa.email || "Sin correo"}
                         />
 
                         <InfoRow
                           label="Teléfono"
-                          value={
-                            empresa.telefono ||
-                            "Sin teléfono"
-                          }
+                          value={empresa.telefono || "Sin teléfono"}
                         />
                       </div>
 
                       <div className="mt-2 grid grid-cols-3 gap-1.5 sm:mt-3 sm:gap-2">
                         <MiniMetric
                           label="Acceso"
-                          value={
-                            esPropietario
-                              ? "Propietario"
-                              : "Equipo"
-                          }
+                          value={esPropietario ? "Propietario" : "Equipo"}
                         />
 
-                        <MiniMetric
-                          label="Rol"
-                          value={nombreRol}
-                        />
+                        <MiniMetric label="Rol" value={nombreRol} />
 
-                        <MiniMetric
-                          label="Plan"
-                          value={nombrePlan}
-                        />
+                        <MiniMetric label="Plan" value={nombrePlan} />
                       </div>
 
-                      {esPropietario &&
-                        !suscripcionActiva && (
-                          <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-2.5 dark:border-amber-500/20 dark:bg-amber-500/10 sm:mt-3 sm:p-3">
-                            <p className="text-xs font-semibold text-amber-800 dark:text-amber-300 sm:text-sm">
-                              Todavía no hay un plan activo.
-                            </p>
+                      {esPropietario && !suscripcionActiva && (
+                        <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-2.5 dark:border-amber-500/20 dark:bg-amber-500/10 sm:mt-3 sm:p-3">
+                          <p className="text-xs font-semibold text-amber-800 dark:text-amber-300 sm:text-sm">
+                            Todavía no hay un plan activo.
+                          </p>
 
-                            <p className="mt-1 text-[11px] leading-4 text-amber-700 dark:text-amber-400 sm:text-xs sm:leading-5">
-                              Elegí Página Simple, Página Completa o Business IA para activar las funciones comerciales del negocio.
-                            </p>
-                          </div>
-                        )}
+                          <p className="mt-1 text-[11px] leading-4 text-amber-700 dark:text-amber-400 sm:text-xs sm:leading-5">
+                            Elegí Página Simple, Página Completa o Business IA para activar las funciones comerciales del negocio.
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-[1fr_auto_auto] gap-1.5 border-t border-slate-200 p-2.5 dark:border-zinc-800 sm:gap-2 sm:p-3">
@@ -1058,22 +775,19 @@ export default function EmpresasPage() {
                         type="button"
                         onClick={() => {
                           window.location.href =
-                            esPropietario &&
-                            !suscripcionActiva
+                            esPropietario && !suscripcionActiva
                               ? `/empresas/${empresa.id}/planes`
                               : `/empresas/${empresa.id}/dashboard`;
                         }}
                         className="inline-flex min-h-8 items-center justify-center gap-1 rounded-lg bg-blue-600 px-2 py-1.5 text-[11px] font-semibold text-white transition hover:bg-blue-500 sm:min-h-9 sm:gap-1.5 sm:px-2.5 sm:py-2 sm:text-xs"
                       >
-                        {esPropietario &&
-                        !suscripcionActiva ? (
+                        {esPropietario && !suscripcionActiva ? (
                           <Sparkles className="h-4 w-4" />
                         ) : (
                           <Building2 className="h-4 w-4" />
                         )}
 
-                        {esPropietario &&
-                        !suscripcionActiva
+                        {esPropietario && !suscripcionActiva
                           ? "Elegir plan"
                           : "Entrar al panel"}
 
@@ -1083,35 +797,26 @@ export default function EmpresasPage() {
                       <button
                         type="button"
                         onClick={() => {
-                          window.location.href =
-                            esPropietario
-                              ? `/empresas/${empresa.id}`
-                              : `/empresas/${empresa.id}/dashboard`;
+                          window.location.href = esPropietario
+                            ? `/empresas/${empresa.id}`
+                            : `/empresas/${empresa.id}/dashboard`;
                         }}
                         className="inline-flex min-h-8 items-center justify-center gap-1 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700 sm:min-h-9 sm:gap-1.5 sm:px-2.5 sm:py-2 sm:text-xs"
                       >
                         <Settings2 className="h-4 w-4" />
-                        {esPropietario
-                          ? "Configurar"
-                          : "Ver panel"}
+                        {esPropietario ? "Configurar" : "Ver panel"}
                       </button>
 
                       {esPropietario && (
                         <button
                           type="button"
-                          onClick={() =>
-                            abrirEliminarEmpresa(
-                              empresa,
-                            )
-                          }
+                          onClick={() => abrirEliminarEmpresa(empresa)}
                           className="inline-flex min-h-8 items-center justify-center gap-1 rounded-lg border border-red-200 bg-white px-2 py-1.5 text-[11px] font-semibold text-red-600 transition hover:bg-red-50 dark:border-red-500/30 dark:bg-zinc-800 dark:text-red-400 dark:hover:bg-red-500/10 sm:min-h-9 sm:gap-1.5 sm:px-2.5 sm:py-2 sm:text-xs"
                           aria-label={`Eliminar ${empresa.nombre}`}
                           title="Eliminar empresa"
                         >
                           <Trash2 className="h-4 w-4" />
-                          <span className="sm:hidden">
-                            Eliminar
-                          </span>
+                          <span className="sm:hidden">Eliminar</span>
                         </button>
                       )}
                     </div>
@@ -1168,8 +873,7 @@ export default function EmpresasPage() {
                 <strong className="text-slate-950 dark:text-white">
                   {empresaAEliminar.nombre}
                 </strong>{" "}
-                junto con sus datos guardados en NDI AI, como catálogo,
-                turnos, conversaciones, estadísticas y configuraciones.
+                junto con sus datos guardados en NDI | Diseño & Web, como catálogo, turnos, conversaciones, estadísticas y configuraciones.
               </p>
 
               <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
@@ -1193,9 +897,7 @@ export default function EmpresasPage() {
                 value={confirmacionEliminacion}
                 disabled={eliminandoEmpresa}
                 onChange={(event) => {
-                  setConfirmacionEliminacion(
-                    event.target.value,
-                  );
+                  setConfirmacionEliminacion(event.target.value);
                   setErrorEliminacion("");
                 }}
                 className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-500/10 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white"
@@ -1225,13 +927,10 @@ export default function EmpresasPage() {
                     confirmacionEliminacion.trim() !==
                       empresaAEliminar.nombre.trim()
                   }
-                  onClick={() =>
-                    void handleEliminarEmpresa()
-                  }
+                  onClick={() => void handleEliminarEmpresa()}
                   className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Trash2 className="h-4 w-4" />
-
                   {eliminandoEmpresa
                     ? "Eliminando..."
                     : "Eliminar definitivamente"}
@@ -1254,11 +953,11 @@ function InfoRow({
 }) {
   return (
     <div className="flex items-center justify-between gap-2 text-[11px] sm:text-xs">
-      <span className="text-slate-500 dark:text-zinc-500">
-        {label}
-      </span>
-
-      <span title={value} className="max-w-[68%] truncate text-right text-slate-800 dark:text-zinc-300">
+      <span className="text-slate-500 dark:text-zinc-500">{label}</span>
+      <span
+        title={value}
+        className="max-w-[68%] truncate text-right text-slate-800 dark:text-zinc-300"
+      >
         {value}
       </span>
     </div>
@@ -1277,8 +976,10 @@ function MiniMetric({
       <p className="truncate text-[9px] text-slate-500 dark:text-zinc-500 sm:text-[10px]">
         {label}
       </p>
-
-      <p title={value} className="mt-0.5 truncate text-[10px] font-medium text-slate-950 dark:text-white sm:text-[11px]">
+      <p
+        title={value}
+        className="mt-0.5 truncate text-[10px] font-medium text-slate-950 dark:text-white sm:text-[11px]"
+      >
         {value}
       </p>
     </div>
