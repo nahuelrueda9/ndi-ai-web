@@ -32,7 +32,7 @@ const WHATSAPP_NUMERO = "5493886575664";
 const CORREO_CONTACTO = "soporte@ndiweb.com";
 const BEHANCE_URL = "https://www.behance.net/nahuelrueda";
 
-// 20 imágenes del portfolio para el carrusel de portada
+// 20 imágenes del portfolio
 const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen1.jpg",
   "/portfolio/imagen2.jpg",
@@ -56,8 +56,8 @@ const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen20.png",
 ];
 
-// Modelos de muestra vinculados a las capturas en public/modelos/
-const proyectosShowcase = [
+// Modelos de muestra divididos: 3 primeros arriba, 2 abajo centrados
+const modelosArriba = [
   {
     id: "restaurantes",
     label: "Restaurantes",
@@ -65,9 +65,9 @@ const proyectosShowcase = [
     titulo: "Sabores del Norte",
     categoria: "Gastronomía & Bares",
     subtitulo: "Menú digital interactivo con pedidos directos a WhatsApp, fotos de platos y reserva de mesas.",
-    portada: "/modelos/modelo-gastro1.jpg",
+    portadaPrincipal: "/modelos/modelo-gastro1.png",
+    portadaSecundaria: "/modelos/modelo-gastro1.jpg",
     badge: "Carta & Pedidos",
-    esReal: false,
     urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Gastronomía y Bares.")}`,
     caracteristicas: ["Carta con fotos y precios", "Pedidos listos a WhatsApp"],
   },
@@ -78,9 +78,9 @@ const proyectosShowcase = [
     titulo: "Norte Store",
     categoria: "Indumentaria & Productos",
     subtitulo: "Catálogo online con variantes de talles, colores, stock en tiempo real y cobros integrados.",
-    portada: "/modelos/modelo-tienda1.jpg",
+    portadaPrincipal: "/modelos/modelo-tienda1.png",
+    portadaSecundaria: "/modelos/modelo-tienda1.jpg",
     badge: "Catálogo Online",
-    esReal: false,
     urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Tiendas e Indumentaria.")}`,
     caracteristicas: ["Control de talles y stock", "Cobros con CVU y Mercado Pago"],
   },
@@ -91,12 +91,15 @@ const proyectosShowcase = [
     titulo: "Black Crown Studio",
     categoria: "Barberías & Estética",
     subtitulo: "Agenda de turnos online disponible las 24 horas para que el cliente elija servicio y horario sin esperas.",
-    portada: "/modelos/modelo-estetica1.jpg",
+    portadaPrincipal: "/modelos/modelo-estetica1.png",
+    portadaSecundaria: "/modelos/modelo-estetica1.jpg",
     badge: "Turnos 24/7",
-    esReal: false,
     urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Barberías y Salones.")}`,
     caracteristicas: ["Turnos confirmados al instante", "Agenda autogestionable"],
   },
+];
+
+const modelosAbajo = [
   {
     id: "consultorios",
     label: "Consultorios",
@@ -104,9 +107,9 @@ const proyectosShowcase = [
     titulo: "Centro Médico & Salud",
     categoria: "Consultorios & Profesionales",
     subtitulo: "Gestión de citas previas, información de especialidades, ubicación en mapa y contacto directo.",
-    portada: "/modelos/modelo-salud1.jpg",
+    portadaPrincipal: "/modelos/modelo-salud1.png",
+    portadaSecundaria: "/modelos/modelo-salud1.jpg",
     badge: "Atención Profesional",
-    esReal: false,
     urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Consultorios Profesionales.")}`,
     caracteristicas: ["Citas y horarios disponibles", "Ubicación en Google Maps"],
   },
@@ -117,9 +120,9 @@ const proyectosShowcase = [
     titulo: "Hotel & Hospedaje",
     categoria: "Hotelería & Turismo",
     subtitulo: "Galería de habitaciones, consulta directa de disponibilidad y reservas conectadas.",
-    portada: "/modelos/modelo-hotel1.jpg",
+    portadaPrincipal: "/modelos/modelo-hotel1.png",
+    portadaSecundaria: "/modelos/modelo-hotel1.jpg",
     badge: "Reservas & Estadías",
-    esReal: false,
     urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Hoteles y Hospedajes.")}`,
     caracteristicas: ["Galería de habitaciones", "Consultas por WhatsApp"],
   },
@@ -211,7 +214,7 @@ export default function HomePage() {
   const [imagenActiva, setImagenActiva] = useState(0);
   const { theme, setTheme } = useTheme();
 
-  // Rotación del carrusel cada 4 segundos
+  // Transición del carrusel 3D cada 4 segundos
   useEffect(() => {
     const interval = setInterval(() => {
       setImagenActiva((prev) => (prev + 1) % IMAGENES_PORTFOLIO.length);
@@ -235,6 +238,10 @@ export default function HomePage() {
   const alternarTema = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
+
+  // Índices para efecto de cascada en perspectiva 3D
+  const idxAnterior = (imagenActiva - 1 + IMAGENES_PORTFOLIO.length) % IMAGENES_PORTFOLIO.length;
+  const idxSiguiente = (imagenActiva + 1) % IMAGENES_PORTFOLIO.length;
 
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 selection:bg-[var(--brand)] selection:text-white">
@@ -303,7 +310,7 @@ export default function HomePage() {
 
             {mostrarBotonHeader && (
               <a
-                href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por el diseño de una página web y gráfica para mi negocio.")}`}
+                href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por diseño gráfico y una página web para mi negocio.")}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded-xl bg-[var(--brand)] px-3 py-1.5 sm:px-4 sm:py-2 text-[11px] sm:text-xs font-bold text-white shadow-xs shadow-blue-500/20 transition hover:opacity-90 whitespace-nowrap"
@@ -315,19 +322,22 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* PORTADA PRINCIPAL (DISEÑO GRÁFICO + PÁGINAS WEB CON CARRUSEL 3D AMPLIADO) */}
+      {/* PORTADA PRINCIPAL (CON TÍTULO DE 2 LÍNEAS Y EFECTO CASCADA 3D) */}
       <section className="relative pt-10 pb-16 sm:pt-16 sm:pb-24 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
         <div className="mx-auto max-w-7xl px-4 sm:px-8">
           
-          {/* TÍTULO INTEGRADO (DISEÑO GRÁFICO + WEB) */}
+          {/* TÍTULO EXACTO SOLICITADO */}
           <div className="mx-auto max-w-4xl text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3.5 py-1 text-xs font-semibold text-zinc-700 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 mb-4">
               <span className="h-2 w-2 rounded-full bg-[var(--brand)]" />
               <span>Diseño Gráfico & Desarrollo Web</span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl lg:text-[3.6rem] font-bold tracking-tight text-zinc-950 dark:text-white leading-[1.14]">
-              Impulsá tu marca con diseño gráfico y tu propia página web.
+            <h1 className="text-3xl sm:text-5xl lg:text-[3.8rem] font-bold tracking-tight text-zinc-950 dark:text-white leading-[1.12]">
+              Potencia tu marca con diseño.
+              <span className="block text-zinc-500 dark:text-zinc-400 font-medium text-2xl sm:text-4xl lg:text-[2.7rem] mt-2">
+                Su visión, nuestra experiencia.
+              </span>
             </h1>
 
             <p className="mx-auto mt-4 max-w-2xl text-sm sm:text-base text-zinc-600 dark:text-zinc-400 font-normal leading-relaxed">
@@ -335,8 +345,8 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* CONTENEDOR MÁS GRANDE CON PROFUNDIDAD 3D Y MUESCA RECORTADA */}
-          <div className="relative mt-12 sm:mt-16 mx-auto max-w-6xl [perspective:1200px]">
+          {/* CONTENEDOR AMPLIO CON PERSPECTIVA 3D Y CASCADA DE IMÁGENES FLOTANTES */}
+          <div className="relative mt-12 sm:mt-16 mx-auto max-w-6xl [perspective:1400px]">
             
             {/* TARJETA NEGRA SUPERIOR IZQUIERDA */}
             <div className="absolute -top-5 -left-2 sm:-top-7 sm:-left-6 rounded-2xl sm:rounded-3xl bg-zinc-950 p-4 sm:p-5 text-white shadow-2xl border border-zinc-800 text-left max-w-[170px] sm:max-w-[220px] z-30">
@@ -348,33 +358,41 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* MARCO AMPLIADO CON EFECTO 3D DE TRANSICIÓN */}
-            <div className="relative overflow-hidden rounded-[2.2rem] sm:rounded-[3.2rem] border border-zinc-200/90 bg-zinc-900 shadow-2xl dark:border-zinc-800 aspect-[16/10] sm:aspect-[16/9] w-full min-h-[340px] sm:min-h-[520px] transform-gpu">
+            {/* MARCO GRANDE CON COMPOSICIÓN 3D EN CASCADA (TIPO MOCKUPS FLOTANTES) */}
+            <div className="relative overflow-hidden rounded-[2.2rem] sm:rounded-[3.2rem] border border-zinc-200/90 bg-zinc-950 shadow-2xl dark:border-zinc-800 aspect-[16/10] sm:aspect-[16/9] w-full min-h-[360px] sm:min-h-[540px] flex items-center justify-center p-3 sm:p-6">
               
-              {IMAGENES_PORTFOLIO.map((imagen, index) => {
-                const activo = index === imagenActiva;
-                return (
-                  <div
-                    key={imagen}
-                    className={`absolute inset-0 transition-all duration-1000 ease-out ${
-                      activo
-                        ? "opacity-100 scale-100 rotate-0 z-10"
-                        : "opacity-0 scale-[1.03] -rotate-1 z-0 pointer-events-none"
-                    }`}
-                  >
-                    <img
-                      src={imagen}
-                      alt={`Trabajo de diseño ${index + 1}`}
-                      className="h-full w-full object-contain sm:object-cover object-center bg-zinc-950"
-                      onError={(e) => {
-                        e.currentTarget.src = "/portfolio/imagen1.jpg";
-                      }}
-                    />
-                  </div>
-                );
-              })}
-              
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none z-10" />
+              {/* IMAGEN DE FONDO/ANTERIOR (ASOMANDO ARRIBA EN PERSPECTIVA) */}
+              <div className="absolute -top-8 w-[88%] h-[80%] rounded-[2rem] overflow-hidden opacity-30 blur-[1px] transform -translate-y-4 scale-95 [transform:rotateX(12deg)] transition-all duration-1000 ease-out z-0 pointer-events-none">
+                <img
+                  src={IMAGENES_PORTFOLIO[idxAnterior]}
+                  alt="Anterior"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* IMAGEN PRINCIPAL EN EL CENTRO (SE AGRANDA DURANTE 4 SEGUNDOS) */}
+              <div className="relative z-10 w-full h-full rounded-[1.8rem] sm:rounded-[2.6rem] overflow-hidden shadow-2xl border border-white/10 bg-zinc-900 transition-all duration-1000 ease-out transform scale-100 hover:scale-[1.01]">
+                <img
+                  key={IMAGENES_PORTFOLIO[imagenActiva]}
+                  src={IMAGENES_PORTFOLIO[imagenActiva]}
+                  alt="Proyecto en exhibición"
+                  className="w-full h-full object-contain sm:object-cover object-center transition-all duration-1000 animate-in fade-in zoom-in-95"
+                  onError={(e) => {
+                    e.currentTarget.src = "/portfolio/imagen1.jpg";
+                  }}
+                />
+              </div>
+
+              {/* IMAGEN SIGUIENTE (ASOMANDO ABAJO EN PERSPECTIVA) */}
+              <div className="absolute -bottom-10 w-[88%] h-[80%] rounded-[2rem] overflow-hidden opacity-30 blur-[1px] transform translate-y-6 scale-95 [transform:rotateX(-12deg)] transition-all duration-1000 ease-out z-0 pointer-events-none">
+                <img
+                  src={IMAGENES_PORTFOLIO[idxSiguiente]}
+                  alt="Siguiente"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none z-15" />
             </div>
 
             {/* BLOQUE INFERIOR DERECHO CON PÁGINAS WEB CENTRADO */}
@@ -419,51 +437,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* BENEFICIOS EDITORIALES (AJUSTADO: "DISEÑO WEB" Y TEXTO CORTO) */}
-      <section className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
-        <div className="grid gap-8 lg:grid-cols-12 lg:items-start lg:gap-12">
-          <div className="lg:col-span-5">
-            <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
-              Diseño & Solución Comercial
-            </span>
-            <h2 className="mt-2 text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-zinc-950 dark:text-white leading-[1.15]">
-              Dejá de perder tiempo respondiendo precios por privado.
-            </h2>
-            <p className="mt-3.5 text-sm sm:text-base leading-relaxed text-zinc-600 dark:text-zinc-400 font-normal">
-              Con tu propia página web, tus clientes ven lo que ofrecés, conocen los precios actualizados y te mandan el pedido o la reserva armada al WhatsApp, a cualquier hora.
-            </p>
-
-            <div className="mt-6 rounded-2xl border border-[var(--brand)]/20 bg-[var(--brand)]/5 p-4 dark:border-[var(--brand)]/20 dark:bg-[var(--brand)]/10">
-              <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
-                💡 Diseño profesional + WhatsApp directo = clientes que compran con confianza.
-              </p>
-            </div>
-          </div>
-
-          <div className="lg:col-span-7 grid gap-3.5 sm:grid-cols-2">
-            {beneficios.map((b, i) => (
-              <div
-                key={b.titulo}
-                className="relative flex flex-col justify-between rounded-2xl border border-zinc-200 bg-white p-5 shadow-xs transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:border-zinc-700"
-              >
-                <div>
-                  <span className="text-xs font-bold text-[var(--brand-contrast)] dark:text-[var(--brand)]">
-                    0{i + 1}
-                  </span>
-                  <h3 className="mt-1 text-base font-bold text-zinc-950 dark:text-white">
-                    {b.titulo}
-                  </h3>
-                  <p className="mt-1.5 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                    {b.detalle}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* BENTO GRID: SERVICIOS */}
+      {/* 1. SERVICIOS INTEGRALES (SUBIDO ARRIBA COMO PEDISTE) */}
       <section id="servicios" className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="max-w-2xl">
           <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
@@ -557,7 +531,45 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* MODELOS DE MUESTRA (CON TUS CAPTURAS REALES EN PUBLIC/MODELOS/) */}
+      {/* 2. BENEFICIOS ("DEJÁ DE PERDER TIEMPO..." PASADO ABAJO SIN LA CAJA DE RUIDO) */}
+      <section className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
+        <div className="grid gap-8 lg:grid-cols-12 lg:items-start lg:gap-12">
+          <div className="lg:col-span-5">
+            <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
+              Diseño & Solución Comercial
+            </span>
+            <h2 className="mt-2 text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-zinc-950 dark:text-white leading-[1.15]">
+              Dejá de perder tiempo respondiendo precios por privado.
+            </h2>
+            <p className="mt-3.5 text-sm sm:text-base leading-relaxed text-zinc-600 dark:text-zinc-400 font-normal">
+              Con tu propia página web, tus clientes ven lo que ofrecés, conocen los precios actualizados y te mandan el pedido o la reserva armada al WhatsApp, a cualquier hora.
+            </p>
+          </div>
+
+          <div className="lg:col-span-7 grid gap-3.5 sm:grid-cols-2">
+            {beneficios.map((b, i) => (
+              <div
+                key={b.titulo}
+                className="relative flex flex-col justify-between rounded-2xl border border-zinc-200 bg-white p-5 shadow-xs transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:border-zinc-700"
+              >
+                <div>
+                  <span className="text-xs font-bold text-[var(--brand-contrast)] dark:text-[var(--brand)]">
+                    0{i + 1}
+                  </span>
+                  <h3 className="mt-1 text-base font-bold text-zinc-950 dark:text-white">
+                    {b.titulo}
+                  </h3>
+                  <p className="mt-1.5 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                    {b.detalle}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* MODELOS DE MUESTRA (3 ARRIBA Y 2 CENTRADOS ABAJO) */}
       <section id="trabajos" className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div className="max-w-2xl">
@@ -578,8 +590,9 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="mt-8 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {proyectosShowcase.map((p) => {
+        {/* FILA 1: 3 MODELOS ARRIBA */}
+        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {modelosArriba.map((p) => {
             const Icono = p.icono;
             return (
               <article
@@ -587,13 +600,82 @@ export default function HomePage() {
                 className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xs transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/60"
               >
                 <div>
-                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-zinc-950">
+                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-zinc-900">
                     <img
-                      src={p.portada}
+                      src={p.portadaPrincipal}
                       alt={p.titulo}
                       className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
                       onError={(e) => {
-                        e.currentTarget.src = "/portfolio/imagen1.jpg";
+                        e.currentTarget.src = p.portadaSecundaria;
+                      }}
+                    />
+                    <div className="absolute top-2.5 left-2.5">
+                      <span className="rounded-full bg-black/70 backdrop-blur-md border border-white/20 px-2.5 py-0.5 text-[9px] font-bold text-white uppercase tracking-wider">
+                        {p.badge}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-5">
+                    <div className="flex items-center gap-1.5 text-[var(--brand-contrast)] dark:text-[var(--brand)] text-xs font-semibold">
+                      <Icono className="h-3.5 w-3.5" />
+                      <span>{p.categoria}</span>
+                    </div>
+
+                    <h3 className="mt-1.5 text-base font-bold text-zinc-950 dark:text-white">
+                      {p.titulo}
+                    </h3>
+
+                    <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed line-clamp-2">
+                      {p.subtitulo}
+                    </p>
+
+                    <div className="mt-3.5 flex flex-wrap gap-1">
+                      {p.caracteristicas.map((c, i) => (
+                        <span
+                          key={i}
+                          className="rounded-md bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                        >
+                          {c}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-5 pt-0">
+                  <a
+                    href={p.urlDemo}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 py-2.5 text-xs font-bold text-zinc-800 transition hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-800/80 dark:text-zinc-200 dark:hover:bg-zinc-700"
+                  >
+                    <span>Consultar por este diseño</span>
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+
+        {/* FILA 2: 2 MODELOS CENTRADOS */}
+        <div className="mt-6 flex flex-col sm:flex-row justify-center gap-6 max-w-4xl mx-auto">
+          {modelosAbajo.map((p) => {
+            const Icono = p.icono;
+            return (
+              <article
+                key={p.id}
+                className="group flex-1 flex flex-col justify-between overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xs transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/60 max-w-md mx-auto sm:mx-0 w-full"
+              >
+                <div>
+                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-zinc-900">
+                    <img
+                      src={p.portadaPrincipal}
+                      alt={p.titulo}
+                      className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                      onError={(e) => {
+                        e.currentTarget.src = p.portadaSecundaria;
                       }}
                     />
                     <div className="absolute top-2.5 left-2.5">
@@ -647,7 +729,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* PLANES Y PRECIOS (UBICADO PRIMERO, CON TÍTULO AJUSTADO) */}
+      {/* PLANES Y PRECIOS */}
       <section id="planes" className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="mx-auto max-w-2xl text-center">
           <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
@@ -692,7 +774,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* QUIÉN SOY (UBICADO ABAJO DE LOS PLANES CON PASTILLA "DISEÑO GRÁFICO & WEB") */}
+      {/* QUIÉN SOY (CON TEXTOS Y SUBTÍTULO EXACTOS) */}
       <section id="quien-soy" className="mx-auto max-w-4xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="text-center max-w-xl mx-auto">
           <div className="relative mx-auto h-24 w-24 sm:h-28 sm:w-28 overflow-hidden rounded-full border-2 border-[var(--brand)]/40 bg-zinc-100 shadow-md ring-4 ring-[var(--brand)]/10 dark:bg-zinc-800">
@@ -723,12 +805,12 @@ export default function HomePage() {
             Hola, soy Nahuel.
           </h2>
 
-          <p className="mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300 [text-wrap:balance]">
-            Soy Diseñador Gráfico Junior y desarrollador web de Ledesma, Jujuy. Creo páginas webs y gráficas pensadas para que tu negocio se vea profesional y venda.
+          <p className="mt-3 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 [text-wrap:balance]">
+            Soy Diseñador Gráfico Junior y desarrollador web de Ledesma, Jujuy.
           </p>
 
-          <p className="mt-2 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 [text-wrap:balance]">
-            Tratás directo conmigo: sin vueltas, sin intermediarios y con soporte constante.
+          <p className="mt-2 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-medium [text-wrap:balance]">
+            Envíame un mensaje y mejoramos tu negocio
           </p>
 
           <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-xs">
