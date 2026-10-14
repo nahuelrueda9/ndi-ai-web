@@ -23,6 +23,7 @@ import {
   ShoppingBag,
   Scissors,
   Stethoscope,
+  Building2,
 } from "lucide-react";
 
 import { useTheme } from "@/components/theme/ThemeProvider";
@@ -31,7 +32,7 @@ const WHATSAPP_NUMERO = "5493886575664";
 const CORREO_CONTACTO = "soporte@ndiweb.com";
 const BEHANCE_URL = "https://www.behance.net/nahuelrueda";
 
-// Tus 20 imágenes del portfolio
+// 20 imágenes del portfolio para el carrusel de portada
 const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen1.jpg",
   "/portfolio/imagen2.jpg",
@@ -55,6 +56,7 @@ const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen20.png",
 ];
 
+// Modelos de muestra vinculados a las capturas en public/modelos/
 const proyectosShowcase = [
   {
     id: "restaurantes",
@@ -63,7 +65,7 @@ const proyectosShowcase = [
     titulo: "Sabores del Norte",
     categoria: "Gastronomía & Bares",
     subtitulo: "Menú digital interactivo con pedidos directos a WhatsApp, fotos de platos y reserva de mesas.",
-    portada: "/portfolio/imagen14.jpg",
+    portada: "/modelos/modelo-gastro1.jpg",
     badge: "Carta & Pedidos",
     esReal: false,
     urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Gastronomía y Bares.")}`,
@@ -76,7 +78,7 @@ const proyectosShowcase = [
     titulo: "Norte Store",
     categoria: "Indumentaria & Productos",
     subtitulo: "Catálogo online con variantes de talles, colores, stock en tiempo real y cobros integrados.",
-    portada: "/portfolio/imagen5.jpg",
+    portada: "/modelos/modelo-tienda1.jpg",
     badge: "Catálogo Online",
     esReal: false,
     urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Tiendas e Indumentaria.")}`,
@@ -89,7 +91,7 @@ const proyectosShowcase = [
     titulo: "Black Crown Studio",
     categoria: "Barberías & Estética",
     subtitulo: "Agenda de turnos online disponible las 24 horas para que el cliente elija servicio y horario sin esperas.",
-    portada: "/portfolio/imagen8.jpg",
+    portada: "/modelos/modelo-estetica1.jpg",
     badge: "Turnos 24/7",
     esReal: false,
     urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Barberías y Salones.")}`,
@@ -102,17 +104,30 @@ const proyectosShowcase = [
     titulo: "Centro Médico & Salud",
     categoria: "Consultorios & Profesionales",
     subtitulo: "Gestión de citas previas, información de especialidades, ubicación en mapa y contacto directo.",
-    portada: "/portfolio/imagen10.jpg",
+    portada: "/modelos/modelo-salud1.jpg",
     badge: "Atención Profesional",
     esReal: false,
     urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Consultorios Profesionales.")}`,
     caracteristicas: ["Citas y horarios disponibles", "Ubicación en Google Maps"],
   },
+  {
+    id: "hoteles",
+    label: "Hotelería",
+    icono: Building2,
+    titulo: "Hotel & Hospedaje",
+    categoria: "Hotelería & Turismo",
+    subtitulo: "Galería de habitaciones, consulta directa de disponibilidad y reservas conectadas.",
+    portada: "/modelos/modelo-hotel1.jpg",
+    badge: "Reservas & Estadías",
+    esReal: false,
+    urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Hoteles y Hospedajes.")}`,
+    caracteristicas: ["Galería de habitaciones", "Consultas por WhatsApp"],
+  },
 ];
 
 const beneficios = [
   {
-    titulo: "Diseño gráfico profesional",
+    titulo: "Diseño Web",
     detalle: "Tu web con estética cuidada, colores combinados y piezas visuales que dan confianza real a tus clientes.",
   },
   {
@@ -196,11 +211,11 @@ export default function HomePage() {
   const [imagenActiva, setImagenActiva] = useState(0);
   const { theme, setTheme } = useTheme();
 
-  // Carrusel infinito con tus 20 imágenes del portfolio
+  // Rotación del carrusel cada 4 segundos
   useEffect(() => {
     const interval = setInterval(() => {
       setImagenActiva((prev) => (prev + 1) % IMAGENES_PORTFOLIO.length);
-    }, 4000); // 4 segundos por imagen
+    }, 4000);
     return () => clearInterval(interval);
   }, []);
 
@@ -247,7 +262,10 @@ export default function HomePage() {
               Servicios
             </a>
             <a href="#trabajos" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
-              Ejemplos
+              Modelos
+            </a>
+            <a href="#planes" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
+              Planes
             </a>
             <a href="#quien-soy" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
               Quién soy
@@ -259,9 +277,6 @@ export default function HomePage() {
               className="text-xs font-semibold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)] hover:underline"
             >
               Portfolio Behance ↗
-            </a>
-            <a href="#planes" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
-              Planes
             </a>
             <a href="#contacto" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
               Contacto
@@ -300,19 +315,19 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* PORTADA REFINADA (CON EL CORTE Y DISEÑO DE LA REFERENCIA Y CARRUSEL) */}
+      {/* PORTADA PRINCIPAL (DISEÑO GRÁFICO + PÁGINAS WEB CON CARRUSEL 3D AMPLIADO) */}
       <section className="relative pt-10 pb-16 sm:pt-16 sm:pb-24 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
         <div className="mx-auto max-w-7xl px-4 sm:px-8">
           
-          {/* ENCABEZADO CENTRADO LIMPIO */}
+          {/* TÍTULO INTEGRADO (DISEÑO GRÁFICO + WEB) */}
           <div className="mx-auto max-w-4xl text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3.5 py-1 text-xs font-semibold text-zinc-700 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 mb-4">
               <span className="h-2 w-2 rounded-full bg-[var(--brand)]" />
               <span>Diseño Gráfico & Desarrollo Web</span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl lg:text-[3.6rem] font-bold tracking-tight text-zinc-950 dark:text-white leading-[1.12]">
-              Tené la página web de tu negocio lista para vender.
+            <h1 className="text-3xl sm:text-5xl lg:text-[3.6rem] font-bold tracking-tight text-zinc-950 dark:text-white leading-[1.14]">
+              Impulsá tu marca con diseño gráfico y tu propia página web.
             </h1>
 
             <p className="mx-auto mt-4 max-w-2xl text-sm sm:text-base text-zinc-600 dark:text-zinc-400 font-normal leading-relaxed">
@@ -320,11 +335,11 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* CONTENEDOR DE LA COMPOSICIÓN (MUESCA Y TARJETA TAL CUAL LA REFERENCIA) */}
-          <div className="relative mt-12 sm:mt-16 mx-auto max-w-5xl">
+          {/* CONTENEDOR MÁS GRANDE CON PROFUNDIDAD 3D Y MUESCA RECORTADA */}
+          <div className="relative mt-12 sm:mt-16 mx-auto max-w-6xl [perspective:1200px]">
             
-            {/* TARJETA NEGRA SUPERIOR IZQUIERDA (ENCALZADA EN EL CORTE) */}
-            <div className="absolute -top-5 -left-2 sm:-top-7 sm:-left-6 rounded-2xl sm:rounded-3xl bg-zinc-950 p-4 sm:p-5 text-white shadow-2xl border border-zinc-800 text-left max-w-[170px] sm:max-w-[220px] z-20">
+            {/* TARJETA NEGRA SUPERIOR IZQUIERDA */}
+            <div className="absolute -top-5 -left-2 sm:-top-7 sm:-left-6 rounded-2xl sm:rounded-3xl bg-zinc-950 p-4 sm:p-5 text-white shadow-2xl border border-zinc-800 text-left max-w-[170px] sm:max-w-[220px] z-30">
               <p className="text-2xl sm:text-3xl font-bold tracking-tight text-white leading-none">
                 100%
               </p>
@@ -333,33 +348,37 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* MARCO DE LA IMAGEN CON EL RECORTE Y MUESCA EN LA ESQUINA INFERIOR DERECHA */}
-            <div className="relative overflow-hidden rounded-[2.2rem] sm:rounded-[3rem] border border-zinc-200/80 bg-zinc-900 shadow-xl dark:border-zinc-800 aspect-[16/10] sm:aspect-[16/9] w-full min-h-[300px] sm:min-h-[480px]">
+            {/* MARCO AMPLIADO CON EFECTO 3D DE TRANSICIÓN */}
+            <div className="relative overflow-hidden rounded-[2.2rem] sm:rounded-[3.2rem] border border-zinc-200/90 bg-zinc-900 shadow-2xl dark:border-zinc-800 aspect-[16/10] sm:aspect-[16/9] w-full min-h-[340px] sm:min-h-[520px] transform-gpu">
               
-              {/* Carrusel con Fades de Opacidad */}
-              {IMAGENES_PORTFOLIO.map((imagen, index) => (
-                <div
-                  key={imagen}
-                  className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                    index === imagenActiva ? "opacity-100 z-10" : "opacity-0 z-0"
-                  }`}
-                >
-                  <img
-                    src={imagen}
-                    alt={`Proyecto portfolio ${index + 1}`}
-                    className="h-full w-full object-cover object-center"
-                    onError={(e) => {
-                      e.currentTarget.src = "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1800&q=80";
-                    }}
-                  />
-                </div>
-              ))}
+              {IMAGENES_PORTFOLIO.map((imagen, index) => {
+                const activo = index === imagenActiva;
+                return (
+                  <div
+                    key={imagen}
+                    className={`absolute inset-0 transition-all duration-1000 ease-out ${
+                      activo
+                        ? "opacity-100 scale-100 rotate-0 z-10"
+                        : "opacity-0 scale-[1.03] -rotate-1 z-0 pointer-events-none"
+                    }`}
+                  >
+                    <img
+                      src={imagen}
+                      alt={`Trabajo de diseño ${index + 1}`}
+                      className="h-full w-full object-contain sm:object-cover object-center bg-zinc-950"
+                      onError={(e) => {
+                        e.currentTarget.src = "/portfolio/imagen1.jpg";
+                      }}
+                    />
+                  </div>
+                );
+              })}
               
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none z-10" />
             </div>
 
-            {/* BLOQUE INFERIOR DERECHO QUE ENCASTRA EN LA FOTO (CON PÁGINAS WEB CENTRADO) */}
-            <div className="absolute -bottom-4 -right-2 sm:-bottom-6 sm:-right-6 rounded-2xl sm:rounded-3xl bg-white/95 p-3 sm:p-4 shadow-xl border border-zinc-200/90 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 z-20 max-w-[300px] sm:max-w-[420px] w-full">
+            {/* BLOQUE INFERIOR DERECHO CON PÁGINAS WEB CENTRADO */}
+            <div className="absolute -bottom-4 -right-2 sm:-bottom-6 sm:-right-6 rounded-2xl sm:rounded-3xl bg-white/95 p-3 sm:p-4 shadow-2xl border border-zinc-200/90 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 z-30 max-w-[300px] sm:max-w-[420px] w-full">
               <div className="grid grid-cols-3 gap-1.5 text-[10px] sm:text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
                 <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-2 text-center flex items-center justify-center">
                   Diseño
@@ -384,10 +403,10 @@ export default function HomePage() {
 
           </div>
 
-          {/* ÚNICO BOTÓN PRINCIPAL CENTRADO A WHATSAPP */}
+          {/* BOTÓN CENTRADO A WHATSAPP */}
           <div className="mt-12 sm:mt-16 flex justify-center">
             <a
-              href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por el diseño de una página web y gráfica para mi negocio.")}`}
+              href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por diseño gráfico y una página web para mi negocio.")}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--brand)] hover:opacity-90 px-8 py-3.5 sm:px-9 sm:py-4 text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition active:scale-95"
@@ -400,7 +419,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* BENEFICIOS EDITORIALES */}
+      {/* BENEFICIOS EDITORIALES (AJUSTADO: "DISEÑO WEB" Y TEXTO CORTO) */}
       <section className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="grid gap-8 lg:grid-cols-12 lg:items-start lg:gap-12">
           <div className="lg:col-span-5">
@@ -411,7 +430,7 @@ export default function HomePage() {
               Dejá de perder tiempo respondiendo precios por privado.
             </h2>
             <p className="mt-3.5 text-sm sm:text-base leading-relaxed text-zinc-600 dark:text-zinc-400 font-normal">
-              Con tu propia página con estética profesional, tus clientes ven lo que ofrecés, conocen los precios actualizados y te mandan el pedido o la reserva armada al WhatsApp, a cualquier hora.
+              Con tu propia página web, tus clientes ven lo que ofrecés, conocen los precios actualizados y te mandan el pedido o la reserva armada al WhatsApp, a cualquier hora.
             </p>
 
             <div className="mt-6 rounded-2xl border border-[var(--brand)]/20 bg-[var(--brand)]/5 p-4 dark:border-[var(--brand)]/20 dark:bg-[var(--brand)]/10">
@@ -538,7 +557,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* MODELOS DE MUESTRA ORIGINALES (RESTAURADOS) */}
+      {/* MODELOS DE MUESTRA (CON TUS CAPTURAS REALES EN PUBLIC/MODELOS/) */}
       <section id="trabajos" className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div className="max-w-2xl">
@@ -559,7 +578,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="mt-8 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {proyectosShowcase.map((p) => {
             const Icono = p.icono;
             return (
@@ -568,11 +587,14 @@ export default function HomePage() {
                 className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xs transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/60"
               >
                 <div>
-                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-zinc-900">
+                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-zinc-950">
                     <img
                       src={p.portada}
                       alt={p.titulo}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                      onError={(e) => {
+                        e.currentTarget.src = "/portfolio/imagen1.jpg";
+                      }}
                     />
                     <div className="absolute top-2.5 left-2.5">
                       <span className="rounded-full bg-black/70 backdrop-blur-md border border-white/20 px-2.5 py-0.5 text-[9px] font-bold text-white uppercase tracking-wider">
@@ -625,92 +647,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* QUIÊN SOY */}
-      <section id="quien-soy" className="mx-auto max-w-4xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
-        <div className="text-center max-w-xl mx-auto">
-          <div className="relative mx-auto h-24 w-24 sm:h-28 sm:w-28 overflow-hidden rounded-full border-2 border-[var(--brand)]/40 bg-zinc-100 shadow-md ring-4 ring-[var(--brand)]/10 dark:bg-zinc-800">
-            {!errorFotoNahuel ? (
-              <Image
-                src="/nahuel.jpg"
-                alt="Nahuel - NDI | Diseño & Web"
-                width={256}
-                height={256}
-                quality={95}
-                className="h-full w-full object-cover object-top"
-                onError={() => setErrorFotoNahuel(true)}
-                priority
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center font-bold text-lg sm:text-xl text-[var(--brand)]">
-                NDI
-              </div>
-            )}
-          </div>
-
-          <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold text-zinc-600 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-300">
-            <MapPin className="h-3 w-3 text-[var(--brand)]" />
-            <span>Ledesma, Jujuy</span>
-          </div>
-
-          <h2 className="mt-3 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white">
-            Hola, soy Nahuel.
-          </h2>
-
-          <p className="mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-350 [text-wrap:balance]">
-            Soy Diseñador Gráfico Junior y desarrollador web de Ledesma, Jujuy. Creo páginas webs y gráficas pensadas para que tu negocio se vea profesional y venda.
-          </p>
-
-          <p className="mt-2 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 [text-wrap:balance]">
-            Tratás directo conmigo: sin vueltas, sin intermediarios y con soporte constante.
-          </p>
-
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-xs">
-            <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-1.5 font-medium text-zinc-800 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200">
-              <UserCheck className="h-3.5 w-3.5 text-[var(--brand)]" />
-              <span>Atención directa 1 a 1</span>
-            </div>
-            <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-1.5 font-medium text-zinc-800 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200">
-              <Palette className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
-              <span>Diseño gráfico & Identidad</span>
-            </div>
-            <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-1.5 font-medium text-zinc-800 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200">
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-              <span>Soporte continuo</span>
-            </div>
-          </div>
-
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
-            <a
-              href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por diseño gráfico y una página web para mi negocio.")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl bg-[var(--brand)] px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs shadow-blue-500/20 transition hover:opacity-90 active:scale-95"
-            >
-              <MessageCircle className="h-4 w-4" />
-              <span>Hablar directo con Nahuel</span>
-            </a>
-
-            <a
-              href={BEHANCE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-xs sm:text-sm font-bold text-zinc-800 shadow-xs transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 active:scale-95"
-            >
-              <Palette className="h-4 w-4 text-[var(--brand)]" />
-              <span>Ver portfolio en Behance ↗</span>
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* PLANES */}
+      {/* PLANES Y PRECIOS (UBICADO PRIMERO, CON TÍTULO AJUSTADO) */}
       <section id="planes" className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="mx-auto max-w-2xl text-center">
           <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
             Planes y Precios
           </span>
           <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white">
-            Elegí cómo querés impulsar tu negocio.
+            Elegí cómo querés impulsar tu página web.
           </h2>
           <p className="mt-1.5 text-sm text-zinc-600 dark:text-zinc-400">
             Puesta en marcha inicial y mantenimiento mensual accesible.
@@ -748,6 +692,84 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* QUIÉN SOY (UBICADO ABAJO DE LOS PLANES CON PASTILLA "DISEÑO GRÁFICO & WEB") */}
+      <section id="quien-soy" className="mx-auto max-w-4xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
+        <div className="text-center max-w-xl mx-auto">
+          <div className="relative mx-auto h-24 w-24 sm:h-28 sm:w-28 overflow-hidden rounded-full border-2 border-[var(--brand)]/40 bg-zinc-100 shadow-md ring-4 ring-[var(--brand)]/10 dark:bg-zinc-800">
+            {!errorFotoNahuel ? (
+              <Image
+                src="/nahuel.jpg"
+                alt="Nahuel - NDI | Diseño & Web"
+                width={256}
+                height={256}
+                quality={95}
+                className="h-full w-full object-cover object-top"
+                onError={() => setErrorFotoNahuel(true)}
+                priority
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center font-bold text-lg sm:text-xl text-[var(--brand)]">
+                NDI
+              </div>
+            )}
+          </div>
+
+          <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold text-zinc-600 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+            <MapPin className="h-3 w-3 text-[var(--brand)]" />
+            <span>Ledesma, Jujuy</span>
+          </div>
+
+          <h2 className="mt-3 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white">
+            Hola, soy Nahuel.
+          </h2>
+
+          <p className="mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300 [text-wrap:balance]">
+            Soy Diseñador Gráfico Junior y desarrollador web de Ledesma, Jujuy. Creo páginas webs y gráficas pensadas para que tu negocio se vea profesional y venda.
+          </p>
+
+          <p className="mt-2 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 [text-wrap:balance]">
+            Tratás directo conmigo: sin vueltas, sin intermediarios y con soporte constante.
+          </p>
+
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-xs">
+            <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-1.5 font-medium text-zinc-800 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200">
+              <UserCheck className="h-3.5 w-3.5 text-[var(--brand)]" />
+              <span>Atención directa 1 a 1</span>
+            </div>
+            <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-1.5 font-medium text-zinc-800 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200">
+              <Palette className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
+              <span>Diseño Gráfico & Web</span>
+            </div>
+            <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-1.5 font-medium text-zinc-800 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200">
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+              <span>Soporte continuo</span>
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
+            <a
+              href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por diseño gráfico y una página web para mi negocio.")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl bg-[var(--brand)] px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs shadow-blue-500/20 transition hover:opacity-90 active:scale-95"
+            >
+              <MessageCircle className="h-4 w-4" />
+              <span>Hablar directo con Nahuel</span>
+            </a>
+
+            <a
+              href={BEHANCE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-xs sm:text-sm font-bold text-zinc-800 shadow-xs transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 active:scale-95"
+            >
+              <Palette className="h-4 w-4 text-[var(--brand)]" />
+              <span>Ver portfolio en Behance ↗</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* FAQ */}
       <section id="faq" className="mx-auto max-w-4xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="text-center">
@@ -776,7 +798,7 @@ export default function HomePage() {
                   <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${abierta ? "rotate-180 text-[var(--brand)]" : ""}`} />
                 </button>
                 {abierta && (
-                  <div className="border-t border-zinc-100 px-4 pb-4 pt-3 text-xs leading-relaxed text-zinc-600 dark:border-zinc-800 dark:text-zinc-450 sm:px-5 sm:pb-5 sm:text-sm">
+                  <div className="border-t border-zinc-100 px-4 pb-4 pt-3 text-xs leading-relaxed text-zinc-600 dark:border-zinc-800 dark:text-zinc-400 sm:px-5 sm:pb-5 sm:text-sm">
                     {faq.respuesta}
                   </div>
                 )}
@@ -787,7 +809,7 @@ export default function HomePage() {
       </section>
 
       {/* CONTACTO */}
-      <section id="contacto" className="border-t border-zinc-200/80 bg-zinc-100/65 py-14 sm:py-24 dark:border-zinc-800/80 dark:bg-zinc-950/60">
+      <section id="contacto" className="border-t border-zinc-200/80 bg-zinc-100/60 py-14 sm:py-24 dark:border-zinc-800/80 dark:bg-zinc-950/60">
         <div className="mx-auto max-w-5xl px-3.5 sm:px-8">
           <div className="grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-12">
             <div>
@@ -826,7 +848,7 @@ export default function HomePage() {
                   </div>
                   <div>
                     <p className="text-[11px] text-emerald-600 dark:text-emerald-400">WhatsApp directo</p>
-                    <p className="text-xs sm:text-sm font-semibold text-emerald-850 dark:text-emerald-300">+54 9 388 657-5664</p>
+                    <p className="text-xs sm:text-sm font-semibold text-emerald-800 dark:text-emerald-300">+54 9 388 657-5664</p>
                   </div>
                 </a>
 
@@ -834,7 +856,7 @@ export default function HomePage() {
                   href={BEHANCE_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-3.5 shadow-xs transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/85 dark:hover:border-zinc-700"
+                  className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-3.5 shadow-xs transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/80 dark:hover:border-zinc-700"
                 >
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
                     <Palette className="h-5 w-5" />
@@ -889,26 +911,27 @@ export default function HomePage() {
                   NDI | Diseño & Web
                 </span>
               </div>
-              <p className="mt-2.5 text-xs text-zinc-505 dark:text-zinc-400 leading-relaxed">
+              <p className="mt-2.5 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                 Diseño gráfico y desarrollo web para emprendimientos, negocios y profesionales. Atención directa desde Ledesma, Jujuy.
               </p>
             </div>
 
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-zinc-955 dark:text-white">
+              <p className="text-xs font-bold uppercase tracking-wider text-zinc-950 dark:text-white">
                 Navegación
               </p>
               <ul className="mt-3 space-y-2 text-xs text-zinc-600 dark:text-zinc-400">
                 <li><a href="#servicios" className="hover:text-[var(--brand)] transition">Servicios</a></li>
                 <li><a href="#trabajos" className="hover:text-[var(--brand)] transition">Modelos</a></li>
+                <li><a href="#planes" className="hover:text-[var(--brand)] transition">Planes</a></li>
                 <li><a href="#quien-soy" className="hover:text-[var(--brand)] transition">Quién soy</a></li>
                 <li><a href={BEHANCE_URL} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--brand)] transition">Behance Portfolio ↗</a></li>
-                <li><a href="#planes" className="hover:text-[var(--brand)] transition">Planes</a></li>
+                <li><a href="#contacto" className="hover:text-[var(--brand)] transition">Contacto</a></li>
               </ul>
             </div>
 
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-zinc-955 dark:text-white">
+              <p className="text-xs font-bold uppercase tracking-wider text-zinc-950 dark:text-white">
                 Marco legal
               </p>
               <ul className="mt-3 space-y-2 text-xs text-zinc-600 dark:text-zinc-400">
@@ -936,10 +959,10 @@ export default function HomePage() {
             </div>
 
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-zinc-955 dark:text-white">
+              <p className="text-xs font-bold uppercase tracking-wider text-zinc-950 dark:text-white">
                 Defensa del consumidor
               </p>
-              <p className="mt-2 text-xs text-zinc-505 dark:text-zinc-400 leading-relaxed">
+              <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                 Podés revocar tu contratación dentro del plazo de 10 días corridos contados desde la aceptación del servicio.
               </p>
               <div className="mt-3">
@@ -1004,18 +1027,18 @@ function PlanCard({
           </span>
         )}
 
-        <h3 className="text-xl font-bold text-zinc-955 dark:text-white">{nombre}</h3>
-        <p className="mt-1 text-xs text-zinc-605 dark:text-zinc-400 leading-relaxed">{descripcion}</p>
+        <h3 className="text-xl font-bold text-zinc-950 dark:text-white">{nombre}</h3>
+        <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">{descripcion}</p>
 
         <div className="mt-5 rounded-2xl border border-zinc-200/80 bg-zinc-50/80 p-4 dark:border-zinc-800 dark:bg-zinc-950/80">
           <p className="text-[10px] uppercase font-bold text-zinc-500">Puesta en marcha inicial</p>
-          <p className="text-2xl sm:text-3xl font-black text-zinc-955 dark:text-white">{inicial}</p>
+          <p className="text-2xl sm:text-3xl font-black text-zinc-950 dark:text-white">{inicial}</p>
           <p className="mt-0.5 text-xs font-bold text-[var(--brand-contrast)] dark:text-[var(--brand)]">+ {mensual}</p>
         </div>
 
         <div className="mt-6 space-y-2.5">
           {features.map((feature) => (
-            <div key={feature} className="flex items-start gap-2 text-xs text-zinc-750 dark:text-zinc-300">
+            <div key={feature} className="flex items-start gap-2 text-xs text-zinc-700 dark:text-zinc-300">
               <Check className="h-4 w-4 shrink-0 text-emerald-500 mt-0.5" />
               <span>{feature}</span>
             </div>
@@ -1031,7 +1054,7 @@ function PlanCard({
           className={`inline-flex w-full items-center justify-center rounded-xl py-3 text-xs font-bold transition shadow-xs ${
             destacado
               ? "bg-[var(--brand)] text-white hover:opacity-90 shadow-blue-500/20"
-              : "bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-955 dark:hover:bg-white"
+              : "bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white"
           }`}
         >
           Consultar por WhatsApp
