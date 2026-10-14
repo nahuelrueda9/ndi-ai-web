@@ -9,7 +9,6 @@ import {
   CalendarDays,
   Check,
   ChevronDown,
-  Clock,
   ExternalLink,
   Eye,
   FileText,
@@ -244,7 +243,7 @@ export default function HomePage() {
             </p>
           </Link>
 
-          <nav className="hidden items-center gap-7 lg:flex">
+          <nav className="hidden items-center gap-6 lg:flex">
             <a href="#funciones" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
               Servicios
             </a>
@@ -300,7 +299,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* HERO (TÍTULO Y SUBTÍTULO EQUILIBRADOS EN 2 LÍNEAS) */}
+      {/* HERO */}
       <section className="relative pt-10 pb-12 sm:pt-16 sm:pb-20 overflow-hidden">
         <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 h-[500px] w-full max-w-7xl">
           <div className="absolute top-10 left-1/3 h-80 w-80 rounded-full bg-blue-600/15 blur-[140px]" />
@@ -312,16 +311,14 @@ export default function HomePage() {
             <span>Diseño gráfico & desarrollo web</span>
           </div>
 
-          {/* Título en 2 filas limpias */}
-          <h1 className="mx-auto max-w-3xl text-3xl sm:text-5xl lg:text-5xl font-black tracking-tight leading-[1.18] sm:leading-[1.15] text-zinc-950 dark:text-white">
+          <h1 className="mx-auto max-w-2xl text-2xl sm:text-4xl lg:text-[2.75rem] font-black tracking-tight leading-tight text-zinc-950 dark:text-white [text-wrap:balance]">
             Tené la página web de tu negocio{" "}
             <span className="bg-gradient-to-r from-blue-600 via-sky-500 to-emerald-500 bg-clip-text text-transparent dark:from-blue-400 dark:via-sky-300 dark:to-emerald-400">
               lista para vender.
             </span>
           </h1>
 
-          {/* Subtítulo en 2 líneas sin sobrecargar */}
-          <p className="mx-auto mt-3 max-w-2xl text-xs sm:text-base leading-relaxed text-zinc-600 dark:text-zinc-400 font-normal">
+          <p className="mx-auto mt-3 max-w-xl text-xs sm:text-base leading-relaxed text-zinc-600 dark:text-zinc-400 font-normal [text-wrap:balance]">
             Diseño tu web y la identidad visual de tu marca. Productos, turnos y pedidos directos a WhatsApp, sin vueltas técnicas.
           </p>
 
@@ -487,7 +484,7 @@ export default function HomePage() {
         </div>
 
         <div className="mt-8 grid gap-4 lg:grid-cols-12">
-          {/* Card Destacada 1: Catálogo & Menú */}
+          {/* Card Destacada 1 */}
           <article className="lg:col-span-7 rounded-2xl sm:rounded-3xl border border-zinc-200 bg-white p-5 sm:p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between">
@@ -512,7 +509,7 @@ export default function HomePage() {
             </div>
           </article>
 
-          {/* Card Destacada 2: Turnos & Reservas */}
+          {/* Card Destacada 2 */}
           <article className="lg:col-span-5 rounded-2xl sm:rounded-3xl border border-zinc-200 bg-white p-5 sm:p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between">
@@ -536,7 +533,7 @@ export default function HomePage() {
             </div>
           </article>
 
-          {/* Card 3: Diseño Gráfico & Branding (NUEVA DESTACADA) */}
+          {/* Cards complementarias */}
           <article className="lg:col-span-4 rounded-2xl border border-zinc-200 bg-white p-4 sm:p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/40">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-600/15 dark:text-purple-400">
               <Palette className="h-4 w-4" />
@@ -656,11 +653,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* QUIÉN SOY (FOTO EN ALTA RESOLUCIÓN + PORTFOLIO BEHANCE + SIN LO DE 48HS) */}
-      <section id="quien-soy" className="mx-auto max-w-5xl px-3.5 py-12 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
-        <div className="text-center max-w-2xl mx-auto">
-          {/* Contenedor optimizado para que la foto se vea completamente nítida */}
-          <div className="relative mx-auto h-24 w-24 sm:h-32 sm:w-32 overflow-hidden rounded-full border-2 border-blue-500/40 bg-zinc-100 shadow-lg ring-4 ring-blue-500/10 dark:bg-zinc-800">
+      {/* QUIÉN SOY */}
+      <section id="quien-soy" className="mx-auto max-w-4xl px-3.5 py-12 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
+        <div className="text-center max-w-xl mx-auto">
+          <div className="relative mx-auto h-24 w-24 sm:h-28 sm:w-28 overflow-hidden rounded-full border-2 border-blue-500/40 bg-zinc-100 shadow-md ring-4 ring-blue-500/10 dark:bg-zinc-800">
             {!errorFotoNahuel ? (
               <Image
                 src="/nahuel.jpg"
@@ -673,7 +669,7 @@ export default function HomePage() {
                 priority
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center font-black text-lg sm:text-2xl text-blue-600 dark:text-blue-400">
+              <div className="flex h-full w-full items-center justify-center font-black text-lg sm:text-xl text-blue-600 dark:text-blue-400">
                 ND
               </div>
             )}
@@ -681,44 +677,42 @@ export default function HomePage() {
 
           <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[11px] font-semibold text-zinc-600 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
             <MapPin className="h-3 w-3 text-blue-600 dark:text-blue-400" />
-            <span>Libertador General San Martín, Jujuy</span>
+            <span>Ledesma, Jujuy</span>
           </div>
 
           <h2 className="mt-3 text-2xl sm:text-4xl font-extrabold tracking-tight text-zinc-950 dark:text-white">
             Hola, soy Nahuel.
           </h2>
 
-          <p className="mt-3 text-xs sm:text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-            Soy diseñador gráfico y desarrollador web. Trabajo desde Libertador General San Martín, Jujuy, combinando el diseño visual de tu marca con una presencia web propia, rápida y ordenada.
+          <p className="mt-3 text-xs sm:text-sm sm:leading-relaxed text-zinc-600 dark:text-zinc-300 [text-wrap:balance]">
+            Soy Diseñador Gráfico Junior y desarrollador web de Ledesma, Jujuy. Creo páginas webs y gráficas pensadas para que tu negocio se vea profesional y venda.
           </p>
 
-          <p className="mt-2 text-xs sm:text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-            Acá no hablás con intermediarios ni ejecutivos de cuentas: coordinás el diseño, las piezas gráficas, la carga de datos y las dudas directamente conmigo.
+          <p className="mt-2 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 [text-wrap:balance]">
+            Tratás directo conmigo: sin vueltas, sin intermediarios y con soporte constante.
           </p>
 
-          {/* Pastillas de diferenciales sin la de 48hs */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-[11px] sm:text-xs">
-            <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-2 font-medium text-zinc-800 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200">
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 text-[11px] sm:text-xs">
+            <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-1.5 font-medium text-zinc-800 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200">
               <UserCheck className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-              <span>Atención 1 a 1 sin intermediarios</span>
+              <span>Atención directa 1 a 1</span>
             </div>
-            <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-2 font-medium text-zinc-800 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200">
+            <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-1.5 font-medium text-zinc-800 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200">
               <Palette className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
-              <span>Diseño gráfico & Identidad visual</span>
+              <span>Diseño gráfico & Identidad</span>
             </div>
-            <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-2 font-medium text-zinc-800 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200">
+            <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-1.5 font-medium text-zinc-800 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200">
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-              <span>Soporte y mantenimiento continuo</span>
+              <span>Soporte continuo</span>
             </div>
           </div>
 
-          {/* Botones de contacto y portfolio Behance */}
-          <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
             <a
               href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por diseño gráfico y una página web para mi negocio.")}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-sm shadow-blue-600/30 transition hover:bg-blue-500 active:scale-95"
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-sm shadow-blue-600/30 transition hover:bg-blue-500 active:scale-95"
             >
               <MessageCircle className="h-4 w-4" />
               <span>Hablar directo con Nahuel</span>
@@ -728,10 +722,10 @@ export default function HomePage() {
               href={BEHANCE_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl border border-zinc-300 bg-white px-5 py-2.5 text-xs sm:text-sm font-bold text-zinc-800 shadow-sm transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 active:scale-95"
+              className="inline-flex items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-xs sm:text-sm font-bold text-zinc-800 shadow-sm transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 active:scale-95"
             >
               <Palette className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              <span>Ver mi portfolio en Behance ↗</span>
+              <span>Ver portfolio en Behance ↗</span>
             </a>
           </div>
         </div>
@@ -931,7 +925,7 @@ export default function HomePage() {
                 </span>
               </div>
               <p className="mt-2.5 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                Diseño gráfico y desarrollo web para emprendimientos, negocios y profesionales. Atención directa desde Libertador General San Martín, Jujuy.
+                Diseño gráfico y desarrollo web para emprendimientos, negocios y profesionales. Atención directa desde Ledesma, Jujuy.
               </p>
             </div>
 
@@ -996,7 +990,7 @@ export default function HomePage() {
 
           <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-500">
             <p>© 2026 NDI | Diseño & Web. Todos los derechos reservados.</p>
-            <p>Libertador General San Martín, Jujuy, Argentina</p>
+            <p>Ledesma, Jujuy, Argentina</p>
           </div>
         </div>
       </footer>
