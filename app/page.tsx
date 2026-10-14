@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -20,6 +20,7 @@ import {
   QrCode,
   ShieldCheck,
   Sparkles,
+  Star,
   Sun,
   UserCheck,
   UtensilsCrossed,
@@ -33,41 +34,6 @@ import { useTheme } from "@/components/theme/ThemeProvider";
 const WHATSAPP_NUMERO = "5493886575664";
 const CORREO_CONTACTO = "soporte@ndiweb.com";
 const BEHANCE_URL = "https://www.behance.net/nahuelrueda";
-
-const PASOS_SEC = [
-  {
-    id: 1,
-    tag: "Paso 01",
-    titulo: "Tu catálogo o carta digital",
-    detalle:
-      "Tus productos, fotos y precios actualizados las 24 hs. El cliente entra desde tu link o escaneando el QR.",
-    badge: "Catálogo Online",
-  },
-  {
-    id: 2,
-    tag: "Paso 02",
-    titulo: "El cliente arma su pedido",
-    detalle:
-      "Elige gustos, talles, variantes y ve el total calculado al instante sin tener que preguntarte precio por precio.",
-    badge: "Carrito en vivo",
-  },
-  {
-    id: 3,
-    tag: "Paso 03",
-    titulo: "Llega armado a tu WhatsApp",
-    detalle:
-      "Recibís un mensaje ordenado con el detalle del pedido, dirección o mesa, y método de pago listo para cobrar.",
-    badge: "WhatsApp Directo",
-  },
-  {
-    id: 4,
-    tag: "Paso 04",
-    titulo: "QR físico para tu negocio",
-    detalle:
-      "Un código QR exclusivo para tu mostrador, vidriera o mesas. Tu cliente escanea y compra en segundos.",
-    badge: "QR Listo para Imprimir",
-  },
-];
 
 const proyectosShowcase = [
   {
@@ -203,312 +169,6 @@ const planBusinessIA = [
   "Sin marca comercial en el pie de página",
 ];
 
-function HeroAppleSection({ whatsappNumero }: { whatsappNumero: string }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [pasoActivo, setPasoActivo] = useState(0);
-  const [rotacionMouse, setRotacionMouse] = useState({ x: 0, y: 0 });
-  const [progresoScroll, setProgresoScroll] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const totalDist = containerRef.current.offsetHeight - window.innerHeight;
-      if (totalDist <= 0) return;
-
-      const scrollActual = -rect.top;
-      const progreso = Math.min(Math.max(scrollActual / totalDist, 0), 1);
-      setProgresoScroll(progreso);
-
-      if (progreso < 0.28) {
-        setPasoActivo(0);
-      } else if (progreso < 0.58) {
-        setPasoActivo(1);
-      } else if (progreso < 0.88) {
-        setPasoActivo(2);
-      } else {
-        setPasoActivo(3);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (window.innerWidth < 1024) return;
-    const { clientX, clientY } = e;
-    const centroX = window.innerWidth / 2;
-    const centroY = window.innerHeight / 2;
-    const rotX = -((clientY - centroY) / centroY) * 5;
-    const rotY = ((clientX - centroX) / centroX) * 5;
-    setRotacionMouse({ x: rotX, y: rotY });
-  };
-
-  const handleMouseLeave = () => {
-    setRotacionMouse({ x: 0, y: 0 });
-  };
-
-  const rotacionXFinal = rotacionMouse.x - progresoScroll * 4;
-  const rotacionYFinal =
-    rotacionMouse.y + (pasoActivo === 1 ? -4 : pasoActivo === 2 ? 4 : 0);
-
-  return (
-    <div
-      ref={containerRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      className="relative w-full h-[320vh] sm:h-[360vh] bg-zinc-50 dark:bg-[#0c0d0e] transition-colors"
-    >
-      <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-between pt-14 pb-6 sm:pt-16 sm:pb-8 px-4 sm:px-8">
-        <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[500px] sm:h-[650px] sm:w-[650px] rounded-full bg-[var(--brand)]/15 dark:bg-[var(--brand)]/10 blur-[140px] -z-10" />
-
-        <div className="mx-auto max-w-4xl text-center z-10 shrink-0">
-          <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/90 px-3 py-1 text-xs font-semibold text-zinc-700 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/90 dark:text-zinc-300 mb-3 backdrop-blur-md">
-            <span className="h-2 w-2 rounded-full bg-[var(--brand)] animate-pulse" />
-            <span>ND · Diseño Gráfico & Desarrollo Web</span>
-          </div>
-
-          <h1 className="text-3xl sm:text-5xl lg:text-[3.5rem] font-bold tracking-tight text-zinc-950 dark:text-white leading-[1.12]">
-            Tené la página web de tu negocio{" "}
-            <span className="relative inline-block whitespace-nowrap">
-              lista para vender.
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 280 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="absolute -bottom-2 left-0 w-full text-[var(--brand)] overflow-visible"
-              >
-                <path
-                  d="M3 14C60 6 180 4 277 12C210 16 90 18 12 16"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </span>
-          </h1>
-
-          <p className="mx-auto mt-3 max-w-xl text-xs sm:text-base text-zinc-600 dark:text-zinc-400 font-normal leading-relaxed">
-            Diseño tu identidad visual y tu web a medida. Atención directa de persona a persona desde Jujuy.
-          </p>
-
-          <div className="mt-5 flex items-center justify-center gap-3">
-            <Link
-              href="/register"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--brand)] hover:opacity-90 px-5 py-2.5 sm:px-6 sm:py-3 text-xs sm:text-sm font-bold text-white shadow-md shadow-blue-500/25 transition active:scale-95"
-            >
-              Quiero mi página
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-
-            <a
-              href={`https://wa.me/${whatsappNumero}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por el diseño de una página web para mi negocio.")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white/80 px-4 py-2.5 sm:px-5 sm:py-3 text-xs sm:text-sm font-semibold text-zinc-800 shadow-xs backdrop-blur-md transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-800 active:scale-95"
-            >
-              <MessageCircle className="h-4 w-4 text-emerald-500" />
-              Hablar con Nahuel
-            </a>
-          </div>
-        </div>
-
-        <div className="relative flex-1 flex items-center justify-center my-auto w-full max-w-5xl mx-auto">
-          <div className="hidden lg:flex flex-col justify-center w-64 pr-6 text-left transition-all duration-300">
-            <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
-              {PASOS_SEC[pasoActivo].tag}
-            </span>
-            <h3 className="mt-1 text-lg font-bold text-zinc-950 dark:text-white leading-snug">
-              {PASOS_SEC[pasoActivo].titulo}
-            </h3>
-            <p className="mt-2 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-              {PASOS_SEC[pasoActivo].detalle}
-            </p>
-          </div>
-
-          <div
-            className="hero-scene relative flex items-center justify-center"
-            style={{ perspective: "1400px" }}
-          >
-            <div
-              className="hero-card-3d relative w-[280px] sm:w-[320px] rounded-[2.8rem] border-[5px] border-zinc-800 bg-zinc-950 p-2.5 shadow-2xl transition-transform duration-200 ease-out"
-              style={{
-                transform: `rotateX(${rotacionXFinal}deg) rotateY(${rotacionYFinal}deg)`,
-              }}
-            >
-              <div className="mx-auto h-4 w-24 rounded-full bg-zinc-800 mb-2 flex items-center justify-center">
-                <div className="h-1.5 w-1.5 rounded-full bg-zinc-900 ml-auto mr-3" />
-              </div>
-
-              <div className="relative rounded-[2rem] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 overflow-hidden h-[380px] sm:h-[420px] flex flex-col justify-between text-left p-3.5">
-                <div className="flex items-center justify-between pb-2.5 border-b border-zinc-100 dark:border-zinc-800">
-                  <div className="flex items-center gap-2">
-                    <div className="h-6 w-6 rounded-lg bg-[var(--brand)] flex items-center justify-center text-white text-[10px] font-bold">
-                      ND
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-zinc-950 dark:text-white leading-none">
-                        Café & Sabores
-                      </p>
-                      <p className="text-[9px] text-zinc-500">Ledesma, Jujuy</p>
-                    </div>
-                  </div>
-                  <span className="text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold px-2 py-0.5 rounded-full">
-                    Abierto
-                  </span>
-                </div>
-
-                <div className="flex-1 flex flex-col justify-center py-2">
-                  {pasoActivo === 0 && (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-[11px] font-bold text-zinc-700 dark:text-zinc-300">
-                        <span>Recomendados de hoy</span>
-                        <UtensilsCrossed className="h-3.5 w-3.5 text-[var(--brand)]" />
-                      </div>
-
-                      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 p-2.5 bg-zinc-50 dark:bg-zinc-800/40 flex items-center justify-between">
-                        <div>
-                          <p className="text-xs font-semibold text-zinc-900 dark:text-white">Café Filtrado Especial</p>
-                          <p className="text-[10px] text-zinc-500">$ 2.800</p>
-                        </div>
-                        <span className="h-6 w-6 rounded-lg bg-[var(--brand)] text-white flex items-center justify-center text-xs font-bold">
-                          +
-                        </span>
-                      </div>
-
-                      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 p-2.5 bg-zinc-50 dark:bg-zinc-800/40 flex items-center justify-between">
-                        <div>
-                          <p className="text-xs font-semibold text-zinc-900 dark:text-white">Tostón con Palta & Huevo</p>
-                          <p className="text-[10px] text-zinc-500">$ 4.200</p>
-                        </div>
-                        <span className="h-6 w-6 rounded-lg bg-[var(--brand)] text-white flex items-center justify-center text-xs font-bold">
-                          +
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {pasoActivo === 1 && (
-                    <div className="space-y-2">
-                      <div className="rounded-xl bg-[var(--brand)]/10 p-2.5 border border-[var(--brand)]/20">
-                        <p className="text-[10px] font-bold text-[var(--brand-contrast)] dark:text-blue-300">
-                          Tu pedido en curso
-                        </p>
-                        <div className="mt-1 flex justify-between text-xs font-semibold text-zinc-900 dark:text-white">
-                          <span>1x Tostón con Palta</span>
-                          <span>$ 4.200</span>
-                        </div>
-                        <div className="flex justify-between text-xs font-semibold text-zinc-900 dark:text-white">
-                          <span>1x Café Filtrado</span>
-                          <span>$ 2.800</span>
-                        </div>
-                        <div className="mt-2 pt-2 border-t border-[var(--brand)]/20 flex justify-between text-xs font-bold text-zinc-950 dark:text-white">
-                          <span>Total</span>
-                          <span className="text-[var(--brand-contrast)] dark:text-[var(--brand)]">$ 7.000</span>
-                        </div>
-                      </div>
-
-                      <div className="rounded-lg bg-zinc-100 dark:bg-zinc-800 p-2 text-[10px] text-zinc-600 dark:text-zinc-400">
-                        📍 Mesa 4 / Para consumir acá
-                      </div>
-                    </div>
-                  )}
-
-                  {pasoActivo === 2 && (
-                    <div className="rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-500/30 p-3 text-left space-y-1.5">
-                      <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 text-xs font-bold">
-                        <MessageCircle className="h-4 w-4" />
-                        <span>Mensaje listo de WhatsApp</span>
-                      </div>
-                      <p className="text-[11px] text-zinc-700 dark:text-zinc-300 font-mono leading-tight bg-white dark:bg-zinc-900 p-2 rounded-lg border border-emerald-500/20">
-                        ¡Hola! Quiero hacer este pedido:<br />
-                        • 1x Tostón con Palta ($ 4.200)<br />
-                        • 1x Café Filtrado ($ 2.800)<br />
-                        <strong>Total: $ 7.000</strong><br />
-                        Mesa: 4 (Pago con Transferencia)
-                      </p>
-                    </div>
-                  )}
-
-                  {pasoActivo === 3 && (
-                    <div className="text-center space-y-2 flex flex-col items-center justify-center">
-                      <div className="p-3 rounded-2xl bg-white border border-zinc-300 dark:border-zinc-700 shadow-md">
-                        <QrCode className="h-16 w-16 text-zinc-900" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-zinc-950 dark:text-white">
-                          QR para mesa o mostrador
-                        </p>
-                        <p className="text-[10px] text-zinc-500">
-                          Tu cliente escanea y pide sin demoras
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800">
-                  <div className="w-full rounded-xl bg-[var(--brand)] py-2 text-center text-white text-[11px] font-bold shadow-xs">
-                    {pasoActivo === 2
-                      ? "Enviar por WhatsApp →"
-                      : pasoActivo === 3
-                      ? "Listo para usar en tu negocio"
-                      : "Ver pedido ($ 7.000)"}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="hidden lg:flex flex-col justify-center w-64 pl-6 text-left transition-all duration-300">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--brand)]/10 border border-[var(--brand)]/20 px-3 py-1 text-xs font-bold text-[var(--brand-contrast)] dark:text-[var(--brand)] w-fit">
-              <Sparkles className="h-3 w-3" />
-              {PASOS_SEC[pasoActivo].badge}
-            </span>
-            <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
-              Deslizá hacia abajo para ver la secuencia completa de cómo compran tus clientes.
-            </p>
-          </div>
-        </div>
-
-        <div className="mx-auto max-w-xl w-full z-10 shrink-0">
-          <div className="flex items-center justify-between gap-1.5 rounded-2xl border border-zinc-200/80 bg-white/80 p-1.5 shadow-xs backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-900/80">
-            {PASOS_SEC.map((paso, idx) => (
-              <div
-                key={paso.id}
-                className={`flex-1 py-1.5 px-2 rounded-xl text-center transition-all ${
-                  pasoActivo === idx
-                    ? "bg-[var(--brand)] text-white shadow-xs font-bold"
-                    : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-                }`}
-              >
-                <p className="text-[10px] leading-none uppercase tracking-wider">
-                  0{idx + 1}
-                </p>
-                <p className="hidden sm:block text-[11px] truncate mt-0.5">
-                  {paso.badge}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-2 block lg:hidden text-center">
-            <p className="text-xs font-semibold text-zinc-900 dark:text-white">
-              {PASOS_SEC[pasoActivo].titulo}
-            </p>
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">
-              {PASOS_SEC[pasoActivo].detalle}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function HomePage() {
   const [faqAbierta, setFaqAbierta] = useState<number | null>(0);
   const [mostrarBotonHeader, setMostrarBotonHeader] = useState(false);
@@ -541,7 +201,7 @@ export default function HomePage() {
             <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--brand)] p-1 shadow-xs shadow-blue-500/20">
               <Image
                 src="/logo-ndi.png"
-                alt="Logo ND"
+                alt="Logo NDI"
                 width={16}
                 height={16}
                 className="h-full w-full object-contain"
@@ -549,12 +209,12 @@ export default function HomePage() {
               />
             </div>
             <p className="text-xs sm:text-sm font-bold tracking-tight text-zinc-950 dark:text-white whitespace-nowrap">
-              ND <span className="hidden sm:inline font-normal text-zinc-500 dark:text-zinc-400">· Diseño Gráfico</span>
+              NDI <span className="font-normal text-zinc-500 dark:text-zinc-400">| Diseño & Web</span>
             </p>
           </Link>
 
           <nav className="hidden items-center gap-6 lg:flex">
-            <a href="#funciones" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
+            <a href="#servicios" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
               Servicios
             </a>
             <a href="#trabajos" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
@@ -609,8 +269,151 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* PORTADA CINEMATOGRÁFICA ESTILO APPLE (SCROLL STICKY + CSS 3D) */}
-      <HeroAppleSection whatsappNumero={WHATSAPP_NUMERO} />
+      {/* PORTADA ESTUDIO CREATIVO (ESTRUCTURA REFERENCIA IMAGEN 1) */}
+      <section className="relative pt-10 pb-16 sm:pt-14 sm:pb-24 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
+        <div className="mx-auto max-w-6xl px-4 sm:px-8">
+          
+          {/* ENCABEZADO CENTRADO CON ESPACIO Y AIRE */}
+          <div className="mx-auto max-w-4xl text-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3.5 py-1 text-xs font-semibold text-zinc-700 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 mb-4">
+              <span className="h-2 w-2 rounded-full bg-[var(--brand)]" />
+              <span>Diseño Gráfico & Desarrollo Web</span>
+            </div>
+
+            <h1 className="text-3xl sm:text-5xl lg:text-[3.5rem] font-bold tracking-tight text-zinc-950 dark:text-white leading-[1.12]">
+              Tené la página web de tu negocio{" "}
+              <span className="relative inline-block whitespace-nowrap">
+                lista para vender.
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 280 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="absolute -bottom-2 left-0 w-full text-[var(--brand)] overflow-visible"
+                >
+                  <path
+                    d="M3 14C60 6 180 4 277 12C210 16 90 18 12 16"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </span>
+            </h1>
+
+            <p className="mx-auto mt-4 max-w-2xl text-sm sm:text-base text-zinc-600 dark:text-zinc-400 font-normal leading-relaxed">
+              Diseño la identidad visual de tu marca y tu web a medida. Tus clientes ven productos, agendan turnos y te hacen pedidos directos por WhatsApp.
+            </p>
+          </div>
+
+          {/* LIENZO COMPUESTO CON CARDS FLOTANTES SUPERPUESTAS */}
+          <div className="relative mt-12 sm:mt-16 mx-auto max-w-4xl">
+            
+            {/* 1. LIENZO PRINCIPAL CENTRAL: ENTORNO VISUAL REAL DE DISEÑO */}
+            <div className="relative overflow-hidden rounded-[2rem] sm:rounded-[2.8rem] border border-zinc-200/80 bg-zinc-900 shadow-2xl dark:border-zinc-800 aspect-[16/10] sm:aspect-[16/9] w-full">
+              <img
+                src="https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1800&q=80"
+                alt="Diseño web y gráfico en proceso"
+                className="h-full w-full object-cover object-center opacity-80"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+              {/* MOCKUP INTERACTIVO SIMULADO ADENTRO DEL LIENZO */}
+              <div className="absolute inset-x-4 bottom-4 sm:bottom-6 sm:inset-x-8 flex items-end justify-between">
+                <div className="rounded-2xl bg-white/95 p-3 sm:p-4 backdrop-blur-md dark:bg-zinc-950/95 border border-white/20 shadow-lg text-left max-w-xs sm:max-w-sm hidden sm:block">
+                  <div className="flex items-center gap-2">
+                    <div className="h-6 w-6 rounded-lg bg-[var(--brand)] flex items-center justify-center text-white text-[10px] font-bold">
+                      NDI
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-zinc-900 dark:text-white">Carta Digital & WhatsApp</p>
+                      <p className="text-[10px] text-zinc-500">Pedidos directos sin comisiones</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 2. CARD FLOTANTE SUPERIOR IZQUIERDA: MÉTRICA OSCURA DE IMPACTO */}
+            <div className="absolute -top-6 -left-3 sm:-top-8 sm:-left-8 rounded-2xl sm:rounded-3xl bg-zinc-950 p-4 sm:p-5 text-white shadow-2xl border border-zinc-800 text-left max-w-[170px] sm:max-w-[210px] z-20">
+              <p className="text-2xl sm:text-4xl font-bold tracking-tight text-white leading-none">
+                +100%
+              </p>
+              <p className="mt-2 text-[11px] sm:text-xs text-zinc-400 font-medium leading-snug">
+                Autogestionable desde tu celular, sin intermediarios.
+              </p>
+            </div>
+
+            {/* 3. CARD FLOTANTE SUPERIOR DERECHA: CONFIANZA Y VALORACIÓN */}
+            <div className="absolute -top-4 -right-3 sm:-top-6 sm:-right-8 rounded-2xl sm:rounded-3xl bg-white p-3.5 sm:p-4 text-zinc-900 shadow-xl border border-zinc-200/80 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 dark:text-white text-left z-20">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xl sm:text-2xl font-bold tracking-tight">4.9</span>
+                <div className="flex text-amber-400">
+                  <Star className="h-4 w-4 fill-amber-400" />
+                  <Star className="h-4 w-4 fill-amber-400" />
+                  <Star className="h-4 w-4 fill-amber-400" />
+                  <Star className="h-4 w-4 fill-amber-400" />
+                  <Star className="h-4 w-4 fill-amber-400" />
+                </div>
+              </div>
+              <p className="mt-1 text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+                Atención personalizada y soporte continuo
+              </p>
+            </div>
+
+            {/* 4. CARD FLOTANTE INFERIOR IZQUIERDA: ATENCIÓN LOCAL DIRECTA */}
+            <div className="absolute -bottom-6 -left-2 sm:-bottom-8 sm:-left-6 rounded-2xl sm:rounded-3xl bg-white p-3.5 sm:p-4 text-zinc-900 shadow-xl border border-zinc-200/80 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 dark:text-white text-left z-20">
+              <p className="text-xs sm:text-sm font-bold text-zinc-950 dark:text-white">
+                Trato directo 1 a 1
+              </p>
+              <p className="mt-0.5 text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400">
+                Diseñado desde Ledesma, Jujuy
+              </p>
+            </div>
+
+            {/* 5. PÍLDORAS FLOTANTES INFERIOR DERECHA: SERVICIOS CLAVE */}
+            <div className="absolute -bottom-6 -right-2 sm:-bottom-8 sm:-right-6 rounded-2xl sm:rounded-3xl bg-white/95 p-2.5 sm:p-3 shadow-xl border border-zinc-200/80 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 z-20">
+              <div className="grid grid-cols-2 gap-1.5 text-[10px] sm:text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2.5 py-1 text-center">
+                  Diseño Gráfico
+                </span>
+                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2.5 py-1 text-center">
+                  Branding
+                </span>
+                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2.5 py-1 text-center">
+                  Páginas Web
+                </span>
+                <span className="rounded-xl bg-[var(--brand)]/10 text-[var(--brand-contrast)] dark:text-[var(--brand)] px-2.5 py-1 text-center font-bold">
+                  Catálogo & QR
+                </span>
+              </div>
+            </div>
+
+          </div>
+
+          {/* BOTONES DE LLAMADA A LA ACCIÓN INFERIORES */}
+          <div className="mt-14 sm:mt-16 flex flex-wrap items-center justify-center gap-3">
+            <a
+              href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por el diseño de una página web y gráfica para mi negocio.")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--brand)] hover:opacity-90 px-6 py-3.5 text-xs sm:text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition active:scale-95"
+            >
+              <MessageCircle className="h-4 w-4" />
+              <span>Consultar por WhatsApp</span>
+            </a>
+
+            <Link
+              href="/register"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-zinc-300 bg-white px-5 py-3.5 text-xs sm:text-sm font-semibold text-zinc-800 shadow-xs transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 active:scale-95"
+            >
+              Quiero mi página
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+        </div>
+      </section>
 
       {/* BENEFICIOS EDITORIALES */}
       <section className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
@@ -657,7 +460,7 @@ export default function HomePage() {
       </section>
 
       {/* BENTO GRID: SERVICIOS */}
-      <section id="funciones" className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
+      <section id="servicios" className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="max-w-2xl">
           <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
             Servicios integrales
@@ -844,7 +647,7 @@ export default function HomePage() {
             {!errorFotoNahuel ? (
               <Image
                 src="/nahuel.jpg"
-                alt="Nahuel - ND Diseño Gráfico"
+                alt="Nahuel - NDI | Diseño & Web"
                 width={256}
                 height={256}
                 quality={95}
@@ -854,7 +657,7 @@ export default function HomePage() {
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center font-bold text-lg sm:text-xl text-[var(--brand)]">
-                ND
+                NDI
               </div>
             )}
           </div>
@@ -1098,14 +901,14 @@ export default function HomePage() {
                 <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[var(--brand)] p-1">
                   <Image
                     src="/logo-ndi.png"
-                    alt="Logo ND"
+                    alt="Logo NDI"
                     width={16}
                     height={16}
                     className="h-full w-full object-contain"
                   />
                 </div>
                 <span className="text-sm font-bold text-zinc-950 dark:text-white">
-                  ND · Diseño Gráfico
+                  NDI | Diseño & Web
                 </span>
               </div>
               <p className="mt-2.5 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
@@ -1118,7 +921,7 @@ export default function HomePage() {
                 Navegación
               </p>
               <ul className="mt-3 space-y-2 text-xs text-zinc-600 dark:text-zinc-400">
-                <li><a href="#funciones" className="hover:text-[var(--brand)] transition">Servicios</a></li>
+                <li><a href="#servicios" className="hover:text-[var(--brand)] transition">Servicios</a></li>
                 <li><a href="#trabajos" className="hover:text-[var(--brand)] transition">Modelos</a></li>
                 <li><a href="#quien-soy" className="hover:text-[var(--brand)] transition">Quién soy</a></li>
                 <li><a href={BEHANCE_URL} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--brand)] transition">Behance Portfolio ↗</a></li>
@@ -1173,7 +976,7 @@ export default function HomePage() {
           </div>
 
           <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-500">
-            <p>© 2026 ND · Diseño Gráfico. Todos los derechos reservados.</p>
+            <p>© 2026 NDI | Diseño & Web. Todos los derechos reservados.</p>
             <p>Ledesma, Jujuy, Argentina</p>
           </div>
         </div>
