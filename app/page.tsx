@@ -31,27 +31,83 @@ const WHATSAPP_NUMERO = "5493886575664";
 const CORREO_CONTACTO = "soporte@ndiweb.com";
 const BEHANCE_URL = "https://www.behance.net/nahuelrueda";
 
-// Galería con tus archivos reales de public/portfolio/
-const galeriaPortfolio = [
-  { id: 2, src: "/portfolio/imagen2.jpg", titulo: "Identidad & Branding" },
-  { id: 3, src: "/portfolio/imagen3.jpg", titulo: "Diseño Gráfico" },
-  { id: 4, src: "/portfolio/imagen4.jpg", titulo: "Piezas para Redes" },
-  { id: 5, src: "/portfolio/imagen5.jpg", titulo: "Diseño Web & Mockup" },
-  { id: 6, src: "/portfolio/imagen6.jpg", titulo: "Branding Comercial" },
-  { id: 7, src: "/portfolio/imagen7.jpg", titulo: "Diseño Editorial" },
-  { id: 8, src: "/portfolio/imagen8.jpg", titulo: "Identidad Visual" },
-  { id: 9, src: "/portfolio/imagen9.jpg", titulo: "Gráfica Publicitaria" },
-  { id: 10, src: "/portfolio/imagen10.jpg", titulo: "Desarrollo Web" },
-  { id: 11, src: "/portfolio/imagen11.jpg", titulo: "Contenido Digital" },
-  { id: 12, src: "/portfolio/imagen12.jpg", titulo: "Diseño de Marca" },
-  { id: 13, src: "/portfolio/imagen13.jpg", titulo: "Papelería & Cartelería" },
-  { id: 14, src: "/portfolio/imagen14.jpg", titulo: "Carta & Menú Digital" },
-  { id: 15, src: "/portfolio/imagen15.jpg", titulo: "Branding Integral" },
-  { id: 16, src: "/portfolio/imagen16.jpg", titulo: "Diseño para Emprendedores" },
-  { id: 17, src: "/portfolio/imagen17.jpg", titulo: "Diseño UI / Web" },
-  { id: 18, src: "/portfolio/imagen18.png", titulo: "Pieza Promocional" },
-  { id: 19, src: "/portfolio/imagen19.png", titulo: "Identidad Gráfica" },
-  { id: 20, src: "/portfolio/imagen20.png", titulo: "Flyer & Redes" },
+// Tus 20 imágenes del portfolio
+const IMAGENES_PORTFOLIO = [
+  "/portfolio/imagen1.jpg",
+  "/portfolio/imagen2.jpg",
+  "/portfolio/imagen3.jpg",
+  "/portfolio/imagen4.jpg",
+  "/portfolio/imagen5.jpg",
+  "/portfolio/imagen6.jpg",
+  "/portfolio/imagen7.jpg",
+  "/portfolio/imagen8.jpg",
+  "/portfolio/imagen9.jpg",
+  "/portfolio/imagen10.jpg",
+  "/portfolio/imagen11.jpg",
+  "/portfolio/imagen12.jpg",
+  "/portfolio/imagen13.jpg",
+  "/portfolio/imagen14.jpg",
+  "/portfolio/imagen15.jpg",
+  "/portfolio/imagen16.jpg",
+  "/portfolio/imagen17.jpg",
+  "/portfolio/imagen18.png",
+  "/portfolio/imagen19.png",
+  "/portfolio/imagen20.png",
+];
+
+const proyectosShowcase = [
+  {
+    id: "restaurantes",
+    label: "Restaurantes",
+    icono: UtensilsCrossed,
+    titulo: "Sabores del Norte",
+    categoria: "Gastronomía & Bares",
+    subtitulo: "Menú digital interactivo con pedidos directos a WhatsApp, fotos de platos y reserva de mesas.",
+    portada: "/portfolio/imagen14.jpg",
+    badge: "Carta & Pedidos",
+    esReal: false,
+    urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Gastronomía y Bares.")}`,
+    caracteristicas: ["Carta con fotos y precios", "Pedidos listos a WhatsApp"],
+  },
+  {
+    id: "tiendas",
+    label: "Tiendas",
+    icono: ShoppingBag,
+    titulo: "Norte Store",
+    categoria: "Indumentaria & Productos",
+    subtitulo: "Catálogo online con variantes de talles, colores, stock en tiempo real y cobros integrados.",
+    portada: "/portfolio/imagen5.jpg",
+    badge: "Catálogo Online",
+    esReal: false,
+    urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Tiendas e Indumentaria.")}`,
+    caracteristicas: ["Control de talles y stock", "Cobros con CVU y Mercado Pago"],
+  },
+  {
+    id: "belleza",
+    label: "Barberías & Salones",
+    icono: Scissors,
+    titulo: "Black Crown Studio",
+    categoria: "Barberías & Estética",
+    subtitulo: "Agenda de turnos online disponible las 24 horas para que el cliente elija servicio y horario sin esperas.",
+    portada: "/portfolio/imagen8.jpg",
+    badge: "Turnos 24/7",
+    esReal: false,
+    urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Barberías y Salones.")}`,
+    caracteristicas: ["Turnos confirmados al instante", "Agenda autogestionable"],
+  },
+  {
+    id: "consultorios",
+    label: "Consultorios",
+    icono: Stethoscope,
+    titulo: "Centro Médico & Salud",
+    categoria: "Consultorios & Profesionales",
+    subtitulo: "Gestión de citas previas, información de especialidades, ubicación en mapa y contacto directo.",
+    portada: "/portfolio/imagen10.jpg",
+    badge: "Atención Profesional",
+    esReal: false,
+    urlDemo: `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola! Me gustaría ver un demo funcional para Consultorios Profesionales.")}`,
+    caracteristicas: ["Citas y horarios disponibles", "Ubicación en Google Maps"],
+  },
 ];
 
 const beneficios = [
@@ -137,7 +193,16 @@ export default function HomePage() {
   const [faqAbierta, setFaqAbierta] = useState<number | null>(0);
   const [mostrarBotonHeader, setMostrarBotonHeader] = useState(false);
   const [errorFotoNahuel, setErrorFotoNahuel] = useState(false);
+  const [imagenActiva, setImagenActiva] = useState(0);
   const { theme, setTheme } = useTheme();
+
+  // Carrusel infinito con tus 20 imágenes del portfolio
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setImagenActiva((prev) => (prev + 1) % IMAGENES_PORTFOLIO.length);
+    }, 4000); // 4 segundos por imagen
+    return () => clearInterval(interval);
+  }, []);
 
   const toggleFaq = (index: number) => {
     setFaqAbierta(faqAbierta === index ? null : index);
@@ -182,7 +247,7 @@ export default function HomePage() {
               Servicios
             </a>
             <a href="#trabajos" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
-              Trabajos
+              Ejemplos
             </a>
             <a href="#quien-soy" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
               Quién soy
@@ -235,9 +300,9 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* PORTADA ESTILO ESTUDIO (REFERENCIA COMPOSICIÓN LIMPIA) */}
+      {/* PORTADA REFINADA (CON EL CORTE Y DISEÑO DE LA REFERENCIA Y CARRUSEL) */}
       <section className="relative pt-10 pb-16 sm:pt-16 sm:pb-24 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
-        <div className="mx-auto max-w-6xl px-4 sm:px-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-8">
           
           {/* ENCABEZADO CENTRADO LIMPIO */}
           <div className="mx-auto max-w-4xl text-center">
@@ -256,9 +321,9 @@ export default function HomePage() {
           </div>
 
           {/* CONTENEDOR DE LA COMPOSICIÓN (MUESCA Y TARJETA TAL CUAL LA REFERENCIA) */}
-          <div className="relative mt-12 sm:mt-16 mx-auto max-w-4xl">
+          <div className="relative mt-12 sm:mt-16 mx-auto max-w-5xl">
             
-            {/* TARJETA NEGRA SUPERIOR IZQUIERDA */}
+            {/* TARJETA NEGRA SUPERIOR IZQUIERDA (ENCALZADA EN EL CORTE) */}
             <div className="absolute -top-5 -left-2 sm:-top-7 sm:-left-6 rounded-2xl sm:rounded-3xl bg-zinc-950 p-4 sm:p-5 text-white shadow-2xl border border-zinc-800 text-left max-w-[170px] sm:max-w-[220px] z-20">
               <p className="text-2xl sm:text-3xl font-bold tracking-tight text-white leading-none">
                 100%
@@ -268,35 +333,50 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* LIENZO PRINCIPAL CON TU IMAGEN DE TRABAJO */}
-            <div className="relative overflow-hidden rounded-[2.2rem] sm:rounded-[3rem] border border-zinc-200/80 bg-zinc-900 shadow-xl dark:border-zinc-800 aspect-[16/10] sm:aspect-[16/9] w-full">
-              <img
-                src="/portfolio/imagen1.jpg"
-                alt="Showcase de Diseño Gráfico y Desarrollo Web NDI"
-                className="h-full w-full object-cover object-center"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+            {/* MARCO DE LA IMAGEN CON EL RECORTE Y MUESCA EN LA ESQUINA INFERIOR DERECHA */}
+            <div className="relative overflow-hidden rounded-[2.2rem] sm:rounded-[3rem] border border-zinc-200/80 bg-zinc-900 shadow-xl dark:border-zinc-800 aspect-[16/10] sm:aspect-[16/9] w-full min-h-[300px] sm:min-h-[480px]">
+              
+              {/* Carrusel con Fades de Opacidad */}
+              {IMAGENES_PORTFOLIO.map((imagen, index) => (
+                <div
+                  key={imagen}
+                  className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                    index === imagenActiva ? "opacity-100 z-10" : "opacity-0 z-0"
+                  }`}
+                >
+                  <img
+                    src={imagen}
+                    alt={`Proyecto portfolio ${index + 1}`}
+                    className="h-full w-full object-cover object-center"
+                    onError={(e) => {
+                      e.currentTarget.src = "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1800&q=80";
+                    }}
+                  />
+                </div>
+              ))}
+              
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none z-10" />
             </div>
 
-            {/* BLOQUE INFERIOR DERECHO QUE ENCASTRA EN LA FOTO */}
-            <div className="absolute -bottom-4 -right-2 sm:-bottom-6 sm:-right-6 rounded-2xl sm:rounded-3xl bg-white/95 p-3 sm:p-4 shadow-xl border border-zinc-200/90 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 z-20 max-w-[280px] sm:max-w-[340px]">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
-                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2.5 py-1.5 text-center">
+            {/* BLOQUE INFERIOR DERECHO QUE ENCASTRA EN LA FOTO (CON PÁGINAS WEB CENTRADO) */}
+            <div className="absolute -bottom-4 -right-2 sm:-bottom-6 sm:-right-6 rounded-2xl sm:rounded-3xl bg-white/95 p-3 sm:p-4 shadow-xl border border-zinc-200/90 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 z-20 max-w-[300px] sm:max-w-[420px] w-full">
+              <div className="grid grid-cols-3 gap-1.5 text-[10px] sm:text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
+                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-2 text-center flex items-center justify-center">
                   Diseño
                 </span>
-                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2.5 py-1.5 text-center">
+                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-2 text-center flex items-center justify-center">
                   Branding
                 </span>
-                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2.5 py-1.5 text-center">
+                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-2 text-center flex items-center justify-center">
                   Logos
                 </span>
-                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2.5 py-1.5 text-center">
+                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-2 text-center flex items-center justify-center">
                   Redes Sociales
                 </span>
-                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2.5 py-1.5 text-center">
+                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-2 text-center flex items-center justify-center">
                   Diseño Editorial
                 </span>
-                <span className="rounded-xl bg-[var(--brand)]/15 text-[var(--brand-contrast)] dark:text-[var(--brand)] px-2.5 py-1.5 text-center font-bold">
+                <span className="rounded-xl bg-[var(--brand)]/15 text-[var(--brand-contrast)] dark:text-[var(--brand)] px-2 py-2 text-center font-bold flex items-center justify-center">
                   Páginas Web
                 </span>
               </div>
@@ -458,59 +538,94 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* SECCIÓN TRABAJOS: PORTFOLIO REAL DE DISEÑO & WEB */}
+      {/* MODELOS DE MUESTRA ORIGINALES (RESTAURADOS) */}
       <section id="trabajos" className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div className="max-w-2xl">
             <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
-              Portfolio de trabajos
+              Estructuras disponibles
             </span>
             <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white">
-              Diseño gráfico y proyectos recientes.
+              Modelos de muestra listos para adaptar.
             </h2>
             <p className="mt-1.5 text-sm text-zinc-600 dark:text-zinc-400">
-              Identidades de marca, gráfica para redes, diseño editorial y sitios web.
+              Diseños creados para cada tipo de actividad comercial.
             </p>
           </div>
 
-          <a
-            href={BEHANCE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 self-start rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-800 shadow-xs transition hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-          >
-            <Palette className="h-3.5 w-3.5 text-[var(--brand)]" />
-            <span>Ver más en Behance ↗</span>
-          </a>
+          <div className="inline-flex items-center gap-2 self-start rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 text-xs font-medium text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+            <span className="h-2 w-2 rounded-full bg-[var(--brand)]" />
+            <span>Todos los modelos incluyen panel autogestionable</span>
+          </div>
         </div>
 
-        {/* Mosaico con tus imágenes reales */}
-        <div className="mt-8 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {galeriaPortfolio.map((item) => (
-            <article
-              key={item.id}
-              className="group overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xs transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/60"
-            >
-              <div className="relative aspect-[4/3] w-full overflow-hidden bg-zinc-900">
-                <img
-                  src={item.src}
-                  alt={item.titulo}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  loading="lazy"
-                />
-              </div>
-              <div className="p-4 flex items-center justify-between">
-                <p className="text-xs font-bold text-zinc-900 dark:text-white">
-                  {item.titulo}
-                </p>
-                <span className="text-[10px] text-zinc-500 font-medium">NDI</span>
-              </div>
-            </article>
-          ))}
+        <div className="mt-8 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {proyectosShowcase.map((p) => {
+            const Icono = p.icono;
+            return (
+              <article
+                key={p.id}
+                className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xs transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/60"
+              >
+                <div>
+                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-zinc-900">
+                    <img
+                      src={p.portada}
+                      alt={p.titulo}
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute top-2.5 left-2.5">
+                      <span className="rounded-full bg-black/70 backdrop-blur-md border border-white/20 px-2.5 py-0.5 text-[9px] font-bold text-white uppercase tracking-wider">
+                        {p.badge}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-5">
+                    <div className="flex items-center gap-1.5 text-[var(--brand-contrast)] dark:text-[var(--brand)] text-xs font-semibold">
+                      <Icono className="h-3.5 w-3.5" />
+                      <span>{p.categoria}</span>
+                    </div>
+
+                    <h3 className="mt-1.5 text-base font-bold text-zinc-950 dark:text-white">
+                      {p.titulo}
+                    </h3>
+
+                    <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed line-clamp-2">
+                      {p.subtitulo}
+                    </p>
+
+                    <div className="mt-3.5 flex flex-wrap gap-1">
+                      {p.caracteristicas.map((c, i) => (
+                        <span
+                          key={i}
+                          className="rounded-md bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                        >
+                          {c}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-5 pt-0">
+                  <a
+                    href={p.urlDemo}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 py-2.5 text-xs font-bold text-zinc-800 transition hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-800/80 dark:text-zinc-200 dark:hover:bg-zinc-700"
+                  >
+                    <span>Consultar por este diseño</span>
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 
-      {/* QUIÉN SOY */}
+      {/* QUIÊN SOY */}
       <section id="quien-soy" className="mx-auto max-w-4xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="text-center max-w-xl mx-auto">
           <div className="relative mx-auto h-24 w-24 sm:h-28 sm:w-28 overflow-hidden rounded-full border-2 border-[var(--brand)]/40 bg-zinc-100 shadow-md ring-4 ring-[var(--brand)]/10 dark:bg-zinc-800">
@@ -532,7 +647,7 @@ export default function HomePage() {
             )}
           </div>
 
-          <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold text-zinc-600 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+          <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold text-zinc-600 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-300">
             <MapPin className="h-3 w-3 text-[var(--brand)]" />
             <span>Ledesma, Jujuy</span>
           </div>
@@ -541,7 +656,7 @@ export default function HomePage() {
             Hola, soy Nahuel.
           </h2>
 
-          <p className="mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300 [text-wrap:balance]">
+          <p className="mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-350 [text-wrap:balance]">
             Soy Diseñador Gráfico Junior y desarrollador web de Ledesma, Jujuy. Creo páginas webs y gráficas pensadas para que tu negocio se vea profesional y venda.
           </p>
 
@@ -661,7 +776,7 @@ export default function HomePage() {
                   <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${abierta ? "rotate-180 text-[var(--brand)]" : ""}`} />
                 </button>
                 {abierta && (
-                  <div className="border-t border-zinc-100 px-4 pb-4 pt-3 text-xs leading-relaxed text-zinc-600 dark:border-zinc-800 dark:text-zinc-400 sm:px-5 sm:pb-5 sm:text-sm">
+                  <div className="border-t border-zinc-100 px-4 pb-4 pt-3 text-xs leading-relaxed text-zinc-600 dark:border-zinc-800 dark:text-zinc-450 sm:px-5 sm:pb-5 sm:text-sm">
                     {faq.respuesta}
                   </div>
                 )}
@@ -672,7 +787,7 @@ export default function HomePage() {
       </section>
 
       {/* CONTACTO */}
-      <section id="contacto" className="border-t border-zinc-200/80 bg-zinc-100/60 py-14 sm:py-24 dark:border-zinc-800/80 dark:bg-zinc-950/60">
+      <section id="contacto" className="border-t border-zinc-200/80 bg-zinc-100/65 py-14 sm:py-24 dark:border-zinc-800/80 dark:bg-zinc-950/60">
         <div className="mx-auto max-w-5xl px-3.5 sm:px-8">
           <div className="grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-12">
             <div>
@@ -711,7 +826,7 @@ export default function HomePage() {
                   </div>
                   <div>
                     <p className="text-[11px] text-emerald-600 dark:text-emerald-400">WhatsApp directo</p>
-                    <p className="text-xs sm:text-sm font-semibold text-emerald-800 dark:text-emerald-300">+54 9 388 657-5664</p>
+                    <p className="text-xs sm:text-sm font-semibold text-emerald-850 dark:text-emerald-300">+54 9 388 657-5664</p>
                   </div>
                 </a>
 
@@ -719,7 +834,7 @@ export default function HomePage() {
                   href={BEHANCE_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-3.5 shadow-xs transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/80 dark:hover:border-zinc-700"
+                  className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-3.5 shadow-xs transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/85 dark:hover:border-zinc-700"
                 >
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
                     <Palette className="h-5 w-5" />
@@ -774,18 +889,18 @@ export default function HomePage() {
                   NDI | Diseño & Web
                 </span>
               </div>
-              <p className="mt-2.5 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              <p className="mt-2.5 text-xs text-zinc-505 dark:text-zinc-400 leading-relaxed">
                 Diseño gráfico y desarrollo web para emprendimientos, negocios y profesionales. Atención directa desde Ledesma, Jujuy.
               </p>
             </div>
 
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-zinc-950 dark:text-white">
+              <p className="text-xs font-bold uppercase tracking-wider text-zinc-955 dark:text-white">
                 Navegación
               </p>
               <ul className="mt-3 space-y-2 text-xs text-zinc-600 dark:text-zinc-400">
                 <li><a href="#servicios" className="hover:text-[var(--brand)] transition">Servicios</a></li>
-                <li><a href="#trabajos" className="hover:text-[var(--brand)] transition">Trabajos</a></li>
+                <li><a href="#trabajos" className="hover:text-[var(--brand)] transition">Modelos</a></li>
                 <li><a href="#quien-soy" className="hover:text-[var(--brand)] transition">Quién soy</a></li>
                 <li><a href={BEHANCE_URL} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--brand)] transition">Behance Portfolio ↗</a></li>
                 <li><a href="#planes" className="hover:text-[var(--brand)] transition">Planes</a></li>
@@ -793,7 +908,7 @@ export default function HomePage() {
             </div>
 
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-zinc-950 dark:text-white">
+              <p className="text-xs font-bold uppercase tracking-wider text-zinc-955 dark:text-white">
                 Marco legal
               </p>
               <ul className="mt-3 space-y-2 text-xs text-zinc-600 dark:text-zinc-400">
@@ -821,10 +936,10 @@ export default function HomePage() {
             </div>
 
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-zinc-950 dark:text-white">
+              <p className="text-xs font-bold uppercase tracking-wider text-zinc-955 dark:text-white">
                 Defensa del consumidor
               </p>
-              <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              <p className="mt-2 text-xs text-zinc-505 dark:text-zinc-400 leading-relaxed">
                 Podés revocar tu contratación dentro del plazo de 10 días corridos contados desde la aceptación del servicio.
               </p>
               <div className="mt-3">
@@ -889,18 +1004,18 @@ function PlanCard({
           </span>
         )}
 
-        <h3 className="text-xl font-bold text-zinc-950 dark:text-white">{nombre}</h3>
-        <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">{descripcion}</p>
+        <h3 className="text-xl font-bold text-zinc-955 dark:text-white">{nombre}</h3>
+        <p className="mt-1 text-xs text-zinc-605 dark:text-zinc-400 leading-relaxed">{descripcion}</p>
 
         <div className="mt-5 rounded-2xl border border-zinc-200/80 bg-zinc-50/80 p-4 dark:border-zinc-800 dark:bg-zinc-950/80">
           <p className="text-[10px] uppercase font-bold text-zinc-500">Puesta en marcha inicial</p>
-          <p className="text-2xl sm:text-3xl font-black text-zinc-950 dark:text-white">{inicial}</p>
+          <p className="text-2xl sm:text-3xl font-black text-zinc-955 dark:text-white">{inicial}</p>
           <p className="mt-0.5 text-xs font-bold text-[var(--brand-contrast)] dark:text-[var(--brand)]">+ {mensual}</p>
         </div>
 
         <div className="mt-6 space-y-2.5">
           {features.map((feature) => (
-            <div key={feature} className="flex items-start gap-2 text-xs text-zinc-700 dark:text-zinc-300">
+            <div key={feature} className="flex items-start gap-2 text-xs text-zinc-750 dark:text-zinc-300">
               <Check className="h-4 w-4 shrink-0 text-emerald-500 mt-0.5" />
               <span>{feature}</span>
             </div>
@@ -916,7 +1031,7 @@ function PlanCard({
           className={`inline-flex w-full items-center justify-center rounded-xl py-3 text-xs font-bold transition shadow-xs ${
             destacado
               ? "bg-[var(--brand)] text-white hover:opacity-90 shadow-blue-500/20"
-              : "bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white"
+              : "bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-955 dark:hover:bg-white"
           }`}
         >
           Consultar por WhatsApp
