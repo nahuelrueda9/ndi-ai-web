@@ -24,6 +24,7 @@ import {
   Scissors,
   Stethoscope,
   Building2,
+  X,
 } from "lucide-react";
 
 import { useTheme } from "@/components/theme/ThemeProvider";
@@ -56,7 +57,7 @@ const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen20.png",
 ];
 
-// Servicios reordenados
+// Servicios ordenados según tu especificación
 const serviciosNDI = [
   {
     icono: Palette,
@@ -296,6 +297,7 @@ export default function HomePage() {
   const [mostrarBotonHeader, setMostrarBotonHeader] = useState(false);
   const [errorFotoNahuel, setErrorFotoNahuel] = useState(false);
   const [activo, setActivo] = useState(0);
+  const [imagenModal, setImagenModal] = useState<string | null>(null);
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
@@ -331,7 +333,7 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 selection:bg-[var(--brand)] selection:text-white overflow-x-hidden">
-      {/* HEADER: MENÚ ACTUALIZADO CON EL ORDEN ESTRICTO */}
+      {/* HEADER */}
       <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/90 backdrop-blur-xl transition-colors dark:border-zinc-800/80 dark:bg-[#0c0d0e]/90">
         <div className="mx-auto flex h-14 sm:h-16 max-w-7xl items-center justify-between px-3.5 sm:px-8 gap-2">
           <Link href="/" className="flex items-center gap-2 shrink-0">
@@ -350,13 +352,12 @@ export default function HomePage() {
             </p>
           </Link>
 
-          {/* NAVEGACIÓN EN ORDEN EXACTO */}
           <nav className="hidden items-center gap-6 lg:flex">
-            <a href="#trabajos" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
-              Trabajos
-            </a>
             <a href="#servicios" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
               Servicios
+            </a>
+            <a href="#trabajos" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
+              Trabajos
             </a>
             <a href="#quien-soy" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
               Quién soy
@@ -412,7 +413,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* 1. PORTADA: TITULAR ELEGIDO, SUBTÍTULO BALANCEADO Y PASTILLA CORREGIDA */}
+      {/* 1. PORTADA */}
       <section className="relative pt-6 pb-12 sm:pt-16 sm:pb-24 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
         <div className="mx-auto max-w-7xl px-3 sm:px-8">
           
@@ -431,10 +432,8 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* CONTENEDOR HERO SLIDER */}
           <div className="relative mt-8 sm:mt-14 mx-auto max-w-5xl">
             
-            {/* PASTILLA CORREGIDA: "personalizado y adaptado / a tu marca." */}
             <div className="absolute top-2 left-2 sm:-top-5 sm:-left-5 rounded-xl sm:rounded-3xl bg-zinc-950/95 p-2.5 sm:p-4 text-white shadow-xl border border-zinc-800 text-left max-w-[140px] sm:max-w-[210px] z-30 backdrop-blur-xs">
               <p className="text-base sm:text-2xl font-bold tracking-tight text-white leading-none">
                 100%
@@ -444,7 +443,6 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* VISOR DE FOTOS */}
             <div className="relative w-full aspect-[4/3] sm:aspect-[16/9] min-h-[250px] sm:min-h-[500px] overflow-hidden rounded-2xl sm:rounded-3xl bg-zinc-100/60 dark:bg-zinc-900/40 flex items-center justify-center border border-zinc-200/60 dark:border-zinc-800/60">
               <div className="relative w-full h-full flex items-center justify-center">
                 {IMAGENES_PORTFOLIO.map((imagen, index) => {
@@ -483,7 +481,6 @@ export default function HomePage() {
                 })}
               </div>
 
-              {/* FLECHAS */}
               <button
                 onClick={irAnterior}
                 aria-label="Anterior proyecto"
@@ -500,7 +497,6 @@ export default function HomePage() {
               </button>
             </div>
 
-            {/* PASTILLAS DE SERVICIOS */}
             <div className="mt-3 sm:mt-0 sm:absolute sm:-bottom-5 sm:-right-5 rounded-2xl bg-white/95 p-2.5 sm:p-3.5 shadow-md sm:shadow-2xl border border-zinc-200/90 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 z-30 sm:max-w-[380px] w-full">
               <div className="grid grid-cols-3 gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
                 <span className="rounded-lg sm:rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-1.5 text-center flex items-center justify-center">
@@ -525,7 +521,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* BOTONES ACCIÓN: CONTACTAME + PORTFOLIO BEHANCE */}
           <div className="mt-8 sm:mt-14 flex flex-col sm:flex-row items-center justify-center gap-3">
             <a
               href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por un proyecto de diseño.")}`}
@@ -551,43 +546,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 2. TRABAJOS (#trabajos): CONTENEDOR PREPARADO PARA LA GALERÍA CON FILTROS (PASO 3) */}
-      <section id="trabajos" className="mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
-        <div className="max-w-2xl">
-          <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
-            Portfolio
-          </span>
-          <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white leading-tight">
-            Trabajos seleccionados
-          </h2>
-          <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-            Una muestra de mis proyectos de branding, diseño editorial, publicidad y redes sociales.
-          </p>
-        </div>
-
-        {/* Placeholder provisional que enlaza a Behance mientras armamos la grilla completa en el Paso 3 */}
-        <div className="mt-8 rounded-3xl border border-dashed border-zinc-300 p-8 sm:p-12 text-center dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/20">
-          <Palette className="mx-auto h-10 w-10 text-[var(--brand)]" />
-          <h3 className="mt-3 text-base sm:text-lg font-bold text-zinc-950 dark:text-white">
-            Galería en preparación
-          </h3>
-          <p className="mt-1.5 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 max-w-md mx-auto">
-            Podés ver todos mis proyectos completos y en alta definición directamente en Behance.
-          </p>
-          <div className="mt-5">
-            <a
-              href={BEHANCE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl bg-[var(--brand)] px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs transition hover:opacity-90"
-            >
-              <span>Ver portfolio completo en Behance ↗</span>
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. SERVICIOS (#servicios) */}
+      {/* 2. SERVICIOS (SUBIDO DIRECTAMENTE DEBAJO DE LA PORTADA) */}
       <section id="servicios" className="mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
         <div className="max-w-2xl">
           <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
@@ -601,7 +560,6 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* 4 PILARES REORDENADOS */}
         <div className="mt-8 sm:mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {serviciosNDI.map((srv) => {
             const Icono = srv.icono;
@@ -626,7 +584,6 @@ export default function HomePage() {
           })}
         </div>
 
-        {/* BLOQUE EMPRESAS / MARCAS */}
         <div className="mt-8 sm:mt-10 rounded-3xl border border-zinc-200 bg-zinc-100/70 p-6 sm:p-10 text-center dark:border-zinc-800 dark:bg-zinc-900/50">
           <h3 className="text-lg sm:text-2xl font-bold text-zinc-950 dark:text-white max-w-2xl mx-auto">
             ¿Sos parte de una empresa con imagen consolidada que necesita nuevas soluciones?
@@ -648,10 +605,61 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 4. QUIÉN SOY (#quien-soy) */}
+      {/* 3. TRABAJOS (GRILLA DE PIEZAS REALES CON EFECTO 3D LIFT EN HOVER) */}
+      <section id="trabajos" className="mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div className="max-w-2xl">
+            <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
+              Portfolio
+            </span>
+            <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white leading-tight">
+              Trabajos seleccionados
+            </h2>
+            <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
+              Piezas de branding, diseño editorial, cartelería y redes sociales. Tocá cualquier imagen para ampliarla.
+            </p>
+          </div>
+
+          <a
+            href={BEHANCE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 self-start sm:self-auto rounded-xl border border-zinc-300 bg-white px-4 py-2 text-xs font-bold text-zinc-800 shadow-xs transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          >
+            <Palette className="h-4 w-4 text-[var(--brand)]" />
+            <span>Ver más en Behance ↗</span>
+          </a>
+        </div>
+
+        {/* GRILLA: 2 COLUMNAS EN CELULAR, 3 EN TABLET, 4 EN PC CON EFECTO 3D HOVER */}
+        <div className="mt-8 sm:mt-12 grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-3 lg:grid-cols-4 [perspective:1000px]">
+          {IMAGENES_PORTFOLIO.map((src, idx) => (
+            <div
+              key={src}
+              onClick={() => setImagenModal(src)}
+              className="group relative aspect-square cursor-pointer overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition-all duration-300 ease-out hover:-translate-y-2 hover:scale-[1.02] hover:shadow-2xl dark:border-zinc-800 dark:bg-zinc-900"
+            >
+              <img
+                src={src}
+                alt={`Trabajo de diseño gráfico ${idx + 1}`}
+                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                onError={(e) => {
+                  e.currentTarget.src = "/portfolio/imagen1.jpg";
+                }}
+              />
+              <div className="absolute inset-0 bg-black/40 opacity-0 backdrop-blur-[2px] transition-opacity duration-300 group-hover:opacity-100 flex items-center justify-center p-3 text-center">
+                <span className="rounded-xl bg-white/90 px-3 py-1.5 text-[11px] font-bold text-zinc-950 shadow-md">
+                  Ver pieza ↗
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 4. QUIÉN SOY */}
       <section id="quien-soy" className="mx-auto max-w-4xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
         <div className="text-center max-w-xl mx-auto">
-          {/* FOTO PROTAGONISTA */}
           <div className="relative mx-auto h-28 w-28 sm:h-36 sm:w-36 overflow-hidden rounded-full border-2 border-[var(--brand)]/40 bg-zinc-100 shadow-md ring-4 ring-[var(--brand)]/10 dark:bg-zinc-800">
             {!errorFotoNahuel ? (
               <Image
@@ -727,7 +735,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 5. MODELOS WEB (#modelos-web): ANCLAJE CORREGIDO */}
+      {/* 5. MODELOS WEB */}
       <section id="modelos-web" className="mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4">
           <div className="max-w-2xl">
@@ -761,7 +769,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 6. PREGUNTAS FRECUENTES (#faq) */}
+      {/* 6. PREGUNTAS FRECUENTES */}
       <section id="faq" className="mx-auto max-w-4xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
         <div className="text-center">
           <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
@@ -799,7 +807,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 7. CONTACTO (#contacto) Y FOOTER */}
+      {/* 7. CONTACTO */}
       <section id="contacto" className="border-t border-zinc-200/80 bg-zinc-100/60 py-12 sm:py-24 dark:border-zinc-800/80 dark:bg-zinc-950/60 scroll-mt-20">
         <div className="mx-auto max-w-3xl px-3.5 sm:px-8 text-center">
           <span className="text-xs font-bold uppercase tracking-widest text-[var(--brand-contrast)] dark:text-[var(--brand)]">
@@ -859,7 +867,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FOOTER: SIN BLOQUE DEF. CONSUMIDOR Y CON NAVEGACIÓN ACTUALIZADA */}
+      {/* FOOTER */}
       <footer className="border-t border-zinc-200/80 bg-white py-10 sm:py-12 dark:border-zinc-800 dark:bg-[#0c0d0e]">
         <div className="mx-auto max-w-7xl px-4 sm:px-8">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 pb-6 sm:pb-8 border-b border-zinc-100 dark:border-zinc-800/80">
@@ -888,8 +896,8 @@ export default function HomePage() {
                 Navegación
               </p>
               <ul className="mt-2.5 space-y-1.5 text-xs text-zinc-600 dark:text-zinc-400">
-                <li><a href="#trabajos" className="hover:text-[var(--brand)] transition">Trabajos</a></li>
                 <li><a href="#servicios" className="hover:text-[var(--brand)] transition">Servicios</a></li>
+                <li><a href="#trabajos" className="hover:text-[var(--brand)] transition">Trabajos</a></li>
                 <li><a href="#quien-soy" className="hover:text-[var(--brand)] transition">Quién soy</a></li>
                 <li><a href="#modelos-web" className="hover:text-[var(--brand)] transition">Modelos web</a></li>
                 <li><a href="#faq" className="hover:text-[var(--brand)] transition">Preguntas</a></li>
@@ -923,6 +931,32 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
+
+      {/* MODAL DE IMAGEN AMPLIADA (LIVIANO Y SIN LIBRERÍAS EXTERNAS) */}
+      {imagenModal && (
+        <div
+          onClick={() => setImagenModal(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-xs animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative max-h-[90vh] max-w-[90vw] overflow-hidden rounded-2xl bg-zinc-950 border border-zinc-800 shadow-2xl"
+          >
+            <button
+              onClick={() => setImagenModal(null)}
+              aria-label="Cerrar vista previa"
+              className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 transition"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <img
+              src={imagenModal}
+              alt="Vista previa de trabajo de diseño"
+              className="max-h-[85vh] max-w-[85vw] object-contain"
+            />
+          </div>
+        </div>
+      )}
     </main>
   );
 }
