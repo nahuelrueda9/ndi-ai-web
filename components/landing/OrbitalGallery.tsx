@@ -25,22 +25,22 @@ const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen20.png",
 ];
 
-// Grilla limpia por filas horizontales (sin colisiones en Z)
+// Grilla simétrica: la fila de arriba y la de abajo tienen exactamente la misma curvatura
 const ITEMS_GRID_PC = [
-  // Fila Y = -2
+  // Fila superior (-2)
   { col: -6, row: -2 }, { col: -4, row: -2 }, { col: -2, row: -2 }, { col: 0, row: -2 }, { col: 2, row: -2 }, { col: 4, row: -2 }, { col: 6, row: -2 },
-  // Fila Y = -1
+  // Fila intermedia alta (-1)
   { col: -7, row: -1 }, { col: -5, row: -1 }, { col: -3, row: -1 }, { col: -1, row: -1 }, { col: 1, row: -1 }, { col: 3, row: -1 }, { col: 5, row: -1 }, { col: 7, row: -1 },
-  // Fila Y = 0 (Ecuador)
+  // Fila central (0 - Ecuador)
   { col: -6, row: 0 }, { col: -4, row: 0 }, { col: -2, row: 0 }, { col: 0, row: 0 }, { col: 2, row: 0 }, { col: 4, row: 0 }, { col: 6, row: 0 },
-  // Fila Y = 1
+  // Fila intermedia baja (1)
   { col: -7, row: 1 }, { col: -5, row: 1 }, { col: -3, row: 1 }, { col: -1, row: 1 }, { col: 1, row: 1 }, { col: 3, row: 1 }, { col: 5, row: 1 }, { col: 7, row: 1 },
-  // Fila Y = 2
+  // Fila inferior (2)
   { col: -6, row: 2 }, { col: -4, row: 2 }, { col: -2, row: 2 }, { col: 0, row: 2 }, { col: 2, row: 2 }, { col: 4, row: 2 }, { col: 6, row: 2 },
 ];
 
 const ITEMS_GRID_MOBILE = [
-  // 3 filas limpias para celular
+  // 3 filas en móvil
   { col: -4, row: -1 }, { col: -2, row: -1 }, { col: 0, row: -1 }, { col: 2, row: -1 }, { col: 4, row: -1 },
   { col: -5, row: 0 }, { col: -3, row: 0 }, { col: -1, row: 0 }, { col: 1, row: 0 }, { col: 3, row: 0 }, { col: 5, row: 0 },
   { col: -4, row: 1 }, { col: -2, row: 1 }, { col: 0, row: 1 }, { col: 2, row: 1 }, { col: 4, row: 1 },
@@ -72,9 +72,13 @@ export function OrbitalGallery() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const RADIUS_PX = esMobile ? 800 : 1350;
-  const STEP_DEG = esMobile ? 6.2 : 5.1;
-  const ROW_HEIGHT = esMobile ? 134 : 210;
+  // Proporciones: fotos GRANDES tanto en PC (225px) como en Celular (150px)
+  const RADIUS_PX = esMobile ? 700 : 1300;
+  const STEP_DEG = esMobile ? 6.8 : 5.1;
+  const ROW_HEIGHT = esMobile ? 148 : 205;
+  // LÍMITE HORIZONTAL ESTRICTO: no permite pasar a la zona negra vacía
+  const MAX_PAN_DEG = esMobile ? 16 : 24;
+
   const itemsActuales = esMobile ? ITEMS_GRID_MOBILE : ITEMS_GRID_PC;
 
   useEffect(() => {
@@ -96,8 +100,8 @@ export function OrbitalGallery() {
     };
 
     const startInertia = (velocityX: number) => {
-      let vx = velocityX * 65;
-      const friction = 0.92;
+      let vx = velocityX * 60;
+      const friction = 0.90;
       const minVelocity = 0.08;
 
       const step = () => {
@@ -108,8 +112,16 @@ export function OrbitalGallery() {
           return;
         }
 
-        stateRef.current.rotationY += vx / 200;
+        // Aplicamos límite también en la desaceleración
+        const nuevoY = stateRef.current.rotationY + vx / 200;
+        stateRef.current.rotationY = Math.min(Math.max(nuevoY, -MAX_PAN_DEG), MAX_PAN_DEG);
         applyTransform();
+
+        if (stateRef.current.rotationY <= -MAX_PAN_DEG || stateRef.current.rotationY >= MAX_PAN_DEG) {
+          stateRef.current.inertiaFrame = null;
+          return;
+        }
+
         stateRef.current.inertiaFrame = requestAnimationFrame(step);
       };
 
@@ -139,7 +151,9 @@ export function OrbitalGallery() {
         stateRef.current.cancelTap = true;
       }
 
-      stateRef.current.rotationY = stateRef.current.startRotationY + deltaX / (esMobile ? 12 : 15);
+      const propuesto = stateRef.current.startRotationY + deltaX / (esMobile ? 12 : 15);
+      // LÍMITE HORIZONTAL: frena antes de que aparezca lo negro
+      stateRef.current.rotationY = Math.min(Math.max(propuesto, -MAX_PAN_DEG), MAX_PAN_DEG);
       applyTransform();
 
       lastTime = Date.now();
@@ -169,7 +183,7 @@ export function OrbitalGallery() {
       container.removeEventListener("pointerup", handlePointerUp);
       stopInertia();
     };
-  }, [RADIUS_PX, esMobile]);
+  }, [RADIUS_PX, MAX_PAN_DEG, esMobile]);
 
   const handleImageClick = (src: string, e: React.MouseEvent) => {
     if (stateRef.current.cancelTap) return;
@@ -184,10 +198,10 @@ export function OrbitalGallery() {
   };
 
   return (
-    <div className="relative w-full h-[370px] sm:h-[560px] md:h-[620px] flex items-center justify-center select-none overflow-hidden">
+    <div className="relative w-full h-[400px] sm:h-[580px] md:h-[640px] flex items-center justify-center select-none overflow-hidden">
       <div
         ref={containerRef}
-        className="absolute inset-0 flex items-center justify-center touch-none [perspective:2400px] cursor-grab active:cursor-grabbing overflow-hidden"
+        className="absolute inset-0 flex items-center justify-center touch-none [perspective:2600px] cursor-grab active:cursor-grabbing overflow-hidden"
       >
         <div
           ref={sphereRef}
@@ -202,13 +216,13 @@ export function OrbitalGallery() {
               <div
                 key={idx}
                 onClick={(e) => handleImageClick(imgSrc, e)}
-                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[132px] h-[132px] sm:w-[195px] sm:h-[195px] md:w-[225px] md:h-[225px] cursor-pointer transition-transform duration-200 hover:scale-[1.05] hover:z-20"
+                // Tarjetas grandes: 150px en móvil (bien tupidas) y 225px en PC
+                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[150px] h-[150px] sm:w-[195px] sm:h-[195px] md:w-[225px] md:h-[225px] cursor-pointer transition-transform duration-200 hover:scale-[1.05] hover:z-20"
                 style={{
                   transform: `rotateY(${coord.col * STEP_DEG}deg) translateY(${coord.row * ROW_HEIGHT}px) translateZ(${RADIUS_PX}px)`,
                 }}
               >
-                {/* Solución anti-glitch: el borde redondeado va directo en la imagen y no en una máscara con overflow que rompa el render */}
-                <div className="w-full h-full p-1 sm:p-1.5 bg-transparent">
+                <div className="w-full h-full p-1 sm:p-1.5">
                   <img
                     src={imgSrc}
                     alt={`Trabajo de diseño gráfico ${idx + 1}`}
