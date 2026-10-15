@@ -25,7 +25,6 @@ const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen20.png",
 ];
 
-// Malla compacta con patrón alternado regular (delta = 2 en cada fila)
 const ITEMS_GRID = [
   // Fila Y = -4 (Pares)
   { x: -8, y: -4 }, { x: -6, y: -4 }, { x: -4, y: -4 }, { x: -2, y: -4 }, { x: 0, y: -4 }, { x: 2, y: -4 }, { x: 4, y: -4 }, { x: 6, y: -4 }, { x: 8, y: -4 },
@@ -66,10 +65,11 @@ export function OrbitalGallery() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Parámetros calibrados: tarjeta de 125px con arco de 5.3° en radio de 680px cierra el hueco
-  const RADIUS_PX = esMobile ? 680 : 1300;
-  const STEP_DEG_X = esMobile ? 5.3 : 5.1;
-  const STEP_DEG_Y = esMobile ? 5.3 : 5.1;
+  // En móvil: radio más cercano y ángulo compacto para que las fotos llenen la pantalla
+  // En PC: radio generoso (1320px) para que no se acerque tanto a la cámara ni al texto superior
+  const RADIUS_PX = esMobile ? 600 : 1320;
+  const STEP_DEG_X = esMobile ? 5.8 : 5.1;
+  const STEP_DEG_Y = esMobile ? 5.8 : 5.1;
 
   useEffect(() => {
     const sphere = sphereRef.current;
@@ -204,10 +204,10 @@ export function OrbitalGallery() {
   };
 
   return (
-    <div className="relative w-full h-[370px] sm:h-[620px] md:h-[720px] overflow-hidden select-none">
+    <div className="relative w-full h-[390px] sm:h-[600px] md:h-[680px] overflow-hidden select-none">
       <div
         ref={containerRef}
-        className="absolute inset-0 flex items-center justify-center overflow-hidden touch-none [perspective:1600px] sm:[perspective:2400px] cursor-grab active:cursor-grabbing"
+        className="absolute inset-0 flex items-center justify-center overflow-hidden touch-none [perspective:1400px] sm:[perspective:2500px] cursor-grab active:cursor-grabbing"
       >
         <div
           ref={sphereRef}
@@ -222,12 +222,13 @@ export function OrbitalGallery() {
               <div
                 key={idx}
                 onClick={(e) => handleImageClick(imgSrc, e)}
-                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[125px] h-[125px] sm:w-[185px] sm:h-[185px] md:w-[220px] md:h-[220px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.05] hover:z-20"
+                /* En móvil: w-[140px] para ocupar bien el ancho. En PC: w-[205px] más estilizado */
+                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[140px] h-[140px] sm:w-[185px] sm:h-[185px] md:w-[205px] md:h-[205px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.05] hover:z-20"
                 style={{
                   transform: `rotateY(${coord.x * STEP_DEG_X}deg) rotateX(${coord.y * STEP_DEG_Y}deg) translateZ(${RADIUS_PX}px)`,
                 }}
               >
-                <div className="absolute inset-1 rounded-2xl sm:rounded-3xl overflow-hidden bg-zinc-200 dark:bg-zinc-800 shadow-md border border-black/5 dark:border-white/10 backface-hidden">
+                <div className="absolute inset-1 sm:inset-1.5 rounded-2xl sm:rounded-3xl overflow-hidden bg-zinc-200 dark:bg-zinc-800 shadow-md border border-black/5 dark:border-white/10 backface-hidden">
                   <img
                     src={imgSrc}
                     alt={`Trabajo de diseño gráfico ${idx + 1}`}
@@ -243,9 +244,9 @@ export function OrbitalGallery() {
           })}
         </div>
 
-        {/* Viñeta vertical suave */}
-        <div className="absolute inset-x-0 top-0 h-6 sm:h-10 bg-gradient-to-b from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
-        <div className="absolute inset-x-0 bottom-0 h-6 sm:h-10 bg-gradient-to-t from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
+        {/* Viñeta sutil únicamente en los bordes extremos */}
+        <div className="absolute inset-x-0 top-0 h-4 sm:h-8 bg-gradient-to-b from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
+        <div className="absolute inset-x-0 bottom-0 h-4 sm:h-8 bg-gradient-to-t from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
       </div>
 
       {/* MODAL DE ZOOM FLOTANTE */}

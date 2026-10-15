@@ -331,7 +331,7 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 selection:bg-[var(--brand)] selection:text-white overflow-x-hidden">
-      {/* HEADER */}
+      {/* HEADER: LOGO COMPACTO Y PEGADO A LA IZQUIERDA */}
       <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/90 backdrop-blur-xl transition-colors dark:border-zinc-800/80 dark:bg-[#0c0d0e]/90">
         <div className="w-full flex h-14 sm:h-16 items-center justify-between px-3.5 sm:px-8 gap-2">
           <Link href="/" className="flex items-center gap-2 shrink-0">
@@ -414,7 +414,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* 1. PORTADA QUE OCUPA LA PANTALLA COMPLETA HASTA LAS PASTILLAS */}
+      {/* 1. PORTADA CALIBRADA: ESPACIO DESPEJADO EN PC Y A PANTALLA COMPLETA EN CELULAR */}
       <section id="portfolio" className="relative flex flex-col justify-between min-h-[calc(100dvh-56px)] sm:min-h-0 pt-3 pb-4 sm:pt-12 sm:pb-16 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
         <div className="mx-auto max-w-5xl px-3 sm:px-8 text-center shrink-0">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-2.5 py-0.5 sm:px-3.5 sm:py-1 text-[10px] sm:text-xs font-semibold text-zinc-700 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 mb-1.5 sm:mb-4">
@@ -431,13 +431,13 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* ESFERA 3D: CERRADA Y COMPACTA */}
-        <div className="relative my-auto w-full px-0 sm:px-4">
+        {/* ESFERA 3D: CON RESPIRO ARRIBA EN PC Y COMPACTA EN CELULAR */}
+        <div className="relative mt-2 sm:mt-10 w-full px-0 sm:px-4">
           <OrbitalGallery />
         </div>
 
-        {/* BOTONES: AL BORDE INFERIOR DEL VIEWPORT EN CELULAR */}
-        <div className="shrink-0 px-3.5 max-w-md sm:max-w-none mx-auto w-full pb-1 sm:pb-0">
+        {/* BOTONES: AL BORDE DEL VIEWPORT */}
+        <div className="shrink-0 px-3.5 max-w-md sm:max-w-none mx-auto w-full pt-2 sm:pt-6 pb-1 sm:pb-0">
           <div className="grid grid-cols-2 sm:flex sm:flex-row items-center justify-center gap-2 sm:gap-3">
             <a
               href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por un proyecto de diseño.")}`}
@@ -462,7 +462,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 2. SERVICIOS (COMIENZA AL HACER SCROLL) */}
+      {/* 2. SERVICIOS (DESPUÉS DEL HERO) */}
       <RevealOnScroll>
         <section id="servicios" className="mx-auto max-w-7xl px-3.5 py-8 sm:px-8 sm:py-20 scroll-mt-20">
           <div className="max-w-2xl">
@@ -524,7 +524,7 @@ export default function HomePage() {
         </section>
       </RevealOnScroll>
 
-      {/* 3. SHOWCASE DESTACADO */}
+      {/* 3. SHOWCASE DESTACADO: EL CARRUSEL PREVIO DESPUÉS DE SERVICIOS */}
       <RevealOnScroll>
         <section id="destacados" className="border-t border-zinc-200/80 bg-zinc-100/50 py-8 sm:py-20 dark:border-zinc-800/60 dark:bg-zinc-950/40 scroll-mt-20">
           <div className="mx-auto max-w-7xl px-3.5 sm:px-8">
