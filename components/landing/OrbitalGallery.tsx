@@ -25,18 +25,19 @@ const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen20.png",
 ];
 
-// Coordenadas idénticas al HTML del CodePen (patrón ladrillo alternado que nunca se solapa)
-const ITEMS_ORIGINALES = [
+// Distribución idéntica al CodePen: saltos de 2 unidades en X e Y
+// Fila par desfasada con fila impar para armar el entramado continuo
+const ITEMS_COMPACTOS = [
   // Fila Y = -4 (Pares)
-  { x: -16, y: -4 }, { x: -12, y: -4 }, { x: -8, y: -4 }, { x: -4, y: -4 }, { x: 0, y: -4 }, { x: 4, y: -4 }, { x: 8, y: -4 }, { x: 12, y: -4 }, { x: 16, y: -4 },
-  // Fila Y = -2 (Pares desfasados)
-  { x: -14, y: -2 }, { x: -10, y: -2 }, { x: -6, y: -2 }, { x: -2, y: -2 }, { x: 2, y: -2 }, { x: 6, y: -2 }, { x: 10, y: -2 }, { x: 14, y: -2 },
+  { x: -8, y: -4 }, { x: -6, y: -4 }, { x: -4, y: -4 }, { x: -2, y: -4 }, { x: 0, y: -4 }, { x: 2, y: -4 }, { x: 4, y: -4 }, { x: 6, y: -4 }, { x: 8, y: -4 },
+  // Fila Y = -2 (Impares para trabar como ladrillos)
+  { x: -7, y: -2 }, { x: -5, y: -2 }, { x: -3, y: -2 }, { x: -1, y: -2 }, { x: 1, y: -2 }, { x: 3, y: -2 }, { x: 5, y: -2 }, { x: 7, y: -2 },
   // Fila Y = 0 (Ecuador central)
-  { x: -16, y: 0 }, { x: -12, y: 0 }, { x: -8, y: 0 }, { x: -4, y: 0 }, { x: 0, y: 0 }, { x: 4, y: 0 }, { x: 8, y: 0 }, { x: 12, y: 0 }, { x: 16, y: 0 },
-  // Fila Y = 2 (Pares desfasados)
-  { x: -14, y: 2 }, { x: -10, y: 2 }, { x: -6, y: 2 }, { x: -2, y: 2 }, { x: 2, y: 2 }, { x: 6, y: 2 }, { x: 10, y: 2 }, { x: 14, y: 2 },
+  { x: -8, y: 0 }, { x: -6, y: 0 }, { x: -4, y: 0 }, { x: -2, y: 0 }, { x: 0, y: 0 }, { x: 2, y: 0 }, { x: 4, y: 0 }, { x: 6, y: 0 }, { x: 8, y: 0 },
+  // Fila Y = 2 (Impares)
+  { x: -7, y: 2 }, { x: -5, y: 2 }, { x: -3, y: 2 }, { x: -1, y: 2 }, { x: 1, y: 2 }, { x: 3, y: 2 }, { x: 5, y: 2 }, { x: 7, y: 2 },
   // Fila Y = 4 (Pares)
-  { x: -16, y: 4 }, { x: -12, y: 4 }, { x: -8, y: 4 }, { x: -4, y: 4 }, { x: 0, y: 4 }, { x: 4, y: 4 }, { x: 8, y: 4 }, { x: 12, y: 4 }, { x: 16, y: 4 },
+  { x: -8, y: 4 }, { x: -6, y: 4 }, { x: -4, y: 4 }, { x: -2, y: 4 }, { x: 0, y: 4 }, { x: 2, y: 4 }, { x: 4, y: 4 }, { x: 6, y: 4 }, { x: 8, y: 4 },
 ];
 
 export function OrbitalGallery() {
@@ -56,17 +57,20 @@ export function OrbitalGallery() {
     cancelTap: false,
   });
 
-  const RADIUS_PX = 1350;
-  const ROT_Y = 360 / 37 / 2; // 4.864 deg (del SCSS original)
-  const ROT_X = 360 / 37 / 2; // 4.864 deg (del SCSS original)
+  // Parámetros calculados para que la tarjeta de 230px ocupe exactamente su sector angular
+  const RADIUS_PX = 1300;
+  // Con un arco de 230px sobre 1300px de radio: ángulo por celda = (230 / 1300) * (180 / PI) ≈ 10.1°
+  // Como cada celda abarca 2 unidades (delta = 2), el paso por unidad es: 10.1 / 2 = 5.05°
+  const STEP_DEG_X = 5.1;
+  const STEP_DEG_Y = 5.1;
 
   useEffect(() => {
     const sphere = sphereRef.current;
     const container = containerRef.current;
     if (!sphere || !container) return;
 
-    const MAX_POLAR_ROT_DEG = 3;
-    const PAN_SENSITIVITY = 16;
+    const MAX_POLAR_ROT_DEG = 4;
+    const PAN_SENSITIVITY = 15;
 
     const applyTransform = () => {
       sphere.style.transform = `translateZ(-${RADIUS_PX}px) rotateX(${stateRef.current.rotation.x}deg) rotateY(${stateRef.current.rotation.y}deg)`;
@@ -190,10 +194,8 @@ export function OrbitalGallery() {
     setTimeout(() => setImagenEnlarged(null), 280);
   };
 
-  // Tamaño de celda derivado del arco (circ / 37 * 2): aprox 220px
-  // Con inset: 8px queda una separación de 16px perfecta entre fotos contiguas
   return (
-    <div className="relative w-full h-[550px] sm:h-[650px] md:h-[720px] overflow-hidden select-none">
+    <div className="relative w-full h-[560px] sm:h-[660px] md:h-[720px] overflow-hidden select-none">
       <div
         ref={containerRef}
         className="absolute inset-0 flex items-center justify-center overflow-hidden touch-none [perspective:2400px] cursor-grab active:cursor-grabbing"
@@ -206,18 +208,19 @@ export function OrbitalGallery() {
             transform: `translateZ(-${RADIUS_PX}px) rotateX(0deg) rotateY(0deg)`,
           }}
         >
-          {ITEMS_ORIGINALES.map((coord, idx) => {
+          {ITEMS_COMPACTOS.map((coord, idx) => {
             const imgSrc = IMAGENES_PORTFOLIO[idx % IMAGENES_PORTFOLIO.length];
             return (
               <div
                 key={idx}
                 onClick={(e) => handleImageClick(imgSrc, e)}
-                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[210px] h-[210px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.05] hover:z-20"
+                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[225px] h-[225px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.05] hover:z-20"
                 style={{
-                  transform: `rotateY(${coord.x * ROT_Y}deg) rotateX(${coord.y * ROT_X}deg) translateZ(${RADIUS_PX}px)`,
+                  transform: `rotateY(${coord.x * STEP_DEG_X}deg) rotateX(${coord.y * STEP_DEG_Y}deg) translateZ(${RADIUS_PX}px)`,
                 }}
               >
-                <div className="absolute inset-2 rounded-3xl overflow-hidden bg-zinc-200 dark:bg-zinc-800/80 shadow-md border border-black/5 dark:border-white/10 backface-hidden">
+                {/* inset-1.5 deja un gap visual de exactamente 12px entre fotos vecinas */}
+                <div className="absolute inset-1.5 rounded-3xl overflow-hidden bg-zinc-200 dark:bg-zinc-800 shadow-md border border-black/5 dark:border-white/10 backface-hidden">
                   <img
                     src={imgSrc}
                     alt={`Trabajo de diseño gráfico ${idx + 1}`}
@@ -233,14 +236,14 @@ export function OrbitalGallery() {
           })}
         </div>
 
-        {/* FADES DE BORDE SUAVES */}
+        {/* MÁSCARAS DE DESVANECIDO EN LOS BORDES */}
         <div className="absolute inset-y-0 left-0 w-16 sm:w-28 bg-gradient-to-r from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
         <div className="absolute inset-y-0 right-0 w-16 sm:w-28 bg-gradient-to-l from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
         <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
         <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
       </div>
 
-      {/* MODAL DE ZOOM LIMPIO */}
+      {/* MODAL DE ZOOM FLOTANTE */}
       {imagenEnlarged && (
         <div
           onClick={handleCloseViewer}
