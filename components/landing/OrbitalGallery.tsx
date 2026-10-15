@@ -25,17 +25,18 @@ const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen20.png",
 ];
 
-const ITEMS_COMPACTOS = [
-  // Fila Y = -4 (Pares)
-  { x: -8, y: -4 }, { x: -6, y: -4 }, { x: -4, y: -4 }, { x: -2, y: -4 }, { x: 0, y: -4 }, { x: 2, y: -4 }, { x: 4, y: -4 }, { x: 6, y: -4 }, { x: 8, y: -4 },
-  // Fila Y = -2 (Impares)
-  { x: -7, y: -2 }, { x: -5, y: -2 }, { x: -3, y: -2 }, { x: -1, y: -2 }, { x: 1, y: -2 }, { x: 3, y: -2 }, { x: 5, y: -2 }, { x: 7, y: -2 },
-  // Fila Y = 0 (Ecuador central)
-  { x: -8, y: 0 }, { x: -6, y: 0 }, { x: -4, y: 0 }, { x: -2, y: 0 }, { x: 0, y: 0 }, { x: 2, y: 0 }, { x: 4, y: 0 }, { x: 6, y: 0 }, { x: 8, y: 0 },
-  // Fila Y = 2 (Impares)
-  { x: -7, y: 2 }, { x: -5, y: 2 }, { x: -3, y: 2 }, { x: -1, y: 2 }, { x: 1, y: 2 }, { x: 3, y: 2 }, { x: 5, y: 2 }, { x: 7, y: 2 },
-  // Fila Y = 4 (Pares)
-  { x: -8, y: 4 }, { x: -6, y: 4 }, { x: -4, y: 4 }, { x: -2, y: 4 }, { x: 0, y: 4 }, { x: 2, y: 4 }, { x: 4, y: 4 }, { x: 6, y: 4 }, { x: 8, y: 4 },
+// Distribución en patrón ladrillo limpio
+const ITEMS_GRID = [
+  // Fila superior (-2)
+  { x: -6, y: -2 }, { x: -4, y: -2 }, { x: -2, y: -2 }, { x: 0, y: -2 }, { x: 2, y: -2 }, { x: 4, y: -2 }, { x: 6, y: -2 },
+  // Fila intermedia alta (-1)
+  { x: -5, y: -1 }, { x: -3, y: -1 }, { x: -1, y: -1 }, { x: 1, y: -1 }, { x: 3, y: -1 }, { x: 5, y: -1 },
+  // Fila ecuatorial central (0)
+  { x: -6, y: 0 }, { x: -4, y: 0 }, { x: -2, y: 0 }, { x: 0, y: 0 }, { x: 2, y: 0 }, { x: 4, y: 0 }, { x: 6, y: 0 },
+  // Fila intermedia baja (1)
+  { x: -5, y: 1 }, { x: -3, y: 1 }, { x: -1, y: 1 }, { x: 1, y: 1 }, { x: 3, y: 1 }, { x: 5, y: 1 },
+  // Fila inferior (2)
+  { x: -6, y: 2 }, { x: -4, y: 2 }, { x: -2, y: 2 }, { x: 0, y: 2 }, { x: 2, y: 2 }, { x: 4, y: 2 }, { x: 6, y: 2 },
 ];
 
 export function OrbitalGallery() {
@@ -65,10 +66,10 @@ export function OrbitalGallery() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Radio y ángulos ajustados para eliminar el espacio vacío en celulares
-  const RADIUS_PX = esMobile ? 620 : 1300;
-  const STEP_DEG_X = esMobile ? 4.9 : 5.1;
-  const STEP_DEG_Y = esMobile ? 4.9 : 5.1;
+  // Proporción matemática: Radio vs Ángulo para evitar solapamientos
+  const RADIUS_PX = esMobile ? 880 : 1300;
+  const STEP_DEG_X = esMobile ? 9.2 : 5.2;
+  const STEP_DEG_Y = esMobile ? 9.2 : 5.2;
 
   useEffect(() => {
     const sphere = sphereRef.current;
@@ -76,7 +77,7 @@ export function OrbitalGallery() {
     if (!sphere || !container) return;
 
     const MAX_POLAR_ROT_DEG = esMobile ? 3 : 4;
-    const PAN_SENSITIVITY = esMobile ? 12 : 15;
+    const PAN_SENSITIVITY = esMobile ? 13 : 15;
 
     const applyTransform = () => {
       sphere.style.transform = `translateZ(-${RADIUS_PX}px) rotateX(${stateRef.current.rotation.x}deg) rotateY(${stateRef.current.rotation.y}deg)`;
@@ -203,10 +204,10 @@ export function OrbitalGallery() {
   };
 
   return (
-    <div className="relative w-full h-[370px] sm:h-[620px] md:h-[720px] overflow-hidden select-none">
+    <div className="relative w-full h-[360px] sm:h-[620px] md:h-[720px] overflow-hidden select-none">
       <div
         ref={containerRef}
-        className="absolute inset-0 flex items-center justify-center overflow-hidden touch-none [perspective:1400px] sm:[perspective:2400px] cursor-grab active:cursor-grabbing"
+        className="absolute inset-0 flex items-center justify-center overflow-hidden touch-none [perspective:1900px] sm:[perspective:2400px] cursor-grab active:cursor-grabbing"
       >
         <div
           ref={sphereRef}
@@ -215,18 +216,18 @@ export function OrbitalGallery() {
             transform: `translateZ(-${RADIUS_PX}px) rotateX(0deg) rotateY(0deg)`,
           }}
         >
-          {ITEMS_COMPACTOS.map((coord, idx) => {
+          {ITEMS_GRID.map((coord, idx) => {
             const imgSrc = IMAGENES_PORTFOLIO[idx % IMAGENES_PORTFOLIO.length];
             return (
               <div
                 key={idx}
                 onClick={(e) => handleImageClick(imgSrc, e)}
-                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[138px] h-[138px] sm:w-[185px] sm:h-[185px] md:w-[220px] md:h-[220px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.05] hover:z-20"
+                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[135px] h-[135px] sm:w-[185px] sm:h-[185px] md:w-[220px] md:h-[220px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.05] hover:z-20"
                 style={{
                   transform: `rotateY(${coord.x * STEP_DEG_X}deg) rotateX(${coord.y * STEP_DEG_Y}deg) translateZ(${RADIUS_PX}px)`,
                 }}
               >
-                <div className="absolute inset-1 sm:inset-1.5 rounded-2xl sm:rounded-3xl overflow-hidden bg-zinc-200 dark:bg-zinc-800 shadow-md border border-black/5 dark:border-white/10 backface-hidden">
+                <div className="absolute inset-1.5 rounded-2xl sm:rounded-3xl overflow-hidden bg-zinc-200 dark:bg-zinc-800 shadow-md border border-black/5 dark:border-white/10 backface-hidden">
                   <img
                     src={imgSrc}
                     alt={`Trabajo de diseño gráfico ${idx + 1}`}
@@ -242,7 +243,7 @@ export function OrbitalGallery() {
           })}
         </div>
 
-        {/* Viñeta sutil vertical */}
+        {/* Viñeta vertical suave */}
         <div className="absolute inset-x-0 top-0 h-8 sm:h-10 bg-gradient-to-b from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
         <div className="absolute inset-x-0 bottom-0 h-8 sm:h-10 bg-gradient-to-t from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
       </div>
