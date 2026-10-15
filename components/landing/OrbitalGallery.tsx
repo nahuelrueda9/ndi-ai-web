@@ -25,25 +25,25 @@ const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen20.png",
 ];
 
-// Grilla perfectamente simétrica en X e Y
+// Distribución cilíndrica pura: sin rotateX para evitar colisiones 3D
 const ITEMS_GRID_PC = [
   // Fila superior (-2)
-  { x: -6, y: -2 }, { x: -4, y: -2 }, { x: -2, y: -2 }, { x: 0, y: -2 }, { x: 2, y: -2 }, { x: 4, y: -2 }, { x: 6, y: -2 },
+  { col: -6, row: -2 }, { col: -4, row: -2 }, { col: -2, row: -2 }, { col: 0, row: -2 }, { col: 2, row: -2 }, { col: 4, row: -2 }, { col: 6, row: -2 },
   // Fila intermedia alta (-1)
-  { x: -7, y: -1 }, { x: -5, y: -1 }, { x: -3, y: -1 }, { x: -1, y: -1 }, { x: 1, y: -1 }, { x: 3, y: -1 }, { x: 5, y: -1 }, { x: 7, y: -1 },
+  { col: -7, row: -1 }, { col: -5, row: -1 }, { col: -3, row: -1 }, { col: -1, row: -1 }, { col: 1, row: -1 }, { col: 3, row: -1 }, { col: 5, row: -1 }, { col: 7, row: -1 },
   // Fila central (0 - Ecuador)
-  { x: -6, y: 0 }, { x: -4, y: 0 }, { x: -2, y: 0 }, { x: 0, y: 0 }, { x: 2, y: 0 }, { x: 4, y: 0 }, { x: 6, y: 0 },
+  { col: -6, row: 0 }, { col: -4, row: 0 }, { col: -2, row: 0 }, { col: 0, row: 0 }, { col: 2, row: 0 }, { col: 4, row: 0 }, { col: 6, row: 0 },
   // Fila intermedia baja (1)
-  { x: -7, y: 1 }, { x: -5, y: 1 }, { x: -3, y: 1 }, { x: -1, y: 1 }, { x: 1, y: 1 }, { x: 3, y: 1 }, { x: 5, y: 1 }, { x: 7, y: 1 },
+  { col: -7, row: 1 }, { col: -5, row: 1 }, { col: -3, row: 1 }, { col: -1, row: 1 }, { col: 1, row: 1 }, { col: 3, row: 1 }, { col: 5, row: 1 }, { col: 7, row: 1 },
   // Fila inferior (2)
-  { x: -6, y: 2 }, { x: -4, y: 2 }, { x: -2, y: 2 }, { x: 0, y: 2 }, { x: 2, y: 2 }, { x: 4, y: 2 }, { x: 6, y: 2 },
+  { col: -6, row: 2 }, { col: -4, row: 2 }, { col: -2, row: 2 }, { col: 0, row: 2 }, { col: 2, row: 2 }, { col: 4, row: 2 }, { col: 6, row: 2 },
 ];
 
 const ITEMS_GRID_MOBILE = [
-  // 3 filas en móvil
-  { x: -4, y: -1 }, { x: -2, y: -1 }, { x: 0, y: -1 }, { x: 2, y: -1 }, { x: 4, y: -1 },
-  { x: -5, y: 0 }, { x: -3, y: 0 }, { x: -1, y: 0 }, { x: 1, y: 0 }, { x: 3, y: 0 }, { x: 5, y: 0 },
-  { x: -4, y: 1 }, { x: -2, y: 1 }, { x: 0, y: 1 }, { x: 2, y: 1 }, { x: 4, y: 1 },
+  // 3 filas tupidas para celular
+  { col: -4, row: -1 }, { col: -2, row: -1 }, { col: 0, row: -1 }, { col: 2, row: -1 }, { col: 4, row: -1 },
+  { col: -5, row: 0 }, { col: -3, row: 0 }, { col: -1, row: 0 }, { col: 1, row: 0 }, { col: 3, row: 0 }, { col: 5, row: 0 },
+  { col: -4, row: 1 }, { col: -2, row: 1 }, { col: 0, row: 1 }, { col: 2, row: 1 }, { col: 4, row: 1 },
 ];
 
 export function OrbitalGallery() {
@@ -72,13 +72,13 @@ export function OrbitalGallery() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Radio y pasos calibrados
-  const RADIUS_PX = esMobile ? 680 : 1300;
-  const STEP_DEG_X = esMobile ? 6.5 : 5.1;
-  const STEP_DEG_Y = esMobile ? 6.0 : 4.9;
+  // Radio y proporciones
+  const RADIUS_PX = esMobile ? 740 : 1320;
+  const STEP_DEG = esMobile ? 6.2 : 5.1;
+  const ROW_HEIGHT = esMobile ? 142 : 210;
 
-  // LÍMITES ESTRICTOS HORIZONTALES: impide que se mueva hacia el vacío negro
-  const MAX_PAN_X = esMobile ? 13 : 19;
+  // LÍMITES ESTRICTOS: no deja rotar más allá de esto
+  const MAX_PAN_X = esMobile ? 12 : 18;
   const itemsActuales = esMobile ? ITEMS_GRID_MOBILE : ITEMS_GRID_PC;
 
   useEffect(() => {
@@ -113,7 +113,6 @@ export function OrbitalGallery() {
         }
 
         const nuevoY = stateRef.current.rotationY + vx / 200;
-        // Tope estricto con frenado inmediato al llegar al límite
         if (nuevoY > MAX_PAN_X) {
           stateRef.current.rotationY = MAX_PAN_X;
           applyTransform();
@@ -157,8 +156,7 @@ export function OrbitalGallery() {
         stateRef.current.cancelTap = true;
       }
 
-      const propuesto = stateRef.current.startRotationY + deltaX / (esMobile ? 13 : 16);
-      // Tope inmediato mientras arrastrás
+      const propuesto = stateRef.current.startRotationY + deltaX / (esMobile ? 12 : 16);
       stateRef.current.rotationY = Math.min(Math.max(propuesto, -MAX_PAN_X), MAX_PAN_X);
       applyTransform();
 
@@ -204,10 +202,11 @@ export function OrbitalGallery() {
   };
 
   return (
-    <div className="relative w-full h-[380px] sm:h-[580px] md:h-[640px] flex items-center justify-center select-none overflow-hidden">
+    // Altura amplia para que la primera fila no choque con nada
+    <div className="relative w-full h-[410px] sm:h-[620px] md:h-[680px] flex items-center justify-center select-none overflow-hidden">
       <div
         ref={containerRef}
-        className="absolute inset-0 flex items-center justify-center touch-none [perspective:2400px] cursor-grab active:cursor-grabbing overflow-hidden"
+        className="absolute inset-0 flex items-center justify-center touch-none [perspective:2200px] cursor-grab active:cursor-grabbing overflow-hidden"
       >
         <div
           ref={sphereRef}
@@ -222,11 +221,10 @@ export function OrbitalGallery() {
               <div
                 key={idx}
                 onClick={(e) => handleImageClick(imgSrc, e)}
-                // Medidas grandes: 154px en celular y 225px en PC
-                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[154px] h-[154px] sm:w-[195px] sm:h-[195px] md:w-[225px] md:h-[225px] cursor-pointer transition-transform duration-200 hover:scale-[1.05] hover:z-20"
+                // Tarjetas grandes: 152px en celular y 225px en PC
+                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[152px] h-[152px] sm:w-[195px] sm:h-[195px] md:w-[225px] md:h-[225px] cursor-pointer transition-transform duration-200 hover:scale-[1.05] hover:z-20"
                 style={{
-                  // Curvatura esférica idéntica arriba y abajo: la primera fila se curva igual que la última
-                  transform: `rotateY(${coord.x * STEP_DEG_X}deg) rotateX(${coord.y * STEP_DEG_Y}deg) translateZ(${RADIUS_PX}px)`,
+                  transform: `rotateY(${coord.col * STEP_DEG}deg) translateY(${coord.row * ROW_HEIGHT}px) translateZ(${RADIUS_PX}px)`,
                 }}
               >
                 <div className="w-full h-full p-1 sm:p-1.5">
