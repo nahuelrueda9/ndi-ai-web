@@ -414,8 +414,8 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* 1. PORTADA: SIN OVERFLOW VERTICAL PARA QUE NUNCA SE CORTE NADA */}
-      <section id="portfolio" className="relative flex flex-col justify-between pt-4 pb-6 sm:pt-10 sm:pb-16 border-b border-zinc-200/80 dark:border-zinc-800/60">
+      {/* 1. PORTADA CALIBRADA: ESPACIO DESPEJADO EN PC Y A PANTALLA COMPLETA EN CELULAR */}
+      <section id="portfolio" className="relative pt-4 pb-8 sm:pt-12 sm:pb-16 border-b border-zinc-200/80 dark:border-zinc-800/60 overflow-hidden">
         <div className="mx-auto max-w-5xl px-3 sm:px-8 text-center shrink-0">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-2.5 py-0.5 sm:px-3.5 sm:py-1 text-[10px] sm:text-xs font-semibold text-zinc-700 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 mb-2 sm:mb-4">
             <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-[var(--brand)]" />
@@ -431,8 +431,8 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* ESFERA 3D CON ESPACIO DESPEJADO */}
-        <div className="relative mt-2 sm:mt-6 w-full px-0 sm:px-4">
+        {/* ESFERA 3D */}
+        <div className="relative mt-4 sm:mt-8 w-full px-0 sm:px-4">
           <OrbitalGallery />
         </div>
 

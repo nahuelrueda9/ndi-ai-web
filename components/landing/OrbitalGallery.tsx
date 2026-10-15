@@ -25,19 +25,18 @@ const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen20.png",
 ];
 
-// Grilla con la distribución que funcionaba perfecta
-const ITEMS_GRID_PC = [
+// Grilla clásica equilibrada (patrón ladrillo)
+const ITEMS_GRID = [
+  // Fila Y = -4 (Pares)
   { x: -8, y: -4 }, { x: -6, y: -4 }, { x: -4, y: -4 }, { x: -2, y: -4 }, { x: 0, y: -4 }, { x: 2, y: -4 }, { x: 4, y: -4 }, { x: 6, y: -4 }, { x: 8, y: -4 },
+  // Fila Y = -2 (Impares)
   { x: -7, y: -2 }, { x: -5, y: -2 }, { x: -3, y: -2 }, { x: -1, y: -2 }, { x: 1, y: -2 }, { x: 3, y: -2 }, { x: 5, y: -2 }, { x: 7, y: -2 },
+  // Fila Y = 0 (Ecuador central)
   { x: -8, y: 0 }, { x: -6, y: 0 }, { x: -4, y: 0 }, { x: -2, y: 0 }, { x: 0, y: 0 }, { x: 2, y: 0 }, { x: 4, y: 0 }, { x: 6, y: 0 }, { x: 8, y: 0 },
+  // Fila Y = 2 (Impares)
   { x: -7, y: 2 }, { x: -5, y: 2 }, { x: -3, y: 2 }, { x: -1, y: 2 }, { x: 1, y: 2 }, { x: 3, y: 2 }, { x: 5, y: 2 }, { x: 7, y: 2 },
+  // Fila Y = 4 (Pares)
   { x: -8, y: 4 }, { x: -6, y: 4 }, { x: -4, y: 4 }, { x: -2, y: 4 }, { x: 0, y: 4 }, { x: 2, y: 4 }, { x: 4, y: 4 }, { x: 6, y: 4 }, { x: 8, y: 4 },
-];
-
-const ITEMS_GRID_MOBILE = [
-  { x: -4, y: -2 }, { x: -2, y: -2 }, { x: 0, y: -2 }, { x: 2, y: -2 }, { x: 4, y: -2 },
-  { x: -5, y: 0 }, { x: -3, y: 0 }, { x: -1, y: 0 }, { x: 1, y: 0 }, { x: 3, y: 0 }, { x: 5, y: 0 },
-  { x: -4, y: 2 }, { x: -2, y: 2 }, { x: 0, y: 2 }, { x: 2, y: 2 }, { x: 4, y: 2 },
 ];
 
 export function OrbitalGallery() {
@@ -67,18 +66,17 @@ export function OrbitalGallery() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Radio y pasos calibrados para imágenes GRANDES y sin solapamiento
-  const RADIUS_PX = esMobile ? 780 : 1300;
-  const STEP_DEG_X = esMobile ? 5.8 : 5.1;
-  const STEP_DEG_Y = esMobile ? 5.8 : 5.1;
-  const itemsActuales = esMobile ? ITEMS_GRID_MOBILE : ITEMS_GRID_PC;
+  // Proporción original exacta que se veía grande y tupida
+  const RADIUS_PX = esMobile ? 760 : 1300;
+  const STEP_DEG_X = esMobile ? 5.3 : 5.1;
+  const STEP_DEG_Y = esMobile ? 5.3 : 5.1;
 
   useEffect(() => {
     const sphere = sphereRef.current;
     const container = containerRef.current;
     if (!sphere || !container) return;
 
-    const MAX_POLAR_ROT_DEG = esMobile ? 2.5 : 4;
+    const MAX_POLAR_ROT_DEG = esMobile ? 3 : 4;
     const PAN_SENSITIVITY = esMobile ? 12 : 15;
 
     const applyTransform = () => {
@@ -206,11 +204,10 @@ export function OrbitalGallery() {
   };
 
   return (
-    // Altura amplia y overflow-visible en Y para que NUNCA corte las fotos en rodajas
-    <div className="relative w-full h-[460px] sm:h-[680px] md:h-[740px] select-none">
+    <div className="relative w-full h-[400px] sm:h-[620px] md:h-[680px] overflow-hidden select-none">
       <div
         ref={containerRef}
-        className="absolute inset-0 flex items-center justify-center touch-none [perspective:1900px] sm:[perspective:2400px] cursor-grab active:cursor-grabbing"
+        className="absolute inset-0 flex items-center justify-center overflow-hidden touch-none [perspective:2000px] sm:[perspective:2500px] cursor-grab active:cursor-grabbing"
       >
         <div
           ref={sphereRef}
@@ -219,14 +216,14 @@ export function OrbitalGallery() {
             transform: `translateZ(-${RADIUS_PX}px) rotateX(0deg) rotateY(0deg)`,
           }}
         >
-          {itemsActuales.map((coord, idx) => {
+          {ITEMS_GRID.map((coord, idx) => {
             const imgSrc = IMAGENES_PORTFOLIO[idx % IMAGENES_PORTFOLIO.length];
             return (
               <div
                 key={idx}
                 onClick={(e) => handleImageClick(imgSrc, e)}
-                // Tarjetas GRANDES: 142px en celular y 235px en PC
-                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[142px] h-[142px] sm:w-[200px] sm:h-[200px] md:w-[235px] md:h-[235px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.05] hover:z-20"
+                // Medidas grandes y proporcionadas originales
+                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[136px] h-[136px] sm:w-[195px] sm:h-[195px] md:w-[225px] md:h-[225px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.05] hover:z-20"
                 style={{
                   transform: `rotateY(${coord.x * STEP_DEG_X}deg) rotateX(${coord.y * STEP_DEG_Y}deg) translateZ(${RADIUS_PX}px)`,
                 }}
