@@ -7,6 +7,8 @@ import {
   CalendarDays,
   Check,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   ExternalLink,
   FileText,
   Mail,
@@ -318,11 +320,11 @@ export default function HomePage() {
   const [activo, setActivo] = useState(0);
   const { theme, setTheme } = useTheme();
 
-  // Rotación suave del carrusel 3D
+  // Duración de 10 segundos por imagen
   useEffect(() => {
     const timer = setInterval(() => {
       setActivo((prev) => (prev + 1) % IMAGENES_PORTFOLIO.length);
-    }, 3500);
+    }, 10000);
     return () => clearInterval(timer);
   }, []);
 
@@ -340,6 +342,14 @@ export default function HomePage() {
 
   const alternarTema = () => {
     setTheme(theme === "dark" ? "light" : "dark");
+  };
+
+  const irAnterior = () => {
+    setActivo((prev) => (prev - 1 + IMAGENES_PORTFOLIO.length) % IMAGENES_PORTFOLIO.length);
+  };
+
+  const irSiguiente = () => {
+    setActivo((prev) => (prev + 1) % IMAGENES_PORTFOLIO.length);
   };
 
   return (
@@ -421,7 +431,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* PORTADA: CARRUSEL CINEMÁTICO 3D (COVERFLOW SHOWCASE) */}
+      {/* PORTADA: SHOWCASE 3D EN RELIEVE (FONDO CLARO INTEGRADO Y TARJETAS SÓLIDAS) */}
       <section className="relative pt-10 pb-16 sm:pt-16 sm:pb-24 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
         <div className="mx-auto max-w-7xl px-4 sm:px-8">
           
@@ -443,7 +453,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* MARCO GRANDE CON COMPOSICIÓN 3D CINEMÁTICA */}
+          {/* CONTENEDOR PRINCIPAL CLARO CON RELIEVE Y SIN FONDO NEGRO */}
           <div className="relative mt-12 sm:mt-16 mx-auto max-w-6xl [perspective:1400px]">
             
             {/* TARJETA NEGRA SUPERIOR IZQUIERDA */}
@@ -456,8 +466,8 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* ESCENA CINEMÁTICA COVERFLOW: Tarjeta central en primer plano y laterales en perspectiva */}
-            <div className="relative overflow-hidden rounded-[2.2rem] sm:rounded-[3.2rem] border border-zinc-200/90 bg-zinc-950 shadow-2xl dark:border-zinc-800 aspect-[16/10] sm:aspect-[16/9] w-full min-h-[380px] sm:min-h-[560px] flex items-center justify-center p-4">
+            {/* MARCO CONTENEDOR LUMINOSO Y ELEGANTE */}
+            <div className="relative overflow-hidden rounded-[2.2rem] sm:rounded-[3.2rem] border border-zinc-200/90 bg-gradient-to-b from-zinc-100/90 via-zinc-100/50 to-zinc-200/60 shadow-xl dark:border-zinc-800 dark:from-zinc-900/90 dark:via-zinc-900/50 dark:to-zinc-950 aspect-[16/10] sm:aspect-[16/9] w-full min-h-[400px] sm:min-h-[580px] flex items-center justify-center p-4 sm:p-8">
               
               <div className="relative w-full h-full flex items-center justify-center">
                 {IMAGENES_PORTFOLIO.map((imagen, index) => {
@@ -466,8 +476,7 @@ export default function HomePage() {
                   if (offset < -Math.floor(total / 2)) offset += total;
                   if (offset > Math.floor(total / 2)) offset -= total;
 
-                  // Mostramos las más cercanas en 3D
-                  const esVisible = Math.abs(offset) <= 2;
+                  const esVisible = Math.abs(offset) <= 1;
                   if (!esVisible) return null;
 
                   const esCentro = offset === 0;
@@ -476,18 +485,18 @@ export default function HomePage() {
                     <div
                       key={imagen}
                       onClick={() => setActivo(index)}
-                      className={`absolute cursor-pointer rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${
+                      className={`absolute cursor-pointer rounded-2xl sm:rounded-3xl overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-700 transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${
                         esCentro
-                          ? "w-[82%] sm:w-[74%] h-[88%] z-20 border-white/20 scale-100 opacity-100 [transform:translateX(0px)_translateZ(0px)]"
+                          ? "w-[84%] sm:w-[78%] h-[90%] z-20 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.25)] scale-100 opacity-100 [transform:translateX(0px)_translateZ(0px)]"
                           : offset < 0
-                          ? "w-[68%] sm:w-[60%] h-[78%] z-10 border-white/10 opacity-40 blur-[0.5px] [transform:translateX(-42%)_translateZ(-180px)_rotateY(22deg)] hover:opacity-60"
-                          : "w-[68%] sm:w-[60%] h-[78%] z-10 border-white/10 opacity-40 blur-[0.5px] [transform:translateX(42%)_translateZ(-180px)_rotateY(-22deg)] hover:opacity-60"
+                          ? "w-[72%] sm:w-[66%] h-[80%] z-10 shadow-xl opacity-95 [transform:translateX(-42%)_translateZ(-140px)_rotateY(16deg)] hover:opacity-100"
+                          : "w-[72%] sm:w-[66%] h-[80%] z-10 shadow-xl opacity-95 [transform:translateX(42%)_translateZ(-140px)_rotateY(-16deg)] hover:opacity-100"
                       }`}
                     >
                       <img
                         src={imagen}
                         alt={`Portfolio NDI ${index + 1}`}
-                        className="w-full h-full object-contain sm:object-cover object-center bg-zinc-900"
+                        className="w-full h-full object-contain sm:object-cover object-center bg-white dark:bg-zinc-900"
                         onError={(e) => {
                           e.currentTarget.src = "/portfolio/imagen1.jpg";
                         }}
@@ -497,7 +506,28 @@ export default function HomePage() {
                 })}
               </div>
 
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none z-25" />
+              {/* FLECHITAS DE NAVEGACIÓN MANUAL DISCRETAS */}
+              <button
+                onClick={irAnterior}
+                aria-label="Anterior proyecto"
+                className="absolute left-4 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-md border border-zinc-200 text-zinc-800 transition hover:scale-105 active:scale-95 dark:bg-zinc-900/90 dark:border-zinc-700 dark:text-zinc-200"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                onClick={irSiguiente}
+                aria-label="Siguiente proyecto"
+                className="absolute right-4 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-md border border-zinc-200 text-zinc-800 transition hover:scale-105 active:scale-95 dark:bg-zinc-900/90 dark:border-zinc-700 dark:text-zinc-200"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+
+              {/* BARRA DE PROGRESO DE 10 SEGUNDOS */}
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-25 flex items-center gap-1.5 bg-white/80 dark:bg-zinc-900/80 px-3 py-1.5 rounded-full border border-zinc-200 dark:border-zinc-800 backdrop-blur-xs">
+                <span className="text-[10px] font-bold text-zinc-600 dark:text-zinc-400">
+                  {activo + 1} / {IMAGENES_PORTFOLIO.length}
+                </span>
+              </div>
             </div>
 
             {/* BLOQUE INFERIOR DERECHO */}
