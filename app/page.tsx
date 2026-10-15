@@ -8,7 +8,6 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  ExternalLink,
   Laptop,
   Mail,
   MapPin,
@@ -17,7 +16,6 @@ import {
   Moon,
   Palette,
   ShieldCheck,
-  Sparkles,
   Sun,
   UserCheck,
   UtensilsCrossed,
@@ -57,13 +55,14 @@ const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen20.png",
 ];
 
+// ORDENADO Y RENOMBRADO SEGÚN TU PEDIDO
 const serviciosNDI = [
   {
-    icono: BookOpen,
-    titulo: "Diseño Editorial",
-    color: "text-rose-500 bg-rose-500/10",
+    icono: Palette,
+    titulo: "Branding & Identidad",
+    color: "text-purple-500 bg-purple-500/10",
     descripcion:
-      "Diseño de folletos, revistas, catálogos, presentaciones corporativas y balances con enfoque estético y funcional. Cada pieza transmite tu mensaje con claridad.",
+      "Construcción de marcas sólidas con identidad única. Logotipos, tipografías, paletas de color y sistemas de marca coherentes y reconocibles.",
   },
   {
     icono: Megaphone,
@@ -73,15 +72,15 @@ const serviciosNDI = [
       "Creatividad visual para campañas digitales e impresas, cartelería, vía pública y piezas para redes sociales pensadas para captar atención y generar impacto real.",
   },
   {
-    icono: Palette,
-    titulo: "Branding & Identidad",
-    color: "text-purple-500 bg-purple-500/10",
+    icono: BookOpen,
+    titulo: "Diseño Editorial",
+    color: "text-rose-500 bg-rose-500/10",
     descripcion:
-      "Construcción de marcas sólidas con identidad única. Logotipos, tipografías, paletas de color y sistemas de marca coherentes y reconocibles.",
+      "Diseño de folletos, revistas, catálogos, presentaciones corporativas y balances con enfoque estético y funcional. Cada pieza transmite tu mensaje con claridad.",
   },
   {
     icono: Laptop,
-    titulo: "Diseño Web & UX/UI",
+    titulo: "Diseño Web",
     color: "text-blue-500 bg-blue-500/10",
     descripcion:
       "Sitios web visualmente atractivos, rápidos y adaptados a cualquier dispositivo. Diseñados con foco en la experiencia del usuario y en lograr objetivos concretos.",
@@ -206,7 +205,6 @@ function TarjetaModelo({ p }: { p: any }) {
   const [slide, setSlide] = useState(0);
   const Icono = p.icono;
 
-  // 5 segundos exactos con transición suave
   useEffect(() => {
     const timer = setInterval(() => {
       setSlide((prev) => (prev + 1) % p.imagenes.length);
@@ -409,7 +407,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* HERO: TEXTO Y BOTONES AJUSTADOS */}
+      {/* HERO: SUBTÍTULO BALANCEADO EN DOS LÍNEAS */}
       <section className="relative pt-6 pb-12 sm:pt-16 sm:pb-24 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
         <div className="mx-auto max-w-7xl px-3 sm:px-8">
           
@@ -426,21 +424,22 @@ export default function HomePage() {
               </span>
             </h1>
 
-            <p className="mx-auto mt-3 sm:mt-4 max-w-2xl text-xs sm:text-sm md:text-base text-zinc-600 dark:text-zinc-400 font-normal leading-relaxed px-2 sm:px-0">
-              Trabajemos juntos para darle forma a tus ideas con un diseño pensado a la medida de tu proyecto y de tus objetivos.
+            {/* BALANCEADO EN DOS RENGLONES VISIBLES EN PANTALLAS GRANDES */}
+            <p className="mx-auto mt-4 max-w-2xl text-xs sm:text-sm md:text-base text-zinc-600 dark:text-zinc-400 font-normal leading-relaxed px-2 sm:px-0">
+              Trabajemos juntos para darle forma a tus ideas con un diseño pensado<br className="hidden md:inline" /> a la medida de tu proyecto y de tus objetivos.
             </p>
           </div>
 
           {/* CONTENEDOR HERO SLIDER */}
           <div className="relative mt-8 sm:mt-14 mx-auto max-w-5xl">
             
-            {/* BADGE AJUSTADO */}
-            <div className="absolute top-2 left-2 sm:-top-5 sm:-left-5 rounded-xl sm:rounded-3xl bg-zinc-950/95 p-2 sm:p-4 text-white shadow-xl border border-zinc-800 text-left max-w-[135px] sm:max-w-[210px] z-30 backdrop-blur-xs">
+            {/* BADGE BALANCEADA: "personalizado y adaptado / a tu marca" */}
+            <div className="absolute top-2 left-2 sm:-top-5 sm:-left-5 rounded-xl sm:rounded-3xl bg-zinc-950/95 p-2.5 sm:p-4 text-white shadow-xl border border-zinc-800 text-left max-w-[140px] sm:max-w-[210px] z-30 backdrop-blur-xs">
               <p className="text-base sm:text-2xl font-bold tracking-tight text-white leading-none">
                 100%
               </p>
               <p className="mt-1 text-[9px] sm:text-xs text-zinc-400 font-medium leading-tight">
-                personalizado y adaptado a tu marca.
+                personalizado y adaptado <br /> a tu marca.
               </p>
             </div>
 
@@ -525,7 +524,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* BOTONES ACCIÓN: CONTACTAME + PORTFOLIO BEHANCE */}
+          {/* BOTONES ACCIÓN */}
           <div className="mt-8 sm:mt-14 flex flex-col sm:flex-row items-center justify-center gap-3">
             <a
               href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por un proyecto de diseño.")}`}
@@ -551,21 +550,23 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* SECCIÓN SERVICIOS: BASADA EN LA ESTRUCTURA Y CONTENIDO DE LA REFERENCIA */}
+      {/* SECCIÓN SERVICIOS: DETALLES DE SALTO Y ENFOQUE ACTUALIZADOS */}
       <section id="servicios" className="mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="max-w-2xl">
           <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
             Servicios
           </span>
+          {/* TÍTULO CON SALTO DE LÍNEA EXACTO */}
           <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white leading-tight">
-            Soluciones visuales pensadas para tu proyecto.
+            Soluciones visuales pensadas <br className="hidden md:inline" /> para tu proyecto.
           </h2>
+          {/* PÁRRAFO CON SALTO DE LÍNEA EQUILIBRADO */}
           <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-            Diseño gráfico, comunicación y desarrollo web aplicados para que tu marca se destaque y conecte con su público.
+            Diseño gráfico, comunicación y desarrollo web aplicados <br className="hidden md:inline" /> para que tu marca se destaque y conecte con su público.
           </p>
         </div>
 
-        {/* GRILLA DE 4 SERVICIOS CLAVE */}
+        {/* GRILLA DE 4 SERVICIOS CLAVE: REORDENADOS Y ACTUALIZADOS */}
         <div className="mt-8 sm:mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {serviciosNDI.map((srv) => {
             const Icono = srv.icono;
@@ -590,12 +591,8 @@ export default function HomePage() {
           })}
         </div>
 
-        {/* BLOQUE EMPRESAS / MARCAS CONSOLIDADAS */}
+        {/* CONTENEDOR ENFOQUE: SIN COLLABORACIÓN DIRECTA NI ICONO DE IA */}
         <div className="mt-8 sm:mt-10 rounded-3xl border border-zinc-200 bg-zinc-100/70 p-6 sm:p-10 text-center dark:border-zinc-800 dark:bg-zinc-900/50">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--brand)]/10 px-3 py-1 text-xs font-bold text-[var(--brand-contrast)] dark:text-[var(--brand)] mb-3">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>Colaboración Directa</span>
-          </span>
           <h3 className="text-lg sm:text-2xl font-bold text-zinc-950 dark:text-white max-w-2xl mx-auto">
             ¿Sos parte de una empresa con imagen consolidada que necesita nuevas soluciones?
           </h3>
@@ -650,10 +647,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* QUIÉN SOY */}
+      {/* QUIÉN SOY (FOTO AGRANDADA) */}
       <section id="quien-soy" className="mx-auto max-w-4xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="text-center max-w-xl mx-auto">
-          <div className="relative mx-auto h-20 w-20 sm:h-28 sm:w-28 overflow-hidden rounded-full border-2 border-[var(--brand)]/40 bg-zinc-100 shadow-md ring-4 ring-[var(--brand)]/10 dark:bg-zinc-800">
+          {/* FOTO AGRANDADA DE 20/28 A 28/36 PARA DAR JERARQUÍA */}
+          <div className="relative mx-auto h-28 w-28 sm:h-36 sm:w-36 overflow-hidden rounded-full border-2 border-[var(--brand)]/40 bg-zinc-100 shadow-md ring-4 ring-[var(--brand)]/10 dark:bg-zinc-800">
             {!errorFotoNahuel ? (
               <Image
                 src="/nahuel.jpg"
@@ -766,7 +764,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CONTACTO LIMPIO (SIN TARJETA REPETIDA QUE GENERABA RUIDO) */}
+      {/* CONTACTO LIMPIO */}
       <section id="contacto" className="border-t border-zinc-200/80 bg-zinc-100/60 py-12 sm:py-24 dark:border-zinc-800/80 dark:bg-zinc-950/60">
         <div className="mx-auto max-w-3xl px-3.5 sm:px-8 text-center">
           <span className="text-xs font-bold uppercase tracking-widest text-[var(--brand-contrast)] dark:text-[var(--brand)]">
@@ -826,10 +824,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FOOTER */}
+      {/* FOOTER: SECCIÓN DE DEFENSA DEL CONSUMIDOR COMPLETAMENTE ELIMINADA */}
       <footer className="border-t border-zinc-200/80 bg-white py-10 sm:py-12 dark:border-zinc-800 dark:bg-[#0c0d0e]">
         <div className="mx-auto max-w-7xl px-4 sm:px-8">
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 pb-6 sm:pb-8 border-b border-zinc-100 dark:border-zinc-800/80">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 pb-6 sm:pb-8 border-b border-zinc-100 dark:border-zinc-800/80">
             <div>
               <div className="flex items-center gap-2">
                 <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[var(--brand)] p-1">
@@ -879,34 +877,7 @@ export default function HomePage() {
                     Política de privacidad
                   </Link>
                 </li>
-                <li>
-                  <a
-                    href="https://www.argentina.gob.ar/produccion/defensadelconsumidor"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-[var(--brand)] transition"
-                  >
-                    Defensa del Consumidor
-                  </a>
-                </li>
               </ul>
-            </div>
-
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-zinc-950 dark:text-white">
-                Defensa del consumidor
-              </p>
-              <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                Podés revocar tu contratación dentro del plazo de 10 días corridos contados desde la aceptación del servicio.
-              </p>
-              <div className="mt-3">
-                <a
-                  href={`mailto:${CORREO_CONTACTO}?subject=${encodeURIComponent("Solicitud de revocación - Botón de arrepentimiento")}&body=${encodeURIComponent("Hola, solicito la revocación de la contratación del servicio conforme al artículo 34 de la Ley 24.240 y Resolución 424/2020.")}`}
-                  className="inline-flex items-center justify-center rounded-xl border border-zinc-300 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-800 transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-                >
-                  Botón de arrepentimiento
-                </a>
-              </div>
             </div>
           </div>
 
