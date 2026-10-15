@@ -222,7 +222,6 @@ const planBusinessIA = [
   "Sin marca comercial en el pie de página",
 ];
 
-// Tarjeta con carrusel automático para los 5 modelos
 function TarjetaModelo({ p }: { p: any }) {
   const [slide, setSlide] = useState(0);
   const Icono = p.icono;
@@ -318,11 +317,9 @@ export default function HomePage() {
   const [errorFotoNahuel, setErrorFotoNahuel] = useState(false);
   const { theme, setTheme } = useTheme();
   
-  // Referencias para la esfera 3D interactiva
   const stageRef = useRef<HTMLDivElement>(null);
   const sphereRef = useRef<HTMLDivElement>(null);
 
-  // Inicializar interacción táctil / mouse para rotar la esfera 3D
   useEffect(() => {
     let isDragging = false;
     let startX = 0;
@@ -385,10 +382,7 @@ export default function HomePage() {
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
-  // Generar coordenadas distribuidas para las 20 imágenes en la esfera 3D
-  // Distribuimos las 20 imágenes recorriendo la matriz de items del CodePen
   const itemsEsfera = IMAGENES_PORTFOLIO.map((img, idx) => {
-    // Coordenadas calculadas distribuidas en la malla esférica
     const coords = [
       { x: -37, y: -4 }, { x: -37, y: -2 }, { x: -37, y: 0 }, { x: -37, y: 2 }, { x: -37, y: 4 },
       { x: -35, y: -3 }, { x: -35, y: -1 }, { x: -35, y: 1 }, { x: -35, y: 3 }, { x: -35, y: 5 },
@@ -483,7 +477,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* PORTADA CON LA ESFERA 3D INTERACTIVA (CODEPEN SPHERE) */}
+      {/* PORTADA ESFERA 3D INTERACTIVA */}
       <section className="relative pt-10 pb-16 sm:pt-16 sm:pb-24 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
         <div className="mx-auto max-w-7xl px-4 sm:px-8">
           
@@ -505,16 +499,13 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* CONTENEDOR ESFERA 3D INTERACTIVA */}
           <div className="relative mt-12 sm:mt-16 mx-auto max-w-6xl h-[420px] sm:h-[580px] flex items-center justify-center overflow-hidden rounded-[2.5rem] border border-zinc-200/90 bg-zinc-950 shadow-2xl dark:border-zinc-800">
             
-            {/* TARJETA NEGRA SUPERIOR IZQUIERDA */}
             <div className="absolute top-6 left-6 rounded-2xl sm:rounded-3xl bg-zinc-900/90 p-4 text-white shadow-xl border border-zinc-800 text-left max-w-[190px] z-30 backdrop-blur-md">
               <p className="text-2xl font-bold text-white leading-none">100%</p>
               <p className="mt-1 text-[11px] text-zinc-400">autogestionable en todos los dispositivos.</p>
             </div>
 
-            {/* ESCENA 3D SPHERE */}
             <div 
               ref={stageRef} 
               className="relative w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
@@ -557,7 +548,6 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* PÍLDORAS INFERIORES DERECHAS */}
             <div className="absolute bottom-6 right-6 rounded-2xl bg-white/95 p-3 shadow-2xl border border-zinc-200/90 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 z-30 max-w-[380px] w-full hidden sm:block">
               <div className="grid grid-cols-3 gap-1.5 text-[10px] font-semibold text-zinc-700 dark:text-zinc-300">
                 <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800 px-2 py-1.5 text-center">Diseño</span>
@@ -1156,7 +1146,7 @@ function PlanCard({
 
       <div className="mt-6 pt-5 border-t border-zinc-200 dark:border-zinc-800">
         <a
-          href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(`¡Hola Nahuel! Me interesa el plan ${nombre} para mi negocio.`)}`
+          href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(`¡Hola Nahuel! Me interesa el plan ${nombre} para mi negocio.`)}`}
           target="_blank"
           rel="noopener noreferrer"
           className={`inline-flex w-full items-center justify-center rounded-xl py-3 text-xs font-bold transition shadow-xs ${
