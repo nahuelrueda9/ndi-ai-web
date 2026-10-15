@@ -270,13 +270,13 @@ function TarjetaModelo({ p }: { p: any }) {
           </div>
         </div>
 
-        <div className="p-5">
+        <div className="p-4 sm:p-5">
           <div className="flex items-center gap-1.5 text-[var(--brand-contrast)] dark:text-[var(--brand)] text-xs font-semibold">
             <Icono className="h-3.5 w-3.5" />
             <span>{p.categoria}</span>
           </div>
 
-          <h3 className="mt-1.5 text-base font-bold text-zinc-950 dark:text-white">
+          <h3 className="mt-1.5 text-sm sm:text-base font-bold text-zinc-950 dark:text-white">
             {p.titulo}
           </h3>
 
@@ -284,7 +284,7 @@ function TarjetaModelo({ p }: { p: any }) {
             {p.subtitulo}
           </p>
 
-          <div className="mt-3.5 flex flex-wrap gap-1">
+          <div className="mt-3 flex flex-wrap gap-1">
             {p.caracteristicas.map((c: string, i: number) => (
               <span
                 key={i}
@@ -297,7 +297,7 @@ function TarjetaModelo({ p }: { p: any }) {
         </div>
       </div>
 
-      <div className="p-5 pt-0">
+      <div className="p-4 sm:p-5 pt-0">
         <a
           href={p.urlDemo}
           target="_blank"
@@ -319,7 +319,7 @@ export default function HomePage() {
   const [activo, setActivo] = useState(0);
   const { theme, setTheme } = useTheme();
 
-  // Opción C: Showcase horizontal fluido cada 10 segundos
+  // Rotación cada 10 segundos
   useEffect(() => {
     const timer = setInterval(() => {
       setActivo((prev) => (prev + 1) % IMAGENES_PORTFOLIO.length);
@@ -352,7 +352,7 @@ export default function HomePage() {
   };
 
   return (
-    <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 selection:bg-[var(--brand)] selection:text-white">
+    <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 selection:bg-[var(--brand)] selection:text-white overflow-x-hidden">
       {/* HEADER */}
       <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/90 backdrop-blur-xl transition-colors dark:border-zinc-800/80 dark:bg-[#0c0d0e]/90">
         <div className="mx-auto flex h-14 sm:h-16 max-w-7xl items-center justify-between px-3.5 sm:px-8 gap-2">
@@ -430,43 +430,43 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* PORTADA: OPCIÓN C (SHOWCASE HORIZONTAL PANORÁMICO ESTILO ESTUDIO) */}
-      <section className="relative pt-10 pb-16 sm:pt-16 sm:pb-24 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
-        <div className="mx-auto max-w-7xl px-4 sm:px-8">
+      {/* PORTADA OPTIMIZADA PARA MÓVIL, TABLET Y ESCRITORIO */}
+      <section className="relative pt-6 pb-12 sm:pt-16 sm:pb-24 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
+        <div className="mx-auto max-w-7xl px-3 sm:px-8">
           
           <div className="mx-auto max-w-4xl text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3.5 py-1 text-xs font-semibold text-zinc-700 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 mb-4">
-              <span className="h-2 w-2 rounded-full bg-[var(--brand)]" />
+            <div className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full border border-zinc-200 bg-white px-3 py-0.5 sm:px-3.5 sm:py-1 text-[11px] sm:text-xs font-semibold text-zinc-700 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 mb-3 sm:mb-4">
+              <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-[var(--brand)]" />
               <span>Diseño Gráfico & Desarrollo Web</span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl lg:text-[3.8rem] font-bold tracking-tight text-zinc-950 dark:text-white leading-[1.12]">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-[3.6rem] font-bold tracking-tight text-zinc-950 dark:text-white leading-[1.15]">
               Potencia tu marca con diseño.
-              <span className="block text-zinc-500 dark:text-zinc-400 font-medium text-2xl sm:text-4xl lg:text-[2.7rem] mt-2">
+              <span className="block text-zinc-500 dark:text-zinc-400 font-medium text-lg sm:text-3xl lg:text-[2.5rem] mt-1 sm:mt-2">
                 Su visión, nuestra experiencia.
               </span>
             </h1>
 
-            <p className="mx-auto mt-4 max-w-2xl text-sm sm:text-base text-zinc-600 dark:text-zinc-400 font-normal leading-relaxed">
+            <p className="mx-auto mt-3 sm:mt-4 max-w-2xl text-xs sm:text-sm md:text-base text-zinc-600 dark:text-zinc-400 font-normal leading-relaxed px-2 sm:px-0">
               Diseño la identidad visual de tu marca y tu web a medida. Tus clientes ven productos, agendan turnos y te hacen pedidos directos por WhatsApp.
             </p>
           </div>
 
-          {/* CONTENEDOR PANORÁMICO LIMPIO */}
-          <div className="relative mt-12 sm:mt-16 mx-auto max-w-6xl">
+          {/* CONTENEDOR DE LA PORTADA */}
+          <div className="relative mt-8 sm:mt-14 mx-auto max-w-5xl">
             
-            {/* TARJETA NEGRA SUPERIOR IZQUIERDA */}
-            <div className="absolute -top-5 -left-2 sm:-top-7 sm:-left-6 rounded-2xl sm:rounded-3xl bg-zinc-950 p-4 sm:p-5 text-white shadow-2xl border border-zinc-800 text-left max-w-[170px] sm:max-w-[220px] z-30">
-              <p className="text-2xl sm:text-3xl font-bold tracking-tight text-white leading-none">
+            {/* TARJETA NEGRA RESPONSIVE (pequeña en celular, completa en PC) */}
+            <div className="absolute top-2 left-2 sm:-top-5 sm:-left-5 rounded-xl sm:rounded-3xl bg-zinc-950/95 p-2 sm:p-4 text-white shadow-xl border border-zinc-800 text-left max-w-[125px] sm:max-w-[200px] z-30 backdrop-blur-xs">
+              <p className="text-base sm:text-2xl font-bold tracking-tight text-white leading-none">
                 100%
               </p>
-              <p className="mt-1.5 text-[11px] sm:text-xs text-zinc-400 font-medium leading-snug">
+              <p className="mt-1 text-[9px] sm:text-xs text-zinc-400 font-medium leading-tight">
                 autogestionable en todos los dispositivos.
               </p>
             </div>
 
-            {/* ESCENARIO DEL SLIDER PANORÁMICO (LA CENTRAL 85% Y LAS LATERALES ASOMANDO SIN DEFORMACIÓN) */}
-            <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] min-h-[400px] sm:min-h-[560px] overflow-hidden flex items-center justify-center">
+            {/* VISOR DE FOTOS ADAPTADO */}
+            <div className="relative w-full aspect-[4/3] sm:aspect-[16/9] min-h-[250px] sm:min-h-[500px] overflow-hidden rounded-2xl sm:rounded-3xl bg-zinc-100/60 dark:bg-zinc-900/40 flex items-center justify-center border border-zinc-200/60 dark:border-zinc-800/60">
               
               <div className="relative w-full h-full flex items-center justify-center">
                 {IMAGENES_PORTFOLIO.map((imagen, index) => {
@@ -484,19 +484,18 @@ export default function HomePage() {
                     <div
                       key={imagen}
                       onClick={() => setActivo(index)}
-                      className={`absolute cursor-pointer rounded-3xl overflow-hidden bg-white dark:bg-zinc-900 transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${
+                      className={`absolute cursor-pointer rounded-xl sm:rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${
                         esCentro
-                          ? "w-[88%] sm:w-[84%] h-[92%] z-20 shadow-[0_20px_50px_rgba(0,0,0,0.18)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)] translate-x-0 scale-100 opacity-100"
+                          ? "w-[94%] sm:w-[86%] h-[94%] sm:h-[92%] z-20 shadow-xl translate-x-0 scale-100 opacity-100"
                           : offset < 0
-                          ? "w-[84%] sm:w-[80%] h-[84%] z-10 shadow-lg -translate-x-[92%] scale-[0.94] opacity-90 hover:opacity-100"
-                          : "w-[84%] sm:w-[80%] h-[84%] z-10 shadow-lg translate-x-[92%] scale-[0.94] opacity-90 hover:opacity-100"
+                          ? "w-[84%] sm:w-[78%] h-[84%] z-10 shadow-md -translate-x-[94%] scale-[0.95] opacity-70 hover:opacity-95"
+                          : "w-[84%] sm:w-[78%] h-[84%] z-10 shadow-md translate-x-[94%] scale-[0.95] opacity-70 hover:opacity-95"
                       }`}
                     >
-                      {/* Imagen completa sin recortar ningún detalle o logo */}
                       <img
                         src={imagen}
-                        alt={`Proyecto NDI ${index + 1}`}
-                        className="w-full h-full object-contain p-2 sm:p-5 bg-white dark:bg-zinc-900"
+                        alt={`Portfolio NDI ${index + 1}`}
+                        className="w-full h-full object-contain p-1.5 sm:p-4 bg-white dark:bg-zinc-900"
                         onError={(e) => {
                           e.currentTarget.src = "/portfolio/imagen1.jpg";
                         }}
@@ -506,43 +505,43 @@ export default function HomePage() {
                 })}
               </div>
 
-              {/* FLECHAS DE NAVEGACIÓN MANUAL */}
+              {/* FLECHAS DE NAVEGACIÓN COMPACTAS EN CELULAR */}
               <button
                 onClick={irAnterior}
                 aria-label="Anterior proyecto"
-                className="absolute left-3 sm:left-6 z-30 flex h-11 w-11 items-center justify-center rounded-full bg-white/95 shadow-xl border border-zinc-200 text-zinc-800 transition hover:scale-110 active:scale-95 dark:bg-zinc-900/95 dark:border-zinc-700 dark:text-zinc-200"
+                className="absolute left-2 sm:left-4 z-30 flex h-8 w-8 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-white/95 shadow-md border border-zinc-200 text-zinc-800 transition hover:scale-105 active:scale-95 dark:bg-zinc-900/95 dark:border-zinc-700 dark:text-zinc-200"
               >
-                <ChevronLeft className="h-5 w-5" />
+                <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
               <button
                 onClick={irSiguiente}
                 aria-label="Siguiente proyecto"
-                className="absolute right-3 sm:right-6 z-30 flex h-11 w-11 items-center justify-center rounded-full bg-white/95 shadow-xl border border-zinc-200 text-zinc-800 transition hover:scale-110 active:scale-95 dark:bg-zinc-900/95 dark:border-zinc-700 dark:text-zinc-200"
+                className="absolute right-2 sm:right-4 z-30 flex h-8 w-8 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-white/95 shadow-md border border-zinc-200 text-zinc-800 transition hover:scale-105 active:scale-95 dark:bg-zinc-900/95 dark:border-zinc-700 dark:text-zinc-200"
               >
-                <ChevronRight className="h-5 w-5" />
+                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
 
             </div>
 
-            {/* BLOQUE INFERIOR DERECHO CON PÁGINAS WEB CENTRADO */}
-            <div className="absolute -bottom-4 -right-2 sm:-bottom-6 sm:-right-6 rounded-2xl sm:rounded-3xl bg-white/95 p-3 sm:p-4 shadow-2xl border border-zinc-200/90 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 z-30 max-w-[300px] sm:max-w-[420px] w-full">
-              <div className="grid grid-cols-3 gap-1.5 text-[10px] sm:text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
-                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-2 text-center flex items-center justify-center">
+            {/* PASTILLAS DE SERVICIOS: en celular se ubican abajo limpias sin tapar la imagen, en PC flotan en la esquina */}
+            <div className="mt-3 sm:mt-0 sm:absolute sm:-bottom-5 sm:-right-5 rounded-2xl bg-white/95 p-2.5 sm:p-3.5 shadow-md sm:shadow-2xl border border-zinc-200/90 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 z-30 sm:max-w-[380px] w-full">
+              <div className="grid grid-cols-3 gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
+                <span className="rounded-lg sm:rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-1.5 text-center flex items-center justify-center">
                   Diseño
                 </span>
-                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-2 text-center flex items-center justify-center">
+                <span className="rounded-lg sm:rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-1.5 text-center flex items-center justify-center">
                   Branding
                 </span>
-                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-2 text-center flex items-center justify-center">
+                <span className="rounded-lg sm:rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-1.5 text-center flex items-center justify-center">
                   Logos
                 </span>
-                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-2 text-center flex items-center justify-center">
+                <span className="rounded-lg sm:rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-1.5 text-center flex items-center justify-center">
                   Redes Sociales
                 </span>
-                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-2 text-center flex items-center justify-center">
+                <span className="rounded-lg sm:rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-1.5 text-center flex items-center justify-center">
                   Diseño Editorial
                 </span>
-                <span className="rounded-xl bg-[var(--brand)]/15 text-[var(--brand-contrast)] dark:text-[var(--brand)] px-2 py-2 text-center font-bold flex items-center justify-center">
+                <span className="rounded-lg sm:rounded-xl bg-[var(--brand)]/15 text-[var(--brand-contrast)] dark:text-[var(--brand)] px-2 py-1.5 text-center font-bold flex items-center justify-center">
                   Páginas Web
                 </span>
               </div>
@@ -550,14 +549,14 @@ export default function HomePage() {
 
           </div>
 
-          <div className="mt-12 sm:mt-16 flex justify-center">
+          <div className="mt-8 sm:mt-14 flex justify-center">
             <a
               href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por diseño gráfico y una página web para mi negocio.")}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--brand)] hover:opacity-90 px-8 py-3.5 sm:px-9 sm:py-4 text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition active:scale-95"
+              className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-2xl bg-[var(--brand)] hover:opacity-90 px-6 py-3 sm:px-9 sm:py-4 text-xs sm:text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition active:scale-95"
             >
-              <MessageCircle className="h-5 w-5" />
+              <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
               <span>Consultar por WhatsApp</span>
             </a>
           </div>
@@ -566,98 +565,98 @@ export default function HomePage() {
       </section>
 
       {/* 1. SERVICIOS INTEGRALES */}
-      <section id="servicios" className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
+      <section id="servicios" className="mx-auto max-w-7xl px-3.5 py-10 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="max-w-2xl">
           <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
             Servicios integrales
           </span>
-          <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white leading-tight">
+          <h2 className="mt-2 text-xl sm:text-3xl md:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white leading-tight">
             Diseño gráfico y desarrollo web <br className="hidden sm:inline" />
             a tu medida.
           </h2>
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
             Una solución completa para que tu negocio se destaque tanto en lo visual como en lo técnico.
           </p>
         </div>
 
-        <div className="mt-8 grid gap-4 lg:grid-cols-12">
+        <div className="mt-6 sm:mt-8 grid gap-4 lg:grid-cols-12">
           {/* Card 1: Identidad Gráfica & Branding */}
-          <article className="lg:col-span-7 rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 flex flex-col justify-between">
+          <article className="lg:col-span-7 rounded-3xl border border-zinc-200 bg-white p-5 sm:p-8 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
-                  <Palette className="h-6 w-6" />
+                <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                  <Palette className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
-                <span className="rounded-full bg-purple-500/10 px-3 py-1 text-xs font-bold text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                <span className="rounded-full bg-purple-500/10 px-2.5 py-0.5 sm:px-3 sm:py-1 text-[11px] sm:text-xs font-bold text-purple-600 dark:text-purple-400 border border-purple-500/20">
                   Identidad Visual
                 </span>
               </div>
-              <h3 className="mt-4 text-xl sm:text-2xl font-bold text-zinc-950 dark:text-white">
+              <h3 className="mt-3 sm:mt-4 text-lg sm:text-2xl font-bold text-zinc-950 dark:text-white">
                 Identidad Gráfica & Branding
               </h3>
-              <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-xl">
+              <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-xl">
                 Logotipos, tipografías, paletas de colores, diseño editorial y piezas gráficas para redes sociales para que tu marca tenga una presencia sólida y profesional.
               </p>
             </div>
-            <div className="mt-6 flex flex-wrap gap-2 pt-4 border-t border-zinc-100 dark:border-zinc-800/80 text-xs text-zinc-600 dark:text-zinc-400">
-              <span className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 font-medium">✓ Logotipos & Manual de marca</span>
-              <span className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 font-medium">✓ Banners & Redes</span>
-              <span className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 font-medium">✓ Cartelería & Papelería</span>
+            <div className="mt-4 sm:mt-6 flex flex-wrap gap-1.5 sm:gap-2 pt-3 sm:pt-4 border-t border-zinc-100 dark:border-zinc-800/80 text-xs text-zinc-600 dark:text-zinc-400">
+              <span className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 sm:px-2.5 sm:py-1 font-medium text-[10px] sm:text-xs">✓ Logotipos & Manual de marca</span>
+              <span className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 sm:px-2.5 sm:py-1 font-medium text-[10px] sm:text-xs">✓ Banners & Redes</span>
+              <span className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 sm:px-2.5 sm:py-1 font-medium text-[10px] sm:text-xs">✓ Cartelería & Papelería</span>
             </div>
           </article>
 
           {/* Card 2: Catálogo & Carta Digital */}
-          <article className="lg:col-span-5 rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 flex flex-col justify-between">
+          <article className="lg:col-span-5 rounded-3xl border border-zinc-200 bg-white p-5 sm:p-8 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--brand)]/10 text-[var(--brand-contrast)] dark:text-[var(--brand)]">
-                  <Package className="h-6 w-6" />
+                <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-2xl bg-[var(--brand)]/10 text-[var(--brand-contrast)] dark:text-[var(--brand)]">
+                  <Package className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
-                <span className="rounded-full bg-[var(--brand)]/10 px-3 py-1 text-xs font-bold text-[var(--brand-contrast)] dark:text-[var(--brand)] border border-[var(--brand)]/20">
+                <span className="rounded-full bg-[var(--brand)]/10 px-2.5 py-0.5 sm:px-3 sm:py-1 text-[11px] sm:text-xs font-bold text-[var(--brand-contrast)] dark:text-[var(--brand)] border border-[var(--brand)]/20">
                   Catálogo & Pedidos
                 </span>
               </div>
-              <h3 className="mt-4 text-xl sm:text-2xl font-bold text-zinc-950 dark:text-white">
+              <h3 className="mt-3 sm:mt-4 text-lg sm:text-2xl font-bold text-zinc-950 dark:text-white">
                 Catálogo & Carta Digital con fotos y precios
               </h3>
-              <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
                 Tus productos o platos presentados de forma clara, con variantes de talles/gustos y precios actualizables desde tu celular.
               </p>
             </div>
-            <div className="mt-6 flex flex-wrap gap-2 pt-4 border-t border-zinc-100 dark:border-zinc-800/80 text-xs text-zinc-600 dark:text-zinc-400">
-              <span className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 font-medium">✓ Control de stock</span>
-              <span className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 font-medium">✓ Pedidos listos a WhatsApp</span>
+            <div className="mt-4 sm:mt-6 flex flex-wrap gap-1.5 sm:gap-2 pt-3 sm:pt-4 border-t border-zinc-100 dark:border-zinc-800/80 text-xs text-zinc-600 dark:text-zinc-400">
+              <span className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 sm:px-2.5 sm:py-1 font-medium text-[10px] sm:text-xs">✓ Control de stock</span>
+              <span className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 sm:px-2.5 sm:py-1 font-medium text-[10px] sm:text-xs">✓ Pedidos listos a WhatsApp</span>
             </div>
           </article>
 
           {/* Card 3: Turnos y reservas */}
-          <article className="lg:col-span-4 rounded-2xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/40">
+          <article className="lg:col-span-4 rounded-2xl border border-zinc-200 bg-white p-4 sm:p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/40">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               <CalendarDays className="h-4 w-4" />
             </div>
-            <h4 className="mt-3 text-sm font-bold text-zinc-950 dark:text-white">Turnos & Reservas 24/7</h4>
+            <h4 className="mt-2.5 sm:mt-3 text-sm font-bold text-zinc-950 dark:text-white">Turnos & Reservas 24/7</h4>
             <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
               Tus clientes eligen día y horario libre desde tu web para salones, barberías o consultorios.
             </p>
           </article>
 
           {/* Card 4: Conexión a WhatsApp */}
-          <article className="lg:col-span-4 rounded-2xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/40">
+          <article className="lg:col-span-4 rounded-2xl border border-zinc-200 bg-white p-4 sm:p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/40">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               <MessageCircle className="h-4 w-4" />
             </div>
-            <h4 className="mt-3 text-sm font-bold text-zinc-950 dark:text-white">Conexión a WhatsApp</h4>
+            <h4 className="mt-2.5 sm:mt-3 text-sm font-bold text-zinc-950 dark:text-white">Conexión a WhatsApp</h4>
             <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
               Cada pedido o reserva te llega armada a tu chat para que solo tengas que cobrar y entregar.
             </p>
           </article>
 
           {/* Card 5: Cobros integrados */}
-          <article className="lg:col-span-4 rounded-2xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/40">
+          <article className="lg:col-span-4 rounded-2xl border border-zinc-200 bg-white p-4 sm:p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/40">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
               <FileText className="h-4 w-4" />
             </div>
-            <h4 className="mt-3 text-sm font-bold text-zinc-950 dark:text-white">Cobros integrados</h4>
+            <h4 className="mt-2.5 sm:mt-3 text-sm font-bold text-zinc-950 dark:text-white">Cobros integrados</h4>
             <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
               Mercado Pago y datos de transferencia con Alias / CVU disponibles para el comprador.
             </p>
@@ -666,34 +665,34 @@ export default function HomePage() {
       </section>
 
       {/* 2. BENEFICIOS */}
-      <section className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
-        <div className="grid gap-8 lg:grid-cols-12 lg:items-start lg:gap-12">
+      <section className="mx-auto max-w-7xl px-3.5 py-10 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
+        <div className="grid gap-6 lg:grid-cols-12 lg:items-start lg:gap-12">
           <div className="lg:col-span-5">
             <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
               Diseño & Solución Comercial
             </span>
-            <h2 className="mt-2 text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-zinc-950 dark:text-white leading-[1.15]">
+            <h2 className="mt-2 text-xl sm:text-3xl md:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white leading-[1.15]">
               Dejá de perder tiempo respondiendo precios por privado.
             </h2>
-            <p className="mt-3.5 text-sm sm:text-base leading-relaxed text-zinc-600 dark:text-zinc-400 font-normal">
+            <p className="mt-2.5 text-xs sm:text-sm md:text-base leading-relaxed text-zinc-600 dark:text-zinc-400 font-normal">
               Con tu propia página web, tus clientes ven lo que ofrecés, conocen los precios actualizados y te mandan el pedido o la reserva armada al WhatsApp, a cualquier hora.
             </p>
           </div>
 
-          <div className="lg:col-span-7 grid gap-3.5 sm:grid-cols-2">
+          <div className="lg:col-span-7 grid gap-3 sm:gap-3.5 sm:grid-cols-2">
             {beneficios.map((b, i) => (
               <div
                 key={b.titulo}
-                className="relative flex flex-col justify-between rounded-2xl border border-zinc-200 bg-white p-5 shadow-xs transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:border-zinc-700"
+                className="relative flex flex-col justify-between rounded-2xl border border-zinc-200 bg-white p-4 sm:p-5 shadow-xs transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:border-zinc-700"
               >
                 <div>
                   <span className="text-xs font-bold text-[var(--brand-contrast)] dark:text-[var(--brand)]">
                     0{i + 1}
                   </span>
-                  <h3 className="mt-1 text-base font-bold text-zinc-950 dark:text-white">
+                  <h3 className="mt-1 text-sm sm:text-base font-bold text-zinc-950 dark:text-white">
                     {b.titulo}
                   </h3>
-                  <p className="mt-1.5 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                  <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
                     {b.detalle}
                   </p>
                 </div>
@@ -703,57 +702,55 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* MODELOS DE MUESTRA */}
-      <section id="trabajos" className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+      {/* MODELOS DE MUESTRA (1 COLUMNA EN MÓVIL, 2 EN TABLET, 3 EN PC) */}
+      <section id="trabajos" className="mx-auto max-w-7xl px-3.5 py-10 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4">
           <div className="max-w-2xl">
             <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
               Estructuras disponibles
             </span>
-            <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white">
+            <h2 className="mt-1.5 text-xl sm:text-3xl font-bold tracking-tight text-zinc-950 dark:text-white">
               Modelos de muestra listos para adaptar.
             </h2>
-            <p className="mt-1.5 text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="mt-1 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
               Diseños creados para cada tipo de actividad comercial.
             </p>
           </div>
 
-          <div className="inline-flex items-center gap-2 self-start rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 text-xs font-medium text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+          <div className="inline-flex items-center gap-2 self-start rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
             <span className="h-2 w-2 rounded-full bg-[var(--brand)]" />
             <span>Todos los modelos incluyen panel autogestionable</span>
           </div>
         </div>
 
-        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-6 sm:mt-8 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {modelosArriba.map((p) => (
             <TarjetaModelo key={p.id} p={p} />
           ))}
         </div>
 
-        <div className="mt-6 flex flex-col sm:flex-row justify-center gap-6 max-w-4xl mx-auto">
+        <div className="mt-4 sm:mt-6 grid gap-4 sm:gap-6 sm:grid-cols-2 max-w-4xl mx-auto">
           {modelosAbajo.map((p) => (
-            <div key={p.id} className="flex-1 max-w-md mx-auto sm:mx-0 w-full">
-              <TarjetaModelo p={p} />
-            </div>
+            <TarjetaModelo key={p.id} p={p} />
           ))}
         </div>
       </section>
 
       {/* PLANES Y PRECIOS */}
-      <section id="planes" className="mx-auto max-w-7xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
+      <section id="planes" className="mx-auto max-w-7xl px-3.5 py-10 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="mx-auto max-w-2xl text-center">
           <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
             Planes y Precios
           </span>
-          <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white">
+          <h2 className="mt-1.5 text-xl sm:text-3xl font-bold tracking-tight text-zinc-950 dark:text-white">
             Elegí cómo querés impulsar tu página web.
           </h2>
-          <p className="mt-1.5 text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="mt-1 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
             Puesta en marcha inicial y mantenimiento mensual accesible.
           </p>
         </div>
 
-        <div className="mt-8 grid gap-4 lg:grid-cols-3 lg:items-center">
+        <div className="mt-6 sm:mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3 lg:items-center">
           <PlanCard
             nombre="Página Simple"
             descripcion="Para negocios y profesionales que quieren presencia web, servicios y agenda de turnos online."
@@ -785,9 +782,9 @@ export default function HomePage() {
       </section>
 
       {/* QUIÉN SOY */}
-      <section id="quien-soy" className="mx-auto max-w-4xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
+      <section id="quien-soy" className="mx-auto max-w-4xl px-3.5 py-10 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="text-center max-w-xl mx-auto">
-          <div className="relative mx-auto h-24 w-24 sm:h-28 sm:w-28 overflow-hidden rounded-full border-2 border-[var(--brand)]/40 bg-zinc-100 shadow-md ring-4 ring-[var(--brand)]/10 dark:bg-zinc-800">
+          <div className="relative mx-auto h-20 w-20 sm:h-28 sm:w-28 overflow-hidden rounded-full border-2 border-[var(--brand)]/40 bg-zinc-100 shadow-md ring-4 ring-[var(--brand)]/10 dark:bg-zinc-800">
             {!errorFotoNahuel ? (
               <Image
                 src="/nahuel.jpg"
@@ -806,44 +803,44 @@ export default function HomePage() {
             )}
           </div>
 
-          <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold text-zinc-600 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+          <div className="mt-3.5 inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-0.5 text-xs font-semibold text-zinc-600 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
             <MapPin className="h-3 w-3 text-[var(--brand)]" />
             <span>Ledesma, Jujuy</span>
           </div>
 
-          <h2 className="mt-3 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white">
+          <h2 className="mt-2 text-xl sm:text-3xl font-bold tracking-tight text-zinc-950 dark:text-white">
             Hola, soy Nahuel.
           </h2>
 
-          <p className="mt-3 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 [text-wrap:balance]">
+          <p className="mt-2 text-xs sm:text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 [text-wrap:balance]">
             Soy Diseñador Gráfico Junior y desarrollador web de Ledesma, Jujuy.
           </p>
 
-          <p className="mt-2 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-medium [text-wrap:balance]">
+          <p className="mt-1 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-medium [text-wrap:balance]">
             Envíame un mensaje y mejoramos tu negocio
           </p>
 
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-xs">
-            <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-1.5 font-medium text-zinc-800 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200">
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-xs">
+            <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-2.5 py-1 sm:px-3 sm:py-1.5 font-medium text-zinc-800 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200 text-[11px] sm:text-xs">
               <UserCheck className="h-3.5 w-3.5 text-[var(--brand)]" />
               <span>Atención directa 1 a 1</span>
             </div>
-            <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-1.5 font-medium text-zinc-800 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200">
+            <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-2.5 py-1 sm:px-3 sm:py-1.5 font-medium text-zinc-800 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200 text-[11px] sm:text-xs">
               <Palette className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
               <span>Diseño Gráfico & Web</span>
             </div>
-            <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-1.5 font-medium text-zinc-800 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200">
+            <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-2.5 py-1 sm:px-3 sm:py-1.5 font-medium text-zinc-800 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200 text-[11px] sm:text-xs">
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
               <span>Soporte continuo</span>
             </div>
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
+          <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-2.5">
             <a
               href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por diseño gráfico y una página web para mi negocio.")}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl bg-[var(--brand)] px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs shadow-blue-500/20 transition hover:opacity-90 active:scale-95"
+              className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-[var(--brand)] px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs shadow-blue-500/20 transition hover:opacity-90 active:scale-95"
             >
               <MessageCircle className="h-4 w-4" />
               <span>Hablar directo con Nahuel</span>
@@ -853,7 +850,7 @@ export default function HomePage() {
               href={BEHANCE_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-xs sm:text-sm font-bold text-zinc-800 shadow-xs transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 active:scale-95"
+              className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-xs sm:text-sm font-bold text-zinc-800 shadow-xs transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 active:scale-95"
             >
               <Palette className="h-4 w-4 text-[var(--brand)]" />
               <span>Ver portfolio en Behance ↗</span>
@@ -863,17 +860,17 @@ export default function HomePage() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="mx-auto max-w-4xl px-3.5 py-14 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
+      <section id="faq" className="mx-auto max-w-4xl px-3.5 py-10 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60">
         <div className="text-center">
           <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
             Dudas frecuentes
           </span>
-          <h2 className="mt-2 text-xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white">
+          <h2 className="mt-1.5 text-xl sm:text-3xl font-bold tracking-tight text-zinc-950 dark:text-white">
             ¿Tenés preguntas? Te respondo.
           </h2>
         </div>
 
-        <div className="mt-6 space-y-2.5">
+        <div className="mt-5 space-y-2.5">
           {faqs.map((faq, index) => {
             const abierta = faqAbierta === index;
             return (
@@ -901,30 +898,30 @@ export default function HomePage() {
       </section>
 
       {/* CONTACTO */}
-      <section id="contacto" className="border-t border-zinc-200/80 bg-zinc-100/60 py-14 sm:py-24 dark:border-zinc-800/80 dark:bg-zinc-950/60">
+      <section id="contacto" className="border-t border-zinc-200/80 bg-zinc-100/60 py-10 sm:py-20 dark:border-zinc-800/80 dark:bg-zinc-950/60">
         <div className="mx-auto max-w-5xl px-3.5 sm:px-8">
-          <div className="grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-12">
+          <div className="grid gap-6 lg:grid-cols-2 lg:items-center lg:gap-12">
             <div>
               <span className="text-xs font-bold uppercase tracking-widest text-[var(--brand-contrast)] dark:text-[var(--brand)]">
                 Atención directa
               </span>
-              <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white">
+              <h2 className="mt-1.5 text-xl sm:text-3xl font-bold tracking-tight text-zinc-950 dark:text-white">
                 Empecemos tu proyecto hoy.
               </h2>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+              <p className="mt-1.5 text-xs sm:text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
                 Escribime para consultar por tu diseño gráfico, catálogo o página web a medida.
               </p>
 
-              <div className="mt-6 space-y-3 text-sm text-zinc-700 dark:text-zinc-300">
+              <div className="mt-5 space-y-2.5 text-sm text-zinc-700 dark:text-zinc-300">
                 <a
                   href={`mailto:${CORREO_CONTACTO}`}
-                  className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-3.5 shadow-xs transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/80 dark:hover:border-zinc-700"
+                  className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-3 sm:p-3.5 shadow-xs transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/80 dark:hover:border-zinc-700"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--brand)]/10 text-[var(--brand-contrast)] dark:text-[var(--brand)]">
-                    <Mail className="h-5 w-5" />
+                  <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-[var(--brand)]/10 text-[var(--brand-contrast)] dark:text-[var(--brand)]">
+                    <Mail className="h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
                   <div>
-                    <p className="text-[11px] text-zinc-500">Correo electrónico</p>
+                    <p className="text-[10px] sm:text-[11px] text-zinc-500">Correo electrónico</p>
                     <p className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-white">{CORREO_CONTACTO}</p>
                   </div>
                 </a>
@@ -933,13 +930,13 @@ export default function HomePage() {
                   href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Tengo una consulta sobre diseño gráfico y desarrollo web para mi negocio.")}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-3.5 transition hover:bg-emerald-500/10 dark:border-emerald-500/30 dark:bg-emerald-500/10"
+                  className="flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-3 sm:p-3.5 transition hover:bg-emerald-500/10 dark:border-emerald-500/30 dark:bg-emerald-500/10"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-                    <MessageCircle className="h-5 w-5" />
+                  <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                    <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
                   <div>
-                    <p className="text-[11px] text-emerald-600 dark:text-emerald-400">WhatsApp directo</p>
+                    <p className="text-[10px] sm:text-[11px] text-emerald-600 dark:text-emerald-400">WhatsApp directo</p>
                     <p className="text-xs sm:text-sm font-semibold text-emerald-800 dark:text-emerald-300">+54 9 388 657-5664</p>
                   </div>
                 </a>
@@ -948,27 +945,27 @@ export default function HomePage() {
                   href={BEHANCE_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-3.5 shadow-xs transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/80 dark:hover:border-zinc-700"
+                  className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-3 sm:p-3.5 shadow-xs transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/80 dark:hover:border-zinc-700"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
-                    <Palette className="h-5 w-5" />
+                  <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                    <Palette className="h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
                   <div>
-                    <p className="text-[11px] text-zinc-500">Portfolio de diseño</p>
+                    <p className="text-[10px] sm:text-[11px] text-zinc-500">Portfolio de diseño</p>
                     <p className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-white">behance.net/nahuelrueda ↗</p>
                   </div>
                 </a>
               </div>
             </div>
 
-            <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 text-center shadow-md dark:border-zinc-800 dark:bg-zinc-900">
-              <h3 className="text-lg sm:text-xl font-bold text-zinc-950 dark:text-white">
+            <div className="rounded-3xl border border-zinc-200 bg-white p-5 sm:p-8 text-center shadow-md dark:border-zinc-800 dark:bg-zinc-900">
+              <h3 className="text-base sm:text-xl font-bold text-zinc-950 dark:text-white">
                 ¿Listo para poner tu negocio online?
               </h3>
-              <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
+              <p className="mt-1.5 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
                 Escribime para armar la identidad visual y la web de tu negocio a medida.
               </p>
-              <div className="mt-5 flex flex-col gap-2.5">
+              <div className="mt-4 sm:mt-5 flex flex-col gap-2.5">
                 <a
                   href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Quiero que hablemos sobre el diseño de mi página web y gráfica.")}`}
                   target="_blank"
@@ -985,9 +982,9 @@ export default function HomePage() {
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-zinc-200/80 bg-white py-12 dark:border-zinc-800 dark:bg-[#0c0d0e]">
+      <footer className="border-t border-zinc-200/80 bg-white py-10 sm:py-12 dark:border-zinc-800 dark:bg-[#0c0d0e]">
         <div className="mx-auto max-w-7xl px-4 sm:px-8">
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 pb-8 border-b border-zinc-100 dark:border-zinc-800/80">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 pb-6 sm:pb-8 border-b border-zinc-100 dark:border-zinc-800/80">
             <div>
               <div className="flex items-center gap-2">
                 <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[var(--brand)] p-1">
@@ -1003,7 +1000,7 @@ export default function HomePage() {
                   NDI | Diseño & Web
                 </span>
               </div>
-              <p className="mt-2.5 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                 Diseño gráfico y desarrollo web para emprendimientos, negocios y profesionales. Atención directa desde Ledesma, Jujuy.
               </p>
             </div>
@@ -1012,7 +1009,7 @@ export default function HomePage() {
               <p className="text-xs font-bold uppercase tracking-wider text-zinc-950 dark:text-white">
                 Navegación
               </p>
-              <ul className="mt-3 space-y-2 text-xs text-zinc-600 dark:text-zinc-400">
+              <ul className="mt-2.5 space-y-1.5 text-xs text-zinc-600 dark:text-zinc-400">
                 <li><a href="#servicios" className="hover:text-[var(--brand)] transition">Servicios</a></li>
                 <li><a href="#trabajos" className="hover:text-[var(--brand)] transition">Modelos</a></li>
                 <li><a href="#planes" className="hover:text-[var(--brand)] transition">Planes</a></li>
@@ -1026,7 +1023,7 @@ export default function HomePage() {
               <p className="text-xs font-bold uppercase tracking-wider text-zinc-950 dark:text-white">
                 Marco legal
               </p>
-              <ul className="mt-3 space-y-2 text-xs text-zinc-600 dark:text-zinc-400">
+              <ul className="mt-2.5 space-y-1.5 text-xs text-zinc-600 dark:text-zinc-400">
                 <li>
                   <Link href="/terminos" className="hover:text-[var(--brand)] transition">
                     Términos y condiciones
@@ -1060,7 +1057,7 @@ export default function HomePage() {
               <div className="mt-3">
                 <a
                   href={`mailto:${CORREO_CONTACTO}?subject=${encodeURIComponent("Solicitud de revocación - Botón de arrepentimiento")}&body=${encodeURIComponent("Hola, solicito la revocación de la contratación del servicio conforme al artículo 34 de la Ley 24.240 y Resolución 424/2020.")}`}
-                  className="inline-flex items-center justify-center rounded-xl border border-zinc-300 bg-zinc-50 px-3.5 py-2 text-xs font-semibold text-zinc-800 transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                  className="inline-flex items-center justify-center rounded-xl border border-zinc-300 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-800 transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
                 >
                   Botón de arrepentimiento
                 </a>
@@ -1068,7 +1065,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-500">
+          <div className="pt-4 sm:pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 text-xs text-zinc-500 text-center sm:text-left">
             <p>© 2026 NDI | Diseño & Web. Todos los derechos reservados.</p>
             <p>Ledesma, Jujuy, Argentina</p>
           </div>
@@ -1099,7 +1096,7 @@ function PlanCard({
 }) {
   return (
     <article
-      className={`relative flex flex-col justify-between rounded-3xl p-6 sm:p-8 transition-all ${
+      className={`relative flex flex-col justify-between rounded-3xl p-5 sm:p-8 transition-all ${
         destacado
           ? "border-2 border-[var(--brand)] bg-white shadow-xl dark:border-[var(--brand)] dark:bg-zinc-900 lg:-translate-y-2 ring-1 ring-blue-500/20"
           : lanzamiento
@@ -1119,16 +1116,16 @@ function PlanCard({
           </span>
         )}
 
-        <h3 className="text-xl font-bold text-zinc-950 dark:text-white">{nombre}</h3>
+        <h3 className="text-lg sm:text-xl font-bold text-zinc-950 dark:text-white">{nombre}</h3>
         <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">{descripcion}</p>
 
-        <div className="mt-5 rounded-2xl border border-zinc-200/80 bg-zinc-50/80 p-4 dark:border-zinc-800 dark:bg-zinc-950/80">
+        <div className="mt-4 sm:mt-5 rounded-2xl border border-zinc-200/80 bg-zinc-50/80 p-3.5 sm:p-4 dark:border-zinc-800 dark:bg-zinc-950/80">
           <p className="text-[10px] uppercase font-bold text-zinc-500">Puesta en marcha inicial</p>
-          <p className="text-2xl sm:text-3xl font-black text-zinc-950 dark:text-white">{inicial}</p>
+          <p className="text-xl sm:text-3xl font-black text-zinc-950 dark:text-white">{inicial}</p>
           <p className="mt-0.5 text-xs font-bold text-[var(--brand-contrast)] dark:text-[var(--brand)]">+ {mensual}</p>
         </div>
 
-        <div className="mt-6 space-y-2.5">
+        <div className="mt-4 sm:mt-6 space-y-2 sm:space-y-2.5">
           {features.map((feature) => (
             <div key={feature} className="flex items-start gap-2 text-xs text-zinc-700 dark:text-zinc-300">
               <Check className="h-4 w-4 shrink-0 text-emerald-500 mt-0.5" />
@@ -1138,7 +1135,7 @@ function PlanCard({
         </div>
       </div>
 
-      <div className="mt-6 pt-5 border-t border-zinc-200 dark:border-zinc-800">
+      <div className="mt-5 sm:mt-6 pt-4 sm:pt-5 border-t border-zinc-200 dark:border-zinc-800">
         <a
           href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(`¡Hola Nahuel! Me interesa el plan ${nombre} para mi negocio.`)}`}
           target="_blank"
