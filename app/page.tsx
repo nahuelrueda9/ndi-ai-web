@@ -331,7 +331,7 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 selection:bg-[var(--brand)] selection:text-white overflow-x-hidden">
-      {/* HEADER: LOGO A LA IZQUIERDA */}
+      {/* HEADER: LOGO COMPACTO Y A LA IZQUIERDA */}
       <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/90 backdrop-blur-xl transition-colors dark:border-zinc-800/80 dark:bg-[#0c0d0e]/90">
         <div className="w-full flex h-14 sm:h-16 items-center justify-between px-3.5 sm:px-8 gap-2">
           <Link href="/" className="flex items-center gap-2 shrink-0">
@@ -414,7 +414,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* 1. PORTADA: ESFERA 3D CON LA DISTRIBUCIÓN NATURAL */}
+      {/* 1. PORTADA */}
       <section id="portfolio" className="relative flex flex-col justify-between min-h-[calc(100dvh-56px)] sm:min-h-0 pt-3 pb-4 sm:pt-10 sm:pb-16 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
         <div className="mx-auto max-w-5xl px-3 sm:px-8 text-center shrink-0">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-2.5 py-0.5 sm:px-3.5 sm:py-1 text-[10px] sm:text-xs font-semibold text-zinc-700 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 mb-1.5 sm:mb-3">

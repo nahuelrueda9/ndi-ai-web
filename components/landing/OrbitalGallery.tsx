@@ -25,7 +25,7 @@ const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen20.png",
 ];
 
-// Cuadrícula exacta del CodePen (patrón ladrillo escalonado)
+// Malla uniforme en patrón ladrillo
 const ITEMS_GRID = [
   // Fila Y = -4 (Pares)
   { x: -8, y: -4 }, { x: -6, y: -4 }, { x: -4, y: -4 }, { x: -2, y: -4 }, { x: 0, y: -4 }, { x: 2, y: -4 }, { x: 4, y: -4 }, { x: 6, y: -4 }, { x: 8, y: -4 },
@@ -66,10 +66,11 @@ export function OrbitalGallery() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Mantenemos la geometría exacta que funciona perfecto sin deformaciones
-  const RADIUS_PX = esMobile ? 850 : 1300;
-  const STEP_DEG_X = esMobile ? 7.6 : 5.1;
-  const STEP_DEG_Y = esMobile ? 7.6 : 5.1;
+  // PC: 1300px con paso de 5.1° (exacto a tu captura perfecta)
+  // Celular: 720px con paso de 5.5° y tarjeta de 126px (gap limpio de 12px sin huecos)
+  const RADIUS_PX = esMobile ? 720 : 1300;
+  const STEP_DEG_X = esMobile ? 5.5 : 5.1;
+  const STEP_DEG_Y = esMobile ? 5.5 : 5.1;
 
   useEffect(() => {
     const sphere = sphereRef.current;
@@ -207,7 +208,7 @@ export function OrbitalGallery() {
     <div className="relative w-full h-[380px] sm:h-[620px] md:h-[680px] overflow-hidden select-none">
       <div
         ref={containerRef}
-        className="absolute inset-0 flex items-center justify-center overflow-hidden touch-none [perspective:1800px] sm:[perspective:2400px] cursor-grab active:cursor-grabbing"
+        className="absolute inset-0 flex items-center justify-center overflow-hidden touch-none [perspective:1700px] sm:[perspective:2400px] cursor-grab active:cursor-grabbing"
       >
         <div
           ref={sphereRef}
@@ -222,8 +223,7 @@ export function OrbitalGallery() {
               <div
                 key={idx}
                 onClick={(e) => handleImageClick(imgSrc, e)}
-                // Medida precisa: w-[116px] en móvil para arco de 7.6°, w-[220px] en PC para arco de 5.1°
-                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[116px] h-[116px] sm:w-[185px] sm:h-[185px] md:w-[220px] md:h-[220px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.05] hover:z-20"
+                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[126px] h-[126px] sm:w-[185px] sm:h-[185px] md:w-[220px] md:h-[220px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.05] hover:z-20"
                 style={{
                   transform: `rotateY(${coord.x * STEP_DEG_X}deg) rotateX(${coord.y * STEP_DEG_Y}deg) translateZ(${RADIUS_PX}px)`,
                 }}
