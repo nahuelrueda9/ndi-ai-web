@@ -65,9 +65,10 @@ export function OrbitalGallery() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const RADIUS_PX = esMobile ? 740 : 1300;
-  const STEP_DEG_X = esMobile ? 6.2 : 5.1;
-  const STEP_DEG_Y = esMobile ? 6.2 : 5.1;
+  // Radio y ángulos ajustados para eliminar el espacio vacío en celulares
+  const RADIUS_PX = esMobile ? 620 : 1300;
+  const STEP_DEG_X = esMobile ? 4.9 : 5.1;
+  const STEP_DEG_Y = esMobile ? 4.9 : 5.1;
 
   useEffect(() => {
     const sphere = sphereRef.current;
@@ -202,10 +203,10 @@ export function OrbitalGallery() {
   };
 
   return (
-    <div className="relative w-full h-[390px] sm:h-[620px] md:h-[720px] overflow-hidden select-none">
+    <div className="relative w-full h-[370px] sm:h-[620px] md:h-[720px] overflow-hidden select-none">
       <div
         ref={containerRef}
-        className="absolute inset-0 flex items-center justify-center overflow-hidden touch-none [perspective:1700px] sm:[perspective:2400px] cursor-grab active:cursor-grabbing"
+        className="absolute inset-0 flex items-center justify-center overflow-hidden touch-none [perspective:1400px] sm:[perspective:2400px] cursor-grab active:cursor-grabbing"
       >
         <div
           ref={sphereRef}
@@ -220,7 +221,7 @@ export function OrbitalGallery() {
               <div
                 key={idx}
                 onClick={(e) => handleImageClick(imgSrc, e)}
-                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[120px] h-[120px] sm:w-[185px] sm:h-[185px] md:w-[220px] md:h-[220px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.05] hover:z-20"
+                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[138px] h-[138px] sm:w-[185px] sm:h-[185px] md:w-[220px] md:h-[220px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.05] hover:z-20"
                 style={{
                   transform: `rotateY(${coord.x * STEP_DEG_X}deg) rotateX(${coord.y * STEP_DEG_Y}deg) translateZ(${RADIUS_PX}px)`,
                 }}
