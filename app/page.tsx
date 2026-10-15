@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 
 import { useTheme } from "@/components/theme/ThemeProvider";
-import { RevealOnScroll } from "@/components/ui/RevealOnScroll";
+import { RevealOnScroll } from "@/components/Ui/RevealOnScroll";
 
 const WHATSAPP_NUMERO = "5493886575664";
 const CORREO_CONTACTO = "soporte@ndiweb.com";
