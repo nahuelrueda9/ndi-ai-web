@@ -25,18 +25,26 @@ const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen20.png",
 ];
 
-// Malla densa con las coordenadas exactas del CodePen (grilla escalonada)
-const MALLA_COORDINADAS = [
-  // Fila superior
-  { x: -16, y: -4 }, { x: -12, y: -4 }, { x: -8, y: -4 }, { x: -4, y: -4 }, { x: 0, y: -4 }, { x: 4, y: -4 }, { x: 8, y: -4 }, { x: 12, y: -4 }, { x: 16, y: -4 },
-  // Fila intermedia alta
-  { x: -18, y: -2 }, { x: -14, y: -2 }, { x: -10, y: -2 }, { x: -6, y: -2 }, { x: -2, y: -2 }, { x: 2, y: -2 }, { x: 6, y: -2 }, { x: 10, y: -2 }, { x: 14, y: -2 }, { x: 18, y: -2 },
-  // Fila central (nivel visual principal)
-  { x: -16, y: 0 }, { x: -12, y: 0 }, { x: -8, y: 0 }, { x: -4, y: 0 }, { x: 0, y: 0 }, { x: 4, y: 0 }, { x: 8, y: 0 }, { x: 12, y: 0 }, { x: 16, y: 0 },
-  // Fila intermedia baja
-  { x: -18, y: 2 }, { x: -14, y: 2 }, { x: -10, y: 2 }, { x: -6, y: 2 }, { x: -2, y: 2 }, { x: 2, y: 2 }, { x: 6, y: 2 }, { x: 10, y: 2 }, { x: 14, y: 2 }, { x: 18, y: 2 },
-  // Fila inferior
-  { x: -16, y: 4 }, { x: -12, y: 4 }, { x: -8, y: 4 }, { x: -4, y: 4 }, { x: 0, y: 4 }, { x: 4, y: 4 }, { x: 8, y: 4 }, { x: 12, y: 4 }, { x: 16, y: 4 },
+// Malla ultra compacta y entrelazada con saltos de a 2 unidades (idéntica a la fórmula del CodePen)
+const MALLA_COMPACTA = [
+  // Fila -4
+  { x: -14, y: -4 }, { x: -10, y: -4 }, { x: -6, y: -4 }, { x: -2, y: -4 }, { x: 2, y: -4 }, { x: 6, y: -4 }, { x: 10, y: -4 }, { x: 14, y: -4 },
+  // Fila -3
+  { x: -16, y: -3 }, { x: -12, y: -3 }, { x: -8, y: -3 }, { x: -4, y: -3 }, { x: 0, y: -3 }, { x: 4, y: -3 }, { x: 8, y: -3 }, { x: 12, y: -3 }, { x: 16, y: -3 },
+  // Fila -2
+  { x: -14, y: -2 }, { x: -10, y: -2 }, { x: -6, y: -2 }, { x: -2, y: -2 }, { x: 2, y: -2 }, { x: 6, y: -2 }, { x: 10, y: -2 }, { x: 14, y: -2 },
+  // Fila -1
+  { x: -16, y: -1 }, { x: -12, y: -1 }, { x: -8, y: -1 }, { x: -4, y: -1 }, { x: 0, y: -1 }, { x: 4, y: -1 }, { x: 8, y: -1 }, { x: 12, y: -1 }, { x: 16, y: -1 },
+  // Fila 0 (Ecuador visual central)
+  { x: -14, y: 0 }, { x: -10, y: 0 }, { x: -6, y: 0 }, { x: -2, y: 0 }, { x: 2, y: 0 }, { x: 6, y: 0 }, { x: 10, y: 0 }, { x: 14, y: 0 },
+  // Fila 1
+  { x: -16, y: 1 }, { x: -12, y: 1 }, { x: -8, y: 1 }, { x: -4, y: 1 }, { x: 0, y: 1 }, { x: 4, y: 1 }, { x: 8, y: 1 }, { x: 12, y: 1 }, { x: 16, y: 1 },
+  // Fila 2
+  { x: -14, y: 2 }, { x: -10, y: 2 }, { x: -6, y: 2 }, { x: -2, y: 2 }, { x: 2, y: 2 }, { x: 6, y: 2 }, { x: 10, y: 2 }, { x: 14, y: 2 },
+  // Fila 3
+  { x: -16, y: 3 }, { x: -12, y: 3 }, { x: -8, y: 3 }, { x: -4, y: 3 }, { x: 0, y: 3 }, { x: 4, y: 3 }, { x: 8, y: 3 }, { x: 12, y: 3 }, { x: 16, y: 3 },
+  // Fila 4
+  { x: -14, y: 4 }, { x: -10, y: 4 }, { x: -6, y: 4 }, { x: -2, y: 4 }, { x: 2, y: 4 }, { x: 6, y: 4 }, { x: 10, y: 4 }, { x: 14, y: 4 },
 ];
 
 export function OrbitalGallery() {
@@ -61,12 +69,11 @@ export function OrbitalGallery() {
     const container = containerRef.current;
     if (!sphere || !container) return;
 
-    // Límites y sensibilidad idénticos al CodePen
-    const MAX_POLAR_ROT_DEG = 4;
+    const MAX_POLAR_ROT_DEG = 5;
     const PAN_SENSITIVITY = 14;
 
     const applyTransform = () => {
-      sphere.style.transform = `translateZ(-1150px) rotateX(${stateRef.current.rotation.x}deg) rotateY(${stateRef.current.rotation.y}deg)`;
+      sphere.style.transform = `translateZ(-1100px) rotateX(${stateRef.current.rotation.x}deg) rotateY(${stateRef.current.rotation.y}deg)`;
     };
 
     const stopInertia = () => {
@@ -187,13 +194,14 @@ export function OrbitalGallery() {
     setTimeout(() => setImagenEnlarged(null), 280);
   };
 
-  // Separación angular idéntica al SCSS: ~4.86 grados por segmento
-  const ROT_DEG = 4.86;
-  const RADIUS_PX = 1150;
+  // Separación angular reducida para unir las tarjetas:
+  const ROT_DEG_X = 2.85; // Grados horizontales por unidad de paso
+  const ROT_DEG_Y = 2.65; // Grados verticales por unidad de paso
+  const RADIUS_PX = 1100;
 
   return (
-    <div className="relative w-full h-[520px] sm:h-[620px] md:h-[680px] overflow-hidden select-none">
-      {/* CONTENEDOR 3D DE PUNTA A PUNTA */}
+    <div className="relative w-full h-[540px] sm:h-[640px] md:h-[700px] overflow-hidden select-none">
+      {/* CONTENEDOR 3D */}
       <div
         ref={containerRef}
         className="absolute inset-0 flex items-center justify-center overflow-hidden touch-none [perspective:2200px] cursor-grab active:cursor-grabbing"
@@ -206,18 +214,18 @@ export function OrbitalGallery() {
             transform: `translateZ(-${RADIUS_PX}px) rotateX(0deg) rotateY(0deg)`,
           }}
         >
-          {MALLA_COORDINADAS.map((coord, idx) => {
+          {MALLA_COMPACTA.map((coord, idx) => {
             const imgSrc = IMAGENES_PORTFOLIO[idx % IMAGENES_PORTFOLIO.length];
             return (
               <div
                 key={idx}
                 onClick={(e) => handleImageClick(imgSrc, e)}
-                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[130px] h-[130px] sm:w-[160px] sm:h-[160px] md:w-[185px] md:h-[185px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.08] hover:z-20"
+                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[150px] h-[150px] sm:w-[185px] sm:h-[185px] md:w-[210px] md:h-[210px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.08] hover:z-20"
                 style={{
-                  transform: `rotateY(${coord.x * ROT_DEG}deg) rotateX(${coord.y * ROT_DEG}deg) translateZ(${RADIUS_PX}px)`,
+                  transform: `rotateY(${coord.x * ROT_DEG_X}deg) rotateX(${coord.y * ROT_DEG_Y}deg) translateZ(${RADIUS_PX}px)`,
                 }}
               >
-                <div className="absolute inset-2 rounded-2xl sm:rounded-3xl overflow-hidden bg-zinc-200 dark:bg-zinc-800 shadow-md border border-black/5 dark:border-white/10 backface-hidden">
+                <div className="absolute inset-1.5 rounded-2xl sm:rounded-3xl overflow-hidden bg-zinc-200 dark:bg-zinc-800 shadow-md border border-black/5 dark:border-white/10 backface-hidden">
                   <img
                     src={imgSrc}
                     alt={`Trabajo de diseño gráfico ${idx + 1}`}
@@ -233,14 +241,14 @@ export function OrbitalGallery() {
           })}
         </div>
 
-        {/* MÁSCARAS DE DEGRADÉ LATERAL PARA FUNDIR CON MODO DÍA Y NOCHE */}
-        <div className="absolute inset-y-0 left-0 w-16 sm:w-28 bg-gradient-to-r from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
-        <div className="absolute inset-y-0 right-0 w-16 sm:w-28 bg-gradient-to-l from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
-        <div className="absolute inset-x-0 top-0 h-14 bg-gradient-to-b from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
-        <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
+        {/* DEGRADÉS LATERALES SUAVES */}
+        <div className="absolute inset-y-0 left-0 w-12 sm:w-24 bg-gradient-to-r from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
+        <div className="absolute inset-y-0 right-0 w-12 sm:w-24 bg-gradient-to-l from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
+        <div className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
+        <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
       </div>
 
-      {/* ZOOM EN PRIMER PLANO (FOTO ORGÁNICA SIN MARCO BLANCO) */}
+      {/* ZOOM EN PRIMER PLANO */}
       {imagenEnlarged && (
         <div
           onClick={handleCloseViewer}
@@ -248,10 +256,8 @@ export function OrbitalGallery() {
             enlarging ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
           }`}
         >
-          {/* Fondo desenfocado neutro (scrim) */}
           <div className="absolute inset-0 bg-black/60 backdrop-blur-md" />
 
-          {/* Imagen proyectada al centro: esquinas redondeadas, sin fondo blanco ni barras */}
           <div
             onClick={(e) => e.stopPropagation()}
             className={`relative max-w-2xl sm:max-w-3xl max-h-[82vh] w-auto h-auto rounded-[28px] sm:rounded-[36px] overflow-hidden shadow-2xl transition-all duration-300 ${
