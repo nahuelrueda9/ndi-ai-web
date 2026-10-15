@@ -25,12 +25,10 @@ const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen20.png",
 ];
 
-// Distribución idéntica al CodePen: saltos de 2 unidades en X e Y
-// Fila par desfasada con fila impar para armar el entramado continuo
 const ITEMS_COMPACTOS = [
   // Fila Y = -4 (Pares)
   { x: -8, y: -4 }, { x: -6, y: -4 }, { x: -4, y: -4 }, { x: -2, y: -4 }, { x: 0, y: -4 }, { x: 2, y: -4 }, { x: 4, y: -4 }, { x: 6, y: -4 }, { x: 8, y: -4 },
-  // Fila Y = -2 (Impares para trabar como ladrillos)
+  // Fila Y = -2 (Impares)
   { x: -7, y: -2 }, { x: -5, y: -2 }, { x: -3, y: -2 }, { x: -1, y: -2 }, { x: 1, y: -2 }, { x: 3, y: -2 }, { x: 5, y: -2 }, { x: 7, y: -2 },
   // Fila Y = 0 (Ecuador central)
   { x: -8, y: 0 }, { x: -6, y: 0 }, { x: -4, y: 0 }, { x: -2, y: 0 }, { x: 0, y: 0 }, { x: 2, y: 0 }, { x: 4, y: 0 }, { x: 6, y: 0 }, { x: 8, y: 0 },
@@ -57,10 +55,7 @@ export function OrbitalGallery() {
     cancelTap: false,
   });
 
-  // Parámetros calculados para que la tarjeta de 230px ocupe exactamente su sector angular
   const RADIUS_PX = 1300;
-  // Con un arco de 230px sobre 1300px de radio: ángulo por celda = (230 / 1300) * (180 / PI) ≈ 10.1°
-  // Como cada celda abarca 2 unidades (delta = 2), el paso por unidad es: 10.1 / 2 = 5.05°
   const STEP_DEG_X = 5.1;
   const STEP_DEG_Y = 5.1;
 
@@ -195,12 +190,11 @@ export function OrbitalGallery() {
   };
 
   return (
-    <div className="relative w-full h-[560px] sm:h-[660px] md:h-[720px] overflow-hidden select-none">
+    <div className="relative w-full h-[580px] sm:h-[680px] md:h-[750px] overflow-hidden select-none">
       <div
         ref={containerRef}
         className="absolute inset-0 flex items-center justify-center overflow-hidden touch-none [perspective:2400px] cursor-grab active:cursor-grabbing"
       >
-        {/* ESFERA 3D */}
         <div
           ref={sphereRef}
           className="absolute w-0 h-0 [transform-style:preserve-3d] transition-transform duration-75"
@@ -219,7 +213,6 @@ export function OrbitalGallery() {
                   transform: `rotateY(${coord.x * STEP_DEG_X}deg) rotateX(${coord.y * STEP_DEG_Y}deg) translateZ(${RADIUS_PX}px)`,
                 }}
               >
-                {/* inset-1.5 deja un gap visual de exactamente 12px entre fotos vecinas */}
                 <div className="absolute inset-1.5 rounded-3xl overflow-hidden bg-zinc-200 dark:bg-zinc-800 shadow-md border border-black/5 dark:border-white/10 backface-hidden">
                   <img
                     src={imgSrc}
@@ -236,14 +229,11 @@ export function OrbitalGallery() {
           })}
         </div>
 
-        {/* MÁSCARAS DE DESVANECIDO EN LOS BORDES */}
-        <div className="absolute inset-y-0 left-0 w-16 sm:w-28 bg-gradient-to-r from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
-        <div className="absolute inset-y-0 right-0 w-16 sm:w-28 bg-gradient-to-l from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
-        <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
-        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
+        {/* Degradés mínimos únicamente verticales para suavizar la entrada y salida */}
+        <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
+        <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
       </div>
 
-      {/* MODAL DE ZOOM FLOTANTE */}
       {imagenEnlarged && (
         <div
           onClick={handleCloseViewer}
