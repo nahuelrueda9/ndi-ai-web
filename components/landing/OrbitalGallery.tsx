@@ -25,18 +25,18 @@ const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen20.png",
 ];
 
-// Grilla calibrada: ángulos verticales suaves (-2.4 a 2.4) para que la fila de arriba NUNCA se corte
+// Grilla con coordenadas enteras estables: NUNCA se intersectan ni se cortan en rodajas
 const ITEMS_GRID = [
-  // Fila superior (Pares)
-  { x: -8, y: -2.3 }, { x: -6, y: -2.3 }, { x: -4, y: -2.3 }, { x: -2, y: -2.3 }, { x: 0, y: -2.3 }, { x: 2, y: -2.3 }, { x: 4, y: -2.3 }, { x: 6, y: -2.3 }, { x: 8, y: -2.3 },
-  // Fila intermedia alta (Impares)
-  { x: -7, y: -1.15 }, { x: -5, y: -1.15 }, { x: -3, y: -1.15 }, { x: -1, y: -1.15 }, { x: 1, y: -1.15 }, { x: 3, y: -1.15 }, { x: 5, y: -1.15 }, { x: 7, y: -1.15 },
-  // Fila central (Ecuador)
-  { x: -8, y: 0 }, { x: -6, y: 0 }, { x: -4, y: 0 }, { x: -2, y: 0 }, { x: 0, y: 0 }, { x: 2, y: 0 }, { x: 4, y: 0 }, { x: 6, y: 0 }, { x: 8, y: 0 },
-  // Fila intermedia baja (Impares)
-  { x: -7, y: 1.15 }, { x: -5, y: 1.15 }, { x: -3, y: 1.15 }, { x: -1, y: 1.15 }, { x: 1, y: 1.15 }, { x: 3, y: 1.15 }, { x: 5, y: 1.15 }, { x: 7, y: 1.15 },
-  // Fila inferior (Pares)
-  { x: -8, y: 2.3 }, { x: -6, y: 2.3 }, { x: -4, y: 2.3 }, { x: -2, y: 2.3 }, { x: 0, y: 2.3 }, { x: 2, y: 2.3 }, { x: 4, y: 2.3 }, { x: 6, y: 2.3 }, { x: 8, y: 2.3 },
+  // Fila Y = -2 (Pares)
+  { x: -6, y: -2 }, { x: -4, y: -2 }, { x: -2, y: -2 }, { x: 0, y: -2 }, { x: 2, y: -2 }, { x: 4, y: -2 }, { x: 6, y: -2 },
+  // Fila Y = -1 (Impares)
+  { x: -7, y: -1 }, { x: -5, y: -1 }, { x: -3, y: -1 }, { x: -1, y: -1 }, { x: 1, y: -1 }, { x: 3, y: -1 }, { x: 5, y: -1 }, { x: 7, y: -1 },
+  // Fila Y = 0 (Ecuador central)
+  { x: -6, y: 0 }, { x: -4, y: 0 }, { x: -2, y: 0 }, { x: 0, y: 0 }, { x: 2, y: 0 }, { x: 4, y: 0 }, { x: 6, y: 0 },
+  // Fila Y = 1 (Impares)
+  { x: -7, y: 1 }, { x: -5, y: 1 }, { x: -3, y: 1 }, { x: -1, y: 1 }, { x: 1, y: 1 }, { x: 3, y: 1 }, { x: 5, y: 1 }, { x: 7, y: 1 },
+  // Fila Y = 2 (Pares)
+  { x: -6, y: 2 }, { x: -4, y: 2 }, { x: -2, y: 2 }, { x: 0, y: 2 }, { x: 2, y: 2 }, { x: 4, y: 2 }, { x: 6, y: 2 },
 ];
 
 export function OrbitalGallery() {
@@ -66,19 +66,19 @@ export function OrbitalGallery() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Proporciones para que las fotos sean GRANDES y tupidas:
-  // PC: radio 1300px, tarjetas de 230px
-  // Móvil: radio 750px, tarjetas de 132px
+  // Proporciones fijas:
+  // PC: radio 1300px, tarjetas de 225px, paso 5.2°
+  // Celular: radio 750px, tarjetas de 130px, paso 5.4°
   const RADIUS_PX = esMobile ? 750 : 1300;
-  const STEP_DEG_X = esMobile ? 5.3 : 5.1;
-  const STEP_DEG_Y = esMobile ? 6.8 : 6.2;
+  const STEP_DEG_X = esMobile ? 5.4 : 5.2;
+  const STEP_DEG_Y = esMobile ? 5.4 : 5.2;
 
   useEffect(() => {
     const sphere = sphereRef.current;
     const container = containerRef.current;
     if (!sphere || !container) return;
 
-    const MAX_POLAR_ROT_DEG = 3;
+    const MAX_POLAR_ROT_DEG = esMobile ? 2.5 : 3.5;
     const PAN_SENSITIVITY = esMobile ? 12 : 15;
 
     const applyTransform = () => {
@@ -206,11 +206,10 @@ export function OrbitalGallery() {
   };
 
   return (
-    // Perspectiva abierta de 3000px: elimina los cortes por plano de corte (clipping)
-    <div className="relative w-full h-full min-h-[350px] sm:min-h-[580px] md:min-h-[640px] flex items-center justify-center select-none overflow-visible">
+    <div className="relative w-full h-[380px] sm:h-[580px] md:h-[640px] flex items-center justify-center select-none overflow-hidden">
       <div
         ref={containerRef}
-        className="absolute inset-0 flex items-center justify-center touch-none [perspective:3000px] cursor-grab active:cursor-grabbing overflow-visible"
+        className="absolute inset-0 flex items-center justify-center touch-none [perspective:2400px] cursor-grab active:cursor-grabbing overflow-hidden"
       >
         <div
           ref={sphereRef}
@@ -225,8 +224,8 @@ export function OrbitalGallery() {
               <div
                 key={idx}
                 onClick={(e) => handleImageClick(imgSrc, e)}
-                // Tarjetas grandes: 132px en móvil y 230px en PC
-                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[132px] h-[132px] sm:w-[195px] sm:h-[195px] md:w-[230px] md:h-[230px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.05] hover:z-20"
+                // Tarjetas grandes: 130px en celular y 225px en PC
+                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[130px] h-[130px] sm:w-[195px] sm:h-[195px] md:w-[225px] md:h-[225px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.05] hover:z-20"
                 style={{
                   transform: `rotateY(${coord.x * STEP_DEG_X}deg) rotateX(${coord.y * STEP_DEG_Y}deg) translateZ(${RADIUS_PX}px)`,
                 }}
