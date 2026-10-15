@@ -34,7 +34,6 @@ const WHATSAPP_NUMERO = "5493886575664";
 const CORREO_CONTACTO = "soporte@ndiweb.com";
 const BEHANCE_URL = "https://www.behance.net/nahuelrueda";
 
-// 20 imágenes del portfolio real
 const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen1.jpg",
   "/portfolio/imagen2.jpg",
@@ -58,7 +57,6 @@ const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen20.png",
 ];
 
-// Modelos de muestra
 const modelosArriba = [
   {
     id: "restaurantes",
@@ -318,13 +316,19 @@ export default function HomePage() {
   const [mostrarBotonHeader, setMostrarBotonHeader] = useState(false);
   const [errorFotoNahuel, setErrorFotoNahuel] = useState(false);
   const [activo, setActivo] = useState(0);
+  const [saliendo, setSaliendo] = useState(false);
   const { theme, setTheme } = useTheme();
 
-  // Duración de 10 segundos por imagen
+  // Opción B (Deck Shuffle): cambio cada 10 segundos con animación de salida lateral
   useEffect(() => {
     const timer = setInterval(() => {
-      setActivo((prev) => (prev + 1) % IMAGENES_PORTFOLIO.length);
+      setSaliendo(true);
+      setTimeout(() => {
+        setActivo((prev) => (prev + 1) % IMAGENES_PORTFOLIO.length);
+        setSaliendo(false);
+      }, 550);
     }, 10000);
+
     return () => clearInterval(timer);
   }, []);
 
@@ -349,8 +353,15 @@ export default function HomePage() {
   };
 
   const irSiguiente = () => {
-    setActivo((prev) => (prev + 1) % IMAGENES_PORTFOLIO.length);
+    setSaliendo(true);
+    setTimeout(() => {
+      setActivo((prev) => (prev + 1) % IMAGENES_PORTFOLIO.length);
+      setSaliendo(false);
+    }, 400);
   };
+
+  const idxSiguiente1 = (activo + 1) % IMAGENES_PORTFOLIO.length;
+  const idxSiguiente2 = (activo + 2) % IMAGENES_PORTFOLIO.length;
 
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 selection:bg-[var(--brand)] selection:text-white">
@@ -431,7 +442,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* PORTADA: SHOWCASE 3D EN RELIEVE (FONDO CLARO INTEGRADO Y TARJETAS SÓLIDAS) */}
+      {/* PORTADA: MAZO DE TARJETAS 3D (DECK SHUFFLE, SIN LÍNEAS DE CONTORNO NI RECORTE DE IMAGEN) */}
       <section className="relative pt-10 pb-16 sm:pt-16 sm:pb-24 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
         <div className="mx-auto max-w-7xl px-4 sm:px-8">
           
@@ -453,11 +464,11 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* CONTENEDOR PRINCIPAL CLARO CON RELIEVE Y SIN FONDO NEGRO */}
-          <div className="relative mt-12 sm:mt-16 mx-auto max-w-6xl [perspective:1400px]">
+          {/* LIENZO LIMPIO (SIN BORDES MOLESTOS NI FONDO OSCURO) */}
+          <div className="relative mt-12 sm:mt-16 mx-auto max-w-5xl [perspective:1400px]">
             
             {/* TARJETA NEGRA SUPERIOR IZQUIERDA */}
-            <div className="absolute -top-5 -left-2 sm:-top-7 sm:-left-6 rounded-2xl sm:rounded-3xl bg-zinc-950 p-4 sm:p-5 text-white shadow-2xl border border-zinc-800 text-left max-w-[170px] sm:max-w-[220px] z-30">
+            <div className="absolute -top-5 -left-2 sm:-top-7 sm:-left-6 rounded-2xl sm:rounded-3xl bg-zinc-950 p-4 sm:p-5 text-white shadow-2xl border border-zinc-800 text-left max-w-[170px] sm:max-w-[220px] z-40">
               <p className="text-2xl sm:text-3xl font-bold tracking-tight text-white leading-none">
                 100%
               </p>
@@ -466,72 +477,79 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* MARCO CONTENEDOR LUMINOSO Y ELEGANTE */}
-            <div className="relative overflow-hidden rounded-[2.2rem] sm:rounded-[3.2rem] border border-zinc-200/90 bg-gradient-to-b from-zinc-100/90 via-zinc-100/50 to-zinc-200/60 shadow-xl dark:border-zinc-800 dark:from-zinc-900/90 dark:via-zinc-900/50 dark:to-zinc-950 aspect-[16/10] sm:aspect-[16/9] w-full min-h-[400px] sm:min-h-[580px] flex items-center justify-center p-4 sm:p-8">
+            {/* ESCENA DEL MAZO DE CARTAS 3D (DECK SHUFFLE) */}
+            <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] min-h-[380px] sm:min-h-[540px] flex items-center justify-center">
               
-              <div className="relative w-full h-full flex items-center justify-center">
-                {IMAGENES_PORTFOLIO.map((imagen, index) => {
-                  const total = IMAGENES_PORTFOLIO.length;
-                  let offset = (index - activo) % total;
-                  if (offset < -Math.floor(total / 2)) offset += total;
-                  if (offset > Math.floor(total / 2)) offset -= total;
-
-                  const esVisible = Math.abs(offset) <= 1;
-                  if (!esVisible) return null;
-
-                  const esCentro = offset === 0;
-
-                  return (
-                    <div
-                      key={imagen}
-                      onClick={() => setActivo(index)}
-                      className={`absolute cursor-pointer rounded-2xl sm:rounded-3xl overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-700 transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${
-                        esCentro
-                          ? "w-[84%] sm:w-[78%] h-[90%] z-20 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.25)] scale-100 opacity-100 [transform:translateX(0px)_translateZ(0px)]"
-                          : offset < 0
-                          ? "w-[72%] sm:w-[66%] h-[80%] z-10 shadow-xl opacity-95 [transform:translateX(-42%)_translateZ(-140px)_rotateY(16deg)] hover:opacity-100"
-                          : "w-[72%] sm:w-[66%] h-[80%] z-10 shadow-xl opacity-95 [transform:translateX(42%)_translateZ(-140px)_rotateY(-16deg)] hover:opacity-100"
-                      }`}
-                    >
-                      <img
-                        src={imagen}
-                        alt={`Portfolio NDI ${index + 1}`}
-                        className="w-full h-full object-contain sm:object-cover object-center bg-white dark:bg-zinc-900"
-                        onError={(e) => {
-                          e.currentTarget.src = "/portfolio/imagen1.jpg";
-                        }}
-                      />
-                    </div>
-                  );
-                })}
+              {/* TARJETA 3 EN EL FONDO DE LA PILA */}
+              <div 
+                className="absolute w-[86%] sm:w-[82%] h-[84%] rounded-3xl bg-white shadow-lg dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/60 overflow-hidden transition-all duration-700 ease-out select-none pointer-events-none"
+                style={{
+                  transform: "translateY(22px) scale(0.92) translateZ(-80px)",
+                  zIndex: 10,
+                }}
+              >
+                <img
+                  src={IMAGENES_PORTFOLIO[idxSiguiente2]}
+                  alt="Trabajo en espera"
+                  className="w-full h-full object-contain p-2"
+                />
               </div>
 
-              {/* FLECHITAS DE NAVEGACIÓN MANUAL DISCRETAS */}
+              {/* TARJETA 2 EN EL MEDIO DE LA PILA */}
+              <div 
+                className="absolute w-[91%] sm:w-[88%] h-[89%] rounded-3xl bg-white shadow-xl dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/80 overflow-hidden transition-all duration-700 ease-out select-none pointer-events-none"
+                style={{
+                  transform: "translateY(11px) scale(0.96) translateZ(-40px)",
+                  zIndex: 20,
+                }}
+              >
+                <img
+                  src={IMAGENES_PORTFOLIO[idxSiguiente1]}
+                  alt="Siguiente trabajo"
+                  className="w-full h-full object-contain p-2"
+                />
+              </div>
+
+              {/* TARJETA 1 PRINCIPAL (10s al frente y se desliza suave hacia un lado para renovar) */}
+              <div 
+                className={`absolute w-[96%] sm:w-[94%] h-[94%] rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-700 shadow-2xl overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] cursor-pointer ${
+                  saliendo 
+                    ? "translate-x-full rotate-6 opacity-0 scale-95" 
+                    : "translate-x-0 rotate-0 opacity-100 scale-100"
+                }`}
+                style={{ zIndex: 30 }}
+                onClick={irSiguiente}
+              >
+                <img
+                  src={IMAGENES_PORTFOLIO[activo]}
+                  alt="Portfolio NDI destacado"
+                  className="w-full h-full object-contain p-2 sm:p-4"
+                  onError={(e) => {
+                    e.currentTarget.src = "/portfolio/imagen1.jpg";
+                  }}
+                />
+              </div>
+
+              {/* CONTROLES DISCRETOS DE NAVEGACIÓN MANUAL */}
               <button
                 onClick={irAnterior}
                 aria-label="Anterior proyecto"
-                className="absolute left-4 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-md border border-zinc-200 text-zinc-800 transition hover:scale-105 active:scale-95 dark:bg-zinc-900/90 dark:border-zinc-700 dark:text-zinc-200"
+                className="absolute -left-3 sm:-left-5 z-40 flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-xl border border-zinc-200 text-zinc-800 transition hover:scale-110 active:scale-95 dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-200"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
               <button
                 onClick={irSiguiente}
                 aria-label="Siguiente proyecto"
-                className="absolute right-4 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-md border border-zinc-200 text-zinc-800 transition hover:scale-105 active:scale-95 dark:bg-zinc-900/90 dark:border-zinc-700 dark:text-zinc-200"
+                className="absolute -right-3 sm:-right-5 z-40 flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-xl border border-zinc-200 text-zinc-800 transition hover:scale-110 active:scale-95 dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-200"
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
 
-              {/* BARRA DE PROGRESO DE 10 SEGUNDOS */}
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-25 flex items-center gap-1.5 bg-white/80 dark:bg-zinc-900/80 px-3 py-1.5 rounded-full border border-zinc-200 dark:border-zinc-800 backdrop-blur-xs">
-                <span className="text-[10px] font-bold text-zinc-600 dark:text-zinc-400">
-                  {activo + 1} / {IMAGENES_PORTFOLIO.length}
-                </span>
-              </div>
             </div>
 
             {/* BLOQUE INFERIOR DERECHO */}
-            <div className="absolute -bottom-4 -right-2 sm:-bottom-6 sm:-right-6 rounded-2xl sm:rounded-3xl bg-white/95 p-3 sm:p-4 shadow-2xl border border-zinc-200/90 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 z-30 max-w-[300px] sm:max-w-[420px] w-full">
+            <div className="absolute -bottom-4 -right-2 sm:-bottom-6 sm:-right-6 rounded-2xl sm:rounded-3xl bg-white/95 p-3 sm:p-4 shadow-2xl border border-zinc-200/90 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 z-40 max-w-[300px] sm:max-w-[420px] w-full">
               <div className="grid grid-cols-3 gap-1.5 text-[10px] sm:text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
                 <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-2 text-center flex items-center justify-center">
                   Diseño
