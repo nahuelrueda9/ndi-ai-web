@@ -25,19 +25,25 @@ const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen20.png",
 ];
 
-// Grilla cilíndrica: desplazamientos verticales lineales limpios (row) y angulares horizontales (col)
-// Esto elimina al 100% las colisiones de planos 3D que rompían las esquinas
-const COORDENADAS = [
-  // Fila superior (-2)
-  { col: -7, row: -2 }, { col: -5, row: -2 }, { col: -3, row: -2 }, { col: -1, row: -2 }, { col: 1, row: -2 }, { col: 3, row: -2 }, { col: 5, row: -2 }, { col: 7, row: -2 },
-  // Fila intermedia alta (-1)
-  { col: -6, row: -1 }, { col: -4, row: -1 }, { col: -2, row: -1 }, { col: 0, row: -1 }, { col: 2, row: -1 }, { col: 4, row: -1 }, { col: 6, row: -1 },
-  // Fila central (0)
-  { col: -7, row: 0 }, { col: -5, row: 0 }, { col: -3, row: 0 }, { col: -1, row: 0 }, { col: 1, row: 0 }, { col: 3, row: 0 }, { col: 5, row: 0 }, { col: 7, row: 0 },
-  // Fila intermedia baja (1)
-  { col: -6, row: 1 }, { col: -4, row: 1 }, { col: -2, row: 1 }, { col: 0, row: 1 }, { col: 2, row: 1 }, { col: 4, row: 1 }, { col: 6, row: 1 },
-  // Fila inferior (2)
-  { col: -7, row: 2 }, { col: -5, row: 2 }, { col: -3, row: 2 }, { col: -1, row: 2 }, { col: 1, row: 2 }, { col: 3, row: 2 }, { col: 5, row: 2 }, { col: 7, row: 2 },
+// Grilla limpia por filas horizontales (sin colisiones en Z)
+const ITEMS_GRID_PC = [
+  // Fila Y = -2
+  { col: -6, row: -2 }, { col: -4, row: -2 }, { col: -2, row: -2 }, { col: 0, row: -2 }, { col: 2, row: -2 }, { col: 4, row: -2 }, { col: 6, row: -2 },
+  // Fila Y = -1
+  { col: -7, row: -1 }, { col: -5, row: -1 }, { col: -3, row: -1 }, { col: -1, row: -1 }, { col: 1, row: -1 }, { col: 3, row: -1 }, { col: 5, row: -1 }, { col: 7, row: -1 },
+  // Fila Y = 0 (Ecuador)
+  { col: -6, row: 0 }, { col: -4, row: 0 }, { col: -2, row: 0 }, { col: 0, row: 0 }, { col: 2, row: 0 }, { col: 4, row: 0 }, { col: 6, row: 0 },
+  // Fila Y = 1
+  { col: -7, row: 1 }, { col: -5, row: 1 }, { col: -3, row: 1 }, { col: -1, row: 1 }, { col: 1, row: 1 }, { col: 3, row: 1 }, { col: 5, row: 1 }, { col: 7, row: 1 },
+  // Fila Y = 2
+  { col: -6, row: 2 }, { col: -4, row: 2 }, { col: -2, row: 2 }, { col: 0, row: 2 }, { col: 2, row: 2 }, { col: 4, row: 2 }, { col: 6, row: 2 },
+];
+
+const ITEMS_GRID_MOBILE = [
+  // 3 filas limpias para celular
+  { col: -4, row: -1 }, { col: -2, row: -1 }, { col: 0, row: -1 }, { col: 2, row: -1 }, { col: 4, row: -1 },
+  { col: -5, row: 0 }, { col: -3, row: 0 }, { col: -1, row: 0 }, { col: 1, row: 0 }, { col: 3, row: 0 }, { col: 5, row: 0 },
+  { col: -4, row: 1 }, { col: -2, row: 1 }, { col: 0, row: 1 }, { col: 2, row: 1 }, { col: 4, row: 1 },
 ];
 
 export function OrbitalGallery() {
@@ -66,9 +72,10 @@ export function OrbitalGallery() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const RADIUS_PX = esMobile ? 820 : 1380;
-  const STEP_DEG = esMobile ? 6.2 : 5.2;
-  const ROW_HEIGHT = esMobile ? 128 : 205;
+  const RADIUS_PX = esMobile ? 800 : 1350;
+  const STEP_DEG = esMobile ? 6.2 : 5.1;
+  const ROW_HEIGHT = esMobile ? 134 : 210;
+  const itemsActuales = esMobile ? ITEMS_GRID_MOBILE : ITEMS_GRID_PC;
 
   useEffect(() => {
     const sphere = sphereRef.current;
@@ -177,10 +184,10 @@ export function OrbitalGallery() {
   };
 
   return (
-    <div className="relative w-full h-[380px] sm:h-[580px] md:h-[640px] flex items-center justify-center select-none overflow-hidden">
+    <div className="relative w-full h-[370px] sm:h-[560px] md:h-[620px] flex items-center justify-center select-none overflow-hidden">
       <div
         ref={containerRef}
-        className="absolute inset-0 flex items-center justify-center touch-none [perspective:2200px] cursor-grab active:cursor-grabbing overflow-hidden"
+        className="absolute inset-0 flex items-center justify-center touch-none [perspective:2400px] cursor-grab active:cursor-grabbing overflow-hidden"
       >
         <div
           ref={sphereRef}
@@ -189,24 +196,24 @@ export function OrbitalGallery() {
             transform: `translateZ(-${RADIUS_PX}px) rotateY(0deg)`,
           }}
         >
-          {COORDENADAS.map((coord, idx) => {
+          {itemsActuales.map((coord, idx) => {
             const imgSrc = IMAGENES_PORTFOLIO[idx % IMAGENES_PORTFOLIO.length];
             return (
               <div
                 key={idx}
                 onClick={(e) => handleImageClick(imgSrc, e)}
-                // Medidas grandes originales: 136px en móvil y 225px en PC
-                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[136px] h-[136px] sm:w-[195px] sm:h-[195px] md:w-[225px] md:h-[225px] cursor-pointer transition-transform duration-200 hover:scale-[1.05] hover:z-20"
+                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[132px] h-[132px] sm:w-[195px] sm:h-[195px] md:w-[225px] md:h-[225px] cursor-pointer transition-transform duration-200 hover:scale-[1.05] hover:z-20"
                 style={{
                   transform: `rotateY(${coord.col * STEP_DEG}deg) translateY(${coord.row * ROW_HEIGHT}px) translateZ(${RADIUS_PX}px)`,
                 }}
               >
-                <div className="absolute inset-1 sm:inset-1.5 rounded-2xl sm:rounded-3xl overflow-hidden bg-zinc-200 dark:bg-zinc-800 shadow-md border border-black/5 dark:border-white/10">
+                {/* Solución anti-glitch: el borde redondeado va directo en la imagen y no en una máscara con overflow que rompa el render */}
+                <div className="w-full h-full p-1 sm:p-1.5 bg-transparent">
                   <img
                     src={imgSrc}
                     alt={`Trabajo de diseño gráfico ${idx + 1}`}
                     draggable={false}
-                    className="w-full h-full object-cover pointer-events-none"
+                    className="w-full h-full object-cover rounded-2xl sm:rounded-3xl shadow-md border border-black/5 dark:border-white/10 pointer-events-none bg-zinc-200 dark:bg-zinc-800"
                     onError={(e) => {
                       e.currentTarget.src = "/portfolio/imagen1.jpg";
                     }}

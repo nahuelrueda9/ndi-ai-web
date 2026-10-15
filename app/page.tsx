@@ -414,12 +414,12 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* 1. PORTADA: EN MOVIL OCUPA LA PANTALLA COMPLETA CON BOTONES AL BORDE; EN PC TIENE SU ESPACIO HOLGADO */}
+      {/* 1. PORTADA: ALTURA Y ESPACIO CALIBRADOS AL 100% */}
       <section
         id="portfolio"
         className="relative flex flex-col justify-between min-h-[calc(100svh-56px)] sm:min-h-0 pt-3 pb-3 sm:pt-8 sm:pb-12 border-b border-zinc-200/80 dark:border-zinc-800/60 overflow-hidden"
       >
-        {/* ENCABEZADO */}
+        {/* ENCABEZADO CON ESPACIO DESPEJADO */}
         <div className="mx-auto max-w-5xl px-3 sm:px-8 text-center shrink-0">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-2.5 py-0.5 sm:px-3.5 sm:py-1 text-[10px] sm:text-xs font-semibold text-zinc-700 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 mb-1.5 sm:mb-2.5">
             <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-[var(--brand)]" />
@@ -440,7 +440,7 @@ export default function HomePage() {
           <OrbitalGallery />
         </div>
 
-        {/* BOTONES AL PIE: AL RAS DE LA PANTALLA EN MOVIL */}
+        {/* BOTONES AL PIE: CLAVADOS AL BORDE DE LA PANTALLA EN MOVIL */}
         <div className="shrink-0 px-3.5 max-w-md sm:max-w-none mx-auto w-full pt-2 pb-1">
           <div className="grid grid-cols-2 sm:flex sm:flex-row items-center justify-center gap-2 sm:gap-3">
             <a
