@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -315,55 +315,15 @@ export default function HomePage() {
   const [faqAbierta, setFaqAbierta] = useState<number | null>(0);
   const [mostrarBotonHeader, setMostrarBotonHeader] = useState(false);
   const [errorFotoNahuel, setErrorFotoNahuel] = useState(false);
+  const [activo, setActivo] = useState(0);
   const { theme, setTheme } = useTheme();
-  
-  const stageRef = useRef<HTMLDivElement>(null);
-  const sphereRef = useRef<HTMLDivElement>(null);
 
+  // Rotación suave del carrusel 3D
   useEffect(() => {
-    let isDragging = false;
-    let startX = 0;
-    let startY = 0;
-    let rotX = 0;
-    let rotY = 0;
-
-    const handleMouseDown = (e: MouseEvent) => {
-      isDragging = true;
-      startX = e.clientX;
-      startY = e.clientY;
-    };
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging) return;
-      const deltaX = e.clientX - startX;
-      const deltaY = e.clientY - startY;
-      rotY += deltaX * 0.3;
-      rotX -= deltaY * 0.3;
-      if (sphereRef.current) {
-        sphereRef.current.style.transform = `translateZ(-1300px) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
-      }
-      startX = e.clientX;
-      startY = e.clientY;
-    };
-
-    const handleMouseUp = () => {
-      isDragging = false;
-    };
-
-    const stageEl = stageRef.current;
-    if (stageEl) {
-      stageEl.addEventListener("mousedown", handleMouseDown);
-      window.addEventListener("mousemove", handleMouseMove);
-      window.addEventListener("mouseup", handleMouseUp);
-    }
-
-    return () => {
-      if (stageEl) {
-        stageEl.removeEventListener("mousedown", handleMouseDown);
-      }
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
+    const timer = setInterval(() => {
+      setActivo((prev) => (prev + 1) % IMAGENES_PORTFOLIO.length);
+    }, 3500);
+    return () => clearInterval(timer);
   }, []);
 
   const toggleFaq = (index: number) => {
@@ -381,22 +341,6 @@ export default function HomePage() {
   const alternarTema = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
-
-  const itemsEsfera = IMAGENES_PORTFOLIO.map((img, idx) => {
-    const coords = [
-      { x: -37, y: -4 }, { x: -37, y: -2 }, { x: -37, y: 0 }, { x: -37, y: 2 }, { x: -37, y: 4 },
-      { x: -35, y: -3 }, { x: -35, y: -1 }, { x: -35, y: 1 }, { x: -35, y: 3 }, { x: -35, y: 5 },
-      { x: -33, y: -4 }, { x: -33, y: -2 }, { x: -33, y: 0 }, { x: -33, y: 2 }, { x: -33, y: 4 },
-      { x: -31, y: -3 }, { x: -31, y: -1 }, { x: -31, y: 1 }, { x: -31, y: 3 }, { x: -31, y: 5 },
-    ][idx];
-
-    return {
-      id: idx + 1,
-      src: img,
-      x: coords?.x || -25,
-      y: coords?.y || (idx % 5) - 2,
-    };
-  });
 
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 selection:bg-[var(--brand)] selection:text-white">
@@ -477,7 +421,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* PORTADA ESFERA 3D INTERACTIVA */}
+      {/* PORTADA: CARRUSEL CINEMÁTICO 3D (COVERFLOW SHOWCASE) */}
       <section className="relative pt-10 pb-16 sm:pt-16 sm:pb-24 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
         <div className="mx-auto max-w-7xl px-4 sm:px-8">
           
@@ -495,49 +439,55 @@ export default function HomePage() {
             </h1>
 
             <p className="mx-auto mt-4 max-w-2xl text-sm sm:text-base text-zinc-600 dark:text-zinc-400 font-normal leading-relaxed">
-              Diseño la identidad visual de tu marca y tu web a medida. Arrastrá para explorar los trabajos o tocá cualquiera para ampliarlo.
+              Diseño la identidad visual de tu marca y tu web a medida. Tus clientes ven productos, agendan turnos y te hacen pedidos directos por WhatsApp.
             </p>
           </div>
 
-          <div className="relative mt-12 sm:mt-16 mx-auto max-w-6xl h-[420px] sm:h-[580px] flex items-center justify-center overflow-hidden rounded-[2.5rem] border border-zinc-200/90 bg-zinc-950 shadow-2xl dark:border-zinc-800">
+          {/* MARCO GRANDE CON COMPOSICIÓN 3D CINEMÁTICA */}
+          <div className="relative mt-12 sm:mt-16 mx-auto max-w-6xl [perspective:1400px]">
             
-            <div className="absolute top-6 left-6 rounded-2xl sm:rounded-3xl bg-zinc-900/90 p-4 text-white shadow-xl border border-zinc-800 text-left max-w-[190px] z-30 backdrop-blur-md">
-              <p className="text-2xl font-bold text-white leading-none">100%</p>
-              <p className="mt-1 text-[11px] text-zinc-400">autogestionable en todos los dispositivos.</p>
+            {/* TARJETA NEGRA SUPERIOR IZQUIERDA */}
+            <div className="absolute -top-5 -left-2 sm:-top-7 sm:-left-6 rounded-2xl sm:rounded-3xl bg-zinc-950 p-4 sm:p-5 text-white shadow-2xl border border-zinc-800 text-left max-w-[170px] sm:max-w-[220px] z-30">
+              <p className="text-2xl sm:text-3xl font-bold tracking-tight text-white leading-none">
+                100%
+              </p>
+              <p className="mt-1.5 text-[11px] sm:text-xs text-zinc-400 font-medium leading-snug">
+                autogestionable en todos los dispositivos.
+              </p>
             </div>
 
-            <div 
-              ref={stageRef} 
-              className="relative w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
-              style={{ perspective: "1300px" }}
-            >
-              <div 
-                ref={sphereRef} 
-                className="absolute inset-0 m-auto w-0 h-0 transition-transform duration-100 ease-out"
-                style={{ 
-                  transformStyle: "preserve-3d",
-                  transform: "translateZ(-1300px)"
-                }}
-              >
-                {itemsEsfera.map((item) => {
-                  const itemWidth = 140;
-                  const itemHeight = 140;
+            {/* ESCENA CINEMÁTICA COVERFLOW: Tarjeta central en primer plano y laterales en perspectiva */}
+            <div className="relative overflow-hidden rounded-[2.2rem] sm:rounded-[3.2rem] border border-zinc-200/90 bg-zinc-950 shadow-2xl dark:border-zinc-800 aspect-[16/10] sm:aspect-[16/9] w-full min-h-[380px] sm:min-h-[560px] flex items-center justify-center p-4">
+              
+              <div className="relative w-full h-full flex items-center justify-center">
+                {IMAGENES_PORTFOLIO.map((imagen, index) => {
+                  const total = IMAGENES_PORTFOLIO.length;
+                  let offset = (index - activo) % total;
+                  if (offset < -Math.floor(total / 2)) offset += total;
+                  if (offset > Math.floor(total / 2)) offset -= total;
+
+                  // Mostramos las más cercanas en 3D
+                  const esVisible = Math.abs(offset) <= 2;
+                  if (!esVisible) return null;
+
+                  const esCentro = offset === 0;
+
                   return (
                     <div
-                      key={item.id}
-                      className="absolute m-auto top-0 bottom-0 left-0 right-0 rounded-xl overflow-hidden shadow-md bg-zinc-900 border border-white/20 transition-transform duration-300 hover:scale-105"
-                      style={{
-                        width: `${itemWidth}px`,
-                        height: `${itemHeight}px`,
-                        transformStyle: "preserve-3d",
-                        transform: `rotateY(calc(360deg / 37 * ${item.x} / 2)) rotateX(calc(360deg / 37 * ${item.y} / 2)) translateZ(1300px)`,
-                      }}
+                      key={imagen}
+                      onClick={() => setActivo(index)}
+                      className={`absolute cursor-pointer rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${
+                        esCentro
+                          ? "w-[82%] sm:w-[74%] h-[88%] z-20 border-white/20 scale-100 opacity-100 [transform:translateX(0px)_translateZ(0px)]"
+                          : offset < 0
+                          ? "w-[68%] sm:w-[60%] h-[78%] z-10 border-white/10 opacity-40 blur-[0.5px] [transform:translateX(-42%)_translateZ(-180px)_rotateY(22deg)] hover:opacity-60"
+                          : "w-[68%] sm:w-[60%] h-[78%] z-10 border-white/10 opacity-40 blur-[0.5px] [transform:translateX(42%)_translateZ(-180px)_rotateY(-22deg)] hover:opacity-60"
+                      }`}
                     >
                       <img
-                        src={item.src}
-                        alt={`Portfolio NDI ${item.id}`}
-                        className="w-full h-full object-cover pointer-events-none"
-                        draggable={false}
+                        src={imagen}
+                        alt={`Portfolio NDI ${index + 1}`}
+                        className="w-full h-full object-contain sm:object-cover object-center bg-zinc-900"
                         onError={(e) => {
                           e.currentTarget.src = "/portfolio/imagen1.jpg";
                         }}
@@ -546,16 +496,31 @@ export default function HomePage() {
                   );
                 })}
               </div>
+
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none z-25" />
             </div>
 
-            <div className="absolute bottom-6 right-6 rounded-2xl bg-white/95 p-3 shadow-2xl border border-zinc-200/90 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 z-30 max-w-[380px] w-full hidden sm:block">
-              <div className="grid grid-cols-3 gap-1.5 text-[10px] font-semibold text-zinc-700 dark:text-zinc-300">
-                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800 px-2 py-1.5 text-center">Diseño</span>
-                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800 px-2 py-1.5 text-center">Branding</span>
-                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800 px-2 py-1.5 text-center">Logos</span>
-                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800 px-2 py-1.5 text-center">Redes Sociales</span>
-                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800 px-2 py-1.5 text-center">Editorial</span>
-                <span className="rounded-xl bg-[var(--brand)]/15 text-[var(--brand-contrast)] dark:text-[var(--brand)] px-2 py-1.5 text-center font-bold">Páginas Web</span>
+            {/* BLOQUE INFERIOR DERECHO */}
+            <div className="absolute -bottom-4 -right-2 sm:-bottom-6 sm:-right-6 rounded-2xl sm:rounded-3xl bg-white/95 p-3 sm:p-4 shadow-2xl border border-zinc-200/90 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 z-30 max-w-[300px] sm:max-w-[420px] w-full">
+              <div className="grid grid-cols-3 gap-1.5 text-[10px] sm:text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
+                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-2 text-center flex items-center justify-center">
+                  Diseño
+                </span>
+                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-2 text-center flex items-center justify-center">
+                  Branding
+                </span>
+                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-2 text-center flex items-center justify-center">
+                  Logos
+                </span>
+                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-2 text-center flex items-center justify-center">
+                  Redes Sociales
+                </span>
+                <span className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-2 text-center flex items-center justify-center">
+                  Diseño Editorial
+                </span>
+                <span className="rounded-xl bg-[var(--brand)]/15 text-[var(--brand-contrast)] dark:text-[var(--brand)] px-2 py-2 text-center font-bold flex items-center justify-center">
+                  Páginas Web
+                </span>
               </div>
             </div>
 
@@ -592,6 +557,7 @@ export default function HomePage() {
         </div>
 
         <div className="mt-8 grid gap-4 lg:grid-cols-12">
+          {/* Card 1: Identidad Gráfica & Branding */}
           <article className="lg:col-span-7 rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between">
@@ -616,6 +582,7 @@ export default function HomePage() {
             </div>
           </article>
 
+          {/* Card 2: Catálogo & Carta Digital */}
           <article className="lg:col-span-5 rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between">
@@ -639,6 +606,7 @@ export default function HomePage() {
             </div>
           </article>
 
+          {/* Card 3: Turnos y reservas */}
           <article className="lg:col-span-4 rounded-2xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/40">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               <CalendarDays className="h-4 w-4" />
@@ -649,6 +617,7 @@ export default function HomePage() {
             </p>
           </article>
 
+          {/* Card 4: Conexión a WhatsApp */}
           <article className="lg:col-span-4 rounded-2xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/40">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               <MessageCircle className="h-4 w-4" />
@@ -659,6 +628,7 @@ export default function HomePage() {
             </p>
           </article>
 
+          {/* Card 5: Cobros integrados */}
           <article className="lg:col-span-4 rounded-2xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/40">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
               <FileText className="h-4 w-4" />
