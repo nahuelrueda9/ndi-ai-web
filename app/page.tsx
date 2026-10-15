@@ -56,7 +56,7 @@ const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen20.png",
 ];
 
-// ORDENADO Y RENOMBRADO SEGÚN TU PEDIDO
+// Servicios reordenados
 const serviciosNDI = [
   {
     icono: Palette,
@@ -331,14 +331,14 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 selection:bg-[var(--brand)] selection:text-white overflow-x-hidden">
-      {/* HEADER */}
+      {/* HEADER: MENÚ ACTUALIZADO CON EL ORDEN ESTRICTO */}
       <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/90 backdrop-blur-xl transition-colors dark:border-zinc-800/80 dark:bg-[#0c0d0e]/90">
         <div className="mx-auto flex h-14 sm:h-16 max-w-7xl items-center justify-between px-3.5 sm:px-8 gap-2">
           <Link href="/" className="flex items-center gap-2 shrink-0">
             <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--brand)] p-1 shadow-xs shadow-blue-500/20">
               <Image
                 src="/logo-ndi.png"
-                alt="Logo NDI"
+                alt="Logo ND Diseño Gráfico"
                 width={16}
                 height={16}
                 className="h-full w-full object-contain"
@@ -350,15 +350,25 @@ export default function HomePage() {
             </p>
           </Link>
 
+          {/* NAVEGACIÓN EN ORDEN EXACTO */}
           <nav className="hidden items-center gap-6 lg:flex">
+            <a href="#trabajos" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
+              Trabajos
+            </a>
             <a href="#servicios" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
               Servicios
             </a>
-            <a href="#trabajos" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
-              Modelos
-            </a>
             <a href="#quien-soy" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
               Quién soy
+            </a>
+            <a href="#modelos-web" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
+              Modelos web
+            </a>
+            <a href="#faq" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
+              Preguntas
+            </a>
+            <a href="#contacto" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
+              Contacto
             </a>
             <a
               href={BEHANCE_URL}
@@ -367,12 +377,6 @@ export default function HomePage() {
               className="text-xs font-semibold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)] hover:underline"
             >
               Portfolio Behance ↗
-            </a>
-            <a href="#faq" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
-              Preguntas
-            </a>
-            <a href="#contacto" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
-              Contacto
             </a>
           </nav>
 
@@ -408,7 +412,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* HERO: SUBTÍTULO BALANCEADO EN DOS LÍNEAS */}
+      {/* 1. PORTADA: TITULAR ELEGIDO, SUBTÍTULO BALANCEADO Y PASTILLA CORREGIDA */}
       <section className="relative pt-6 pb-12 sm:pt-16 sm:pb-24 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
         <div className="mx-auto max-w-7xl px-3 sm:px-8">
           
@@ -419,13 +423,9 @@ export default function HomePage() {
             </div>
 
             <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-[3.6rem] font-bold tracking-tight text-zinc-950 dark:text-white leading-[1.15]">
-              Potencia tu marca con diseño.
-              <span className="block text-zinc-500 dark:text-zinc-400 font-medium text-lg sm:text-3xl lg:text-[2.5rem] mt-1 sm:mt-2">
-                Su visión, nuestra experiencia.
-              </span>
+              Marcas, diseño publicitario y webs pensados para el crecimiento de tu proyecto.
             </h1>
 
-            {/* BALANCEADO EN DOS RENGLONES VISIBLES EN PANTALLAS GRANDES */}
             <p className="mx-auto mt-4 max-w-2xl text-xs sm:text-sm md:text-base text-zinc-600 dark:text-zinc-400 font-normal leading-relaxed px-2 sm:px-0">
               Trabajemos juntos para darle forma a tus ideas con un diseño pensado<br className="hidden md:inline" /> a la medida de tu proyecto y de tus objetivos.
             </p>
@@ -434,7 +434,7 @@ export default function HomePage() {
           {/* CONTENEDOR HERO SLIDER */}
           <div className="relative mt-8 sm:mt-14 mx-auto max-w-5xl">
             
-            {/* BADGE BALANCEADA: "personalizado y adaptado / a tu marca" */}
+            {/* PASTILLA CORREGIDA: "personalizado y adaptado / a tu marca." */}
             <div className="absolute top-2 left-2 sm:-top-5 sm:-left-5 rounded-xl sm:rounded-3xl bg-zinc-950/95 p-2.5 sm:p-4 text-white shadow-xl border border-zinc-800 text-left max-w-[140px] sm:max-w-[210px] z-30 backdrop-blur-xs">
               <p className="text-base sm:text-2xl font-bold tracking-tight text-white leading-none">
                 100%
@@ -472,7 +472,7 @@ export default function HomePage() {
                     >
                       <img
                         src={imagen}
-                        alt={`Portfolio NDI ${index + 1}`}
+                        alt={`Portfolio ND Diseño Gráfico ${index + 1}`}
                         className="w-full h-full object-contain p-1.5 sm:p-4 bg-white dark:bg-zinc-900"
                         onError={(e) => {
                           e.currentTarget.src = "/portfolio/imagen1.jpg";
@@ -525,7 +525,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* BOTONES ACCIÓN */}
+          {/* BOTONES ACCIÓN: CONTACTAME + PORTFOLIO BEHANCE */}
           <div className="mt-8 sm:mt-14 flex flex-col sm:flex-row items-center justify-center gap-3">
             <a
               href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por un proyecto de diseño.")}`}
@@ -551,23 +551,57 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* SECCIÓN SERVICIOS: DETALLES DE SALTO Y ENFOQUE ACTUALIZADOS */}
-      <section id="servicios" className="mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
+      {/* 2. TRABAJOS (#trabajos): CONTENEDOR PREPARADO PARA LA GALERÍA CON FILTROS (PASO 3) */}
+      <section id="trabajos" className="mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
+        <div className="max-w-2xl">
+          <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
+            Portfolio
+          </span>
+          <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white leading-tight">
+            Trabajos seleccionados
+          </h2>
+          <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
+            Una muestra de mis proyectos de branding, diseño editorial, publicidad y redes sociales.
+          </p>
+        </div>
+
+        {/* Placeholder provisional que enlaza a Behance mientras armamos la grilla completa en el Paso 3 */}
+        <div className="mt-8 rounded-3xl border border-dashed border-zinc-300 p-8 sm:p-12 text-center dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/20">
+          <Palette className="mx-auto h-10 w-10 text-[var(--brand)]" />
+          <h3 className="mt-3 text-base sm:text-lg font-bold text-zinc-950 dark:text-white">
+            Galería en preparación
+          </h3>
+          <p className="mt-1.5 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 max-w-md mx-auto">
+            Podés ver todos mis proyectos completos y en alta definición directamente en Behance.
+          </p>
+          <div className="mt-5">
+            <a
+              href={BEHANCE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl bg-[var(--brand)] px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs transition hover:opacity-90"
+            >
+              <span>Ver portfolio completo en Behance ↗</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. SERVICIOS (#servicios) */}
+      <section id="servicios" className="mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
         <div className="max-w-2xl">
           <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
             Servicios
           </span>
-          {/* TÍTULO CON SALTO DE LÍNEA EXACTO */}
           <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white leading-tight">
             Soluciones visuales pensadas <br className="hidden md:inline" /> para tu proyecto.
           </h2>
-          {/* PÁRRAFO CON SALTO DE LÍNEA EQUILIBRADO */}
           <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
             Diseño gráfico, comunicación y desarrollo web aplicados <br className="hidden md:inline" /> para que tu marca se destaque y conecte con su público.
           </p>
         </div>
 
-        {/* GRILLA DE 4 SERVICIOS CLAVE: REORDENADOS Y ACTUALIZADOS */}
+        {/* 4 PILARES REORDENADOS */}
         <div className="mt-8 sm:mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {serviciosNDI.map((srv) => {
             const Icono = srv.icono;
@@ -592,7 +626,7 @@ export default function HomePage() {
           })}
         </div>
 
-        {/* CONTENEDOR ENFOQUE: SIN COLLABORACIÓN DIRECTA NI ICONO DE IA */}
+        {/* BLOQUE EMPRESAS / MARCAS */}
         <div className="mt-8 sm:mt-10 rounded-3xl border border-zinc-200 bg-zinc-100/70 p-6 sm:p-10 text-center dark:border-zinc-800 dark:bg-zinc-900/50">
           <h3 className="text-lg sm:text-2xl font-bold text-zinc-950 dark:text-white max-w-2xl mx-auto">
             ¿Sos parte de una empresa con imagen consolidada que necesita nuevas soluciones?
@@ -614,49 +648,15 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* MODELOS DE MUESTRA (CON ROTACIÓN DE 5 SEGUNDOS Y SIN FONDO NEGRO) */}
-      <section id="trabajos" className="mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4">
-          <div className="max-w-2xl">
-            <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
-              Estructuras disponibles
-            </span>
-            <h2 className="mt-1.5 text-xl sm:text-3xl font-bold tracking-tight text-zinc-950 dark:text-white">
-              Modelos de muestra listos para adaptar.
-            </h2>
-            <p className="mt-1 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-              Diseños creados para cada tipo de actividad comercial.
-            </p>
-          </div>
-
-          <div className="inline-flex items-center gap-2 self-start rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
-            <span className="h-2 w-2 rounded-full bg-[var(--brand)]" />
-            <span>Todos los modelos incluyen panel autogestionable</span>
-          </div>
-        </div>
-
-        <div className="mt-8 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {modelosArriba.map((p) => (
-            <TarjetaModelo key={p.id} p={p} />
-          ))}
-        </div>
-
-        <div className="mt-4 sm:mt-6 grid gap-4 sm:gap-6 sm:grid-cols-2 max-w-4xl mx-auto">
-          {modelosAbajo.map((p) => (
-            <TarjetaModelo key={p.id} p={p} />
-          ))}
-        </div>
-      </section>
-
-      {/* QUIÉN SOY (FOTO AGRANDADA) */}
-      <section id="quien-soy" className="mx-auto max-w-4xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
+      {/* 4. QUIÉN SOY (#quien-soy) */}
+      <section id="quien-soy" className="mx-auto max-w-4xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
         <div className="text-center max-w-xl mx-auto">
-          {/* FOTO AGRANDADA DE 20/28 A 28/36 PARA DAR JERARQUÍA */}
+          {/* FOTO PROTAGONISTA */}
           <div className="relative mx-auto h-28 w-28 sm:h-36 sm:w-36 overflow-hidden rounded-full border-2 border-[var(--brand)]/40 bg-zinc-100 shadow-md ring-4 ring-[var(--brand)]/10 dark:bg-zinc-800">
             {!errorFotoNahuel ? (
               <Image
                 src="/nahuel.jpg"
-                alt="Nahuel - NDI | Diseño & Web"
+                alt="Nahuel - ND Diseño Gráfico"
                 width={256}
                 height={256}
                 quality={95}
@@ -666,7 +666,7 @@ export default function HomePage() {
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center font-bold text-lg sm:text-xl text-[var(--brand)]">
-                NDI
+                ND
               </div>
             )}
           </div>
@@ -685,7 +685,7 @@ export default function HomePage() {
           </p>
 
           <p className="mt-1 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-medium [text-wrap:balance]">
-            Envíame un mensaje y mejoramos tu negocio
+            Mandame un mensaje y le damos forma a tu proyecto.
           </p>
 
           <div className="mt-4 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-xs">
@@ -727,8 +727,42 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FAQ ADAPTADAS A DISEÑO GRÁFICO & WEB */}
-      <section id="faq" className="mx-auto max-w-4xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60">
+      {/* 5. MODELOS WEB (#modelos-web): ANCLAJE CORREGIDO */}
+      <section id="modelos-web" className="mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4">
+          <div className="max-w-2xl">
+            <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
+              Estructuras disponibles
+            </span>
+            <h2 className="mt-1.5 text-xl sm:text-3xl font-bold tracking-tight text-zinc-950 dark:text-white">
+              Modelos de muestra listos para adaptar.
+            </h2>
+            <p className="mt-1 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
+              Diseños creados para cada tipo de actividad comercial.
+            </p>
+          </div>
+
+          <div className="inline-flex items-center gap-2 self-start rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+            <span className="h-2 w-2 rounded-full bg-[var(--brand)]" />
+            <span>Todos los modelos incluyen panel autogestionable</span>
+          </div>
+        </div>
+
+        <div className="mt-8 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {modelosArriba.map((p) => (
+            <TarjetaModelo key={p.id} p={p} />
+          ))}
+        </div>
+
+        <div className="mt-4 sm:mt-6 grid gap-4 sm:gap-6 sm:grid-cols-2 max-w-4xl mx-auto">
+          {modelosAbajo.map((p) => (
+            <TarjetaModelo key={p.id} p={p} />
+          ))}
+        </div>
+      </section>
+
+      {/* 6. PREGUNTAS FRECUENTES (#faq) */}
+      <section id="faq" className="mx-auto max-w-4xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
         <div className="text-center">
           <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
             Dudas frecuentes
@@ -765,8 +799,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CONTACTO LIMPIO */}
-      <section id="contacto" className="border-t border-zinc-200/80 bg-zinc-100/60 py-12 sm:py-24 dark:border-zinc-800/80 dark:bg-zinc-950/60">
+      {/* 7. CONTACTO (#contacto) Y FOOTER */}
+      <section id="contacto" className="border-t border-zinc-200/80 bg-zinc-100/60 py-12 sm:py-24 dark:border-zinc-800/80 dark:bg-zinc-950/60 scroll-mt-20">
         <div className="mx-auto max-w-3xl px-3.5 sm:px-8 text-center">
           <span className="text-xs font-bold uppercase tracking-widest text-[var(--brand-contrast)] dark:text-[var(--brand)]">
             Atención directa
@@ -825,7 +859,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FOOTER: SECCIÓN DE DEFENSA DEL CONSUMIDOR COMPLETAMENTE ELIMINADA */}
+      {/* FOOTER: SIN BLOQUE DEF. CONSUMIDOR Y CON NAVEGACIÓN ACTUALIZADA */}
       <footer className="border-t border-zinc-200/80 bg-white py-10 sm:py-12 dark:border-zinc-800 dark:bg-[#0c0d0e]">
         <div className="mx-auto max-w-7xl px-4 sm:px-8">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 pb-6 sm:pb-8 border-b border-zinc-100 dark:border-zinc-800/80">
@@ -834,7 +868,7 @@ export default function HomePage() {
                 <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[var(--brand)] p-1">
                   <Image
                     src="/logo-ndi.png"
-                    alt="Logo NDI"
+                    alt="Logo ND Diseño Gráfico"
                     width={16}
                     height={16}
                     className="h-full w-full object-contain"
@@ -854,12 +888,13 @@ export default function HomePage() {
                 Navegación
               </p>
               <ul className="mt-2.5 space-y-1.5 text-xs text-zinc-600 dark:text-zinc-400">
+                <li><a href="#trabajos" className="hover:text-[var(--brand)] transition">Trabajos</a></li>
                 <li><a href="#servicios" className="hover:text-[var(--brand)] transition">Servicios</a></li>
-                <li><a href="#trabajos" className="hover:text-[var(--brand)] transition">Modelos</a></li>
                 <li><a href="#quien-soy" className="hover:text-[var(--brand)] transition">Quién soy</a></li>
-                <li><a href={BEHANCE_URL} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--brand)] transition">Behance Portfolio ↗</a></li>
+                <li><a href="#modelos-web" className="hover:text-[var(--brand)] transition">Modelos web</a></li>
                 <li><a href="#faq" className="hover:text-[var(--brand)] transition">Preguntas</a></li>
                 <li><a href="#contacto" className="hover:text-[var(--brand)] transition">Contacto</a></li>
+                <li><a href={BEHANCE_URL} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--brand)] transition">Behance Portfolio ↗</a></li>
               </ul>
             </div>
 
