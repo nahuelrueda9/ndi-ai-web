@@ -333,7 +333,7 @@ export default function HomePage() {
     <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 selection:bg-[var(--brand)] selection:text-white overflow-x-hidden">
       {/* HEADER: LOGO ACHICADO Y A LA IZQUIERDA */}
       <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/90 backdrop-blur-xl transition-colors dark:border-zinc-800/80 dark:bg-[#0c0d0e]/90">
-        <div className="w-full flex h-14 sm:h-16 items-center justify-between px-4 sm:px-8 gap-3">
+        <div className="w-full flex h-14 sm:h-16 items-center justify-between px-3.5 sm:px-8 gap-2">
           <Link href="/" className="flex items-center gap-2 shrink-0">
             <div className="flex h-6 w-6 sm:h-7 sm:w-7 shrink-0 items-center justify-center">
               <Image
@@ -414,81 +414,83 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* 1. PORTADA: ESFERA 3D ORBITAL COMPLETA CON BOTONES ABAJO */}
-      <section id="portfolio" className="relative pt-6 pb-12 sm:pt-14 sm:pb-20 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
-        <div className="mx-auto max-w-5xl px-3 sm:px-8 text-center">
-          <div className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full border border-zinc-200 bg-white px-3 py-0.5 sm:px-3.5 sm:py-1 text-[11px] sm:text-xs font-semibold text-zinc-700 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 mb-3 sm:mb-4">
+      {/* 1. PORTADA: ESFERA 3D ORBITAL CON BOTONES EN 1 FILA EN CELULAR */}
+      <section id="portfolio" className="relative pt-4 pb-8 sm:pt-12 sm:pb-16 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
+        <div className="mx-auto max-w-5xl px-3.5 sm:px-8 text-center">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-2.5 py-0.5 sm:px-3.5 sm:py-1 text-[10px] sm:text-xs font-semibold text-zinc-700 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 mb-2 sm:mb-4">
             <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-[var(--brand)]" />
             <span>Diseño Gráfico & Desarrollo Web</span>
           </div>
 
-          <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-[3.6rem] font-bold tracking-tight text-zinc-950 dark:text-white leading-[1.14]">
+          <h1 className="text-xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-bold tracking-tight text-zinc-950 dark:text-white leading-[1.15]">
             Marcas, diseño publicitario y webs pensados para el crecimiento de tu proyecto.
           </h1>
 
-          <p className="mx-auto mt-3 max-w-2xl text-xs sm:text-sm md:text-base text-zinc-600 dark:text-zinc-400 font-normal leading-relaxed px-2 sm:px-0">
+          <p className="mx-auto mt-2 sm:mt-3 max-w-2xl text-[11px] sm:text-sm md:text-base text-zinc-600 dark:text-zinc-400 font-normal leading-relaxed px-1 sm:px-0">
             Trabajemos juntos para darle forma a tus ideas con un diseño pensado a la medida de tu proyecto y de tus objetivos.
           </p>
         </div>
 
-        {/* ESFERA 3D ANCHA DE COSTADO A COSTADO */}
-        <div className="relative mt-4 sm:mt-6 w-full px-1 sm:px-4">
+        {/* ESFERA 3D ANCHA */}
+        <div className="relative mt-2 sm:mt-6 w-full px-1 sm:px-4">
           <OrbitalGallery />
         </div>
 
-        {/* BOTONES DEBAJO DE LA ESFERA */}
-        <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 px-4">
-          <a
-            href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por un proyecto de diseño.")}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-2xl bg-[var(--brand)] hover:opacity-90 px-8 py-3.5 text-xs sm:text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition active:scale-95"
-          >
-            <MessageCircle className="h-4 w-4" />
-            <span>Contactame</span>
-          </a>
+        {/* BOTONES DEBAJO DE LA ESFERA: EN CELULAR ENTRAN LOS 2 EN UNA SOLA FILA */}
+        <div className="mt-3 sm:mt-8 px-3.5 max-w-md sm:max-w-none mx-auto">
+          <div className="grid grid-cols-2 sm:flex sm:flex-row items-center justify-center gap-2 sm:gap-3">
+            <a
+              href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por un proyecto de diseño.")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-11 items-center justify-center gap-1.5 sm:gap-2 rounded-xl sm:rounded-2xl bg-[var(--brand)] hover:opacity-90 px-3 sm:px-8 text-xs sm:text-sm font-bold text-white shadow-md shadow-blue-500/20 transition active:scale-95 text-center truncate"
+            >
+              <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+              <span className="truncate">Contactame</span>
+            </a>
 
-          <a
-            href={BEHANCE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-2xl border border-zinc-300 bg-white hover:bg-zinc-100 px-8 py-3.5 text-xs sm:text-sm font-bold text-zinc-800 shadow-sm transition active:scale-95 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-          >
-            <Palette className="h-4 w-4 text-[var(--brand)]" />
-            <span>Portfolio en Behance ↗</span>
-          </a>
+            <a
+              href={BEHANCE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-11 items-center justify-center gap-1.5 sm:gap-2 rounded-xl sm:rounded-2xl border border-zinc-300 bg-white hover:bg-zinc-100 px-3 sm:px-8 text-xs sm:text-sm font-bold text-zinc-800 shadow-xs transition active:scale-95 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 text-center truncate"
+            >
+              <Palette className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[var(--brand)] shrink-0" />
+              <span className="truncate">Behance ↗</span>
+            </a>
+          </div>
         </div>
       </section>
 
-      {/* 2. SERVICIOS */}
+      {/* 2. SERVICIOS (ESPACIADO COMPACTO) */}
       <RevealOnScroll>
-        <section id="servicios" className="mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 scroll-mt-20">
+        <section id="servicios" className="mx-auto max-w-7xl px-3.5 py-8 sm:px-8 sm:py-20 scroll-mt-20">
           <div className="max-w-2xl">
             <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
               Servicios
             </span>
-            <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white leading-tight">
+            <h2 className="mt-1.5 text-xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white leading-tight">
               Soluciones visuales pensadas <br className="hidden md:inline" /> para tu proyecto.
             </h2>
-            <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="mt-1.5 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
               Diseño gráfico, comunicación y desarrollo web aplicados <br className="hidden md:inline" /> para que tu marca se destaque y conecte con su público.
             </p>
           </div>
 
-          <div className="mt-8 sm:mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-6 sm:mt-12 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {serviciosNDI.map((srv, idx) => {
               const Icono = srv.icono;
               return (
                 <RevealOnScroll key={srv.titulo} delay={idx * 80}>
-                  <div className="flex flex-col justify-between h-full rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/60">
+                  <div className="flex flex-col justify-between h-full rounded-2xl sm:rounded-3xl border border-zinc-200 bg-white p-5 sm:p-6 shadow-xs transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/60">
                     <div>
-                      <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${srv.color}`}>
-                        <Icono className="h-6 w-6" />
+                      <div className={`flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl ${srv.color}`}>
+                        <Icono className="h-5 w-5 sm:h-6 sm:w-6" />
                       </div>
-                      <h3 className="mt-5 text-base sm:text-lg font-bold text-zinc-950 dark:text-white">
+                      <h3 className="mt-4 sm:mt-5 text-sm sm:text-lg font-bold text-zinc-950 dark:text-white">
                         {srv.titulo}
                       </h3>
-                      <p className="mt-2.5 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                      <p className="mt-2 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
                         {srv.descripcion}
                       </p>
                     </div>
@@ -499,19 +501,19 @@ export default function HomePage() {
           </div>
 
           <RevealOnScroll delay={150}>
-            <div className="mt-8 sm:mt-10 rounded-3xl border border-zinc-200 bg-zinc-100/70 p-6 sm:p-10 text-center dark:border-zinc-800 dark:bg-zinc-900/50">
-              <h3 className="text-lg sm:text-2xl font-bold text-zinc-950 dark:text-white max-w-2xl mx-auto">
+            <div className="mt-6 sm:mt-10 rounded-2xl sm:rounded-3xl border border-zinc-200 bg-zinc-100/70 p-5 sm:p-10 text-center dark:border-zinc-800 dark:bg-zinc-900/50">
+              <h3 className="text-base sm:text-2xl font-bold text-zinc-950 dark:text-white max-w-2xl mx-auto">
                 ¿Sos parte de una empresa con imagen consolidada que necesita nuevas soluciones?
               </h3>
-              <p className="mt-3 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+              <p className="mt-2.5 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto leading-relaxed">
                 Desarrollo piezas gráficas y digitales alineadas a la identidad visual de tu marca, respetando tus manuales de estilo y lineamientos para garantizar coherencia en cada medio de comunicación.
               </p>
-              <div className="mt-5">
+              <div className="mt-4 sm:mt-5">
                 <a
                   href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría hablar sobre el desarrollo de piezas gráficas para mi empresa.")}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-xl bg-[var(--brand)] px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs transition hover:opacity-90"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[var(--brand)] px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs transition hover:opacity-90"
                 >
                   <MessageCircle className="h-4 w-4" />
                   <span>Hablemos de tu proyecto</span>
@@ -522,33 +524,33 @@ export default function HomePage() {
         </section>
       </RevealOnScroll>
 
-      {/* 3. SHOWCASE DESTACADO: EL CARRUSEL PREVIO DESPUÉS DE SERVICIOS */}
+      {/* 3. SHOWCASE DESTACADO: EL CARRUSEL (ESPACIADO COMPACTO) */}
       <RevealOnScroll>
-        <section id="destacados" className="border-t border-zinc-200/80 bg-zinc-100/50 py-12 sm:py-24 dark:border-zinc-800/60 dark:bg-zinc-950/40 scroll-mt-20">
-          <div className="mx-auto max-w-7xl px-3 sm:px-8">
-            <div className="max-w-2xl mb-8">
+        <section id="destacados" className="border-t border-zinc-200/80 bg-zinc-100/50 py-8 sm:py-20 dark:border-zinc-800/60 dark:bg-zinc-950/40 scroll-mt-20">
+          <div className="mx-auto max-w-7xl px-3.5 sm:px-8">
+            <div className="max-w-2xl mb-6 sm:mb-8">
               <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
                 Showcase
               </span>
-              <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white leading-tight">
+              <h2 className="mt-1.5 text-xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white leading-tight">
                 Piezas y proyectos en foco
               </h2>
-              <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
+              <p className="mt-1 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
                 Visualización detallada de identidad visual, manuales editoriales y desarrollos web.
               </p>
             </div>
 
             <div className="relative mx-auto max-w-5xl">
-              <div className="absolute top-2 left-2 sm:-top-5 sm:-left-5 rounded-xl sm:rounded-3xl bg-zinc-950/95 p-2.5 sm:p-4 text-white shadow-xl border border-zinc-800 text-left max-w-[140px] sm:max-w-[210px] z-30 backdrop-blur-xs">
-                <p className="text-base sm:text-2xl font-bold tracking-tight text-white leading-none">
+              <div className="absolute top-2 left-2 sm:-top-5 sm:-left-5 rounded-xl sm:rounded-3xl bg-zinc-950/95 p-2 sm:p-4 text-white shadow-xl border border-zinc-800 text-left max-w-[130px] sm:max-w-[210px] z-30 backdrop-blur-xs">
+                <p className="text-sm sm:text-2xl font-bold tracking-tight text-white leading-none">
                   100%
                 </p>
-                <p className="mt-1 text-[9px] sm:text-xs text-zinc-400 font-medium leading-tight">
+                <p className="mt-0.5 text-[8px] sm:text-xs text-zinc-400 font-medium leading-tight">
                   personalizado y adaptado <br /> a tu marca.
                 </p>
               </div>
 
-              <div className="relative w-full aspect-[4/3] sm:aspect-[16/9] min-h-[250px] sm:min-h-[500px] overflow-hidden rounded-2xl sm:rounded-3xl bg-zinc-100/60 dark:bg-zinc-900/40 flex items-center justify-center border border-zinc-200/60 dark:border-zinc-800/60">
+              <div className="relative w-full aspect-[4/3] sm:aspect-[16/9] min-h-[220px] sm:min-h-[500px] overflow-hidden rounded-2xl sm:rounded-3xl bg-zinc-100/60 dark:bg-zinc-900/40 flex items-center justify-center border border-zinc-200/60 dark:border-zinc-800/60">
                 <div className="relative w-full h-full flex items-center justify-center">
                   {IMAGENES_PORTFOLIO.map((imagen, index) => {
                     const total = IMAGENES_PORTFOLIO.length;
@@ -589,37 +591,37 @@ export default function HomePage() {
                 <button
                   onClick={irCarruselAnterior}
                   aria-label="Anterior proyecto"
-                  className="absolute left-2 sm:left-4 z-30 flex h-8 w-8 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-white/95 shadow-md border border-zinc-200 text-zinc-800 transition hover:scale-105 active:scale-95 dark:bg-zinc-900/95 dark:border-zinc-700 dark:text-zinc-200"
+                  className="absolute left-2 sm:left-4 z-30 flex h-7 w-7 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-white/95 shadow-md border border-zinc-200 text-zinc-800 transition hover:scale-105 active:scale-95 dark:bg-zinc-900/95 dark:border-zinc-700 dark:text-zinc-200"
                 >
-                  <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <ChevronLeft className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
                 </button>
                 <button
                   onClick={irCarruselSiguiente}
                   aria-label="Siguiente proyecto"
-                  className="absolute right-2 sm:right-4 z-30 flex h-8 w-8 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-white/95 shadow-md border border-zinc-200 text-zinc-800 transition hover:scale-105 active:scale-95 dark:bg-zinc-900/95 dark:border-zinc-700 dark:text-zinc-200"
+                  className="absolute right-2 sm:right-4 z-30 flex h-7 w-7 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-white/95 shadow-md border border-zinc-200 text-zinc-800 transition hover:scale-105 active:scale-95 dark:bg-zinc-900/95 dark:border-zinc-700 dark:text-zinc-200"
                 >
-                  <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <ChevronRight className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
                 </button>
               </div>
 
-              <div className="mt-3 sm:mt-0 sm:absolute sm:-bottom-5 sm:-right-5 rounded-2xl bg-white/95 p-2.5 sm:p-3.5 shadow-md sm:shadow-2xl border border-zinc-200/90 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 z-30 sm:max-w-[380px] w-full">
-                <div className="grid grid-cols-3 gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
-                  <span className="rounded-lg sm:rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-1.5 text-center flex items-center justify-center">
+              <div className="mt-3 sm:mt-0 sm:absolute sm:-bottom-5 sm:-right-5 rounded-2xl bg-white/95 p-2 sm:p-3.5 shadow-md sm:shadow-2xl border border-zinc-200/90 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 z-30 sm:max-w-[380px] w-full">
+                <div className="grid grid-cols-3 gap-1 sm:gap-1.5 text-[9px] sm:text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
+                  <span className="rounded-lg sm:rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-1.5 py-1 text-center flex items-center justify-center">
                     Diseño
                   </span>
-                  <span className="rounded-lg sm:rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-1.5 text-center flex items-center justify-center">
+                  <span className="rounded-lg sm:rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-1.5 py-1 text-center flex items-center justify-center">
                     Branding
                   </span>
-                  <span className="rounded-lg sm:rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-1.5 text-center flex items-center justify-center">
+                  <span className="rounded-lg sm:rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-1.5 py-1 text-center flex items-center justify-center">
                     Logos
                   </span>
-                  <span className="rounded-lg sm:rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-1.5 text-center flex items-center justify-center">
+                  <span className="rounded-lg sm:rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-1.5 py-1 text-center flex items-center justify-center">
                     Redes Sociales
                   </span>
-                  <span className="rounded-lg sm:rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-1.5 text-center flex items-center justify-center">
+                  <span className="rounded-lg sm:rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-1.5 py-1 text-center flex items-center justify-center">
                     Diseño Editorial
                   </span>
-                  <span className="rounded-lg sm:rounded-xl bg-[var(--brand)]/15 text-[var(--brand-contrast)] dark:text-[var(--brand)] px-2 py-1.5 text-center font-bold flex items-center justify-center">
+                  <span className="rounded-lg sm:rounded-xl bg-[var(--brand)]/15 text-[var(--brand-contrast)] dark:text-[var(--brand)] px-1.5 py-1 text-center font-bold flex items-center justify-center">
                     Páginas Web
                   </span>
                 </div>
@@ -631,9 +633,9 @@ export default function HomePage() {
 
       {/* 4. QUIÉN SOY */}
       <RevealOnScroll>
-        <section id="quien-soy" className="mx-auto max-w-4xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
+        <section id="quien-soy" className="mx-auto max-w-4xl px-3.5 py-8 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
           <div className="text-center max-w-xl mx-auto">
-            <div className="relative mx-auto h-28 w-28 sm:h-36 sm:w-36 overflow-hidden rounded-full border-2 border-[var(--brand)]/40 bg-zinc-100 shadow-md ring-4 ring-[var(--brand)]/10 dark:bg-zinc-800">
+            <div className="relative mx-auto h-24 w-24 sm:h-36 sm:w-36 overflow-hidden rounded-full border-2 border-[var(--brand)]/40 bg-zinc-100 shadow-md ring-4 ring-[var(--brand)]/10 dark:bg-zinc-800">
               {!errorFotoNahuel ? (
                 <Image
                   src="/nahuel.jpg"
@@ -652,7 +654,7 @@ export default function HomePage() {
               )}
             </div>
 
-            <div className="mt-3.5 inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-0.5 text-xs font-semibold text-zinc-600 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+            <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-2.5 py-0.5 text-xs font-semibold text-zinc-600 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
               <MapPin className="h-3 w-3 text-[var(--brand)]" />
               <span>Ledesma, Jujuy</span>
             </div>
@@ -661,35 +663,35 @@ export default function HomePage() {
               Hola, soy Nahuel.
             </h2>
 
-            <p className="mt-2 text-xs sm:text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 [text-wrap:balance]">
+            <p className="mt-1.5 text-xs sm:text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 [text-wrap:balance]">
               Soy Diseñador Gráfico Junior y desarrollador web de Ledesma, Jujuy.
             </p>
 
-            <p className="mt-1 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-medium [text-wrap:balance]">
+            <p className="mt-0.5 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-medium [text-wrap:balance]">
               Mandame un mensaje y le damos forma a tu proyecto.
             </p>
 
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-xs">
-              <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-2.5 py-1 sm:px-3 sm:py-1.5 font-medium text-zinc-800 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200 text-[11px] sm:text-xs">
+            <div className="mt-3.5 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-xs">
+              <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-2.5 py-1 sm:px-3 sm:py-1.5 font-medium text-zinc-800 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200 text-[10px] sm:text-xs">
                 <UserCheck className="h-3.5 w-3.5 text-[var(--brand)]" />
                 <span>Atención directa 1 a 1</span>
               </div>
-              <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-2.5 py-1 sm:px-3 sm:py-1.5 font-medium text-zinc-800 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200 text-[11px] sm:text-xs">
+              <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-2.5 py-1 sm:px-3 sm:py-1.5 font-medium text-zinc-800 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200 text-[10px] sm:text-xs">
                 <Palette className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
                 <span>Diseño Gráfico & Web</span>
               </div>
-              <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-2.5 py-1 sm:px-3 sm:py-1.5 font-medium text-zinc-800 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200 text-[11px] sm:text-xs">
+              <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-2.5 py-1 sm:px-3 sm:py-1.5 font-medium text-zinc-800 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200 text-[10px] sm:text-xs">
                 <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
                 <span>Soporte continuo</span>
               </div>
             </div>
 
-            <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-2.5">
+            <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-2.5">
               <a
                 href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por un proyecto de diseño.")}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-[var(--brand)] px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs shadow-blue-500/20 transition hover:opacity-90 active:scale-95"
+                className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-[var(--brand)] px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs shadow-blue-500/20 transition hover:opacity-90 active:scale-95"
               >
                 <MessageCircle className="h-4 w-4" />
                 <span>Hablar directo con Nahuel</span>
@@ -699,7 +701,7 @@ export default function HomePage() {
                 href={BEHANCE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-xs sm:text-sm font-bold text-zinc-800 shadow-xs transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 active:scale-95"
+                className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-zinc-800 shadow-xs transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 active:scale-95"
               >
                 <Palette className="h-4 w-4 text-[var(--brand)]" />
                 <span>Ver portfolio en Behance ↗</span>
@@ -711,7 +713,7 @@ export default function HomePage() {
 
       {/* 5. MODELOS WEB */}
       <RevealOnScroll>
-        <section id="modelos-web" className="mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
+        <section id="modelos-web" className="mx-auto max-w-7xl px-3.5 py-8 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4">
             <div className="max-w-2xl">
               <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
@@ -731,7 +733,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="mt-8 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-6 sm:mt-8 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {modelosArriba.map((p, idx) => (
               <RevealOnScroll key={p.id} delay={idx * 80}>
                 <TarjetaModelo p={p} />
@@ -751,7 +753,7 @@ export default function HomePage() {
 
       {/* 6. PREGUNTAS FRECUENTES */}
       <RevealOnScroll>
-        <section id="faq" className="mx-auto max-w-4xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
+        <section id="faq" className="mx-auto max-w-4xl px-3.5 py-8 sm:px-8 sm:py-20 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
           <div className="text-center">
             <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
               Dudas frecuentes
@@ -791,19 +793,19 @@ export default function HomePage() {
 
       {/* 7. CONTACTO */}
       <RevealOnScroll>
-        <section id="contacto" className="border-t border-zinc-200/80 bg-zinc-100/60 py-12 sm:py-24 dark:border-zinc-800/80 dark:bg-zinc-950/60 scroll-mt-20">
+        <section id="contacto" className="border-t border-zinc-200/80 bg-zinc-100/60 py-8 sm:py-20 dark:border-zinc-800/80 dark:bg-zinc-950/60 scroll-mt-20">
           <div className="mx-auto max-w-3xl px-3.5 sm:px-8 text-center">
             <span className="text-xs font-bold uppercase tracking-widest text-[var(--brand-contrast)] dark:text-[var(--brand)]">
               Atención directa
             </span>
-            <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white">
+            <h2 className="mt-1.5 text-xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white">
               Empecemos tu proyecto hoy.
             </h2>
-            <p className="mt-2 text-xs sm:text-sm leading-relaxed text-zinc-600 dark:text-zinc-400 max-w-lg mx-auto">
+            <p className="mt-1.5 text-xs sm:text-sm leading-relaxed text-zinc-600 dark:text-zinc-400 max-w-lg mx-auto">
               Escribime para coordinar tu identidad de marca, piezas publicitarias, catálogo o diseño web a medida.
             </p>
 
-            <div className="mt-8 grid gap-3 sm:grid-cols-3 text-left">
+            <div className="mt-6 sm:mt-8 grid gap-3 sm:grid-cols-3 text-left">
               <a
                 href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por un proyecto de diseño.")}`}
                 target="_blank"
@@ -852,7 +854,7 @@ export default function HomePage() {
       </RevealOnScroll>
 
       {/* FOOTER */}
-      <footer className="border-t border-zinc-200/80 bg-white py-10 sm:py-12 dark:border-zinc-800 dark:bg-[#0c0d0e]">
+      <footer className="border-t border-zinc-200/80 bg-white py-8 sm:py-12 dark:border-zinc-800 dark:bg-[#0c0d0e]">
         <div className="w-full max-w-[96vw] xl:max-w-7xl mx-auto px-4 sm:px-8">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 pb-6 sm:pb-8 border-b border-zinc-100 dark:border-zinc-800/80">
             <div>
