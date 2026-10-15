@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 
 const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen1.jpg",
@@ -23,20 +23,6 @@ const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen18.png",
   "/portfolio/imagen19.png",
   "/portfolio/imagen20.png",
-];
-
-// Malla uniforme en patrón ladrillo
-const ITEMS_GRID = [
-  // Fila Y = -4 (Pares)
-  { x: -8, y: -4 }, { x: -6, y: -4 }, { x: -4, y: -4 }, { x: -2, y: -4 }, { x: 0, y: -4 }, { x: 2, y: -4 }, { x: 4, y: -4 }, { x: 6, y: -4 }, { x: 8, y: -4 },
-  // Fila Y = -2 (Impares para trabar)
-  { x: -7, y: -2 }, { x: -5, y: -2 }, { x: -3, y: -2 }, { x: -1, y: -2 }, { x: 1, y: -2 }, { x: 3, y: -2 }, { x: 5, y: -2 }, { x: 7, y: -2 },
-  // Fila Y = 0 (Ecuador central)
-  { x: -8, y: 0 }, { x: -6, y: 0 }, { x: -4, y: 0 }, { x: -2, y: 0 }, { x: 0, y: 0 }, { x: 2, y: 0 }, { x: 4, y: 0 }, { x: 6, y: 0 }, { x: 8, y: 0 },
-  // Fila Y = 2 (Impares)
-  { x: -7, y: 2 }, { x: -5, y: 2 }, { x: -3, y: 2 }, { x: -1, y: 2 }, { x: 1, y: 2 }, { x: 3, y: 2 }, { x: 5, y: 2 }, { x: 7, y: 2 },
-  // Fila Y = 4 (Pares)
-  { x: -8, y: 4 }, { x: -6, y: 4 }, { x: -4, y: 4 }, { x: -2, y: 4 }, { x: 0, y: 4 }, { x: 2, y: 4 }, { x: 4, y: 4 }, { x: 6, y: 4 }, { x: 8, y: 4 },
 ];
 
 export function OrbitalGallery() {
@@ -66,19 +52,45 @@ export function OrbitalGallery() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // PC: 1300px con paso de 5.1° (exacto a tu captura perfecta)
-  // Celular: 720px con paso de 5.5° y tarjeta de 126px (gap limpio de 12px sin huecos)
-  const RADIUS_PX = esMobile ? 720 : 1300;
-  const STEP_DEG_X = esMobile ? 5.5 : 5.1;
-  const STEP_DEG_Y = esMobile ? 5.5 : 5.1;
+  // Parámetros calculados:
+  // PC: radio 1300px
+  // Móvil: radio 700px con esfera completa de 360° continua
+  const RADIUS_PX = esMobile ? 700 : 1300;
+
+  // Generamos la esfera 360° completa para que nunca tenga fin
+  const itemsEsfera = useMemo(() => {
+    const items: { xDeg: number; yDeg: number; imgIndex: number }[] = [];
+    const columnas = esMobile ? 24 : 36; // 360° cubiertos
+    const pasoX = 360 / columnas;
+    const filas = [-2, -1, 0, 1, 2]; // 5 niveles de latitud
+
+    let contador = 0;
+    filas.forEach((f) => {
+      // Ángulo de inclinación vertical suave
+      const yDeg = esMobile ? f * 11.5 : f * 9.5;
+      const desfasaje = Math.abs(f) % 2 === 1 ? pasoX / 2 : 0; // patrón ladrillo
+
+      for (let c = 0; c < columnas; c++) {
+        const xDeg = c * pasoX + desfasaje;
+        items.push({
+          xDeg,
+          yDeg,
+          imgIndex: contador % IMAGENES_PORTFOLIO.length,
+        });
+        contador++;
+      }
+    });
+
+    return items;
+  }, [esMobile]);
 
   useEffect(() => {
     const sphere = sphereRef.current;
     const container = containerRef.current;
     if (!sphere || !container) return;
 
-    const MAX_POLAR_ROT_DEG = esMobile ? 3 : 4;
-    const PAN_SENSITIVITY = esMobile ? 12 : 15;
+    const MAX_POLAR_ROT_DEG = esMobile ? 4 : 5;
+    const PAN_SENSITIVITY = esMobile ? 13 : 15;
 
     const applyTransform = () => {
       sphere.style.transform = `translateZ(-${RADIUS_PX}px) rotateX(${stateRef.current.rotation.x}deg) rotateY(${stateRef.current.rotation.y}deg)`;
@@ -96,7 +108,7 @@ export function OrbitalGallery() {
     const startInertia = (velocityX: number, velocityY: number) => {
       let vx = velocityX * 70;
       let vy = velocityY * 70;
-      const friction = 0.92;
+      const friction = 0.93;
       const minVelocity = 0.08;
       const maxFrames = 120;
       let frameCount = 0;
@@ -112,7 +124,8 @@ export function OrbitalGallery() {
 
         const proposedX = stateRef.current.rotation.x - vy / 200;
         stateRef.current.rotation.x = Math.min(Math.max(proposedX, -MAX_POLAR_ROT_DEG), MAX_POLAR_ROT_DEG);
-        stateRef.current.rotation.y += vx / 200;
+        // Rotación 360° infinita y continua
+        stateRef.current.rotation.y = (stateRef.current.rotation.y + vx / 200) % 360;
 
         applyTransform();
 
@@ -156,7 +169,7 @@ export function OrbitalGallery() {
       }
 
       const proposedX = stateRef.current.startRotation.x - deltaY / PAN_SENSITIVITY;
-      stateRef.current.rotation.y = stateRef.current.startRotation.y + deltaX / PAN_SENSITIVITY;
+      stateRef.current.rotation.y = (stateRef.current.startRotation.y + deltaX / PAN_SENSITIVITY) % 360;
       stateRef.current.rotation.x = Math.min(Math.max(proposedX, -MAX_POLAR_ROT_DEG), MAX_POLAR_ROT_DEG);
 
       applyTransform();
@@ -205,10 +218,10 @@ export function OrbitalGallery() {
   };
 
   return (
-    <div className="relative w-full h-[380px] sm:h-[620px] md:h-[680px] overflow-hidden select-none">
+    <div className="relative w-full h-[390px] sm:h-[620px] md:h-[680px] overflow-hidden select-none">
       <div
         ref={containerRef}
-        className="absolute inset-0 flex items-center justify-center overflow-hidden touch-none [perspective:1700px] sm:[perspective:2400px] cursor-grab active:cursor-grabbing"
+        className="absolute inset-0 flex items-center justify-center overflow-hidden touch-none [perspective:1600px] sm:[perspective:2400px] cursor-grab active:cursor-grabbing"
       >
         <div
           ref={sphereRef}
@@ -217,21 +230,24 @@ export function OrbitalGallery() {
             transform: `translateZ(-${RADIUS_PX}px) rotateX(0deg) rotateY(0deg)`,
           }}
         >
-          {ITEMS_GRID.map((coord, idx) => {
-            const imgSrc = IMAGENES_PORTFOLIO[idx % IMAGENES_PORTFOLIO.length];
+          {itemsEsfera.map((item, idx) => {
+            const imgSrc = IMAGENES_PORTFOLIO[item.imgIndex];
             return (
               <div
                 key={idx}
                 onClick={(e) => handleImageClick(imgSrc, e)}
-                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[126px] h-[126px] sm:w-[185px] sm:h-[185px] md:w-[220px] md:h-[220px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.05] hover:z-20"
+                // Medidas calculadas para llenar el espacio sin encimarse:
+                // Móvil: 135px (tupido y sin huecos)
+                // PC: 215px
+                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[135px] h-[135px] sm:w-[185px] sm:h-[185px] md:w-[215px] md:h-[215px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.06] hover:z-20"
                 style={{
-                  transform: `rotateY(${coord.x * STEP_DEG_X}deg) rotateX(${coord.y * STEP_DEG_Y}deg) translateZ(${RADIUS_PX}px)`,
+                  transform: `rotateY(${item.xDeg}deg) rotateX(${item.yDeg}deg) translateZ(${RADIUS_PX}px)`,
                 }}
               >
                 <div className="absolute inset-1 sm:inset-1.5 rounded-2xl sm:rounded-3xl overflow-hidden bg-zinc-200 dark:bg-zinc-800 shadow-md border border-black/5 dark:border-white/10 backface-hidden">
                   <img
                     src={imgSrc}
-                    alt={`Trabajo de diseño gráfico ${idx + 1}`}
+                    alt={`Trabajo de diseño gráfico ${item.imgIndex + 1}`}
                     draggable={false}
                     className="w-full h-full object-cover pointer-events-none backface-hidden"
                     onError={(e) => {
@@ -244,11 +260,12 @@ export function OrbitalGallery() {
           })}
         </div>
 
+        {/* Viñeta sutil vertical para suavizar las esquinas superior e inferior */}
         <div className="absolute inset-x-0 top-0 h-6 sm:h-10 bg-gradient-to-b from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
         <div className="absolute inset-x-0 bottom-0 h-6 sm:h-10 bg-gradient-to-t from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
       </div>
 
-      {/* MODAL DE ZOOM */}
+      {/* MODAL DE ZOOM FLOTANTE */}
       {imagenEnlarged && (
         <div
           onClick={handleCloseViewer}
