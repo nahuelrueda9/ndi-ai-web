@@ -24,11 +24,11 @@ import {
   Scissors,
   Stethoscope,
   Building2,
-  X,
 } from "lucide-react";
 
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { RevealOnScroll } from "@/components/Ui/RevealOnScroll";
+import { OrbitalGallery } from "@/components/landing/OrbitalGallery";
 
 const WHATSAPP_NUMERO = "5493886575664";
 const CORREO_CONTACTO = "soporte@ndiweb.com";
@@ -297,7 +297,6 @@ export default function HomePage() {
   const [mostrarBotonHeader, setMostrarBotonHeader] = useState(false);
   const [errorFotoNahuel, setErrorFotoNahuel] = useState(false);
   const [activo, setActivo] = useState(0);
-  const [imagenModal, setImagenModal] = useState<string | null>(null);
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
@@ -331,22 +330,12 @@ export default function HomePage() {
     setActivo((prev) => (prev + 1) % IMAGENES_PORTFOLIO.length);
   };
 
-  // Función para calcular la rotación en el muro cilíndrico curvo
-  const obtenerTransformCurvo = (index: number) => {
-    const col = index % 5;
-    // Curvatura de izquierda a derecha (estilo pared cóncava)
-    const angulos = [14, 7, 0, -7, -14];
-    const translateZ = [-35, -10, 0, -10, -35];
-    return `rotateY(${angulos[col]}deg) translateZ(${translateZ[col]}px)`;
-  };
-
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 selection:bg-[var(--brand)] selection:text-white overflow-x-hidden">
       {/* HEADER: LOGO AZUL TRANSPARENTE SIN CAJA DE FONDO */}
       <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/90 backdrop-blur-xl transition-colors dark:border-zinc-800/80 dark:bg-[#0c0d0e]/90">
         <div className="mx-auto flex h-14 sm:h-16 max-w-7xl items-center justify-between px-3.5 sm:px-8 gap-2">
           <Link href="/" className="flex items-center gap-2.5 shrink-0">
-            {/* Logo en PNG azul directo sin caja de fondo */}
             <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center">
               <Image
                 src="/logo-ndi.png"
@@ -618,10 +607,10 @@ export default function HomePage() {
         </section>
       </RevealOnScroll>
 
-      {/* 3. TRABAJOS: PARED CURVA 3D CÓNCAVA CON ZOOM CENTRAL (ESTILO CODEPEN) */}
+      {/* 3. TRABAJOS: ESFERA 3D ORBITAL (ORBITAL PHOTO GALLERY) */}
       <RevealOnScroll>
-        <section id="trabajos" className="relative mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20 overflow-hidden">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8 sm:mb-12">
+        <section id="trabajos" className="mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
             <div className="max-w-2xl">
               <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
                 Portfolio
@@ -630,7 +619,7 @@ export default function HomePage() {
                 Trabajos seleccionados
               </h2>
               <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-                Pared 3D de proyectos. Hacé clic en cualquier pieza para enfocarla en primer plano.
+                Esfera 3D interactiva de proyectos. Arrastrá para girar y tocá cualquier imagen para ampliarla al centro.
               </p>
             </div>
 
@@ -645,68 +634,8 @@ export default function HomePage() {
             </a>
           </div>
 
-          {/* ESCENARIO DE PARED CURVA 3D */}
-          <div className="relative w-full [perspective:1400px]">
-            <div
-              className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 transition-all duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)] ${
-                imagenModal ? "opacity-25 filter blur-[6px] pointer-events-none scale-95" : "opacity-100 filter-none scale-100"
-              }`}
-              style={{ transformStyle: "preserve-3d" }}
-            >
-              {IMAGENES_PORTFOLIO.map((src, idx) => (
-                <div
-                  key={src}
-                  onClick={() => setImagenModal(src)}
-                  style={{
-                    transform: obtenerTransformCurvo(idx),
-                    transformStyle: "preserve-3d",
-                  }}
-                  className="group relative aspect-[4/3] cursor-pointer overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-md transition-all duration-300 hover:scale-[1.05] hover:z-20 hover:shadow-2xl dark:border-zinc-800 dark:bg-zinc-900"
-                >
-                  <img
-                    src={src}
-                    alt={`Trabajo de diseño gráfico ${idx + 1}`}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    onError={(e) => {
-                      e.currentTarget.src = "/portfolio/imagen1.jpg";
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-black/35 opacity-0 backdrop-blur-[1px] transition-opacity duration-300 group-hover:opacity-100 flex items-center justify-center">
-                    <span className="rounded-xl bg-white/90 px-3 py-1.5 text-[11px] font-bold text-zinc-950 shadow-md">
-                      Ver pieza ↗
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* VISOR EN PRIMER PLANO (ZOOM FLOTANTE ESTILO CAPTURA 4) */}
-            {imagenModal && (
-              <div
-                onClick={() => setImagenModal(null)}
-                className="absolute inset-0 z-40 flex items-center justify-center p-4 sm:p-8 animate-in fade-in zoom-in-95 duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] cursor-pointer"
-              >
-                <div
-                  onClick={(e) => e.stopPropagation()}
-                  className="relative w-full max-w-2xl sm:max-w-3xl aspect-[16/10] sm:aspect-[16/9] overflow-hidden rounded-3xl sm:rounded-[2.5rem] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 shadow-[0_35px_80px_-15px_rgba(0,0,0,0.5)] transition-all cursor-default"
-                >
-                  <button
-                    onClick={() => setImagenModal(null)}
-                    aria-label="Cerrar vista enfocada"
-                    className="absolute top-4 right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md hover:bg-black/80 transition"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-
-                  <img
-                    src={imagenModal}
-                    alt="Detalle de diseño gráfico"
-                    className="h-full w-full object-contain p-2 sm:p-5 bg-white dark:bg-zinc-900"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
+          {/* COMPONENTE ORBITAL 3D */}
+          <OrbitalGallery />
         </section>
       </RevealOnScroll>
 
@@ -776,15 +705,15 @@ export default function HomePage() {
                 <span>Hablar directo con Nahuel</span>
               </a>
 
-            <a
-              href={BEHANCE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-xs sm:text-sm font-bold text-zinc-800 shadow-xs transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 active:scale-95"
-            >
-              <Palette className="h-4 w-4 text-[var(--brand)]" />
-              <span>Ver portfolio en Behance ↗</span>
-            </a>
+              <a
+                href={BEHANCE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-xs sm:text-sm font-bold text-zinc-800 shadow-xs transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 active:scale-95"
+              >
+                <Palette className="h-4 w-4 text-[var(--brand)]" />
+                <span>Ver portfolio en Behance ↗</span>
+              </a>
             </div>
           </div>
         </section>
@@ -932,13 +861,12 @@ export default function HomePage() {
         </section>
       </RevealOnScroll>
 
-      {/* FOOTER: LOGO AZUL TRANSPARENTE SIN CAJA DE FONDO */}
+      {/* FOOTER */}
       <footer className="border-t border-zinc-200/80 bg-white py-10 sm:py-12 dark:border-zinc-800 dark:bg-[#0c0d0e]">
         <div className="mx-auto max-w-7xl px-4 sm:px-8">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 pb-6 sm:pb-8 border-b border-zinc-100 dark:border-zinc-800/80">
             <div>
               <div className="flex items-center gap-2.5">
-                {/* Logo en PNG azul directo sin caja de fondo */}
                 <div className="flex h-7 w-7 items-center justify-center">
                   <Image
                     src="/logo-ndi.png"
