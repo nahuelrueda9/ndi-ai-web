@@ -331,7 +331,7 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 selection:bg-[var(--brand)] selection:text-white overflow-x-hidden">
-      {/* HEADER: LOGO COMPACTO Y A LA IZQUIERDA */}
+      {/* HEADER: LOGO A LA IZQUIERDA */}
       <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/90 backdrop-blur-xl transition-colors dark:border-zinc-800/80 dark:bg-[#0c0d0e]/90">
         <div className="w-full flex h-14 sm:h-16 items-center justify-between px-3.5 sm:px-8 gap-2">
           <Link href="/" className="flex items-center gap-2 shrink-0">
@@ -414,29 +414,29 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* 1. PORTADA: EN MOVIL OCUPA LA PANTALLA COMPLETA CON BOTONES AL BORDE; EN PC TIENE SU ESPACIO HOLGADO */}
+      {/* 1. PORTADA: ALTURA CALIBRADA (EN MOVIL OCUPA LA PANTALLA COMPLETA CON BOTONES AL BORDE) */}
       <section
         id="portfolio"
-        className="relative flex flex-col justify-between min-h-[calc(100svh-56px)] sm:min-h-0 pt-4 pb-4 sm:pt-12 sm:pb-16 border-b border-zinc-200/80 dark:border-zinc-800/60 overflow-hidden"
+        className="relative flex flex-col justify-between min-h-[calc(100svh-56px)] sm:min-h-0 pt-3 pb-3 sm:pt-10 sm:pb-14 border-b border-zinc-200/80 dark:border-zinc-800/60 overflow-hidden"
       >
         {/* ENCABEZADO */}
         <div className="mx-auto max-w-5xl px-3 sm:px-8 text-center shrink-0">
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-2.5 py-0.5 sm:px-3.5 sm:py-1 text-[10px] sm:text-xs font-semibold text-zinc-700 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 mb-2 sm:mb-4">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-2.5 py-0.5 sm:px-3.5 sm:py-1 text-[10px] sm:text-xs font-semibold text-zinc-700 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 mb-1.5 sm:mb-3">
             <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-[var(--brand)]" />
             <span>Diseño Gráfico & Desarrollo Web</span>
           </div>
 
-          <h1 className="text-xl sm:text-4xl md:text-5xl font-bold tracking-tight text-zinc-950 dark:text-white leading-[1.15]">
+          <h1 className="text-xl sm:text-4xl md:text-5xl font-bold tracking-tight text-zinc-950 dark:text-white leading-[1.14]">
             Marcas, diseño publicitario y webs pensados para el crecimiento de tu proyecto.
           </h1>
 
-          <p className="mx-auto mt-2 sm:mt-3 max-w-2xl text-[11px] sm:text-sm text-zinc-600 dark:text-zinc-400 font-normal leading-relaxed px-1 sm:px-0">
+          <p className="mx-auto mt-1.5 sm:mt-2.5 max-w-2xl text-[11px] sm:text-sm text-zinc-600 dark:text-zinc-400 font-normal leading-relaxed px-1 sm:px-0">
             Trabajemos juntos para darle forma a tus ideas con un diseño pensado a la medida de tu proyecto y de tus objetivos.
           </p>
         </div>
 
         {/* ESFERA 3D */}
-        <div className="relative my-auto w-full px-0 sm:px-4">
+        <div className="relative my-auto w-full px-0 sm:px-4 flex items-center justify-center">
           <OrbitalGallery />
         </div>
 

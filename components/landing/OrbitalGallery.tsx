@@ -25,18 +25,25 @@ const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen20.png",
 ];
 
-// Grilla con coordenadas enteras estables: NUNCA se intersectan ni se cortan en rodajas
-const ITEMS_GRID = [
-  // Fila Y = -2 (Pares)
+// Grilla limpia con patrón de ladrillo
+const ITEMS_GRID_PC = [
+  // Fila Y = -2
   { x: -6, y: -2 }, { x: -4, y: -2 }, { x: -2, y: -2 }, { x: 0, y: -2 }, { x: 2, y: -2 }, { x: 4, y: -2 }, { x: 6, y: -2 },
-  // Fila Y = -1 (Impares)
+  // Fila Y = -1
   { x: -7, y: -1 }, { x: -5, y: -1 }, { x: -3, y: -1 }, { x: -1, y: -1 }, { x: 1, y: -1 }, { x: 3, y: -1 }, { x: 5, y: -1 }, { x: 7, y: -1 },
-  // Fila Y = 0 (Ecuador central)
+  // Fila Y = 0 (Ecuador)
   { x: -6, y: 0 }, { x: -4, y: 0 }, { x: -2, y: 0 }, { x: 0, y: 0 }, { x: 2, y: 0 }, { x: 4, y: 0 }, { x: 6, y: 0 },
-  // Fila Y = 1 (Impares)
+  // Fila Y = 1
   { x: -7, y: 1 }, { x: -5, y: 1 }, { x: -3, y: 1 }, { x: -1, y: 1 }, { x: 1, y: 1 }, { x: 3, y: 1 }, { x: 5, y: 1 }, { x: 7, y: 1 },
-  // Fila Y = 2 (Pares)
+  // Fila Y = 2
   { x: -6, y: 2 }, { x: -4, y: 2 }, { x: -2, y: 2 }, { x: 0, y: 2 }, { x: 2, y: 2 }, { x: 4, y: 2 }, { x: 6, y: 2 },
+];
+
+const ITEMS_GRID_MOBILE = [
+  // 3 filas limpias y densas sin solapamiento
+  { x: -4, y: -1 }, { x: -2, y: -1 }, { x: 0, y: -1 }, { x: 2, y: -1 }, { x: 4, y: -1 },
+  { x: -5, y: 0 }, { x: -3, y: 0 }, { x: -1, y: 0 }, { x: 1, y: 0 }, { x: 3, y: 0 }, { x: 5, y: 0 },
+  { x: -4, y: 1 }, { x: -2, y: 1 }, { x: 0, y: 1 }, { x: 2, y: 1 }, { x: 4, y: 1 },
 ];
 
 export function OrbitalGallery() {
@@ -66,19 +73,18 @@ export function OrbitalGallery() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Proporciones fijas:
-  // PC: radio 1300px, tarjetas de 225px, paso 5.2°
-  // Celular: radio 750px, tarjetas de 130px, paso 5.4°
-  const RADIUS_PX = esMobile ? 750 : 1300;
-  const STEP_DEG_X = esMobile ? 5.4 : 5.2;
-  const STEP_DEG_Y = esMobile ? 5.4 : 5.2;
+  // Proporciones matemáticas para que las fotos sean grandes y tupidas
+  const RADIUS_PX = esMobile ? 700 : 1300;
+  const STEP_DEG_X = esMobile ? 6.2 : 5.1;
+  const STEP_DEG_Y = esMobile ? 6.2 : 5.1;
+  const itemsActuales = esMobile ? ITEMS_GRID_MOBILE : ITEMS_GRID_PC;
 
   useEffect(() => {
     const sphere = sphereRef.current;
     const container = containerRef.current;
     if (!sphere || !container) return;
 
-    const MAX_POLAR_ROT_DEG = esMobile ? 2.5 : 3.5;
+    const MAX_POLAR_ROT_DEG = 3;
     const PAN_SENSITIVITY = esMobile ? 12 : 15;
 
     const applyTransform = () => {
@@ -206,7 +212,7 @@ export function OrbitalGallery() {
   };
 
   return (
-    <div className="relative w-full h-[380px] sm:h-[580px] md:h-[640px] flex items-center justify-center select-none overflow-hidden">
+    <div className="relative w-full h-[360px] sm:h-[560px] md:h-[620px] flex items-center justify-center select-none overflow-hidden">
       <div
         ref={containerRef}
         className="absolute inset-0 flex items-center justify-center touch-none [perspective:2400px] cursor-grab active:cursor-grabbing overflow-hidden"
@@ -218,24 +224,32 @@ export function OrbitalGallery() {
             transform: `translateZ(-${RADIUS_PX}px) rotateX(0deg) rotateY(0deg)`,
           }}
         >
-          {ITEMS_GRID.map((coord, idx) => {
+          {itemsActuales.map((coord, idx) => {
             const imgSrc = IMAGENES_PORTFOLIO[idx % IMAGENES_PORTFOLIO.length];
             return (
               <div
                 key={idx}
                 onClick={(e) => handleImageClick(imgSrc, e)}
-                // Tarjetas grandes: 130px en celular y 225px en PC
-                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[130px] h-[130px] sm:w-[195px] sm:h-[195px] md:w-[225px] md:h-[225px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.05] hover:z-20"
+                // Tarjetas grandes: 135px en celular y 225px en PC
+                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[135px] h-[135px] sm:w-[190px] sm:h-[190px] md:w-[225px] md:h-[225px] cursor-pointer transition-transform duration-200 hover:scale-[1.05] hover:z-20"
                 style={{
                   transform: `rotateY(${coord.x * STEP_DEG_X}deg) rotateX(${coord.y * STEP_DEG_Y}deg) translateZ(${RADIUS_PX}px)`,
+                  transformStyle: "preserve-3d",
                 }}
               >
-                <div className="absolute inset-1 sm:inset-1.5 rounded-2xl sm:rounded-3xl overflow-hidden bg-zinc-200 dark:bg-zinc-800 shadow-md border border-black/5 dark:border-white/10 backface-hidden">
+                {/* Contenedor sin backface-hidden para eliminar los cortes triangulares en esquinas */}
+                <div
+                  className="absolute inset-1 sm:inset-1.5 rounded-2xl sm:rounded-3xl overflow-hidden bg-zinc-200 dark:bg-zinc-800 shadow-md border border-black/5 dark:border-white/10"
+                  style={{
+                    transform: "translate3d(0,0,0)",
+                    WebkitMaskImage: "-webkit-radial-gradient(white, black)",
+                  }}
+                >
                   <img
                     src={imgSrc}
                     alt={`Trabajo de diseño gráfico ${idx + 1}`}
                     draggable={false}
-                    className="w-full h-full object-cover pointer-events-none backface-hidden"
+                    className="w-full h-full object-cover pointer-events-none"
                     onError={(e) => {
                       e.currentTarget.src = "/portfolio/imagen1.jpg";
                     }}
