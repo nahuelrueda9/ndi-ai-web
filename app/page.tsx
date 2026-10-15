@@ -414,10 +414,10 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* 1. PORTADA */}
-      <section id="portfolio" className="relative flex flex-col justify-between min-h-[calc(100dvh-56px)] sm:min-h-0 pt-3 pb-4 sm:pt-10 sm:pb-16 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
+      {/* 1. PORTADA: SIN OVERFLOW VERTICAL PARA QUE NUNCA SE CORTE NADA */}
+      <section id="portfolio" className="relative flex flex-col justify-between pt-4 pb-6 sm:pt-10 sm:pb-16 border-b border-zinc-200/80 dark:border-zinc-800/60">
         <div className="mx-auto max-w-5xl px-3 sm:px-8 text-center shrink-0">
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-2.5 py-0.5 sm:px-3.5 sm:py-1 text-[10px] sm:text-xs font-semibold text-zinc-700 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 mb-1.5 sm:mb-3">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-2.5 py-0.5 sm:px-3.5 sm:py-1 text-[10px] sm:text-xs font-semibold text-zinc-700 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 mb-2 sm:mb-4">
             <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-[var(--brand)]" />
             <span>Diseño Gráfico & Desarrollo Web</span>
           </div>
@@ -426,18 +426,18 @@ export default function HomePage() {
             Marcas, diseño publicitario y webs pensados para el crecimiento de tu proyecto.
           </h1>
 
-          <p className="mx-auto mt-1.5 sm:mt-3 max-w-2xl text-[11px] sm:text-sm md:text-base text-zinc-600 dark:text-zinc-400 font-normal leading-relaxed px-1 sm:px-0">
+          <p className="mx-auto mt-2 sm:mt-3 max-w-2xl text-[11px] sm:text-sm md:text-base text-zinc-600 dark:text-zinc-400 font-normal leading-relaxed px-1 sm:px-0">
             Trabajemos juntos para darle forma a tus ideas con un diseño pensado a la medida de tu proyecto y de tus objetivos.
           </p>
         </div>
 
-        {/* ESFERA 3D */}
-        <div className="relative mt-1 sm:mt-6 w-full px-0 sm:px-4">
+        {/* ESFERA 3D CON ESPACIO DESPEJADO */}
+        <div className="relative mt-2 sm:mt-6 w-full px-0 sm:px-4">
           <OrbitalGallery />
         </div>
 
         {/* BOTONES AL PIE */}
-        <div className="shrink-0 px-3.5 max-w-md sm:max-w-none mx-auto w-full pt-2 sm:pt-4 pb-1 sm:pb-0">
+        <div className="shrink-0 px-3.5 max-w-md sm:max-w-none mx-auto w-full pt-4 sm:pt-6">
           <div className="grid grid-cols-2 sm:flex sm:flex-row items-center justify-center gap-2 sm:gap-3">
             <a
               href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por un proyecto de diseño.")}`}
