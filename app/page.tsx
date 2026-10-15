@@ -6,8 +6,6 @@ import Image from "next/image";
 import {
   BookOpen,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   ExternalLink,
   Laptop,
   Mail,
@@ -33,30 +31,6 @@ import { OrbitalGallery } from "@/components/landing/OrbitalGallery";
 const WHATSAPP_NUMERO = "5493886575664";
 const CORREO_CONTACTO = "soporte@ndiweb.com";
 const BEHANCE_URL = "https://www.behance.net/nahuelrueda";
-
-// 20 imágenes del portfolio real
-const IMAGENES_PORTFOLIO = [
-  "/portfolio/imagen1.jpg",
-  "/portfolio/imagen2.jpg",
-  "/portfolio/imagen3.jpg",
-  "/portfolio/imagen4.jpg",
-  "/portfolio/imagen5.jpg",
-  "/portfolio/imagen6.jpg",
-  "/portfolio/imagen7.jpg",
-  "/portfolio/imagen8.jpg",
-  "/portfolio/imagen9.jpg",
-  "/portfolio/imagen10.jpg",
-  "/portfolio/imagen11.jpg",
-  "/portfolio/imagen12.jpg",
-  "/portfolio/imagen13.jpg",
-  "/portfolio/imagen14.jpg",
-  "/portfolio/imagen15.jpg",
-  "/portfolio/imagen16.jpg",
-  "/portfolio/imagen17.jpg",
-  "/portfolio/imagen18.png",
-  "/portfolio/imagen19.png",
-  "/portfolio/imagen20.png",
-];
 
 const serviciosNDI = [
   {
@@ -296,15 +270,7 @@ export default function HomePage() {
   const [faqAbierta, setFaqAbierta] = useState<number | null>(0);
   const [mostrarBotonHeader, setMostrarBotonHeader] = useState(false);
   const [errorFotoNahuel, setErrorFotoNahuel] = useState(false);
-  const [activo, setActivo] = useState(0);
   const { theme, setTheme } = useTheme();
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActivo((prev) => (prev + 1) % IMAGENES_PORTFOLIO.length);
-    }, 10000);
-    return () => clearInterval(timer);
-  }, []);
 
   const toggleFaq = (index: number) => {
     setFaqAbierta(faqAbierta === index ? null : index);
@@ -322,17 +288,9 @@ export default function HomePage() {
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
-  const irAnterior = () => {
-    setActivo((prev) => (prev - 1 + IMAGENES_PORTFOLIO.length) % IMAGENES_PORTFOLIO.length);
-  };
-
-  const irSiguiente = () => {
-    setActivo((prev) => (prev + 1) % IMAGENES_PORTFOLIO.length);
-  };
-
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 selection:bg-[var(--brand)] selection:text-white overflow-x-hidden">
-      {/* HEADER: LOGO AZUL TRANSPARENTE SIN CAJA DE FONDO */}
+      {/* HEADER */}
       <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/90 backdrop-blur-xl transition-colors dark:border-zinc-800/80 dark:bg-[#0c0d0e]/90">
         <div className="mx-auto flex h-14 sm:h-16 max-w-7xl items-center justify-between px-3.5 sm:px-8 gap-2">
           <Link href="/" className="flex items-center gap-2.5 shrink-0">
@@ -352,11 +310,11 @@ export default function HomePage() {
           </Link>
 
           <nav className="hidden items-center gap-6 lg:flex">
+            <a href="#portfolio" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
+              Portfolio
+            </a>
             <a href="#servicios" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
               Servicios
-            </a>
-            <a href="#trabajos" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
-              Trabajos
             </a>
             <a href="#quien-soy" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white">
               Quién soy
@@ -412,8 +370,8 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* 1. PORTADA */}
-      <section className="relative pt-6 pb-12 sm:pt-16 sm:pb-24 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
+      {/* 1. PORTADA CON LA ESFERA 3D ORBITAL COMO CENTRO PRINCIPAL */}
+      <section id="portfolio" className="relative pt-6 pb-10 sm:pt-12 sm:pb-16 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
         <div className="mx-auto max-w-7xl px-3 sm:px-8">
           
           <div className="mx-auto max-w-4xl text-center">
@@ -422,124 +380,40 @@ export default function HomePage() {
               <span>Diseño Gráfico & Desarrollo Web</span>
             </div>
 
-            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-[3.6rem] font-bold tracking-tight text-zinc-950 dark:text-white leading-[1.15]">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-bold tracking-tight text-zinc-950 dark:text-white leading-[1.15]">
               Marcas, diseño publicitario y webs pensados para el crecimiento de tu proyecto.
             </h1>
 
-            <p className="mx-auto mt-4 max-w-2xl text-xs sm:text-sm md:text-base text-zinc-600 dark:text-zinc-400 font-normal leading-relaxed px-2 sm:px-0">
-              Trabajemos juntos para darle forma a tus ideas con un diseño pensado<br className="hidden md:inline" /> a la medida de tu proyecto y de tus objetivos.
+            <p className="mx-auto mt-3 max-w-2xl text-xs sm:text-sm md:text-base text-zinc-600 dark:text-zinc-400 font-normal leading-relaxed px-2 sm:px-0">
+              Trabajemos juntos para darle forma a tus ideas con un diseño pensado a la medida de tu proyecto y de tus objetivos.
             </p>
-          </div>
 
-          <div className="relative mt-8 sm:mt-14 mx-auto max-w-5xl">
-            
-            <div className="absolute top-2 left-2 sm:-top-5 sm:-left-5 rounded-xl sm:rounded-3xl bg-zinc-950/95 p-2.5 sm:p-4 text-white shadow-xl border border-zinc-800 text-left max-w-[140px] sm:max-w-[210px] z-30 backdrop-blur-xs">
-              <p className="text-base sm:text-2xl font-bold tracking-tight text-white leading-none">
-                100%
-              </p>
-              <p className="mt-1 text-[9px] sm:text-xs text-zinc-400 font-medium leading-tight">
-                personalizado y adaptado <br /> a tu marca.
-              </p>
-            </div>
-
-            <div className="relative w-full aspect-[4/3] sm:aspect-[16/9] min-h-[250px] sm:min-h-[500px] overflow-hidden rounded-2xl sm:rounded-3xl bg-zinc-100/60 dark:bg-zinc-900/40 flex items-center justify-center border border-zinc-200/60 dark:border-zinc-800/60">
-              <div className="relative w-full h-full flex items-center justify-center">
-                {IMAGENES_PORTFOLIO.map((imagen, index) => {
-                  const total = IMAGENES_PORTFOLIO.length;
-                  let offset = (index - activo) % total;
-                  if (offset < -Math.floor(total / 2)) offset += total;
-                  if (offset > Math.floor(total / 2)) offset -= total;
-
-                  const esVisible = Math.abs(offset) <= 1;
-                  if (!esVisible) return null;
-
-                  const esCentro = offset === 0;
-
-                  return (
-                    <div
-                      key={imagen}
-                      onClick={() => setActivo(index)}
-                      className={`absolute cursor-pointer rounded-xl sm:rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${
-                        esCentro
-                          ? "w-[94%] sm:w-[86%] h-[94%] sm:h-[92%] z-20 shadow-xl translate-x-0 scale-100 opacity-100"
-                          : offset < 0
-                          ? "w-[84%] sm:w-[78%] h-[84%] z-10 shadow-md -translate-x-[94%] scale-[0.95] opacity-70 hover:opacity-95"
-                          : "w-[84%] sm:w-[78%] h-[84%] z-10 shadow-md translate-x-[94%] scale-[0.95] opacity-70 hover:opacity-95"
-                      }`}
-                    >
-                      <img
-                        src={imagen}
-                        alt={`Portfolio ND Diseño Gráfico ${index + 1}`}
-                        className="w-full h-full object-contain p-1.5 sm:p-4 bg-white dark:bg-zinc-900"
-                        onError={(e) => {
-                          e.currentTarget.src = "/portfolio/imagen1.jpg";
-                        }}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-
-              <button
-                onClick={irAnterior}
-                aria-label="Anterior proyecto"
-                className="absolute left-2 sm:left-4 z-30 flex h-8 w-8 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-white/95 shadow-md border border-zinc-200 text-zinc-800 transition hover:scale-105 active:scale-95 dark:bg-zinc-900/95 dark:border-zinc-700 dark:text-zinc-200"
+            <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <a
+                href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por un proyecto de diseño.")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-2xl bg-[var(--brand)] hover:opacity-90 px-7 py-3 text-xs sm:text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition active:scale-95"
               >
-                <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-              </button>
-              <button
-                onClick={irSiguiente}
-                aria-label="Siguiente proyecto"
-                className="absolute right-2 sm:right-4 z-30 flex h-8 w-8 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-white/95 shadow-md border border-zinc-200 text-zinc-800 transition hover:scale-105 active:scale-95 dark:bg-zinc-900/95 dark:border-zinc-700 dark:text-zinc-200"
-              >
-                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
-              </button>
-            </div>
+                <MessageCircle className="h-4 w-4" />
+                <span>Contactame</span>
+              </a>
 
-            <div className="mt-3 sm:mt-0 sm:absolute sm:-bottom-5 sm:-right-5 rounded-2xl bg-white/95 p-2.5 sm:p-3.5 shadow-md sm:shadow-2xl border border-zinc-200/90 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 z-30 sm:max-w-[380px] w-full">
-              <div className="grid grid-cols-3 gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
-                <span className="rounded-lg sm:rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-1.5 text-center flex items-center justify-center">
-                  Diseño
-                </span>
-                <span className="rounded-lg sm:rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-1.5 text-center flex items-center justify-center">
-                  Branding
-                </span>
-                <span className="rounded-lg sm:rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-1.5 text-center flex items-center justify-center">
-                  Logos
-                </span>
-                <span className="rounded-lg sm:rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-1.5 text-center flex items-center justify-center">
-                  Redes Sociales
-                </span>
-                <span className="rounded-lg sm:rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-1.5 text-center flex items-center justify-center">
-                  Diseño Editorial
-                </span>
-                <span className="rounded-lg sm:rounded-xl bg-[var(--brand)]/15 text-[var(--brand-contrast)] dark:text-[var(--brand)] px-2 py-1.5 text-center font-bold flex items-center justify-center">
-                  Páginas Web
-                </span>
-              </div>
+              <a
+                href={BEHANCE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-2xl border border-zinc-300 bg-white hover:bg-zinc-100 px-7 py-3 text-xs sm:text-sm font-bold text-zinc-800 shadow-sm transition active:scale-95 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+              >
+                <Palette className="h-4 w-4 text-[var(--brand)]" />
+                <span>Portfolio en Behance ↗</span>
+              </a>
             </div>
           </div>
 
-          <div className="mt-8 sm:mt-14 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <a
-              href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por un proyecto de diseño.")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-2xl bg-[var(--brand)] hover:opacity-90 px-8 py-3.5 text-xs sm:text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition active:scale-95"
-            >
-              <MessageCircle className="h-4 w-4" />
-              <span>Contactame</span>
-            </a>
-
-            <a
-              href={BEHANCE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-2xl border border-zinc-300 bg-white hover:bg-zinc-100 px-8 py-3.5 text-xs sm:text-sm font-bold text-zinc-800 shadow-sm transition active:scale-95 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-            >
-              <Palette className="h-4 w-4 text-[var(--brand)]" />
-              <span>Portfolio en Behance ↗</span>
-            </a>
+          {/* LA ESFERA ORBITAL 3D COMPLETA EN EL CENTRO DE LA PORTADA */}
+          <div className="relative mt-8 sm:mt-10 mx-auto max-w-7xl">
+            <OrbitalGallery />
           </div>
 
         </div>
@@ -607,39 +481,7 @@ export default function HomePage() {
         </section>
       </RevealOnScroll>
 
-      {/* 3. TRABAJOS: ESFERA 3D ORBITAL (ORBITAL PHOTO GALLERY) */}
-      <RevealOnScroll>
-        <section id="trabajos" className="mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
-            <div className="max-w-2xl">
-              <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
-                Portfolio
-              </span>
-              <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white leading-tight">
-                Trabajos seleccionados
-              </h2>
-              <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-                Esfera 3D interactiva de proyectos. Arrastrá para girar y tocá cualquier imagen para ampliarla al centro.
-              </p>
-            </div>
-
-            <a
-              href={BEHANCE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 self-start sm:self-auto rounded-xl border border-zinc-300 bg-white px-4 py-2 text-xs font-bold text-zinc-800 shadow-xs transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-            >
-              <Palette className="h-4 w-4 text-[var(--brand)]" />
-              <span>Ver más en Behance ↗</span>
-            </a>
-          </div>
-
-          {/* COMPONENTE ORBITAL 3D */}
-          <OrbitalGallery />
-        </section>
-      </RevealOnScroll>
-
-      {/* 4. QUIÉN SOY */}
+      {/* 3. QUIÉN SOY */}
       <RevealOnScroll>
         <section id="quien-soy" className="mx-auto max-w-4xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
           <div className="text-center max-w-xl mx-auto">
@@ -719,7 +561,7 @@ export default function HomePage() {
         </section>
       </RevealOnScroll>
 
-      {/* 5. MODELOS WEB */}
+      {/* 4. MODELOS WEB */}
       <RevealOnScroll>
         <section id="modelos-web" className="mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4">
@@ -759,7 +601,7 @@ export default function HomePage() {
         </section>
       </RevealOnScroll>
 
-      {/* 6. PREGUNTAS FRECUENTES */}
+      {/* 5. PREGUNTAS FRECUENTES */}
       <RevealOnScroll>
         <section id="faq" className="mx-auto max-w-4xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
           <div className="text-center">
@@ -799,7 +641,7 @@ export default function HomePage() {
         </section>
       </RevealOnScroll>
 
-      {/* 7. CONTACTO */}
+      {/* 6. CONTACTO */}
       <RevealOnScroll>
         <section id="contacto" className="border-t border-zinc-200/80 bg-zinc-100/60 py-12 sm:py-24 dark:border-zinc-800/80 dark:bg-zinc-950/60 scroll-mt-20">
           <div className="mx-auto max-w-3xl px-3.5 sm:px-8 text-center">
@@ -890,8 +732,8 @@ export default function HomePage() {
                 Navegación
               </p>
               <ul className="mt-2.5 space-y-1.5 text-xs text-zinc-600 dark:text-zinc-400">
+                <li><a href="#portfolio" className="hover:text-[var(--brand)] transition">Portfolio</a></li>
                 <li><a href="#servicios" className="hover:text-[var(--brand)] transition">Servicios</a></li>
-                <li><a href="#trabajos" className="hover:text-[var(--brand)] transition">Trabajos</a></li>
                 <li><a href="#quien-soy" className="hover:text-[var(--brand)] transition">Quién soy</a></li>
                 <li><a href="#modelos-web" className="hover:text-[var(--brand)] transition">Modelos web</a></li>
                 <li><a href="#faq" className="hover:text-[var(--brand)] transition">Preguntas</a></li>
