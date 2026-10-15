@@ -331,7 +331,7 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 selection:bg-[var(--brand)] selection:text-white overflow-x-hidden">
-      {/* HEADER: LOGO A LA IZQUIERDA */}
+      {/* HEADER */}
       <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/90 backdrop-blur-xl transition-colors dark:border-zinc-800/80 dark:bg-[#0c0d0e]/90">
         <div className="w-full flex h-14 sm:h-16 items-center justify-between px-3.5 sm:px-8 gap-2">
           <Link href="/" className="flex items-center gap-2 shrink-0">
@@ -414,14 +414,14 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* 1. PORTADA: ALTURA CALIBRADA (EN MOVIL OCUPA LA PANTALLA COMPLETA CON BOTONES AL BORDE) */}
+      {/* 1. PORTADA: EN MOVIL OCUPA LA PANTALLA COMPLETA CON BOTONES AL BORDE; EN PC TIENE SU ESPACIO HOLGADO */}
       <section
         id="portfolio"
-        className="relative flex flex-col justify-between min-h-[calc(100svh-56px)] sm:min-h-0 pt-3 pb-3 sm:pt-10 sm:pb-14 border-b border-zinc-200/80 dark:border-zinc-800/60 overflow-hidden"
+        className="relative flex flex-col justify-between min-h-[calc(100svh-56px)] sm:min-h-0 pt-3 pb-3 sm:pt-8 sm:pb-12 border-b border-zinc-200/80 dark:border-zinc-800/60 overflow-hidden"
       >
         {/* ENCABEZADO */}
         <div className="mx-auto max-w-5xl px-3 sm:px-8 text-center shrink-0">
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-2.5 py-0.5 sm:px-3.5 sm:py-1 text-[10px] sm:text-xs font-semibold text-zinc-700 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 mb-1.5 sm:mb-3">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-2.5 py-0.5 sm:px-3.5 sm:py-1 text-[10px] sm:text-xs font-semibold text-zinc-700 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 mb-1.5 sm:mb-2.5">
             <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-[var(--brand)]" />
             <span>Diseño Gráfico & Desarrollo Web</span>
           </div>
@@ -435,7 +435,7 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* ESFERA 3D */}
+        {/* CILINDRO ORBITAL 3D */}
         <div className="relative my-auto w-full px-0 sm:px-4 flex items-center justify-center">
           <OrbitalGallery />
         </div>
@@ -466,7 +466,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 2. SERVICIOS (COMIENZA AL HACER SCROLL) */}
+      {/* 2. SERVICIOS */}
       <RevealOnScroll>
         <section id="servicios" className="mx-auto max-w-7xl px-3.5 py-8 sm:px-8 sm:py-20 scroll-mt-20">
           <div className="max-w-2xl">
