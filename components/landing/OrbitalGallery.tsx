@@ -25,18 +25,23 @@ const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen20.png",
 ];
 
-// Malla original que funciona sin solapamientos
-const ITEMS_GRID = [
-  // Fila Y = -4 (Pares)
+// Grilla limpia: en móvil se usan filas [-2, 0, 2] para evitar cortes verticales;
+// en desktop se usan todas [-4, -2, 0, 2, 4].
+const ITEMS_GRID_DESKTOP = [
   { x: -8, y: -4 }, { x: -6, y: -4 }, { x: -4, y: -4 }, { x: -2, y: -4 }, { x: 0, y: -4 }, { x: 2, y: -4 }, { x: 4, y: -4 }, { x: 6, y: -4 }, { x: 8, y: -4 },
-  // Fila Y = -2 (Impares para trabar)
   { x: -7, y: -2 }, { x: -5, y: -2 }, { x: -3, y: -2 }, { x: -1, y: -2 }, { x: 1, y: -2 }, { x: 3, y: -2 }, { x: 5, y: -2 }, { x: 7, y: -2 },
-  // Fila Y = 0 (Ecuador central)
   { x: -8, y: 0 }, { x: -6, y: 0 }, { x: -4, y: 0 }, { x: -2, y: 0 }, { x: 0, y: 0 }, { x: 2, y: 0 }, { x: 4, y: 0 }, { x: 6, y: 0 }, { x: 8, y: 0 },
-  // Fila Y = 2 (Impares)
   { x: -7, y: 2 }, { x: -5, y: 2 }, { x: -3, y: 2 }, { x: -1, y: 2 }, { x: 1, y: 2 }, { x: 3, y: 2 }, { x: 5, y: 2 }, { x: 7, y: 2 },
-  // Fila Y = 4 (Pares)
   { x: -8, y: 4 }, { x: -6, y: 4 }, { x: -4, y: 4 }, { x: -2, y: 4 }, { x: 0, y: 4 }, { x: 2, y: 4 }, { x: 4, y: 4 }, { x: 6, y: 4 }, { x: 8, y: 4 },
+];
+
+const ITEMS_GRID_MOBILE = [
+  // Fila superior móvil
+  { x: -5, y: -2 }, { x: -3, y: -2 }, { x: -1, y: -2 }, { x: 1, y: -2 }, { x: 3, y: -2 }, { x: 5, y: -2 },
+  // Fila ecuador móvil
+  { x: -6, y: 0 }, { x: -4, y: 0 }, { x: -2, y: 0 }, { x: 0, y: 0 }, { x: 2, y: 0 }, { x: 4, y: 0 }, { x: 6, y: 0 },
+  // Fila inferior móvil
+  { x: -5, y: 2 }, { x: -3, y: 2 }, { x: -1, y: 2 }, { x: 1, y: 2 }, { x: 3, y: 2 }, { x: 5, y: 2 },
 ];
 
 export function OrbitalGallery() {
@@ -45,6 +50,7 @@ export function OrbitalGallery() {
 
   const [imagenEnlarged, setImagenEnlarged] = useState<string | null>(null);
   const [enlarging, setEnlarging] = useState(false);
+  const [esMobile, setEsMobile] = useState(false);
 
   const stateRef = useRef({
     rotation: { x: 0, y: 0 },
@@ -56,17 +62,30 @@ export function OrbitalGallery() {
     cancelTap: false,
   });
 
-  const RADIUS_PX = 1300;
-  const STEP_DEG_X = 5.1;
-  const STEP_DEG_Y = 5.1;
+  useEffect(() => {
+    const checkMobile = () => {
+      setEsMobile(window.innerWidth < 640);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Proporciones estables:
+  // PC: radio 1300px, paso 5.1° (tamaño grande previo)
+  // Móvil: radio 760px, paso 5.4° (tarjeta de 136px compacta y sin deformarse)
+  const RADIUS_PX = esMobile ? 760 : 1300;
+  const STEP_DEG_X = esMobile ? 5.4 : 5.1;
+  const STEP_DEG_Y = esMobile ? 5.4 : 5.1;
+  const itemsActuales = esMobile ? ITEMS_GRID_MOBILE : ITEMS_GRID_DESKTOP;
 
   useEffect(() => {
     const sphere = sphereRef.current;
     const container = containerRef.current;
     if (!sphere || !container) return;
 
-    const MAX_POLAR_ROT_DEG = 4;
-    const PAN_SENSITIVITY = 15;
+    const MAX_POLAR_ROT_DEG = esMobile ? 3 : 4;
+    const PAN_SENSITIVITY = esMobile ? 12 : 15;
 
     const applyTransform = () => {
       sphere.style.transform = `translateZ(-${RADIUS_PX}px) rotateX(${stateRef.current.rotation.x}deg) rotateY(${stateRef.current.rotation.y}deg)`;
@@ -178,7 +197,7 @@ export function OrbitalGallery() {
       container.removeEventListener("pointerup", handlePointerUp);
       stopInertia();
     };
-  }, []);
+  }, [RADIUS_PX, esMobile]);
 
   const handleImageClick = (src: string, e: React.MouseEvent) => {
     if (stateRef.current.cancelTap) return;
@@ -193,51 +212,46 @@ export function OrbitalGallery() {
   };
 
   return (
-    <div className="relative w-full h-[370px] sm:h-[580px] md:h-[660px] overflow-hidden select-none">
+    // Altura adecuada para permitir que las tarjetas giren sin topar el overflow
+    <div className="relative w-full h-[430px] sm:h-[620px] md:h-[720px] overflow-hidden select-none">
       <div
         ref={containerRef}
-        className="absolute inset-0 flex items-center justify-center overflow-hidden touch-none [perspective:2200px] cursor-grab active:cursor-grabbing"
+        className="absolute inset-0 flex items-center justify-center overflow-hidden touch-none [perspective:1800px] sm:[perspective:2400px] cursor-grab active:cursor-grabbing"
       >
-        {/* En móvil aplicamos scale-[0.68] uniforme para conservar la matemática limpia sin cortes */}
-        <div className="relative flex items-center justify-center scale-[0.68] sm:scale-100 transition-transform origin-center">
-          <div
-            ref={sphereRef}
-            className="absolute w-0 h-0 [transform-style:preserve-3d] transition-transform duration-75"
-            style={{
-              transform: `translateZ(-${RADIUS_PX}px) rotateX(0deg) rotateY(0deg)`,
-            }}
-          >
-            {ITEMS_GRID.map((coord, idx) => {
-              const imgSrc = IMAGENES_PORTFOLIO[idx % IMAGENES_PORTFOLIO.length];
-              return (
-                <div
-                  key={idx}
-                  onClick={(e) => handleImageClick(imgSrc, e)}
-                  className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[220px] h-[220px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.05] hover:z-20"
-                  style={{
-                    transform: `rotateY(${coord.x * STEP_DEG_X}deg) rotateX(${coord.y * STEP_DEG_Y}deg) translateZ(${RADIUS_PX}px)`,
-                  }}
-                >
-                  <div className="absolute inset-1.5 rounded-3xl overflow-hidden bg-zinc-200 dark:bg-zinc-800 shadow-md border border-black/5 dark:border-white/10 backface-hidden">
-                    <img
-                      src={imgSrc}
-                      alt={`Trabajo de diseño gráfico ${idx + 1}`}
-                      draggable={false}
-                      className="w-full h-full object-cover pointer-events-none backface-hidden"
-                      onError={(e) => {
-                        e.currentTarget.src = "/portfolio/imagen1.jpg";
-                      }}
-                    />
-                  </div>
+        <div
+          ref={sphereRef}
+          className="absolute w-0 h-0 [transform-style:preserve-3d] transition-transform duration-75"
+          style={{
+            transform: `translateZ(-${RADIUS_PX}px) rotateX(0deg) rotateY(0deg)`,
+          }}
+        >
+          {itemsActuales.map((coord, idx) => {
+            const imgSrc = IMAGENES_PORTFOLIO[idx % IMAGENES_PORTFOLIO.length];
+            return (
+              <div
+                key={idx}
+                onClick={(e) => handleImageClick(imgSrc, e)}
+                // Tarjetas grandes: 136px en móvil y 225px en PC
+                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[136px] h-[136px] sm:w-[190px] sm:h-[190px] md:w-[225px] md:h-[225px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.05] hover:z-20"
+                style={{
+                  transform: `rotateY(${coord.x * STEP_DEG_X}deg) rotateX(${coord.y * STEP_DEG_Y}deg) translateZ(${RADIUS_PX}px)`,
+                }}
+              >
+                <div className="absolute inset-1 sm:inset-1.5 rounded-2xl sm:rounded-3xl overflow-hidden bg-zinc-200 dark:bg-zinc-800 shadow-md border border-black/5 dark:border-white/10 backface-hidden">
+                  <img
+                    src={imgSrc}
+                    alt={`Trabajo de diseño gráfico ${idx + 1}`}
+                    draggable={false}
+                    className="w-full h-full object-cover pointer-events-none backface-hidden"
+                    onError={(e) => {
+                      e.currentTarget.src = "/portfolio/imagen1.jpg";
+                    }}
+                  />
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
         </div>
-
-        {/* Fades suaves superior e inferior */}
-        <div className="absolute inset-x-0 top-0 h-6 sm:h-10 bg-gradient-to-b from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
-        <div className="absolute inset-x-0 bottom-0 h-6 sm:h-10 bg-gradient-to-t from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
       </div>
 
       {/* MODAL ZOOM */}
