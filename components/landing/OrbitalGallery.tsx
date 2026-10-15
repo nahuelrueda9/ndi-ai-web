@@ -44,6 +44,7 @@ export function OrbitalGallery() {
 
   const [imagenEnlarged, setImagenEnlarged] = useState<string | null>(null);
   const [enlarging, setEnlarging] = useState(false);
+  const [esMobile, setEsMobile] = useState(false);
 
   const stateRef = useRef({
     rotation: { x: 0, y: 0 },
@@ -55,21 +56,33 @@ export function OrbitalGallery() {
     cancelTap: false,
   });
 
-  const RADIUS_PX = 1300;
-  const STEP_DEG_X = 5.1;
-  const STEP_DEG_Y = 5.1;
+  // Detectar tamaño de pantalla para calibrar radio e inclinación
+  useEffect(() => {
+    const checkMobile = () => {
+      setEsMobile(window.innerWidth < 640);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  const RADIUS_PX = esMobile ? 800 : 1300;
+  const STEP_DEG_X = esMobile ? 6.2 : 5.1;
+  const STEP_DEG_Y = esMobile ? 6.2 : 5.1;
 
   useEffect(() => {
     const sphere = sphereRef.current;
     const container = containerRef.current;
     if (!sphere || !container) return;
 
-    const MAX_POLAR_ROT_DEG = 4;
-    const PAN_SENSITIVITY = 15;
+    const MAX_POLAR_ROT_DEG = esMobile ? 3 : 4;
+    const PAN_SENSITIVITY = esMobile ? 12 : 15;
 
     const applyTransform = () => {
       sphere.style.transform = `translateZ(-${RADIUS_PX}px) rotateX(${stateRef.current.rotation.x}deg) rotateY(${stateRef.current.rotation.y}deg)`;
     };
+
+    applyTransform();
 
     const stopInertia = () => {
       if (stateRef.current.inertiaFrame) {
@@ -175,7 +188,7 @@ export function OrbitalGallery() {
       container.removeEventListener("pointerup", handlePointerUp);
       stopInertia();
     };
-  }, []);
+  }, [RADIUS_PX, esMobile]);
 
   const handleImageClick = (src: string, e: React.MouseEvent) => {
     if (stateRef.current.cancelTap) return;
@@ -190,10 +203,10 @@ export function OrbitalGallery() {
   };
 
   return (
-    <div className="relative w-full h-[580px] sm:h-[680px] md:h-[750px] overflow-hidden select-none">
+    <div className="relative w-full h-[460px] sm:h-[620px] md:h-[720px] overflow-hidden select-none">
       <div
         ref={containerRef}
-        className="absolute inset-0 flex items-center justify-center overflow-hidden touch-none [perspective:2400px] cursor-grab active:cursor-grabbing"
+        className="absolute inset-0 flex items-center justify-center overflow-hidden touch-none [perspective:1800px] sm:[perspective:2400px] cursor-grab active:cursor-grabbing"
       >
         <div
           ref={sphereRef}
@@ -208,12 +221,12 @@ export function OrbitalGallery() {
               <div
                 key={idx}
                 onClick={(e) => handleImageClick(imgSrc, e)}
-                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[225px] h-[225px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.05] hover:z-20"
+                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[130px] h-[130px] sm:w-[185px] sm:h-[185px] md:w-[220px] md:h-[220px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.05] hover:z-20"
                 style={{
                   transform: `rotateY(${coord.x * STEP_DEG_X}deg) rotateX(${coord.y * STEP_DEG_Y}deg) translateZ(${RADIUS_PX}px)`,
                 }}
               >
-                <div className="absolute inset-1.5 rounded-3xl overflow-hidden bg-zinc-200 dark:bg-zinc-800 shadow-md border border-black/5 dark:border-white/10 backface-hidden">
+                <div className="absolute inset-1 sm:inset-1.5 rounded-2xl sm:rounded-3xl overflow-hidden bg-zinc-200 dark:bg-zinc-800 shadow-md border border-black/5 dark:border-white/10 backface-hidden">
                   <img
                     src={imgSrc}
                     alt={`Trabajo de diseño gráfico ${idx + 1}`}
@@ -229,37 +242,38 @@ export function OrbitalGallery() {
           })}
         </div>
 
-        {/* Degradés mínimos únicamente verticales para suavizar la entrada y salida */}
+        {/* Viñeta sutil vertical */}
         <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
         <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
       </div>
 
+      {/* MODAL DE ZOOM FLOTANTE */}
       {imagenEnlarged && (
         <div
           onClick={handleCloseViewer}
-          className={`fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-10 transition-opacity duration-300 ${
+          className={`fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-10 transition-opacity duration-300 ${
             enlarging ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
           }`}
         >
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+          <div className="absolute inset-0 bg-black/65 backdrop-blur-md" />
 
           <div
             onClick={(e) => e.stopPropagation()}
-            className={`relative max-w-2xl sm:max-w-3xl max-h-[82vh] w-auto h-auto rounded-[32px] overflow-hidden shadow-2xl transition-all duration-300 ${
+            className={`relative max-w-2xl sm:max-w-3xl max-h-[82vh] w-auto h-auto rounded-3xl sm:rounded-[32px] overflow-hidden shadow-2xl transition-all duration-300 ${
               enlarging ? "scale-100 translate-y-0" : "scale-95 translate-y-3"
             }`}
           >
             <button
               onClick={handleCloseViewer}
               aria-label="Cerrar vista"
-              className="absolute top-3.5 right-3.5 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md hover:bg-black/80 transition"
+              className="absolute top-3 right-3 sm:top-3.5 sm:right-3.5 z-20 flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md hover:bg-black/80 transition"
             >
               ✕
             </button>
             <img
               src={imagenEnlarged}
               alt="Detalle de diseño gráfico ampliado"
-              className="max-h-[80vh] w-auto object-contain rounded-[32px]"
+              className="max-h-[78vh] sm:max-h-[80vh] w-auto object-contain rounded-3xl sm:rounded-[32px]"
             />
           </div>
         </div>

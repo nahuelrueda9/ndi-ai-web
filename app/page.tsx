@@ -331,16 +331,16 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 selection:bg-[var(--brand)] selection:text-white overflow-x-hidden">
-      {/* HEADER */}
+      {/* HEADER: LOGO ACHICADO Y A LA IZQUIERDA */}
       <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/90 backdrop-blur-xl transition-colors dark:border-zinc-800/80 dark:bg-[#0c0d0e]/90">
-        <div className="mx-auto flex h-14 sm:h-16 w-full max-w-[96vw] xl:max-w-7xl items-center justify-between px-3.5 sm:px-6 gap-2">
-          <Link href="/" className="flex items-center gap-2.5 shrink-0">
-            <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center">
+        <div className="w-full flex h-14 sm:h-16 items-center justify-between px-4 sm:px-8 gap-3">
+          <Link href="/" className="flex items-center gap-2 shrink-0">
+            <div className="flex h-6 w-6 sm:h-7 sm:w-7 shrink-0 items-center justify-center">
               <Image
                 src="/logo-ndi.png"
                 alt="Logo ND Diseño Gráfico"
-                width={32}
-                height={32}
+                width={26}
+                height={26}
                 className="h-full w-full object-contain"
                 priority
               />
@@ -414,9 +414,8 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* 1. PORTADA: ESFERA 3D ORBITAL DE PUNTA A PUNTA (CON BOTONES ABAJO) */}
+      {/* 1. PORTADA: ESFERA 3D ORBITAL COMPLETA CON BOTONES ABAJO */}
       <section id="portfolio" className="relative pt-6 pb-12 sm:pt-14 sm:pb-20 overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/60">
-        {/* TÍTULO Y SUBTÍTULO */}
         <div className="mx-auto max-w-5xl px-3 sm:px-8 text-center">
           <div className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full border border-zinc-200 bg-white px-3 py-0.5 sm:px-3.5 sm:py-1 text-[11px] sm:text-xs font-semibold text-zinc-700 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 mb-3 sm:mb-4">
             <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-[var(--brand)]" />
@@ -523,7 +522,7 @@ export default function HomePage() {
         </section>
       </RevealOnScroll>
 
-      {/* 3. SHOWCASE DESTACADO: EL CARRUSEL ANTERIOR ABAJO DE SERVICIOS */}
+      {/* 3. SHOWCASE DESTACADO: EL CARRUSEL PREVIO DESPUÉS DE SERVICIOS */}
       <RevealOnScroll>
         <section id="destacados" className="border-t border-zinc-200/80 bg-zinc-100/50 py-12 sm:py-24 dark:border-zinc-800/60 dark:bg-zinc-950/40 scroll-mt-20">
           <div className="mx-auto max-w-7xl px-3 sm:px-8">
@@ -540,7 +539,6 @@ export default function HomePage() {
             </div>
 
             <div className="relative mx-auto max-w-5xl">
-              {/* Badge flotante 100% personalizado */}
               <div className="absolute top-2 left-2 sm:-top-5 sm:-left-5 rounded-xl sm:rounded-3xl bg-zinc-950/95 p-2.5 sm:p-4 text-white shadow-xl border border-zinc-800 text-left max-w-[140px] sm:max-w-[210px] z-30 backdrop-blur-xs">
                 <p className="text-base sm:text-2xl font-bold tracking-tight text-white leading-none">
                   100%
@@ -550,7 +548,6 @@ export default function HomePage() {
                 </p>
               </div>
 
-              {/* Escenario del carrusel */}
               <div className="relative w-full aspect-[4/3] sm:aspect-[16/9] min-h-[250px] sm:min-h-[500px] overflow-hidden rounded-2xl sm:rounded-3xl bg-zinc-100/60 dark:bg-zinc-900/40 flex items-center justify-center border border-zinc-200/60 dark:border-zinc-800/60">
                 <div className="relative w-full h-full flex items-center justify-center">
                   {IMAGENES_PORTFOLIO.map((imagen, index) => {
@@ -605,7 +602,6 @@ export default function HomePage() {
                 </button>
               </div>
 
-              {/* Etiquetas de disciplinas en esquina inferior */}
               <div className="mt-3 sm:mt-0 sm:absolute sm:-bottom-5 sm:-right-5 rounded-2xl bg-white/95 p-2.5 sm:p-3.5 shadow-md sm:shadow-2xl border border-zinc-200/90 backdrop-blur-md dark:bg-zinc-900/95 dark:border-zinc-800 z-30 sm:max-w-[380px] w-full">
                 <div className="grid grid-cols-3 gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
                   <span className="rounded-lg sm:rounded-xl bg-zinc-100 dark:bg-zinc-800/80 px-2 py-1.5 text-center flex items-center justify-center">
@@ -857,16 +853,16 @@ export default function HomePage() {
 
       {/* FOOTER */}
       <footer className="border-t border-zinc-200/80 bg-white py-10 sm:py-12 dark:border-zinc-800 dark:bg-[#0c0d0e]">
-        <div className="mx-auto max-w-7xl px-4 sm:px-8">
+        <div className="w-full max-w-[96vw] xl:max-w-7xl mx-auto px-4 sm:px-8">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 pb-6 sm:pb-8 border-b border-zinc-100 dark:border-zinc-800/80">
             <div>
               <div className="flex items-center gap-2.5">
-                <div className="flex h-7 w-7 items-center justify-center">
+                <div className="flex h-6 w-6 items-center justify-center">
                   <Image
                     src="/logo-ndi.png"
                     alt="Logo ND Diseño Gráfico"
-                    width={28}
-                    height={28}
+                    width={24}
+                    height={24}
                     className="h-full w-full object-contain"
                   />
                 </div>
