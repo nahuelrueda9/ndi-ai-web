@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 
 import { useTheme } from "@/components/theme/ThemeProvider";
+import { RevealOnScroll } from "@/components/ui/RevealOnScroll";
 
 const WHATSAPP_NUMERO = "5493886575664";
 const CORREO_CONTACTO = "soporte@ndiweb.com";
@@ -57,7 +58,6 @@ const IMAGENES_PORTFOLIO = [
   "/portfolio/imagen20.png",
 ];
 
-// Servicios ordenados según tu especificación
 const serviciosNDI = [
   {
     icono: Palette,
@@ -331,18 +331,28 @@ export default function HomePage() {
     setActivo((prev) => (prev + 1) % IMAGENES_PORTFOLIO.length);
   };
 
+  // Función para calcular la rotación en el muro cilíndrico curvo
+  const obtenerTransformCurvo = (index: number) => {
+    const col = index % 5;
+    // Curvatura de izquierda a derecha (estilo pared cóncava)
+    const angulos = [14, 7, 0, -7, -14];
+    const translateZ = [-35, -10, 0, -10, -35];
+    return `rotateY(${angulos[col]}deg) translateZ(${translateZ[col]}px)`;
+  };
+
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 selection:bg-[var(--brand)] selection:text-white overflow-x-hidden">
-      {/* HEADER */}
+      {/* HEADER: LOGO AZUL TRANSPARENTE SIN CAJA DE FONDO */}
       <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/90 backdrop-blur-xl transition-colors dark:border-zinc-800/80 dark:bg-[#0c0d0e]/90">
         <div className="mx-auto flex h-14 sm:h-16 max-w-7xl items-center justify-between px-3.5 sm:px-8 gap-2">
-          <Link href="/" className="flex items-center gap-2 shrink-0">
-            <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--brand)] p-1 shadow-xs shadow-blue-500/20">
+          <Link href="/" className="flex items-center gap-2.5 shrink-0">
+            {/* Logo en PNG azul directo sin caja de fondo */}
+            <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center">
               <Image
                 src="/logo-ndi.png"
                 alt="Logo ND Diseño Gráfico"
-                width={16}
-                height={16}
+                width={32}
+                height={32}
                 className="h-full w-full object-contain"
                 priority
               />
@@ -546,181 +556,225 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 2. SERVICIOS (SUBIDO DIRECTAMENTE DEBAJO DE LA PORTADA) */}
-      <section id="servicios" className="mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
-        <div className="max-w-2xl">
-          <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
-            Servicios
-          </span>
-          <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white leading-tight">
-            Soluciones visuales pensadas <br className="hidden md:inline" /> para tu proyecto.
-          </h2>
-          <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-            Diseño gráfico, comunicación y desarrollo web aplicados <br className="hidden md:inline" /> para que tu marca se destaque y conecte con su público.
-          </p>
-        </div>
-
-        <div className="mt-8 sm:mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {serviciosNDI.map((srv) => {
-            const Icono = srv.icono;
-            return (
-              <div
-                key={srv.titulo}
-                className="flex flex-col justify-between rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/60"
-              >
-                <div>
-                  <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${srv.color}`}>
-                    <Icono className="h-6 w-6" />
-                  </div>
-                  <h3 className="mt-5 text-base sm:text-lg font-bold text-zinc-950 dark:text-white">
-                    {srv.titulo}
-                  </h3>
-                  <p className="mt-2.5 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                    {srv.descripcion}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="mt-8 sm:mt-10 rounded-3xl border border-zinc-200 bg-zinc-100/70 p-6 sm:p-10 text-center dark:border-zinc-800 dark:bg-zinc-900/50">
-          <h3 className="text-lg sm:text-2xl font-bold text-zinc-950 dark:text-white max-w-2xl mx-auto">
-            ¿Sos parte de una empresa con imagen consolidada que necesita nuevas soluciones?
-          </h3>
-          <p className="mt-3 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-            Desarrollo piezas gráficas y digitales alineadas a la identidad visual de tu marca, respetando tus manuales de estilo y lineamientos para garantizar coherencia en cada medio de comunicación.
-          </p>
-          <div className="mt-5">
-            <a
-              href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría hablar sobre el desarrollo de piezas gráficas para mi empresa.")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl bg-[var(--brand)] px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs transition hover:opacity-90"
-            >
-              <MessageCircle className="h-4 w-4" />
-              <span>Hablemos de tu proyecto</span>
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. TRABAJOS (GRILLA DE PIEZAS REALES CON EFECTO 3D LIFT EN HOVER) */}
-      <section id="trabajos" className="mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+      {/* 2. SERVICIOS */}
+      <RevealOnScroll>
+        <section id="servicios" className="mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
           <div className="max-w-2xl">
             <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
-              Portfolio
+              Servicios
             </span>
             <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white leading-tight">
-              Trabajos seleccionados
+              Soluciones visuales pensadas <br className="hidden md:inline" /> para tu proyecto.
             </h2>
             <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-              Piezas de branding, diseño editorial, cartelería y redes sociales. Tocá cualquier imagen para ampliarla.
+              Diseño gráfico, comunicación y desarrollo web aplicados <br className="hidden md:inline" /> para que tu marca se destaque y conecte con su público.
             </p>
           </div>
 
-          <a
-            href={BEHANCE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 self-start sm:self-auto rounded-xl border border-zinc-300 bg-white px-4 py-2 text-xs font-bold text-zinc-800 shadow-xs transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-          >
-            <Palette className="h-4 w-4 text-[var(--brand)]" />
-            <span>Ver más en Behance ↗</span>
-          </a>
-        </div>
+          <div className="mt-8 sm:mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {serviciosNDI.map((srv, idx) => {
+              const Icono = srv.icono;
+              return (
+                <RevealOnScroll key={srv.titulo} delay={idx * 80}>
+                  <div className="flex flex-col justify-between h-full rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/60">
+                    <div>
+                      <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${srv.color}`}>
+                        <Icono className="h-6 w-6" />
+                      </div>
+                      <h3 className="mt-5 text-base sm:text-lg font-bold text-zinc-950 dark:text-white">
+                        {srv.titulo}
+                      </h3>
+                      <p className="mt-2.5 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                        {srv.descripcion}
+                      </p>
+                    </div>
+                  </div>
+                </RevealOnScroll>
+              );
+            })}
+          </div>
 
-        {/* GRILLA: 2 COLUMNAS EN CELULAR, 3 EN TABLET, 4 EN PC CON EFECTO 3D HOVER */}
-        <div className="mt-8 sm:mt-12 grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-3 lg:grid-cols-4 [perspective:1000px]">
-          {IMAGENES_PORTFOLIO.map((src, idx) => (
-            <div
-              key={src}
-              onClick={() => setImagenModal(src)}
-              className="group relative aspect-square cursor-pointer overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition-all duration-300 ease-out hover:-translate-y-2 hover:scale-[1.02] hover:shadow-2xl dark:border-zinc-800 dark:bg-zinc-900"
-            >
-              <img
-                src={src}
-                alt={`Trabajo de diseño gráfico ${idx + 1}`}
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                onError={(e) => {
-                  e.currentTarget.src = "/portfolio/imagen1.jpg";
-                }}
-              />
-              <div className="absolute inset-0 bg-black/40 opacity-0 backdrop-blur-[2px] transition-opacity duration-300 group-hover:opacity-100 flex items-center justify-center p-3 text-center">
-                <span className="rounded-xl bg-white/90 px-3 py-1.5 text-[11px] font-bold text-zinc-950 shadow-md">
-                  Ver pieza ↗
-                </span>
+          <RevealOnScroll delay={150}>
+            <div className="mt-8 sm:mt-10 rounded-3xl border border-zinc-200 bg-zinc-100/70 p-6 sm:p-10 text-center dark:border-zinc-800 dark:bg-zinc-900/50">
+              <h3 className="text-lg sm:text-2xl font-bold text-zinc-950 dark:text-white max-w-2xl mx-auto">
+                ¿Sos parte de una empresa con imagen consolidada que necesita nuevas soluciones?
+              </h3>
+              <p className="mt-3 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+                Desarrollo piezas gráficas y digitales alineadas a la identidad visual de tu marca, respetando tus manuales de estilo y lineamientos para garantizar coherencia en cada medio de comunicación.
+              </p>
+              <div className="mt-5">
+                <a
+                  href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría hablar sobre el desarrollo de piezas gráficas para mi empresa.")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[var(--brand)] px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs transition hover:opacity-90"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  <span>Hablemos de tu proyecto</span>
+                </a>
               </div>
             </div>
-          ))}
-        </div>
-      </section>
+          </RevealOnScroll>
+        </section>
+      </RevealOnScroll>
 
-      {/* 4. QUIÉN SOY */}
-      <section id="quien-soy" className="mx-auto max-w-4xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
-        <div className="text-center max-w-xl mx-auto">
-          <div className="relative mx-auto h-28 w-28 sm:h-36 sm:w-36 overflow-hidden rounded-full border-2 border-[var(--brand)]/40 bg-zinc-100 shadow-md ring-4 ring-[var(--brand)]/10 dark:bg-zinc-800">
-            {!errorFotoNahuel ? (
-              <Image
-                src="/nahuel.jpg"
-                alt="Nahuel - ND Diseño Gráfico"
-                width={256}
-                height={256}
-                quality={95}
-                className="h-full w-full object-cover object-top"
-                onError={() => setErrorFotoNahuel(true)}
-                priority
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center font-bold text-lg sm:text-xl text-[var(--brand)]">
-                ND
+      {/* 3. TRABAJOS: PARED CURVA 3D CÓNCAVA CON ZOOM CENTRAL (ESTILO CODEPEN) */}
+      <RevealOnScroll>
+        <section id="trabajos" className="relative mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20 overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8 sm:mb-12">
+            <div className="max-w-2xl">
+              <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
+                Portfolio
+              </span>
+              <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white leading-tight">
+                Trabajos seleccionados
+              </h2>
+              <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
+                Pared 3D de proyectos. Hacé clic en cualquier pieza para enfocarla en primer plano.
+              </p>
+            </div>
+
+            <a
+              href={BEHANCE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 self-start sm:self-auto rounded-xl border border-zinc-300 bg-white px-4 py-2 text-xs font-bold text-zinc-800 shadow-xs transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            >
+              <Palette className="h-4 w-4 text-[var(--brand)]" />
+              <span>Ver más en Behance ↗</span>
+            </a>
+          </div>
+
+          {/* ESCENARIO DE PARED CURVA 3D */}
+          <div className="relative w-full [perspective:1400px]">
+            <div
+              className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 transition-all duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)] ${
+                imagenModal ? "opacity-25 filter blur-[6px] pointer-events-none scale-95" : "opacity-100 filter-none scale-100"
+              }`}
+              style={{ transformStyle: "preserve-3d" }}
+            >
+              {IMAGENES_PORTFOLIO.map((src, idx) => (
+                <div
+                  key={src}
+                  onClick={() => setImagenModal(src)}
+                  style={{
+                    transform: obtenerTransformCurvo(idx),
+                    transformStyle: "preserve-3d",
+                  }}
+                  className="group relative aspect-[4/3] cursor-pointer overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-md transition-all duration-300 hover:scale-[1.05] hover:z-20 hover:shadow-2xl dark:border-zinc-800 dark:bg-zinc-900"
+                >
+                  <img
+                    src={src}
+                    alt={`Trabajo de diseño gráfico ${idx + 1}`}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    onError={(e) => {
+                      e.currentTarget.src = "/portfolio/imagen1.jpg";
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-black/35 opacity-0 backdrop-blur-[1px] transition-opacity duration-300 group-hover:opacity-100 flex items-center justify-center">
+                    <span className="rounded-xl bg-white/90 px-3 py-1.5 text-[11px] font-bold text-zinc-950 shadow-md">
+                      Ver pieza ↗
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* VISOR EN PRIMER PLANO (ZOOM FLOTANTE ESTILO CAPTURA 4) */}
+            {imagenModal && (
+              <div
+                onClick={() => setImagenModal(null)}
+                className="absolute inset-0 z-40 flex items-center justify-center p-4 sm:p-8 animate-in fade-in zoom-in-95 duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] cursor-pointer"
+              >
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="relative w-full max-w-2xl sm:max-w-3xl aspect-[16/10] sm:aspect-[16/9] overflow-hidden rounded-3xl sm:rounded-[2.5rem] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 shadow-[0_35px_80px_-15px_rgba(0,0,0,0.5)] transition-all cursor-default"
+                >
+                  <button
+                    onClick={() => setImagenModal(null)}
+                    aria-label="Cerrar vista enfocada"
+                    className="absolute top-4 right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md hover:bg-black/80 transition"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+
+                  <img
+                    src={imagenModal}
+                    alt="Detalle de diseño gráfico"
+                    className="h-full w-full object-contain p-2 sm:p-5 bg-white dark:bg-zinc-900"
+                  />
+                </div>
               </div>
             )}
           </div>
+        </section>
+      </RevealOnScroll>
 
-          <div className="mt-3.5 inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-0.5 text-xs font-semibold text-zinc-600 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
-            <MapPin className="h-3 w-3 text-[var(--brand)]" />
-            <span>Ledesma, Jujuy</span>
-          </div>
-
-          <h2 className="mt-2 text-xl sm:text-3xl font-bold tracking-tight text-zinc-950 dark:text-white">
-            Hola, soy Nahuel.
-          </h2>
-
-          <p className="mt-2 text-xs sm:text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 [text-wrap:balance]">
-            Soy Diseñador Gráfico Junior y desarrollador web de Ledesma, Jujuy.
-          </p>
-
-          <p className="mt-1 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-medium [text-wrap:balance]">
-            Mandame un mensaje y le damos forma a tu proyecto.
-          </p>
-
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-xs">
-            <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-2.5 py-1 sm:px-3 sm:py-1.5 font-medium text-zinc-800 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200 text-[11px] sm:text-xs">
-              <UserCheck className="h-3.5 w-3.5 text-[var(--brand)]" />
-              <span>Atención directa 1 a 1</span>
+      {/* 4. QUIÉN SOY */}
+      <RevealOnScroll>
+        <section id="quien-soy" className="mx-auto max-w-4xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
+          <div className="text-center max-w-xl mx-auto">
+            <div className="relative mx-auto h-28 w-28 sm:h-36 sm:w-36 overflow-hidden rounded-full border-2 border-[var(--brand)]/40 bg-zinc-100 shadow-md ring-4 ring-[var(--brand)]/10 dark:bg-zinc-800">
+              {!errorFotoNahuel ? (
+                <Image
+                  src="/nahuel.jpg"
+                  alt="Nahuel - ND Diseño Gráfico"
+                  width={256}
+                  height={256}
+                  quality={95}
+                  className="h-full w-full object-cover object-top"
+                  onError={() => setErrorFotoNahuel(true)}
+                  priority
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center font-bold text-lg sm:text-xl text-[var(--brand)]">
+                  ND
+                </div>
+              )}
             </div>
-            <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-2.5 py-1 sm:px-3 sm:py-1.5 font-medium text-zinc-800 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200 text-[11px] sm:text-xs">
-              <Palette className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
-              <span>Diseño Gráfico & Web</span>
-            </div>
-            <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-2.5 py-1 sm:px-3 sm:py-1.5 font-medium text-zinc-800 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200 text-[11px] sm:text-xs">
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-              <span>Soporte continuo</span>
-            </div>
-          </div>
 
-          <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-2.5">
-            <a
-              href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por un proyecto de diseño.")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-[var(--brand)] px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs shadow-blue-500/20 transition hover:opacity-90 active:scale-95"
-            >
-              <MessageCircle className="h-4 w-4" />
-              <span>Hablar directo con Nahuel</span>
-            </a>
+            <div className="mt-3.5 inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-0.5 text-xs font-semibold text-zinc-600 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+              <MapPin className="h-3 w-3 text-[var(--brand)]" />
+              <span>Ledesma, Jujuy</span>
+            </div>
+
+            <h2 className="mt-2 text-xl sm:text-3xl font-bold tracking-tight text-zinc-950 dark:text-white">
+              Hola, soy Nahuel.
+            </h2>
+
+            <p className="mt-2 text-xs sm:text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 [text-wrap:balance]">
+              Soy Diseñador Gráfico Junior y desarrollador web de Ledesma, Jujuy.
+            </p>
+
+            <p className="mt-1 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-medium [text-wrap:balance]">
+              Mandame un mensaje y le damos forma a tu proyecto.
+            </p>
+
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-xs">
+              <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-2.5 py-1 sm:px-3 sm:py-1.5 font-medium text-zinc-800 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200 text-[11px] sm:text-xs">
+                <UserCheck className="h-3.5 w-3.5 text-[var(--brand)]" />
+                <span>Atención directa 1 a 1</span>
+              </div>
+              <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-2.5 py-1 sm:px-3 sm:py-1.5 font-medium text-zinc-800 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200 text-[11px] sm:text-xs">
+                <Palette className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
+                <span>Diseño Gráfico & Web</span>
+              </div>
+              <div className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-2.5 py-1 sm:px-3 sm:py-1.5 font-medium text-zinc-800 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200 text-[11px] sm:text-xs">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+                <span>Soporte continuo</span>
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-2.5">
+              <a
+                href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por un proyecto de diseño.")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-[var(--brand)] px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs shadow-blue-500/20 transition hover:opacity-90 active:scale-95"
+              >
+                <MessageCircle className="h-4 w-4" />
+                <span>Hablar directo con Nahuel</span>
+              </a>
 
             <a
               href={BEHANCE_URL}
@@ -731,154 +785,166 @@ export default function HomePage() {
               <Palette className="h-4 w-4 text-[var(--brand)]" />
               <span>Ver portfolio en Behance ↗</span>
             </a>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </RevealOnScroll>
 
       {/* 5. MODELOS WEB */}
-      <section id="modelos-web" className="mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4">
-          <div className="max-w-2xl">
-            <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
-              Estructuras disponibles
-            </span>
-            <h2 className="mt-1.5 text-xl sm:text-3xl font-bold tracking-tight text-zinc-950 dark:text-white">
-              Modelos de muestra listos para adaptar.
-            </h2>
-            <p className="mt-1 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-              Diseños creados para cada tipo de actividad comercial.
-            </p>
+      <RevealOnScroll>
+        <section id="modelos-web" className="mx-auto max-w-7xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4">
+            <div className="max-w-2xl">
+              <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
+                Estructuras disponibles
+              </span>
+              <h2 className="mt-1.5 text-xl sm:text-3xl font-bold tracking-tight text-zinc-950 dark:text-white">
+                Modelos de muestra listos para adaptar.
+              </h2>
+              <p className="mt-1 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
+                Diseños creados para cada tipo de actividad comercial.
+              </p>
+            </div>
+
+            <div className="inline-flex items-center gap-2 self-start rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+              <span className="h-2 w-2 rounded-full bg-[var(--brand)]" />
+              <span>Todos los modelos incluyen panel autogestionable</span>
+            </div>
           </div>
 
-          <div className="inline-flex items-center gap-2 self-start rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
-            <span className="h-2 w-2 rounded-full bg-[var(--brand)]" />
-            <span>Todos los modelos incluyen panel autogestionable</span>
+          <div className="mt-8 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {modelosArriba.map((p, idx) => (
+              <RevealOnScroll key={p.id} delay={idx * 80}>
+                <TarjetaModelo p={p} />
+              </RevealOnScroll>
+            ))}
           </div>
-        </div>
 
-        <div className="mt-8 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {modelosArriba.map((p) => (
-            <TarjetaModelo key={p.id} p={p} />
-          ))}
-        </div>
-
-        <div className="mt-4 sm:mt-6 grid gap-4 sm:gap-6 sm:grid-cols-2 max-w-4xl mx-auto">
-          {modelosAbajo.map((p) => (
-            <TarjetaModelo key={p.id} p={p} />
-          ))}
-        </div>
-      </section>
+          <div className="mt-4 sm:mt-6 grid gap-4 sm:gap-6 sm:grid-cols-2 max-w-4xl mx-auto">
+            {modelosAbajo.map((p, idx) => (
+              <RevealOnScroll key={p.id} delay={idx * 80}>
+                <TarjetaModelo p={p} />
+              </RevealOnScroll>
+            ))}
+          </div>
+        </section>
+      </RevealOnScroll>
 
       {/* 6. PREGUNTAS FRECUENTES */}
-      <section id="faq" className="mx-auto max-w-4xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
-        <div className="text-center">
-          <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
-            Dudas frecuentes
-          </span>
-          <h2 className="mt-1.5 text-xl sm:text-3xl font-bold tracking-tight text-zinc-950 dark:text-white">
-            ¿Tenés preguntas? Te respondo.
-          </h2>
-        </div>
+      <RevealOnScroll>
+        <section id="faq" className="mx-auto max-w-4xl px-3.5 py-12 sm:px-8 sm:py-24 border-t border-zinc-200/80 dark:border-zinc-800/60 scroll-mt-20">
+          <div className="text-center">
+            <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-contrast)] dark:text-[var(--brand)]">
+              Dudas frecuentes
+            </span>
+            <h2 className="mt-1.5 text-xl sm:text-3xl font-bold tracking-tight text-zinc-950 dark:text-white">
+              ¿Tenés preguntas? Te respondo.
+            </h2>
+          </div>
 
-        <div className="mt-6 space-y-2.5">
-          {faqs.map((faq, index) => {
-            const abierta = faqAbierta === index;
-            return (
-              <div
-                key={faq.pregunta}
-                className="overflow-hidden rounded-2xl border border-zinc-200 bg-white transition dark:border-zinc-800 dark:bg-zinc-900/60"
-              >
-                <button
-                  type="button"
-                  onClick={() => toggleFaq(index)}
-                  className="flex w-full items-center justify-between p-4 sm:p-5 text-left font-semibold text-xs sm:text-sm text-zinc-900 dark:text-zinc-200 transition hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+          <div className="mt-6 space-y-2.5">
+            {faqs.map((faq, index) => {
+              const abierta = faqAbierta === index;
+              return (
+                <div
+                  key={faq.pregunta}
+                  className="overflow-hidden rounded-2xl border border-zinc-200 bg-white transition dark:border-zinc-800 dark:bg-zinc-900/60"
                 >
-                  <span>{faq.pregunta}</span>
-                  <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${abierta ? "rotate-180 text-[var(--brand)]" : ""}`} />
-                </button>
-                {abierta && (
-                  <div className="border-t border-zinc-100 px-4 pb-4 pt-3 text-xs leading-relaxed text-zinc-600 dark:border-zinc-800 dark:text-zinc-400 sm:px-5 sm:pb-5 sm:text-sm">
-                    {faq.respuesta}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </section>
+                  <button
+                    type="button"
+                    onClick={() => toggleFaq(index)}
+                    className="flex w-full items-center justify-between p-4 sm:p-5 text-left font-semibold text-xs sm:text-sm text-zinc-900 dark:text-zinc-200 transition hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                  >
+                    <span>{faq.pregunta}</span>
+                    <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${abierta ? "rotate-180 text-[var(--brand)]" : ""}`} />
+                  </button>
+                  {abierta && (
+                    <div className="border-t border-zinc-100 px-4 pb-4 pt-3 text-xs leading-relaxed text-zinc-600 dark:border-zinc-800 dark:text-zinc-400 sm:px-5 sm:pb-5 sm:text-sm">
+                      {faq.respuesta}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      </RevealOnScroll>
 
       {/* 7. CONTACTO */}
-      <section id="contacto" className="border-t border-zinc-200/80 bg-zinc-100/60 py-12 sm:py-24 dark:border-zinc-800/80 dark:bg-zinc-950/60 scroll-mt-20">
-        <div className="mx-auto max-w-3xl px-3.5 sm:px-8 text-center">
-          <span className="text-xs font-bold uppercase tracking-widest text-[var(--brand-contrast)] dark:text-[var(--brand)]">
-            Atención directa
-          </span>
-          <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white">
-            Empecemos tu proyecto hoy.
-          </h2>
-          <p className="mt-2 text-xs sm:text-sm leading-relaxed text-zinc-600 dark:text-zinc-400 max-w-lg mx-auto">
-            Escribime para coordinar tu identidad de marca, piezas publicitarias, catálogo o diseño web a medida.
-          </p>
+      <RevealOnScroll>
+        <section id="contacto" className="border-t border-zinc-200/80 bg-zinc-100/60 py-12 sm:py-24 dark:border-zinc-800/80 dark:bg-zinc-950/60 scroll-mt-20">
+          <div className="mx-auto max-w-3xl px-3.5 sm:px-8 text-center">
+            <span className="text-xs font-bold uppercase tracking-widest text-[var(--brand-contrast)] dark:text-[var(--brand)]">
+              Atención directa
+            </span>
+            <h2 className="mt-2 text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white">
+              Empecemos tu proyecto hoy.
+            </h2>
+            <p className="mt-2 text-xs sm:text-sm leading-relaxed text-zinc-600 dark:text-zinc-400 max-w-lg mx-auto">
+              Escribime para coordinar tu identidad de marca, piezas publicitarias, catálogo o diseño web a medida.
+            </p>
 
-          <div className="mt-8 grid gap-3 sm:grid-cols-3 text-left">
-            <a
-              href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por un proyecto de diseño.")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-4 transition hover:bg-emerald-500/10 dark:border-emerald-500/30 dark:bg-emerald-500/10"
-            >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-                <MessageCircle className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">WhatsApp directo</p>
-                <p className="text-xs font-bold text-emerald-800 dark:text-emerald-300 truncate">+54 9 388 657-5664</p>
-              </div>
-            </a>
+            <div className="mt-8 grid gap-3 sm:grid-cols-3 text-left">
+              <a
+                href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("¡Hola Nahuel! Me gustaría consultar por un proyecto de diseño.")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-4 transition hover:bg-emerald-500/10 dark:border-emerald-500/30 dark:bg-emerald-500/10"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                  <MessageCircle className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">WhatsApp directo</p>
+                  <p className="text-xs font-bold text-emerald-800 dark:text-emerald-300 truncate">+54 9 388 657-5664</p>
+                </div>
+              </a>
 
-            <a
-              href={`mailto:${CORREO_CONTACTO}`}
-              className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-4 shadow-xs transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/80 dark:hover:border-zinc-700"
-            >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--brand)]/10 text-[var(--brand-contrast)] dark:text-[var(--brand)]">
-                <Mail className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[11px] text-zinc-500">Correo</p>
-                <p className="text-xs font-bold text-zinc-900 dark:text-white truncate">{CORREO_CONTACTO}</p>
-              </div>
-            </a>
+              <a
+                href={`mailto:${CORREO_CONTACTO}`}
+                className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-4 shadow-xs transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/80 dark:hover:border-zinc-700"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--brand)]/10 text-[var(--brand-contrast)] dark:text-[var(--brand)]">
+                  <Mail className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[11px] text-zinc-500">Correo</p>
+                  <p className="text-xs font-bold text-zinc-900 dark:text-white truncate">{CORREO_CONTACTO}</p>
+                </div>
+              </a>
 
-            <a
-              href={BEHANCE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-4 shadow-xs transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/80 dark:hover:border-zinc-700"
-            >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
-                <Palette className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[11px] text-zinc-500">Portfolio</p>
-                <p className="text-xs font-bold text-zinc-900 dark:text-white truncate">behance.net/nahuelrueda ↗</p>
-              </div>
-            </a>
+              <a
+                href={BEHANCE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-4 shadow-xs transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/80 dark:hover:border-zinc-700"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                  <Palette className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[11px] text-zinc-500">Portfolio</p>
+                  <p className="text-xs font-bold text-zinc-900 dark:text-white truncate">behance.net/nahuelrueda ↗</p>
+                </div>
+              </a>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </RevealOnScroll>
 
-      {/* FOOTER */}
+      {/* FOOTER: LOGO AZUL TRANSPARENTE SIN CAJA DE FONDO */}
       <footer className="border-t border-zinc-200/80 bg-white py-10 sm:py-12 dark:border-zinc-800 dark:bg-[#0c0d0e]">
         <div className="mx-auto max-w-7xl px-4 sm:px-8">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 pb-6 sm:pb-8 border-b border-zinc-100 dark:border-zinc-800/80">
             <div>
-              <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[var(--brand)] p-1">
+              <div className="flex items-center gap-2.5">
+                {/* Logo en PNG azul directo sin caja de fondo */}
+                <div className="flex h-7 w-7 items-center justify-center">
                   <Image
                     src="/logo-ndi.png"
                     alt="Logo ND Diseño Gráfico"
-                    width={16}
-                    height={16}
+                    width={28}
+                    height={28}
                     className="h-full w-full object-contain"
                   />
                 </div>
@@ -931,32 +997,6 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
-
-      {/* MODAL DE IMAGEN AMPLIADA (LIVIANO Y SIN LIBRERÍAS EXTERNAS) */}
-      {imagenModal && (
-        <div
-          onClick={() => setImagenModal(null)}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-xs animate-in fade-in duration-200"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="relative max-h-[90vh] max-w-[90vw] overflow-hidden rounded-2xl bg-zinc-950 border border-zinc-800 shadow-2xl"
-          >
-            <button
-              onClick={() => setImagenModal(null)}
-              aria-label="Cerrar vista previa"
-              className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 transition"
-            >
-              <X className="h-5 w-5" />
-            </button>
-            <img
-              src={imagenModal}
-              alt="Vista previa de trabajo de diseño"
-              className="max-h-[85vh] max-w-[85vw] object-contain"
-            />
-          </div>
-        </div>
-      )}
     </main>
   );
 }
