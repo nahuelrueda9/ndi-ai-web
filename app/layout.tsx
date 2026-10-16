@@ -23,25 +23,24 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "ND Diseño Gráfico · Páginas web para tu negocio",
-  description:
-    "Diseño gráfico y desarrollo de páginas web para emprendimientos, negocios y profesionales. Tu sitio a medida, fácil de usar y listo para vender.",
+  title: "NDI | Diseño Gráfico & Web",
+  description: "Marcas, diseño publicitario y desarrollo web a medida.",
   metadataBase: new URL("https://ndiweb.com"),
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "ND Diseño Gráfico · Páginas web para tu negocio",
+    title: "NDI | Diseño Gráfico & Web",
     description:
       "Diseño gráfico y desarrollo de páginas web para emprendimientos, negocios y profesionales. Tu sitio a medida, fácil de usar y listo para vender.",
     url: "https://ndiweb.com",
-    siteName: "ND Diseño Gráfico",
+    siteName: "NDI | Diseño Gráfico & Web",
     locale: "es_AR",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ND Diseño Gráfico · Páginas web para tu negocio",
+    title: "NDI | Diseño Gráfico & Web",
     description:
       "Diseño gráfico y desarrollo de páginas web para emprendimientos, negocios y profesionales. Tu sitio a medida, fácil de usar y listo para vender.",
   },

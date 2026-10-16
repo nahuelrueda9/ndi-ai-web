@@ -1,200 +1,110 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import {
-  sendPasswordResetEmail,
-  signInWithEmailAndPassword,
-} from "firebase/auth";
-
-import { auth } from "@/lib/firebase";
 
 export default function LoginPage() {
-  const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [mostrarPassword, setMostrarPassword] = useState(false);
 
-  const [error, setError] = useState("");
-  const [mensaje, setMensaje] = useState("");
-
-  const [loading, setLoading] = useState(false);
-  const [enviandoRecuperacion, setEnviandoRecuperacion] = useState(false);
-
-  async function handleLogin(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    setError("");
-    setMensaje("");
-    setLoading(true);
-
-    try {
-      await signInWithEmailAndPassword(auth, email.trim(), password);
-      router.push("/dashboard");
-    } catch {
-      setError("Correo o contraseña incorrectos.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function recuperarContrasena() {
-    const correo = email.trim();
-
-    setError("");
-    setMensaje("");
-
-    if (!correo) {
-      setError("Escribí tu correo electrónico para recuperar la contraseña.");
-      return;
-    }
-
-    setEnviandoRecuperacion(true);
-
-    try {
-      await sendPasswordResetEmail(auth, correo);
-      setMensaje(
-        "Te enviamos un correo para restablecer tu contraseña. Revisá también la carpeta de spam."
-      );
-    } catch {
-      setError(
-        "No se pudo enviar el correo de recuperación. Revisá que el email sea correcto."
-      );
-    } finally {
-      setEnviandoRecuperacion(false);
-    }
-  }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Lógica de inicio de sesión
+  };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4 py-8">
-      <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-8 shadow-2xl">
-        <div className="mb-8 text-center flex flex-col items-center">
-          <Link href="/" className="mb-4 inline-flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 p-1.5 shadow-sm shadow-blue-600/30">
-              <Image
-                src="/logo-ndi.png"
-                alt="Logo NDI"
-                width={20}
-                height={20}
-                className="h-full w-full object-contain"
-                priority
-              />
-            </div>
-          </Link>
-          <h1 className="text-2xl font-bold text-white tracking-tight">
-            NDI <span className="text-slate-400 font-normal">| Diseño & Web</span>
+    <main className="min-h-screen flex items-center justify-center p-4 bg-[#080b11] text-zinc-100 selection:bg-blue-600 selection:text-white">
+      <div className="w-full max-w-sm rounded-3xl border border-zinc-800/80 bg-[#0f1420]/90 p-8 shadow-2xl backdrop-blur-xl">
+        {/* LOGO LIMPIO SIN FONDO */}
+        <div className="flex flex-col items-center text-center mb-8">
+          <div className="flex h-12 w-12 items-center justify-center mb-4">
+            <Image
+              src="/logo-ndi.png"
+              alt="Logo NDI"
+              width={48}
+              height={48}
+              className="h-full w-full object-contain"
+              priority
+            />
+          </div>
+
+          <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-1.5 justify-center">
+            <span>NDI</span>
+            <span className="font-normal text-zinc-400">|</span>
+            <span className="font-semibold text-zinc-300">Diseño & Web</span>
           </h1>
-          <p className="mt-1.5 text-xs sm:text-sm text-slate-400">
+          <p className="mt-1 text-xs text-zinc-400">
             Ingresá a tu panel de control
           </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-5">
+        {/* FORMULARIO */}
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label
-              htmlFor="email"
-              className="mb-2 block text-sm font-medium text-slate-300"
-            >
+            <label className="block text-xs font-medium text-zinc-300 mb-1.5">
               Correo electrónico
             </label>
             <input
-              id="email"
               type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="correo@tunegocio.com"
-              autoComplete="email"
               required
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition placeholder:text-slate-600 focus:border-blue-500 text-sm"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="correo@tunegocio.com"
+              className="w-full rounded-xl border border-zinc-800 bg-[#141b2b] px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition"
             />
           </div>
 
           <div>
-            <div className="mb-2 flex items-center justify-between gap-4">
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-slate-300"
-              >
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-medium text-zinc-300">
                 Contraseña
               </label>
-
-              <button
-                type="button"
-                onClick={recuperarContrasena}
-                disabled={enviandoRecuperacion}
-                className="text-xs font-medium text-blue-400 transition hover:text-blue-300 disabled:cursor-not-allowed disabled:opacity-60"
+              <Link
+                href="/recuperar-password"
+                className="text-[11px] text-blue-400 hover:text-blue-300 transition"
               >
-                {enviandoRecuperacion ? "Enviando..." : "¿Olvidaste tu contraseña?"}
-              </button>
+                ¿Olvidaste tu contraseña?
+              </Link>
             </div>
-
             <div className="relative">
               <input
-                id="password"
-                type={mostrarPassword ? "text" : "password"}
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder="Ingresá tu contraseña"
-                autoComplete="current-password"
+                type={showPassword ? "text" : "password"}
                 required
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 pr-12 text-white outline-none transition placeholder:text-slate-600 focus:border-blue-500 text-sm"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Ingresá tu contraseña"
+                className="w-full rounded-xl border border-zinc-800 bg-[#141b2b] px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition pr-10"
               />
-
               <button
                 type="button"
-                onClick={() => setMostrarPassword((actual) => !actual)}
-                aria-label={
-                  mostrarPassword ? "Ocultar contraseña" : "Mostrar contraseña"
-                }
-                title={
-                  mostrarPassword ? "Ocultar contraseña" : "Mostrar contraseña"
-                }
-                className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center justify-center text-slate-400 transition hover:text-white"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition"
               >
-                {mostrarPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
           </div>
-
-          {error && (
-            <p className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-400">
-              {error}
-            </p>
-          )}
-
-          {mensaje && (
-            <p className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-300">
-              {mensaje}
-            </p>
-          )}
 
           <button
             type="submit"
-            disabled={loading || enviandoRecuperacion}
-            className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60 shadow-sm shadow-blue-600/30"
+            className="w-full rounded-xl bg-blue-600 py-2.5 text-xs font-semibold text-white shadow-lg shadow-blue-600/30 hover:bg-blue-500 transition active:scale-95"
           >
-            {loading ? "Ingresando..." : "Iniciar sesión"}
+            Iniciar sesión
           </button>
-
-          <div className="border-t border-slate-800 pt-5 text-center">
-            <p className="text-xs text-slate-400">
-              ¿Todavía no tenés una cuenta?
-            </p>
-            <Link
-              href="/register"
-              className="mt-3 inline-flex w-full items-center justify-center rounded-xl border border-slate-700 px-4 py-2.5 text-xs font-semibold text-white transition hover:border-blue-500 hover:bg-blue-500/10"
-            >
-              Crear mi cuenta
-            </Link>
-          </div>
         </form>
+
+        <div className="mt-6 pt-6 border-t border-zinc-800/80 text-center">
+          <p className="text-[11px] text-zinc-400 mb-2">¿Todavía no tenés una cuenta?</p>
+          <Link
+            href="/registro"
+            className="inline-block w-full rounded-xl border border-zinc-800 bg-zinc-900/60 py-2 text-xs font-medium text-zinc-200 hover:bg-zinc-800 transition"
+          >
+            Crear mi cuenta
+          </Link>
+        </div>
       </div>
     </main>
   );
