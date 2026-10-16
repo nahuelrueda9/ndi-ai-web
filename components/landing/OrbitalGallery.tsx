@@ -65,7 +65,6 @@ export function OrbitalGallery() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // PC se mantiene intacta en 1300px; móvil usa 750px para encajar proporcionado
   const RADIUS_PX = esMobile ? 750 : 1300;
   const STEP_DEG_X = esMobile ? 5.8 : 5.1;
   const STEP_DEG_Y = esMobile ? 5.8 : 5.1;
@@ -228,7 +227,6 @@ export function OrbitalGallery() {
               <div
                 key={idx}
                 onClick={(e) => handleImageClick(imgSrc, e)}
-                // En móvil: 140px (proporcionado y no gigante); En PC: 220px exacto
                 className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[140px] h-[140px] sm:w-[220px] sm:h-[220px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.05] hover:z-20"
                 style={{
                   transform: `rotateY(${coord.x * STEP_DEG_X}deg) rotateX(${coord.y * STEP_DEG_Y}deg) translateZ(${RADIUS_PX}px)`,
@@ -250,7 +248,11 @@ export function OrbitalGallery() {
           })}
         </div>
 
-        <div className="absolute inset-x-0 bottom-0 h-6 sm:h-10 bg-gradient-to-t from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
+        {/* EFECTO DE DESVANECIDO SUPERIOR (idéntico al inferior) */}
+        <div className="absolute inset-x-0 top-0 h-8 sm:h-14 bg-gradient-to-b from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
+
+        {/* EFECTO DE DESVANECIDO INFERIOR */}
+        <div className="absolute inset-x-0 bottom-0 h-8 sm:h-14 bg-gradient-to-t from-zinc-50 dark:from-[#0c0d0e] to-transparent pointer-events-none z-10" />
       </div>
 
       {/* MODAL ZOOM */}
