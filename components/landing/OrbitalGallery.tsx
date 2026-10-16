@@ -65,12 +65,13 @@ export function OrbitalGallery() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const RADIUS_PX = 1300;
-  const STEP_DEG_X = 5.1;
-  const STEP_DEG_Y = 5.1;
+  // PC se mantiene intacta en 1300px; móvil usa 750px para encajar proporcionado
+  const RADIUS_PX = esMobile ? 750 : 1300;
+  const STEP_DEG_X = esMobile ? 5.8 : 5.1;
+  const STEP_DEG_Y = esMobile ? 5.8 : 5.1;
 
-  // LÍMITES ESTRICTOS PARA QUE NUNCA SE VAYA A LA NADA
-  const MAX_PAN_X = esMobile ? 8 : 12;
+  // Límites horizontales
+  const MAX_PAN_X = esMobile ? 12 : 18;
   const MAX_POLAR_ROT_DEG = 3;
   const PAN_SENSITIVITY = 15;
 
@@ -118,7 +119,6 @@ export function OrbitalGallery() {
 
         applyTransform();
 
-        // Si tocó el tope lateral, frena de golpe la inercia
         if (nextY === -MAX_PAN_X || nextY === MAX_PAN_X) {
           stateRef.current.inertiaFrame = null;
           return;
@@ -161,7 +161,6 @@ export function OrbitalGallery() {
       const proposedX = stateRef.current.startRotation.x - deltaY / PAN_SENSITIVITY;
       const proposedY = stateRef.current.startRotation.y + deltaX / PAN_SENSITIVITY;
 
-      // TOPE DURO TANTO EN X COMO EN Y MIENTRAS ARRASTRÁS
       stateRef.current.rotation.x = clampX(proposedX);
       stateRef.current.rotation.y = clampY(proposedY);
 
@@ -211,7 +210,7 @@ export function OrbitalGallery() {
   };
 
   return (
-    <div className="relative w-full h-[370px] sm:h-[580px] md:h-[660px] overflow-hidden select-none">
+    <div className="relative w-full h-[380px] sm:h-[580px] md:h-[660px] overflow-hidden select-none">
       <div
         ref={containerRef}
         className="absolute inset-0 flex items-center justify-center overflow-hidden touch-none [perspective:2200px] cursor-grab active:cursor-grabbing"
@@ -229,12 +228,13 @@ export function OrbitalGallery() {
               <div
                 key={idx}
                 onClick={(e) => handleImageClick(imgSrc, e)}
-                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[220px] h-[220px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.05] hover:z-20"
+                // En móvil: 140px (proporcionado y no gigante); En PC: 220px exacto
+                className="absolute -top-[999px] -bottom-[999px] -left-[999px] -right-[999px] m-auto w-[140px] h-[140px] sm:w-[220px] sm:h-[220px] cursor-pointer backface-hidden [transform-style:preserve-3d] transition-transform duration-200 hover:scale-[1.05] hover:z-20"
                 style={{
                   transform: `rotateY(${coord.x * STEP_DEG_X}deg) rotateX(${coord.y * STEP_DEG_Y}deg) translateZ(${RADIUS_PX}px)`,
                 }}
               >
-                <div className="absolute inset-1.5 rounded-3xl overflow-hidden bg-zinc-200 dark:bg-zinc-800 shadow-md border border-black/5 dark:border-white/10 backface-hidden">
+                <div className="absolute inset-1 sm:inset-1.5 rounded-2xl sm:rounded-3xl overflow-hidden bg-zinc-200 dark:bg-zinc-800 shadow-md border border-black/5 dark:border-white/10 backface-hidden">
                   <img
                     src={imgSrc}
                     alt={`Trabajo de diseño gráfico ${idx + 1}`}
