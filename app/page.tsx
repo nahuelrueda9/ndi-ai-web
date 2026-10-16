@@ -913,6 +913,13 @@ export default function HomePage() {
                     Política de privacidad
                   </Link>
                 </li>
+                {/* AGREGAR ACÁ: */}
+                <li className="pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                  <Link href="/login" className="hover:text-[var(--brand)] transition font-medium flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300">
+                    <span>Acceso a mi panel</span>
+                    <span className="text-[9px] bg-zinc-200 dark:bg-zinc-800 px-1 py-0.5 rounded text-zinc-600 dark:text-zinc-400">Admin</span>
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>
