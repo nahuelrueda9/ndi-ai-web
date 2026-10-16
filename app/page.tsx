@@ -393,11 +393,12 @@ export default function HomePage() {
               <Moon className="h-4 w-4 block dark:hidden text-zinc-700" />
             </button>
 
+{/* BOTÓN EMPEZAR PROYECTO */}
             <Link
-              href="/login"
-              className="inline-flex items-center justify-center rounded-xl px-2.5 py-1.5 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900 whitespace-nowrap"
+              href="/empezar-proyecto"
+              className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-3 py-1.5 sm:px-3.5 sm:py-2 text-[11px] sm:text-xs font-bold text-white shadow-xs transition hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white whitespace-nowrap active:scale-95"
             >
-              Iniciar sesión
+              Empezar proyecto
             </Link>
 
             {mostrarBotonHeader && (
