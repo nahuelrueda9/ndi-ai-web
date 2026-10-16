@@ -65,20 +65,22 @@ export function OrbitalGallery() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Parámetros idénticos a tu captura
   const RADIUS_PX = 1300;
   const STEP_DEG_X = 5.1;
   const STEP_DEG_Y = 5.1;
 
-  // LÍMITES ESTRICTOS: no deja rotar a lo negro
-  const MAX_PAN_X = esMobile ? 12 : 18;
-  const MAX_POLAR_ROT_DEG = 3.5;
+  // LÍMITES ESTRICTOS PARA QUE NUNCA SE VAYA A LA NADA
+  const MAX_PAN_X = esMobile ? 8 : 12;
+  const MAX_POLAR_ROT_DEG = 3;
   const PAN_SENSITIVITY = 15;
 
   useEffect(() => {
     const sphere = sphereRef.current;
     const container = containerRef.current;
     if (!sphere || !container) return;
+
+    const clampY = (val: number) => Math.max(-MAX_PAN_X, Math.min(MAX_PAN_X, val));
+    const clampX = (val: number) => Math.max(-MAX_POLAR_ROT_DEG, Math.min(MAX_POLAR_ROT_DEG, val));
 
     const applyTransform = () => {
       sphere.style.transform = `translateZ(-${RADIUS_PX}px) rotateX(${stateRef.current.rotation.x}deg) rotateY(${stateRef.current.rotation.y}deg)`;
@@ -94,10 +96,10 @@ export function OrbitalGallery() {
     };
 
     const startInertia = (velocityX: number, velocityY: number) => {
-      let vx = velocityX * 45;
-      let vy = velocityY * 45;
+      let vx = velocityX * 35;
+      let vy = velocityY * 35;
       const friction = 0.88;
-      const minVelocity = 0.08;
+      const minVelocity = 0.05;
 
       const step = () => {
         vx *= friction;
@@ -108,16 +110,16 @@ export function OrbitalGallery() {
           return;
         }
 
-        const proposedX = stateRef.current.rotation.x - vy / 200;
-        const proposedY = stateRef.current.rotation.y + vx / 200;
+        const nextX = clampX(stateRef.current.rotation.x - vy / 200);
+        const nextY = clampY(stateRef.current.rotation.y + vx / 200);
 
-        // Tope estricto en inercia
-        stateRef.current.rotation.x = Math.min(Math.max(proposedX, -MAX_POLAR_ROT_DEG), MAX_POLAR_ROT_DEG);
-        stateRef.current.rotation.y = Math.min(Math.max(proposedY, -MAX_PAN_X), MAX_PAN_X);
+        stateRef.current.rotation.x = nextX;
+        stateRef.current.rotation.y = nextY;
 
         applyTransform();
 
-        if (stateRef.current.rotation.y <= -MAX_PAN_X || stateRef.current.rotation.y >= MAX_PAN_X) {
+        // Si tocó el tope lateral, frena de golpe la inercia
+        if (nextY === -MAX_PAN_X || nextY === MAX_PAN_X) {
           stateRef.current.inertiaFrame = null;
           return;
         }
@@ -159,9 +161,9 @@ export function OrbitalGallery() {
       const proposedX = stateRef.current.startRotation.x - deltaY / PAN_SENSITIVITY;
       const proposedY = stateRef.current.startRotation.y + deltaX / PAN_SENSITIVITY;
 
-      // Tope estricto al arrastrar
-      stateRef.current.rotation.x = Math.min(Math.max(proposedX, -MAX_POLAR_ROT_DEG), MAX_POLAR_ROT_DEG);
-      stateRef.current.rotation.y = Math.min(Math.max(proposedY, -MAX_PAN_X), MAX_PAN_X);
+      // TOPE DURO TANTO EN X COMO EN Y MIENTRAS ARRASTRÁS
+      stateRef.current.rotation.x = clampX(proposedX);
+      stateRef.current.rotation.y = clampY(proposedY);
 
       applyTransform();
 
