@@ -8,12 +8,8 @@ import {
   Laptop, 
   ArrowLeft, 
   MessageCircle, 
-  CheckCircle2, 
-  Sparkles,
-  Layers,
-  ShoppingBag,
-  Globe,
-  Share2
+  CheckCircle2,
+  LogIn
 } from "lucide-react";
 
 const WHATSAPP_NUMERO = "5493886575664";
@@ -47,7 +43,7 @@ export default function EmpezarProyectoPage() {
 
   return (
     <main className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors duration-200 dark:bg-[#0c0d0e] dark:text-zinc-100 flex flex-col justify-between selection:bg-[var(--brand)] selection:text-white">
-      {/* HEADER SIMPLE */}
+      {/* HEADER LIMPIO */}
       <header className="border-b border-zinc-200/80 bg-white/80 backdrop-blur-xl dark:border-zinc-800/80 dark:bg-[#0c0d0e]/80">
         <div className="mx-auto flex h-14 sm:h-16 max-w-5xl items-center justify-between px-4 sm:px-8">
           <Link
@@ -58,35 +54,43 @@ export default function EmpezarProyectoPage() {
             <span>Volver al inicio</span>
           </Link>
 
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center">
-              <Image
-                src="/logo-ndi.png"
-                alt="Logo NDI"
-                width={24}
-                height={24}
-                className="h-full w-full object-contain"
-              />
-            </div>
-            <span className="text-xs sm:text-sm font-bold text-zinc-950 dark:text-white">
-              NDI <span className="font-normal text-zinc-500">| Proyectos</span>
-            </span>
-          </Link>
+          {/* DERECHA: LOGO NDI + BOTÓN INICIAR SESIÓN */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link href="/" className="flex items-center gap-2">
+              <div className="flex h-6 w-6 items-center justify-center">
+                <Image
+                  src="/logo-ndi.png"
+                  alt="Logo NDI"
+                  width={24}
+                  height={24}
+                  className="h-full w-full object-contain"
+                />
+              </div>
+              <span className="text-xs sm:text-sm font-bold text-zinc-950 dark:text-white">
+                NDI
+              </span>
+            </Link>
+
+            <span className="text-zinc-300 dark:text-zinc-700">|</span>
+
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200/80 bg-zinc-100/60 px-2.5 py-1 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-200 dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white"
+            >
+              <LogIn className="h-3.5 w-3.5" />
+              <span>Iniciar sesión</span>
+            </Link>
+          </div>
         </div>
       </header>
 
       {/* CONTENIDO PRINCIPAL */}
       <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:py-16 my-auto">
         <div className="text-center max-w-xl mx-auto">
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold text-zinc-700 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 mb-3">
-            <Sparkles className="h-3.5 w-3.5 text-[var(--brand)]" />
-            <span>Atención personalizada</span>
-          </div>
-
           <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white">
             ¿Qué tipo de proyecto querés iniciar?
           </h1>
-          <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="mt-2.5 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
             Elegí la rama principal para coordinar los detalles a la medida de lo que estás buscando.
           </p>
         </div>
@@ -167,7 +171,7 @@ export default function EmpezarProyectoPage() {
             </button>
           </div>
         ) : (
-          /* PANTALLA SECUNDARIA: SELECCIÓN RÁPIDA O CONSULTA DIRECTA */
+          /* PANTALLA SECUNDARIA: SELECCIÓN DETALLADA */
           <div className="mt-8 max-w-xl mx-auto rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-md dark:border-zinc-800 dark:bg-zinc-900/80 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between pb-4 border-b border-zinc-100 dark:border-zinc-800">
               <div className="flex items-center gap-2.5">
