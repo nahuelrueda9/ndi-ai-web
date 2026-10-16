@@ -2,23 +2,50 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Lógica de inicio de sesión
+    setError(null);
+    setLoading(true);
+
+    try {
+      await signInWithEmailAndPassword(auth, email.trim(), password);
+      router.push("/empresas");
+    } catch (err: unknown) {
+      console.error("Error al iniciar sesión:", err);
+      const codigo = typeof err === "object" && err !== null && "code" in err 
+        ? String((err as { code?: unknown }).code) 
+        : "";
+
+      if (codigo === "auth/invalid-credential" || codigo === "auth/wrong-password" || codigo === "auth/user-not-found") {
+        setError("El correo o la contraseña son incorrectos.");
+      } else if (codigo === "auth/too-many-requests") {
+        setError("Demasiados intentos fallidos. Intentá de nuevo en unos minutos.");
+      } else {
+        setError("Ocurrió un error al ingresar. Verificá tus datos.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <main className="min-h-screen flex items-center justify-center p-4 bg-[#080b11] text-zinc-100 selection:bg-blue-600 selection:text-white">
       <div className="w-full max-w-sm rounded-3xl border border-zinc-800/80 bg-[#0f1420]/90 p-8 shadow-2xl backdrop-blur-xl">
-        {/* LOGO LIMPIO SIN FONDO */}
+        {/* LOGO LIMPIO */}
         <div className="flex flex-col items-center text-center mb-8">
           <div className="flex h-12 w-12 items-center justify-center mb-4">
             <Image
@@ -40,6 +67,13 @@ export default function LoginPage() {
             Ingresá a tu panel de control
           </p>
         </div>
+
+        {/* ALERTA DE ERROR */}
+        {error && (
+          <div className="mb-4 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-400 text-center">
+            {error}
+          </div>
+        )}
 
         {/* FORMULARIO */}
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -90,9 +124,17 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full rounded-xl bg-blue-600 py-2.5 text-xs font-semibold text-white shadow-lg shadow-blue-600/30 hover:bg-blue-500 transition active:scale-95"
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 py-2.5 text-xs font-semibold text-white shadow-lg shadow-blue-600/30 hover:bg-blue-500 disabled:opacity-50 transition active:scale-95 cursor-pointer"
           >
-            Iniciar sesión
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Ingresando...</span>
+              </>
+            ) : (
+              <span>Iniciar sesión</span>
+            )}
           </button>
         </form>
 
