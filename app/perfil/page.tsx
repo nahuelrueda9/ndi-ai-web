@@ -222,17 +222,18 @@ export default function PerfilPage() {
                 </div>
               </div>
 
-              <div className="p-5 sm:p-6">
-                <div className="mb-6 flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 p-2 shadow-md shadow-blue-600/20">
-                    <Image
-                      src="/logo-ndi.png"
-                      alt="Logo NDI"
-                      width={32}
-                      height={32}
-                      className="h-full w-full object-contain"
-                    />
-                  </div>
+<div className="p-5 sm:p-6">
+  <div className="mb-6 flex items-center gap-4">
+    <div className="flex h-12 w-12 items-center justify-center shrink-0">
+      <Image
+        src="/logo-ndi.png"
+        alt="Logo NDI"
+        width={48}
+        height={48}
+        className="h-full w-full object-contain"
+        priority
+      />
+    </div>
                   <div>
                     <p className="text-sm font-semibold text-slate-950 dark:text-white">
                       Cuenta NDI AI

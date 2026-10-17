@@ -453,7 +453,7 @@ export default function EmpresasPage() {
                   <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold text-blue-50">
                     <div className="flex h-4 w-4 items-center justify-center">
                       <Image
-                        src="/logo-ndi.png?v=2"
+                        src="/logo-ndi.png"
                         alt="Logo NDI"
                         width={16}
                         height={16}
