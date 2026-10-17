@@ -708,41 +708,41 @@ export default function Header() {
           {/* LOGO AZUL E IDENTIDAD NDI AI */}
           <div className="flex min-w-0 items-center gap-3">
             <Link
-              href="/"
-              className="flex items-center gap-3 transition-opacity hover:opacity-90"
-            >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-600 p-2 shadow-md shadow-blue-600/25">
-                <Image
-                  src="/logo-ndi.png"
-                  alt="Logo NDI"
-                  width={22}
-                  height={22}
-                  className="h-full w-full object-contain"
-                  priority
-                />
-              </div>
+  href="/"
+  className="flex items-center gap-3 transition-opacity hover:opacity-90"
+>
+  <div className="flex h-8 w-8 shrink-0 items-center justify-center">
+    <Image
+      src="/logo-ndi.png"
+      alt="Logo NDI"
+      width={32}
+      height={32}
+      className="h-full w-full object-contain"
+      priority
+    />
+  </div>
 
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-                    NDI AI
-                  </p>
-                  <span className="hidden rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 sm:inline-flex">
-                    Workspace
-                  </span>
-                </div>
+  <div className="min-w-0">
+    <div className="flex items-center gap-2">
+      <p className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+        NDI AI
+      </p>
+      <span className="hidden rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 sm:inline-flex">
+        Workspace
+      </span>
+    </div>
 
-                <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-xs text-zinc-500">
-                  <span className="max-w-[150px] truncate font-bold text-zinc-900 dark:text-white sm:max-w-[240px]">
-                    {nombreWorkspace}
-                  </span>
-                  <span className="text-zinc-300 dark:text-zinc-700">/</span>
-                  <span className="hidden truncate sm:inline">
-                    {tituloPanel}
-                  </span>
-                </div>
-              </div>
-            </Link>
+    <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-xs text-zinc-500">
+      <span className="max-w-[150px] truncate font-bold text-zinc-900 dark:text-white sm:max-w-[240px]">
+        {nombreWorkspace}
+      </span>
+      <span className="text-zinc-300 dark:text-zinc-700">/</span>
+      <span className="hidden truncate sm:inline">
+        {tituloPanel}
+      </span>
+    </div>
+  </div>
+</Link>
           </div>
 
           {/* ACCIONES DEL HEADER */}

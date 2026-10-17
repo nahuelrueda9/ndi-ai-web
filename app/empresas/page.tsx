@@ -450,19 +450,20 @@ export default function EmpresasPage() {
 
               <div className="relative flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
                 <div className="max-w-2xl">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold text-blue-50">
-                    <div className="flex h-4 w-4 items-center justify-center">
-                      <Image
-                        src="/logo-ndi.png"
-                        alt="Logo NDI"
-                        width={16}
-                        height={16}
-                        className="object-contain"
-                        priority
-                      />
-                    </div>
-                    Tus espacios en NDI | Diseño & Web
-                  </div>
+{/* PASTILLA BLANCA CON TEXTO NEGRO */}
+<div className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white px-3 py-1 text-[11px] font-bold text-zinc-900 shadow-sm">
+  <div className="flex h-4 w-4 items-center justify-center">
+    <Image
+      src="/logo-ndi.png"
+      alt="Logo NDI"
+      width={16}
+      height={16}
+      className="h-full w-full object-contain"
+      priority
+    />
+  </div>
+  <span>Tus espacios en NDI | Diseño & Web</span>
+</div>
 
                   <h1 className="mt-2.5 text-2xl font-bold tracking-tight text-white sm:text-3xl">
                     Administrá tus negocios
