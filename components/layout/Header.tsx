@@ -1,39 +1,5 @@
 "use client";
 
-import { usePushNotifications } from "@/hooks/usePushNotifications";
-
-export function HeaderAdmin() {
-  const params = useParams();
-  const empresaId = Array.isArray(params.id) ? params.id[0] : (params.id as string);
-
-  const { permission, loading, suscribirNotificaciones } = usePushNotifications(empresaId);
-
-  return (
-    <header className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-zinc-800">
-      {/* Título o breadcrumb de la empresa */}
-      <div>...</div>
-
-      {/* Acciones de la derecha */}
-      <div className="flex items-center gap-3">
-        {/* BOTÓN DE NOTIFICACIONES PUSH */}
-        {permission !== "granted" && (
-          <button
-            type="button"
-            onClick={suscribirNotificaciones}
-            disabled={loading}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-50"
-          >
-            <Bell className="h-3.5 w-3.5" />
-            {loading ? "Activando..." : "Activar alertas al celular"}
-          </button>
-        )}
-
-        {/* ...resto de botones (modo oscuro, avatar, etc.) */}
-      </div>
-    </header>
-  );
-}
-
 import type { ComponentType } from "react";
 import {
   useEffect,
@@ -702,52 +668,50 @@ export default function Header() {
 
   return (
     <>
-<header className="sticky top-0 z-40 border-b border-zinc-200/80 bg-white/80 px-4 backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/80 sm:px-6 lg:px-10 xl:px-12 2xl:px-16">
-  <div className="flex h-[72px] w-full items-center justify-between gap-4">
-    
-    {/* LOGO E IDENTIDAD ALINEADO AL BORDE IZQUIERDO */}
-    <div className="flex min-w-0 items-center gap-3">
-      <Link
-        href="/"
-        className="flex items-center gap-3 transition-opacity hover:opacity-90"
-      >
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center">
-          <Image
-            src="/logo-ndi.png"
-            alt="Logo NDI"
-            width={28}
-            height={28}
-            className="h-full w-full object-contain"
-            priority
-          />
-        </div>
+      <header className="sticky top-0 z-40 border-b border-zinc-200/80 bg-white/80 px-4 backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/80 sm:px-6 lg:px-10 xl:px-12 2xl:px-16">
+        <div className="flex h-[72px] w-full items-center justify-between gap-4">
+          {/* LOGO E IDENTIDAD ALINEADO QUE REDIRIGE AL PANEL DE EMPRESAS */}
+          <div className="flex min-w-0 items-center gap-3">
+            <Link
+              href="/empresas"
+              className="flex items-center gap-3 transition-opacity hover:opacity-90"
+            >
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center">
+                <Image
+                  src="/logo-ndi.png"
+                  alt="Logo NDI"
+                  width={28}
+                  height={28}
+                  className="h-full w-full object-contain"
+                  priority
+                />
+              </div>
 
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <p className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-              NDI AI
-            </p>
-            <span className="hidden rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 sm:inline-flex">
-              Workspace
-            </span>
-          </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                    NDI AI
+                  </p>
+                  <span className="hidden rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 sm:inline-flex">
+                    Workspace
+                  </span>
+                </div>
 
-          <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-xs text-zinc-500">
-            <span className="max-w-[150px] truncate font-bold text-zinc-900 dark:text-white sm:max-w-[240px]">
-              {nombreWorkspace}
-            </span>
-            <span className="text-zinc-300 dark:text-zinc-700">/</span>
-            <span className="hidden truncate sm:inline">
-              {tituloPanel}
-            </span>
+                <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-xs text-zinc-500">
+                  <span className="max-w-[150px] truncate font-bold text-zinc-900 dark:text-white sm:max-w-[240px]">
+                    {nombreWorkspace}
+                  </span>
+                  <span className="text-zinc-300 dark:text-zinc-700">/</span>
+                  <span className="hidden truncate sm:inline">
+                    {tituloPanel}
+                  </span>
+                </div>
+              </div>
+            </Link>
           </div>
-        </div>
-      </Link>
-    </div>
 
           {/* ACCIONES DEL HEADER */}
           <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-            
             {/* TEMA */}
             <div className="relative">
               <button

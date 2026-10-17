@@ -6,7 +6,6 @@ import {
   useState,
 } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import {
   useParams,
   usePathname,
@@ -332,16 +331,13 @@ export default function Sidebar() {
     usuario,
   ]);
 
-  // Clasificación inteligente del rubro
   const rubroConfig = useMemo(() => {
     const r = (empresa?.rubro || "").trim().toLowerCase();
 
-    // 1. Detección prioritaria de Barbería, Peluquería y Estética
     const esBarberiaPeluqueria = [
       "barberia", "barbería", "barbero", "peluqueria", "peluquería", "estilista", "estetica", "estética", "spa", "unas", "uñas"
     ].some((palabra) => r.includes(palabra));
 
-    // 2. Gastronomía evitando colisiones con 'bar' en 'barberia'
     const esGastronomia = !esBarberiaPeluqueria && (
       /\bbar\b/.test(r) ||
       [
@@ -361,7 +357,6 @@ export default function Sidebar() {
       "consultorio", "medico", "médico", "clinica", "clínica", "odontologia", "odontología", "dentista", "psicologia", "psicología", "nutricion", "nutrición", "kinesiologia", "kinesiología"
     ].some((palabra) => r.includes(palabra));
 
-    // Nombres dinámicos
     let labelCatalogo = "Servicios y productos";
     if (esGastronomia) labelCatalogo = "Menú y carta";
     else if (esAlojamiento) labelCatalogo = "Habitaciones";
@@ -373,7 +368,6 @@ export default function Sidebar() {
     if (esGastronomia || esAlojamiento) labelTurnos = "Reservas";
     else if (esBarberiaPeluqueria || esConsultorio) labelTurnos = "Turnos";
 
-    // Visibilidad condicional
     const muestraTurnos = !esTienda;
     const muestraPedidos = esGastronomia || esTienda;
     const muestraPresupuestos = !esGastronomia && !esTienda && !esBarberiaPeluqueria;
@@ -654,31 +648,14 @@ export default function Sidebar() {
         }`}
       >
         <div className="flex items-center justify-between border-b border-slate-200 p-4 dark:border-zinc-800">
-          <Link
-            href={`/empresas/${empresaId}/dashboard`}
-            className="flex items-center gap-3"
-          >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 p-2 shadow-md shadow-blue-600/20">
-              <Image
-                src="/logo-ndi.png"
-                alt="Logo NDI"
-                width={20}
-                height={20}
-                className="h-full w-full object-contain"
-                priority
-              />
-            </div>
-
-            <div>
-              <p className="text-[10px] uppercase tracking-widest text-blue-600 dark:text-blue-400">
-                NDI AI
-              </p>
-
-              <p className="text-sm font-bold text-slate-900 dark:text-white">
-                Panel del negocio
-              </p>
-            </div>
-          </Link>
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400">
+              NDI AI
+            </p>
+            <p className="text-sm font-bold text-slate-900 dark:text-white">
+              Panel del negocio
+            </p>
+          </div>
 
           <button
             type="button"
@@ -741,41 +718,23 @@ export default function Sidebar() {
 
       {/* SIDEBAR DESKTOP */}
       <aside className="fixed inset-y-0 left-0 z-50 hidden w-72 flex-col overflow-y-auto border-r border-slate-200 bg-white text-slate-900 transition-colors dark:border-zinc-800 dark:bg-zinc-900 dark:text-white md:flex">
-        <Link
-          href={`/empresas/${empresaId}/dashboard`}
-          className="border-b border-slate-200 p-6 transition hover:bg-slate-100 dark:border-zinc-800 dark:hover:bg-zinc-800/40"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 p-2.5 shadow-md shadow-blue-600/20">
-              <Image
-                src="/logo-ndi.png"
-                alt="Logo NDI"
-                width={24}
-                height={24}
-                className="h-full w-full object-contain"
-                priority
-              />
-            </div>
-
-            <div>
-              <p className="text-xs uppercase tracking-widest text-blue-600 dark:text-blue-400">
-                NDI AI
-              </p>
-
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                Negocio
-              </h2>
-            </div>
-          </div>
-        </Link>
+        <div className="border-b border-slate-200 p-6 dark:border-zinc-800">
+          <p className="text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400">
+            NDI AI
+          </p>
+          <h2 className="mt-1 text-xl font-bold text-slate-900 dark:text-white">
+            Panel del negocio
+          </h2>
+        </div>
 
         <nav className="flex-1 space-y-2 p-4">
           {itemsPermitidos.map(
             (item) => {
-              const href = obtenerHrefMenu(
-                empresaId,
-                item.ruta,
-              );
+              const href =
+                obtenerHrefMenu(
+                  empresaId,
+                  item.ruta,
+                );
 
               return (
                 <NavItem
@@ -799,7 +758,7 @@ export default function Sidebar() {
             <div className="flex items-center gap-3">
               <div className="h-3 w-3 rounded-full bg-emerald-500" />
 
-              <span className="text-sm text-slate-900 dark:text-white">
+              <span className="text-sm font-medium text-slate-900 dark:text-white">
                 Panel del negocio
               </span>
             </div>
