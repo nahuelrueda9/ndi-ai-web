@@ -440,48 +440,46 @@ export default function EmpresasPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex w-full justify-center">
-        <section className="w-full max-w-7xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+      <div className="w-full">
+        {/* CONTENEDOR FLUIDO SIN RESTRICCIÓN RÍGIDA */}
+        <section className="w-full px-4 py-5 sm:px-6 sm:py-6 lg:px-10 xl:px-12 2xl:px-16">
+          
           {/* BANNER PRINCIPAL */}
-          <div className="mb-4 overflow-hidden rounded-2xl border border-blue-200 sm:mb-6 sm:rounded-3xl bg-gradient-to-br from-blue-600 via-blue-600 to-indigo-700 shadow-lg shadow-blue-600/10 dark:border-blue-500/20 dark:from-blue-700 dark:via-blue-800 dark:to-indigo-950">
-            <div className="relative px-5 py-5 sm:px-8 sm:py-7">
-              <div className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-              <div className="pointer-events-none absolute bottom-0 right-32 h-40 w-40 rounded-full bg-cyan-300/10 blur-3xl" />
+          <div className="mb-6 overflow-hidden rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-600 via-blue-600 to-indigo-700 shadow-xl shadow-blue-600/10 dark:border-blue-500/20 dark:from-blue-700 dark:via-blue-800 dark:to-indigo-950 sm:rounded-3xl">
+            <div className="relative px-6 py-6 sm:px-8 sm:py-8 lg:px-10">
+              <div className="pointer-events-none absolute -right-16 -top-20 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+              <div className="pointer-events-none absolute bottom-0 right-32 h-48 w-48 rounded-full bg-cyan-300/10 blur-3xl" />
 
-              <div className="relative flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
-                <div className="max-w-2xl">
-{/* PASTILLA BLANCA CON TEXTO NEGRO */}
-<div className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white px-3 py-1 text-[11px] font-bold text-zinc-900 shadow-sm">
-  <div className="flex h-4 w-4 items-center justify-center">
-    <Image
-      src="/logo-ndi.png"
-      alt="Logo NDI"
-      width={16}
-      height={16}
-      className="h-full w-full object-contain"
-      priority
-    />
-  </div>
-  <span>Tus espacios en NDI | Diseño & Web</span>
-</div>
+              <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
+                <div className="max-w-3xl">
+                  {/* PASTILLA BLANCA CON TEXTO OSCURO */}
+                  <div className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white px-3.5 py-1 text-[11px] font-bold text-zinc-900 shadow-sm">
+                    <div className="flex h-4 w-4 items-center justify-center">
+                      <Image
+                        src="/logo-ndi.png"
+                        alt="Logo NDI"
+                        width={16}
+                        height={16}
+                        className="h-full w-full object-contain"
+                        priority
+                      />
+                    </div>
+                    <span>Tus espacios en NDI | Diseño & Web</span>
+                  </div>
 
-                  <h1 className="mt-2.5 text-2xl font-bold tracking-tight text-white sm:text-3xl">
+                  <h1 className="mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
                     Administrá tus negocios
                   </h1>
 
-                  <p className="mt-1.5 max-w-xl text-xs leading-relaxed text-blue-100 sm:text-sm">
+                  <p className="mt-2 text-xs leading-relaxed text-blue-100 sm:text-sm sm:leading-6">
                     Entrá al negocio que quieras administrar, revisá su plan o creá un nuevo espacio de trabajo.
                   </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                  <div className="flex min-w-0 items-center gap-2.5 rounded-xl border border-white/15 bg-white/10 px-3 py-2 backdrop-blur-sm">
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex min-w-0 items-center gap-3 rounded-2xl border border-white/20 bg-white/10 px-4 py-2.5 backdrop-blur-md">
                     <Avatar
-                      name={
-                        user?.displayName ||
-                        user?.email ||
-                        "Usuario"
-                      }
+                      name={user?.displayName || user?.email || "Usuario"}
                       src={user?.photoURL || undefined}
                       size="sm"
                     />
@@ -491,7 +489,7 @@ export default function EmpresasPage() {
                         {user?.displayName || "Usuario"}
                       </p>
 
-                      <p className="max-w-36 truncate text-[11px] text-blue-100 sm:max-w-56">
+                      <p className="max-w-[180px] truncate text-[11px] text-blue-100 sm:max-w-[240px]">
                         {user?.email}
                       </p>
                     </div>
@@ -500,13 +498,13 @@ export default function EmpresasPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      setMostrarFormulario((estadoAnterior) => !estadoAnterior);
+                      setMostrarFormulario((prev) => !prev);
                       setErrorFormulario("");
                     }}
-                    className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition cursor-pointer ${
+                    className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl px-5 py-2.5 text-xs font-semibold transition cursor-pointer ${
                       mostrarFormulario
                         ? "border border-white/20 bg-white/10 text-white hover:bg-white/15"
-                        : "bg-white text-blue-700 shadow-md hover:bg-blue-50 active:scale-95"
+                        : "bg-white text-blue-700 shadow-lg hover:bg-blue-50 active:scale-95"
                     }`}
                   >
                     {mostrarFormulario ? (
@@ -523,63 +521,63 @@ export default function EmpresasPage() {
             </div>
           </div>
 
-          {/* MÉTRICAS SUPERIORES */}
-          <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:mb-6">
-            <Card className="p-4">
+          {/* MÉTRICAS SUPERIORES EXPANDIDAS */}
+          <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <Card className="p-4 sm:p-5">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 sm:text-sm">
                     Empresas
                   </p>
-                  <p className="mt-1 text-2xl font-bold text-slate-950 dark:text-white">
+                  <p className="mt-1 text-2xl font-bold text-slate-950 dark:text-white sm:text-3xl">
                     {empresas.length}
                   </p>
                 </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
-                  <Building2 className="h-5 w-5" />
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
+                  <Building2 className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
               </div>
             </Card>
 
-            <Card className="p-4">
+            <Card className="p-4 sm:p-5">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 sm:text-sm">
                     Propias
                   </p>
-                  <p className="mt-1 text-2xl font-bold text-slate-950 dark:text-white">
+                  <p className="mt-1 text-2xl font-bold text-slate-950 dark:text-white sm:text-3xl">
                     {empresasPropias.length}
                   </p>
                 </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-                  <Building2 className="h-5 w-5" />
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+                  <Building2 className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
               </div>
             </Card>
 
-            <Card className="p-4">
+            <Card className="p-4 sm:p-5">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 sm:text-sm">
                     Compartidas
                   </p>
-                  <p className="mt-1 text-2xl font-bold text-slate-950 dark:text-white">
+                  <p className="mt-1 text-2xl font-bold text-slate-950 dark:text-white sm:text-3xl">
                     {empresasCompartidas.length}
                   </p>
                 </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400">
-                  <UsersRound className="h-5 w-5" />
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400">
+                  <UsersRound className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
               </div>
             </Card>
           </div>
 
-          <div className="mb-3 flex items-center justify-between">
+          <div className="mb-4 flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-blue-600 dark:text-blue-400">
+              <p className="text-xs font-medium text-blue-600 dark:text-blue-400 sm:text-sm">
                 Tus espacios
               </p>
-              <h2 className="text-xl font-bold tracking-tight text-slate-950 dark:text-white">
+              <h2 className="text-xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-2xl">
                 Empresas
               </h2>
             </div>
@@ -690,8 +688,8 @@ export default function EmpresasPage() {
               </Button>
             </Card>
           ) : (
-            /* GRILLA RESPONSIVE OPTIMIZADA: 1 COL EN CELULAR, 2 EN NOTEBOOK, 3 EN TABLET/LAPTOP, 4 EN PC ANCHA */
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+            /* GRILLA RESPONSIVE FLUIDA */
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
               {empresas.map((empresa) => {
                 const esPropietario = empresa.acceso === "propietario";
 
