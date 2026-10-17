@@ -702,48 +702,48 @@ export default function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-zinc-200/80 bg-white/80 px-4 backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/80 sm:px-6">
-        <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-4">
-          
-          {/* LOGO AZUL E IDENTIDAD NDI AI */}
-          <div className="flex min-w-0 items-center gap-3">
-            <Link
-  href="/"
-  className="flex items-center gap-3 transition-opacity hover:opacity-90"
->
-  <div className="flex h-8 w-8 shrink-0 items-center justify-center">
-    <Image
-      src="/logo-ndi.png"
-      alt="Logo NDI"
-      width={32}
-      height={32}
-      className="h-full w-full object-contain"
-      priority
-    />
-  </div>
+<header className="sticky top-0 z-40 border-b border-zinc-200/80 bg-white/80 px-4 backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/80 sm:px-6 lg:px-10 xl:px-12 2xl:px-16">
+  <div className="flex h-[72px] w-full items-center justify-between gap-4">
+    
+    {/* LOGO E IDENTIDAD ALINEADO AL BORDE IZQUIERDO */}
+    <div className="flex min-w-0 items-center gap-3">
+      <Link
+        href="/"
+        className="flex items-center gap-3 transition-opacity hover:opacity-90"
+      >
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center">
+          <Image
+            src="/logo-ndi.png"
+            alt="Logo NDI"
+            width={28}
+            height={28}
+            className="h-full w-full object-contain"
+            priority
+          />
+        </div>
 
-  <div className="min-w-0">
-    <div className="flex items-center gap-2">
-      <p className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-        NDI AI
-      </p>
-      <span className="hidden rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 sm:inline-flex">
-        Workspace
-      </span>
-    </div>
-
-    <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-xs text-zinc-500">
-      <span className="max-w-[150px] truncate font-bold text-zinc-900 dark:text-white sm:max-w-[240px]">
-        {nombreWorkspace}
-      </span>
-      <span className="text-zinc-300 dark:text-zinc-700">/</span>
-      <span className="hidden truncate sm:inline">
-        {tituloPanel}
-      </span>
-    </div>
-  </div>
-</Link>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <p className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+              NDI AI
+            </p>
+            <span className="hidden rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 sm:inline-flex">
+              Workspace
+            </span>
           </div>
+
+          <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-xs text-zinc-500">
+            <span className="max-w-[150px] truncate font-bold text-zinc-900 dark:text-white sm:max-w-[240px]">
+              {nombreWorkspace}
+            </span>
+            <span className="text-zinc-300 dark:text-zinc-700">/</span>
+            <span className="hidden truncate sm:inline">
+              {tituloPanel}
+            </span>
+          </div>
+        </div>
+      </Link>
+    </div>
 
           {/* ACCIONES DEL HEADER */}
           <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
