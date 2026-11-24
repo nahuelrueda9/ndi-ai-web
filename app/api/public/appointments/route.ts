@@ -300,6 +300,41 @@ function obtenerIntervaloAgenda(
   );
 }
 
+function obtenerRangoDescansoValido(
+  dia: ConfigDiaAgenda,
+  apertura: number,
+  cierre: number,
+): { inicio: number; fin: number } | null {
+  const inicioStr = (dia.descansoInicio || "").trim();
+  const finStr = (dia.descansoFin || "").trim();
+
+  // Si no hay descanso o está puesto en "00:00" sin rango real, se ignora como sin descanso
+  if (
+    !inicioStr ||
+    !finStr ||
+    (inicioStr === "00:00" && finStr === "00:00")
+  ) {
+    return null;
+  }
+
+  if (!horaValida(inicioStr) || !horaValida(finStr)) {
+    return null;
+  }
+
+  const descansoInicio = minutosDesdeHora(inicioStr);
+  const descansoFin = minutosDesdeHora(finStr);
+
+  if (
+    descansoInicio >= descansoFin ||
+    descansoInicio < apertura ||
+    descansoFin > cierre
+  ) {
+    return null;
+  }
+
+  return { inicio: descansoInicio, fin: descansoFin };
+}
+
 function horarioAgendaValido(
   dia: ConfigDiaAgenda,
 ) {
@@ -322,64 +357,7 @@ function horarioAgendaValido(
       dia.cierre,
     );
 
-  if (apertura >= cierre) {
-    return false;
-  }
-
-  const tieneDescansoInicio =
-    Boolean(
-      dia.descansoInicio,
-    );
-
-  const tieneDescansoFin =
-    Boolean(
-      dia.descansoFin,
-    );
-
-  if (
-    tieneDescansoInicio !==
-    tieneDescansoFin
-  ) {
-    return false;
-  }
-
-  if (
-    tieneDescansoInicio &&
-    tieneDescansoFin
-  ) {
-    if (
-      !horaValida(
-        dia.descansoInicio!,
-      ) ||
-      !horaValida(
-        dia.descansoFin!,
-      )
-    ) {
-      return false;
-    }
-
-    const descansoInicio =
-      minutosDesdeHora(
-        dia.descansoInicio!,
-      );
-
-    const descansoFin =
-      minutosDesdeHora(
-        dia.descansoFin!,
-      );
-
-    if (
-      descansoInicio >=
-        descansoFin ||
-      descansoInicio <
-        apertura ||
-      descansoFin > cierre
-    ) {
-      return false;
-    }
-  }
-
-  return true;
+  return apertura < cierre;
 }
 
 function horarioDentroDeAgenda({
@@ -430,26 +408,9 @@ function horarioDentroDeAgenda({
     return false;
   }
 
-  if (
-    dia.descansoInicio &&
-    dia.descansoFin
-  ) {
-    const descansoInicio =
-      minutosDesdeHora(
-        dia.descansoInicio,
-      );
-
-    const descansoFin =
-      minutosDesdeHora(
-        dia.descansoFin,
-      );
-
-    if (
-      inicio < descansoFin &&
-      descansoInicio < fin
-    ) {
-      return false;
-    }
+  const descanso = obtenerRangoDescansoValido(dia, apertura, cierre);
+  if (descanso && inicio < descanso.fin && descanso.inicio < fin) {
+    return false;
   }
 
   return true;
@@ -706,89 +667,34 @@ async function obtenerServicio(
   };
 }
 
-function obtenerConfiguracionDia(
-  empresa: EmpresaPublica,
-  fecha: string,
+async function diaEstaCerradoExcepcionalmente(
+  empresaId: string,
+  fechaConsulta: string,
 ) {
-  const agenda =
-    empresa.agendaConfig;
+  const empresaDoc = await adminDb.collection("companies").doc(empresaId).get();
+  if (!empresaDoc.exists) return false;
 
-  if (
-    agenda?.activa !== true
-  ) {
-    return {
-      error: NextResponse.json(
-        {
-          disponible: false,
-          configuracionPendiente:
-            true,
-          horarios: [],
-          mensaje:
-            "El negocio todavía no habilitó las reservas online.",
-        },
-        {
-          status: 200,
-        },
-      ),
-    };
+  const datos = empresaDoc.data();
+
+  const posiblesArrays = [
+    datos?.diasExcepcionales,
+    datos?.agendaConfig?.diasExcepcionales,
+    datos?.configuracion?.diasExcepcionales,
+    datos?.diasBloqueados,
+    datos?.agendaConfig?.diasBloqueados
+  ];
+
+  for (const arr of posiblesArrays) {
+    if (Array.isArray(arr)) {
+      const encontrado = arr.some((item) => {
+        const fechaItem = typeof item === "string" ? item : item?.fecha;
+        return fechaItem === fechaConsulta;
+      });
+      if (encontrado) return true;
+    }
   }
 
-  const diaSemana =
-    String(
-      obtenerDiaSemana(fecha),
-    );
-
-  const dia =
-    agenda.dias?.[diaSemana];
-
-  if (
-    !dia ||
-    dia.activo !== true
-  ) {
-    return {
-      error: NextResponse.json(
-        {
-          disponible: false,
-          configuracionPendiente:
-            false,
-          horarios: [],
-          mensaje:
-            "El negocio no recibe reservas online ese día.",
-        },
-        {
-          status: 200,
-        },
-      ),
-    };
-  }
-
-  if (
-    !horarioAgendaValido(dia)
-  ) {
-    return {
-      error: NextResponse.json(
-        {
-          disponible: false,
-          configuracionPendiente:
-            true,
-          horarios: [],
-          mensaje:
-            "El negocio debe revisar la configuración de horarios de ese día.",
-        },
-        {
-          status: 200,
-        },
-      ),
-    };
-  }
-
-  return {
-    dia,
-    intervaloMinutos:
-      obtenerIntervaloAgenda(
-        agenda,
-      ),
-  };
+  return false;
 }
 
 export async function GET(
@@ -897,6 +803,21 @@ export async function GET(
       empresa,
     } = empresaResultado;
 
+    const estaCerradoExcepcional = await diaEstaCerradoExcepcionalmente(empresaDoc.id, fecha);
+    if (estaCerradoExcepcional) {
+      return NextResponse.json(
+        {
+          disponible: false,
+          configuracionPendiente: false,
+          horarios: [],
+          mensaje: "HOY CERRADO",
+        },
+        {
+          status: 200,
+        },
+      );
+    }
+
     const servicioResultado =
       await obtenerServicio(
         empresaDoc.id,
@@ -914,76 +835,58 @@ export async function GET(
       servicio,
     } = servicioResultado;
 
-    const configuracion =
-      obtenerConfiguracionDia(
-        empresa,
-        fecha,
-      );
-
-    if (
-      "error" in configuracion
-    ) {
-      return configuracion.error;
-    }
-
-    const {
-      dia,
-      intervaloMinutos,
-    } = configuracion;
-
     const duracionMinutos =
       obtenerDuracionServicio(
         servicio,
       );
 
-    const turnosSnapshot =
-      await adminDb
-        .collection("companies")
-        .doc(empresaDoc.id)
-        .collection(
-          "appointments",
-        )
-        .where(
-          "fecha",
-          "==",
-          fecha,
-        )
-        .get();
+    const agenda = empresa.agendaConfig;
+    const diaSemanaIndex = obtenerDiaSemana(fecha);
+    const clavesPosibles = [String(diaSemanaIndex), String((diaSemanaIndex + 6) % 7)];
 
-    const turnos =
-      turnosSnapshot.docs.map(
-        (turnoDoc) =>
-          turnoDoc.data() as TurnoExistente,
-      );
+    let diaConfig: ConfigDiaAgenda | undefined;
+    if (agenda?.dias) {
+      for (const clave of clavesPosibles) {
+        if (agenda.dias[clave]) {
+          diaConfig = agenda.dias[clave];
+          break;
+        }
+      }
+    }
 
-    const horarios =
-      generarHorarios({
-        dia,
-        intervaloMinutos,
-        duracionMinutos,
-        turnos,
-      }).filter(
-        (horario) =>
-          !fechaHoraYaPaso(
-            fecha,
-            horario,
-          ),
-      );
+    const diaActivo = diaConfig?.activo === true;
+
+    const horarios = diaActivo && diaConfig
+      ? generarHorarios({
+          dia: diaConfig,
+          intervaloMinutos: obtenerIntervaloAgenda(agenda),
+          duracionMinutos,
+          turnos: (
+            await adminDb
+              .collection("companies")
+              .doc(empresaDoc.id)
+              .collection("appointments")
+              .where("fecha", "==", fecha)
+              .get()
+          ).docs.map((d) => d.data() as TurnoExistente),
+        }).filter((horario) => !fechaHoraYaPaso(fecha, horario))
+      : [];
+
+    let mensajeDisponibilidad = "";
+    if (!diaActivo) {
+      mensajeDisponibilidad = "HOY CERRADO";
+    } else if (horarios.length === 0) {
+      mensajeDisponibilidad = "No quedan horarios disponibles para lo que resta del día.";
+    }
 
     return NextResponse.json(
       {
-        disponible:
-          horarios.length > 0,
-        configuracionPendiente:
-          false,
+        disponible: horarios.length > 0,
+        configuracionPendiente: false,
         horarios,
         duracionMinutos,
-        servicio:
-          servicio.nombre,
-        mensaje:
-          horarios.length === 0
-            ? "No quedan horarios disponibles para este día."
-            : "",
+        servicio: servicio.nombre,
+        mensaje: mensajeDisponibilidad,
       },
       {
         status: 200,
@@ -1189,6 +1092,18 @@ export async function POST(
       empresa,
     } = empresaResultado;
 
+    const estaCerradoExcepcional = await diaEstaCerradoExcepcionalmente(empresaDoc.id, fecha);
+    if (estaCerradoExcepcional) {
+      return NextResponse.json(
+        {
+          error: "HOY CERRADO",
+        },
+        {
+          status: 409,
+        },
+      );
+    }
+
     const servicioResultado =
       await obtenerServicio(
         empresaDoc.id,
@@ -1224,13 +1139,18 @@ export async function POST(
       );
     }
 
-    const diaSemana =
-      String(
-        obtenerDiaSemana(fecha),
-      );
+    const diaSemanaIndex = obtenerDiaSemana(fecha);
+    const clavesPosibles = [String(diaSemanaIndex), String((diaSemanaIndex + 6) % 7)];
 
-    const dia =
-      agenda.dias?.[diaSemana];
+    let dia: ConfigDiaAgenda | undefined;
+    if (agenda?.dias) {
+      for (const clave of clavesPosibles) {
+        if (agenda.dias[clave]) {
+          dia = agenda.dias[clave];
+          break;
+        }
+      }
+    }
 
     if (
       !dia ||
@@ -1295,13 +1215,6 @@ export async function POST(
           "analyticsEvents",
         )
         .doc();
-
-    const bloqueoDiaRef =
-      empresaRef
-        .collection(
-          "appointmentLocks",
-        )
-        .doc(fecha);
 
     try {
       await adminDb.runTransaction(
@@ -1386,17 +1299,18 @@ export async function POST(
             );
           }
 
-          const diaSemanaActual =
-            String(
-              obtenerDiaSemana(
-                fecha,
-              ),
-            );
+          const diaSemanaActualIndex = obtenerDiaSemana(fecha);
+          const clavesPosiblesActuales = [String(diaSemanaActualIndex), String((diaSemanaActualIndex + 6) % 7)];
 
-          const diaActual =
-            agendaActual.dias?.[
-              diaSemanaActual
-            ];
+          let diaActual: ConfigDiaAgenda | undefined;
+          if (agendaActual?.dias) {
+            for (const clave of clavesPosiblesActuales) {
+              if (agendaActual.dias[clave]) {
+                diaActual = agendaActual.dias[clave];
+                break;
+              }
+            }
+          }
 
           if (
             !diaActual ||
@@ -1441,10 +1355,6 @@ export async function POST(
             );
           }
 
-          await transaction.get(
-            bloqueoDiaRef,
-          );
-
           const turnosQuery =
             empresaRef
               .collection(
@@ -1478,18 +1388,6 @@ export async function POST(
               "HORARIO_OCUPADO",
             );
           }
-
-          transaction.set(
-            bloqueoDiaRef,
-            {
-              fecha,
-              updatedAt:
-                FieldValue.serverTimestamp(),
-            },
-            {
-              merge: true,
-            },
-          );
 
           transaction.set(
             turnoRef,
@@ -1583,7 +1481,6 @@ export async function POST(
       throw transactionError;
     }
 
-    // 1. Notificación interna en el panel
     try {
       await crearNotificacion({
         empresaId:
@@ -1615,7 +1512,6 @@ export async function POST(
       );
     }
 
-    // 2. Disparo de Notificación Push Web al teléfono del dueño
     try {
       const fcmTokens: string[] = empresa?.fcmTokens || [];
 

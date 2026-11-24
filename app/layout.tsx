@@ -57,6 +57,14 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
+      <head>
+        {/* Script oficial de Google AdSense para la verificación del sitio */}
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9883029046902969"
+          crossOrigin="anonymous"
+        ></script>
+      </head>
       <body className="min-h-full">
         <ThemeProvider>
           {children}

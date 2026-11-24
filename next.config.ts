@@ -44,6 +44,14 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return [
+      {
+        source: "/",
+        destination: "/eddubarber",
+      },
+    ];
+  },
 };
 
 export default nextConfig;

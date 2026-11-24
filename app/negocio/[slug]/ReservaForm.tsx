@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { CalendarDays, CheckCircle2, Clock3, Loader2 } from "lucide-react";
+import { Clock3, Loader2 } from "lucide-react";
 
 type Servicio = {
   id: string;
@@ -14,7 +14,8 @@ type Props = {
   slug: string;
   servicios: Servicio[];
   colorPrincipal: string;
-  tema?: "oscuro" | "claro"; // Lo dejamos por compatibilidad
+  tema?: "oscuro" | "claro";
+  esEdduBarber?: boolean;
 };
 
 type DisponibilidadResponse = {
@@ -27,12 +28,30 @@ type DisponibilidadResponse = {
   servicio?: string;
 };
 
-export default function ReservaForm({ slug, servicios, colorPrincipal }: Props) {
+type ValidacionReservaResponse = {
+  ok?: boolean;
+  error?: string;
+  empresaId?: string;
+  servicioId?: string;
+  servicio?: string;
+  precioServicio?: number;
+  fecha?: string;
+  hora?: string;
+  duracionMinutos?: number;
+  cliente?: {
+    nombreCliente?: string;
+    email?: string;
+    telefono?: string;
+    notas?: string;
+  };
+};
+
+export default function ReservaForm({ slug, servicios, colorPrincipal, esEdduBarber = false }: Props) {
   const [servicioId, setServicioId] = useState(servicios[0]?.id || "");
   const [nombreCliente, setNombreCliente] = useState("");
   const [telefono, setTelefono] = useState("");
   const [email, setEmail] = useState("");
-  const [fecha, setFecha] = useState("");
+  const [fecha, setFecha] = useState(obtenerFechaInicial());
   const [hora, setHora] = useState("");
   const [notas, setNotas] = useState("");
   const [horarios, setHorarios] = useState<string[]>([]);
@@ -41,7 +60,6 @@ export default function ReservaForm({ slug, servicios, colorPrincipal }: Props) 
   const [configuracionPendiente, setConfiguracionPendiente] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
-  const [exito, setExito] = useState("");
   const [refrescarDisponibilidad, setRefrescarDisponibilidad] = useState(0);
 
   const horaPreseleccionadaRef = useRef("");
@@ -54,15 +72,19 @@ export default function ReservaForm({ slug, servicios, colorPrincipal }: Props) 
 
       if (!existe) return;
 
-      horaPreseleccionadaRef.current = detalle?.hora || "";
+      const horaElegida = (detalle?.hora || "").replace(" hs", "").trim();
+      horaPreseleccionadaRef.current = horaElegida;
+
       setServicioId(servicioDesdeCard);
 
       if (detalle?.fecha) {
         setFecha(detalle.fecha);
       }
 
-      setHora("");
-      setExito("");
+      if (horaElegida) {
+        setHora(horaElegida);
+      }
+
       setError("");
     }
 
@@ -85,7 +107,6 @@ export default function ReservaForm({ slug, servicios, colorPrincipal }: Props) 
       horaPreseleccionadaRef.current = "";
       setServicioId(servicioDesdeHash);
       setHora("");
-      setExito("");
       setError("");
 
       requestAnimationFrame(() => {
@@ -99,7 +120,6 @@ export default function ReservaForm({ slug, servicios, colorPrincipal }: Props) 
   }, [servicios]);
 
   useEffect(() => {
-    setHora("");
     setHorarios([]);
     setMensajeDisponibilidad("");
     setConfiguracionPendiente(false);
@@ -132,11 +152,10 @@ export default function ReservaForm({ slug, servicios, colorPrincipal }: Props) 
         setHorarios(nuevosHorarios);
 
         const horaPreseleccionada = horaPreseleccionadaRef.current;
-        if (horaPreseleccionada && nuevosHorarios.includes(horaPreseleccionada)) {
+        if (horaPreseleccionada) {
           setHora(horaPreseleccionada);
         }
 
-        horaPreseleccionadaRef.current = "";
         setConfiguracionPendiente(resultado.configuracionPendiente === true);
 
         if (resultado.mensaje) {
@@ -179,11 +198,16 @@ export default function ReservaForm({ slug, servicios, colorPrincipal }: Props) 
     if (enviando) return;
 
     setError("");
-    setExito("");
 
     if (!servicioId) { setError("Seleccioná un servicio."); return; }
     if (!nombreCliente.trim()) { setError("Ingresá tu nombre."); return; }
-    if (!telefono.trim() && !email.trim()) { setError("Ingresá un teléfono o correo de contacto."); return; }
+    
+    if (esEdduBarber) {
+      if (!telefono.trim()) { setError("Ingresá tu teléfono de contacto."); return; }
+    } else {
+      if (!telefono.trim() && !email.trim()) { setError("Ingresá un teléfono o correo de contacto."); return; }
+    }
+
     if (!fecha) { setError("Seleccioná una fecha."); return; }
     if (!hora) { setError("Seleccioná uno de los horarios disponibles."); return; }
 
@@ -196,59 +220,75 @@ export default function ReservaForm({ slug, servicios, colorPrincipal }: Props) 
         body: JSON.stringify({ slug, servicioId, nombreCliente, telefono, email, fecha, hora, notas }),
       });
 
-      const resultado = (await respuesta.json()) as { error?: string; servicio?: string; fecha?: string; hora?: string; };
+      const resultado = (await respuesta.json()) as ValidacionReservaResponse;
 
-      if (!respuesta.ok) {
-        setError(resultado.error || "No se pudo reservar el turno.");
+      if (!respuesta.ok || !resultado.ok) {
+        setError(resultado.error || "No se pudo validar el turno.");
         if (respuesta.status === 409) {
           setHora("");
           setRefrescarDisponibilidad((actual) => actual + 1);
         }
+        setEnviando(false);
         return;
       }
 
-      setExito(`Turno solicitado para ${resultado.servicio || "el servicio seleccionado"} el ${resultado.fecha || fecha} a las ${resultado.hora || hora}.`);
-      setNombreCliente("");
-      setTelefono("");
-      setEmail("");
-      setHora("");
-      setNotas("");
-      setRefrescarDisponibilidad((actual) => actual + 1);
+      const prefRespuesta = await fetch("/api/mercadopago/preference", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          empresaId: resultado.empresaId,
+          servicioId: resultado.servicioId,
+          nombreCliente: resultado.cliente?.nombreCliente || nombreCliente,
+          telefono: resultado.cliente?.telefono || telefono,
+          email: resultado.cliente?.email || email,
+          servicio: resultado.servicio,
+          fecha: resultado.fecha || fecha,
+          hora: resultado.hora || hora,
+          duracionMinutos: resultado.duracionMinutos,
+          precio: resultado.precioServicio,
+          notas: resultado.cliente?.notas || notas,
+        }),
+      });
+
+      const prefData = (await prefRespuesta.json()) as { init_point?: string; error?: string; };
+
+      if (!prefRespuesta.ok || !prefData.init_point) {
+        setError(prefData.error || "No se pudo generar la pantalla de pago de Mercado Pago.");
+        setEnviando(false);
+        return;
+      }
+
+      window.location.href = prefData.init_point;
     } catch (errorReserva) {
       console.error("Error enviando reserva:", errorReserva);
-      setError("No se pudo conectar con el sistema de turnos.");
-    } finally {
+      setError("No se pudo conectar con el sistema de pagos.");
       setEnviando(false);
     }
   }
 
   if (servicios.length === 0) return null;
 
+  const esCerrado = mensajeDisponibilidad === "HOY CERRADO" && horarios.length === 0;
+  const colorBotonYEncabezado = esEdduBarber ? "#ED192D" : colorPrincipal;
+
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-3xl sm:p-8">
-      <div className="flex items-start gap-3 sm:gap-4">
-        <div
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl sm:h-12 sm:w-12 sm:rounded-2xl"
-          style={{ backgroundColor: `${colorPrincipal}20`, color: colorPrincipal }}
+      <div>
+        <p
+          className="text-xs font-bold uppercase tracking-[0.2em] mb-1 text-[#ED192D]"
+          style={{ color: colorBotonYEncabezado }}
         >
-          <CalendarDays className="h-4 w-4 sm:h-6 sm:w-6" />
-        </div>
-
-        <div>
-          <p className="text-xs font-medium sm:text-sm" style={{ color: colorPrincipal }}>
-            Reserva online
-          </p>
-          <h2 className="mt-1 text-xl font-bold text-slate-950 dark:text-white sm:text-2xl">
-            Pedí tu turno
-          </h2>
-          <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-zinc-400 sm:mt-2 sm:text-sm sm:leading-6">
-            Elegí un servicio, una fecha y uno de los horarios disponibles.
-          </p>
-        </div>
+          — RESERVA ONLINE
+        </p>
+        <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white font-serif leading-snug">
+          Pedí tu turno
+        </h2>
+        <p className="mt-1 text-xs sm:text-sm text-slate-600 dark:text-zinc-400">
+          Elegí un servicio, una fecha y uno de los horarios disponibles.
+        </p>
       </div>
 
       <form onSubmit={reservar} className="mt-5 grid gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-5">
-        {/* SERVICIO */}
         <div className="sm:col-span-2">
           <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-zinc-300 sm:mb-2 sm:text-sm">
             Servicio
@@ -258,7 +298,6 @@ export default function ReservaForm({ slug, servicios, colorPrincipal }: Props) 
             onChange={(event) => {
               setServicioId(event.target.value);
               setHora("");
-              setExito("");
               setError("");
             }}
             required
@@ -274,12 +313,13 @@ export default function ReservaForm({ slug, servicios, colorPrincipal }: Props) 
           </select>
         </div>
 
-        {/* DATOS */}
         <Campo label="Nombre" value={nombreCliente} onChange={setNombreCliente} placeholder="Tu nombre" required />
-        <Campo label="Teléfono" value={telefono} onChange={setTelefono} placeholder="+54 9..." type="tel" />
-        <Campo label="Correo" value={email} onChange={setEmail} placeholder="correo@ejemplo.com" type="email" />
+        <Campo label="Teléfono" value={telefono} onChange={setTelefono} placeholder="+54 9..." type="tel" required={esEdduBarber} />
 
-        {/* FECHA */}
+        {!esEdduBarber && (
+          <Campo label="Correo" value={email} onChange={setEmail} placeholder="correo@ejemplo.com" type="email" />
+        )}
+
         <div>
           <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-zinc-300 sm:mb-2 sm:text-sm">
             Fecha
@@ -287,11 +327,10 @@ export default function ReservaForm({ slug, servicios, colorPrincipal }: Props) 
           <input
             type="date"
             value={fecha}
-            min={obtenerHoy()}
+            min={obtenerFechaLocalString(new Date())}
             onChange={(event) => {
               setFecha(event.target.value);
               setHora("");
-              setExito("");
               setError("");
             }}
             required
@@ -299,7 +338,6 @@ export default function ReservaForm({ slug, servicios, colorPrincipal }: Props) 
           />
         </div>
 
-        {/* HORARIOS */}
         <div className="sm:col-span-2">
           <div className="mb-2 flex items-center gap-2 sm:mb-3">
             <Clock3 className="h-4 w-4 text-slate-400 dark:text-zinc-500" />
@@ -316,6 +354,11 @@ export default function ReservaForm({ slug, servicios, colorPrincipal }: Props) 
             <div className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400 sm:gap-3 sm:p-6 sm:text-sm">
               <Loader2 className="h-5 w-5 animate-spin" /> Consultando horarios...
             </div>
+          ) : esCerrado ? (
+            <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-6 text-center text-red-500 dark:text-red-400">
+              <p className="text-lg font-bold tracking-wider uppercase">HOY CERRADO</p>
+              <p className="text-xs mt-1 text-red-400/80">No hay atención disponible para la fecha seleccionada.</p>
+            </div>
           ) : horarios.length > 0 ? (
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
               {horarios.map((horario) => {
@@ -327,17 +370,16 @@ export default function ReservaForm({ slug, servicios, colorPrincipal }: Props) 
                     onClick={() => {
                       setHora(horario);
                       setError("");
-                      setExito("");
                     }}
-                    style={seleccionado ? { backgroundColor: colorPrincipal, borderColor: colorPrincipal } : undefined}
+                    style={seleccionado ? { backgroundColor: colorBotonYEncabezado, borderColor: colorBotonYEncabezado } : undefined}
                     className={[
                       "rounded-xl border px-2 py-2 text-xs font-semibold transition sm:px-3 sm:py-3 sm:text-sm",
                       seleccionado
-                        ? "text-white"
+                        ? "text-white shadow-md scale-105"
                         : "border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:bg-zinc-800",
                     ].join(" ")}
                   >
-                    {horario}
+                    {horario} hs
                   </button>
                 );
               })}
@@ -356,19 +398,17 @@ export default function ReservaForm({ slug, servicios, colorPrincipal }: Props) 
           )}
         </div>
 
-        {/* TURNO ELEGIDO */}
-        {hora && (
+        {hora && !esCerrado && (
           <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 sm:col-span-2 sm:p-4">
             <p className="text-xs font-medium uppercase tracking-wide text-emerald-500">
               Horario seleccionado
             </p>
             <p className="mt-1 text-base font-semibold text-emerald-300 sm:text-lg">
-              {fecha} · {hora}
+              {fecha} · {hora} hs
             </p>
           </div>
         )}
 
-        {/* NOTAS */}
         <div className="sm:col-span-2">
           <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-zinc-300 sm:mb-2 sm:text-sm">
             Nota opcional
@@ -383,39 +423,33 @@ export default function ReservaForm({ slug, servicios, colorPrincipal }: Props) 
           />
         </div>
 
-        {/* ERROR */}
         {error && (
           <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-400 sm:col-span-2 sm:p-4 sm:text-sm">
             {error}
           </div>
         )}
 
-        {/* ÉXITO */}
-        {exito && (
-          <div className="flex items-start gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-300 sm:col-span-2 sm:gap-3 sm:p-4 sm:text-sm">
-            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
-            <div>
-              <p className="font-semibold">Turno solicitado</p>
-              <p className="mt-1">{exito}</p>
-              <p className="mt-2 text-xs text-emerald-400/80">
-                El negocio podrá confirmar tu turno desde su agenda.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* BOTÓN */}
         <button
           type="submit"
-          disabled={enviando || cargandoHorarios || !hora}
-          style={{ backgroundColor: colorPrincipal }}
-          className="rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:col-span-2 sm:px-6 sm:py-3.5 sm:text-base"
+          disabled={enviando || cargandoHorarios || !hora || esCerrado}
+          style={{ backgroundColor: colorBotonYEncabezado }}
+          className="rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:col-span-2 sm:px-6 sm:py-3.5 sm:text-base flex items-center justify-center gap-2"
         >
-          {enviando ? "Reservando..." : hora ? `Solicitar turno · ${hora}` : "Seleccioná un horario"}
+          {enviando ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" /> Redirigiendo a Mercado Pago...
+            </>
+          ) : esCerrado ? (
+            "Cerrado"
+          ) : hora ? (
+            `Ir a pagar y reservar · ${hora} hs`
+          ) : (
+            "Seleccioná un horario"
+          )}
         </button>
 
         <p className="text-center text-[11px] text-slate-500 dark:text-zinc-600 sm:col-span-2 sm:text-xs">
-          Ingresá al menos un teléfono o correo para que el negocio pueda contactarte.
+          {esEdduBarber ? "Ingresá tu teléfono para el contacto. El turno se confirmará una vez completado el pago." : "Ingresá al menos un teléfono o correo. El turno se confirmará una vez completado el pago."}
         </p>
       </form>
     </div>
@@ -454,10 +488,20 @@ function Campo({
   );
 }
 
-function obtenerHoy() {
-  const ahora = new Date();
-  const anio = ahora.getFullYear();
-  const mes = String(ahora.getMonth() + 1).padStart(2, "0");
-  const dia = String(ahora.getDate()).padStart(2, "0");
+function obtenerFechaLocalString(date: Date) {
+  const anio = date.getFullYear();
+  const mes = String(date.getMonth() + 1).padStart(2, "0");
+  const dia = String(date.getDate()).padStart(2, "0");
   return `${anio}-${mes}-${dia}`;
+}
+
+function obtenerFechaInicial() {
+  const ahora = new Date();
+  const horaActualStr = `${String(ahora.getHours()).padStart(2, "0")}:${String(ahora.getMinutes()).padStart(2, "0")}`;
+  
+  if (horaActualStr > "21:30") {
+    ahora.setDate(ahora.getDate() + 1);
+  }
+  
+  return obtenerFechaLocalString(ahora);
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   createUserWithEmailAndPassword,
   updateProfile,
@@ -27,6 +27,29 @@ export default function RegisterPage() {
   const [mostrarPassword, setMostrarPassword] = useState(false);
   const [mostrarConfirmarPassword, setMostrarConfirmarPassword] =
     useState(false);
+
+  const [nextParam, setNextParam] = useState("");
+  const [invitationParam, setInvitationParam] = useState("");
+
+  // Leer los parámetros de la URL al cargar la página
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const emailUrl = params.get("email");
+      const nextUrl = params.get("next");
+      const invitationUrl = params.get("invitation");
+
+      if (emailUrl) {
+        setEmail(emailUrl.trim());
+      }
+      if (nextUrl) {
+        setNextParam(nextUrl);
+      }
+      if (invitationUrl) {
+        setInvitationParam(invitationUrl);
+      }
+    }
+  }, []);
 
   async function crearCuenta(
     event: React.FormEvent<HTMLFormElement>
@@ -67,8 +90,7 @@ export default function RegisterPage() {
         password
       );
 
-      const nombreCompleto =
-        `${nombreLimpio} ${apellidoLimpio}`.trim();
+      const nombreCompleto = `${nombreLimpio} ${apellidoLimpio}`.trim();
 
       await updateProfile(credencial.user, {
         displayName: nombreCompleto,
@@ -90,7 +112,14 @@ export default function RegisterPage() {
         { merge: true }
       );
 
-      window.location.href = "/onboarding";
+      // REDIRECCIÓN INTELIGENTE
+      if (nextParam) {
+        window.location.href = nextParam;
+      } else if (invitationParam) {
+        window.location.href = `/invitaciones/aceptar?invitation=${encodeURIComponent(invitationParam)}`;
+      } else {
+        window.location.href = "/dashboard";
+      }
     } catch (firebaseError) {
       console.error(
         "Error creando la cuenta:",
@@ -126,6 +155,16 @@ export default function RegisterPage() {
     }
   }
 
+  // Construir link dinámico para iniciar sesión si ya tiene cuenta
+  const loginUrl = (() => {
+    const params = new URLSearchParams();
+    if (nextParam) params.set("next", nextParam);
+    if (invitationParam) params.set("invitation", invitationParam);
+    if (email) params.set("email", email);
+    const queryString = params.toString();
+    return `/login${queryString ? `?${queryString}` : ""}`;
+  })();
+
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4 py-8">
       <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl sm:p-8">
@@ -142,7 +181,9 @@ export default function RegisterPage() {
           </h1>
 
           <p className="mt-2 text-sm text-slate-400">
-            Configurá tu empresa y tu asistente inteligente.
+            {invitationParam
+              ? "Sumate al equipo de trabajo en NDI AI."
+              : "Configurá tu empresa y tu asistente inteligente."}
           </p>
         </div>
 
@@ -358,7 +399,7 @@ export default function RegisterPage() {
             </p>
 
             <a
-              href="/login"
+              href={loginUrl}
               className="mt-3 inline-flex w-full items-center justify-center rounded-xl border border-slate-700 px-4 py-3 font-semibold text-white transition hover:border-blue-500 hover:bg-blue-500/10"
             >
               Iniciar sesión

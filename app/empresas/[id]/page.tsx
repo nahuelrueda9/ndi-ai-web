@@ -32,6 +32,7 @@ import {
   Smartphone,
   Trash2,
   Upload,
+  Video,
 } from "lucide-react";
 
 import { auth, db } from "@/lib/firebase";
@@ -49,6 +50,11 @@ import Card from "@/components/Ui/Card";
 import Input from "@/components/Ui/Input";
 import OnboardingCard from "@/components/dashboard/OnboardingCard";
 
+export type ElementoHero = {
+  url: string;
+  tipo: "imagen" | "video";
+};
+
 type TemaPagina = "oscuro" | "claro";
 
 type TestimonioPagina = {
@@ -61,6 +67,7 @@ type PreguntaFrecuentePagina = {
   pregunta: string;
   respuesta: string;
 };
+
 type TemaWidget = "oscuro" | "claro";
 type PosicionWidget = "derecha" | "izquierda";
 type FormaWidget = "redondo" | "cuadrado";
@@ -111,6 +118,8 @@ interface Empresa {
     portadaUrl4?: string;
     portadaUrl5?: string;
     portadaUrl6?: string;
+
+    multimediaHero?: ElementoHero[];
     galeria?: string[];
 
     mostrarWhatsApp?: boolean;
@@ -190,16 +199,15 @@ export default function ConfigurarAgentePage() {
   const [paginaMostrarLogoHeader, setPaginaMostrarLogoHeader] = useState(true);
   const [paginaLogoUrl, setPaginaLogoUrl] = useState("");
   const [paginaLogoOscuroUrl, setPaginaLogoOscuroUrl] = useState("");
-  const [paginaPortadaUrl, setPaginaPortadaUrl] = useState("");
-  const [paginaPortadaUrl2, setPaginaPortadaUrl2] = useState("");
-  const [paginaPortadaUrl3, setPaginaPortadaUrl3] = useState("");
-  const [paginaPortadaUrl4, setPaginaPortadaUrl4] = useState("");
-  const [paginaPortadaUrl5, setPaginaPortadaUrl5] = useState("");
-  const [paginaPortadaUrl6, setPaginaPortadaUrl6] = useState("");
+
+  // MULTIMEDIA HERO (8 SLOTS PARA HERO DE PARALAJE)
+  const [multimediaHero, setMultimediaHero] = useState<ElementoHero[]>([]);
+
   const [paginaGaleria, setPaginaGaleria] = useState<string[]>([]);
   const [subiendoImagen, setSubiendoImagen] = useState<
-    "logo" | "logoOscuro" | "portada" | "portada2" | "portada3" | "portada4" | "portada5" | "portada6" | "galeria" | null
+    "logo" | "logoOscuro" | "heroSlot" | "galeria" | null
   >(null);
+  const [slotIndexSubiendo, setSlotIndexSubiendo] = useState<number | null>(null);
 
   const [paginaMostrarWhatsApp, setPaginaMostrarWhatsApp] = useState(true);
   const [paginaMostrarEmail, setPaginaMostrarEmail] = useState(true);
@@ -282,7 +290,19 @@ export default function ConfigurarAgentePage() {
           obtenerNombrePlan(obtenerPlanEfectivo(empresa)),
         );
 
-        if (empresa.userId !== currentUser.uid) {
+        const esDueno = empresa.userId === currentUser.uid;
+        let esMiembroActivo = false;
+
+        if (!esDueno) {
+          const miembroRef = doc(db, "companies", empresaId, "members", currentUser.uid);
+          const miembroSnap = await getDoc(miembroRef);
+          if (miembroSnap.exists()) {
+            const miembroData = miembroSnap.data() as { estado?: string };
+            esMiembroActivo = miembroData.estado === "activo";
+          }
+        }
+
+        if (!esDueno && !esMiembroActivo) {
           setError("No tenés permiso para acceder a esta empresa.");
           return;
         }
@@ -313,12 +333,25 @@ export default function ConfigurarAgentePage() {
         setPaginaLogoUrl(empresa.paginaPublica?.logoUrl || "");
         setPaginaLogoOscuroUrl(empresa.paginaPublica?.logoOscuroUrl || "");
         setPaginaTipografia(empresa.paginaPublica?.tipografia || "inter");
-        setPaginaPortadaUrl(empresa.paginaPublica?.portadaUrl || "");
-        setPaginaPortadaUrl2(empresa.paginaPublica?.portadaUrl2 || "");
-        setPaginaPortadaUrl3(empresa.paginaPublica?.portadaUrl3 || "");
-        setPaginaPortadaUrl4(empresa.paginaPublica?.portadaUrl4 || "");
-        setPaginaPortadaUrl5(empresa.paginaPublica?.portadaUrl5 || "");
-        setPaginaPortadaUrl6(empresa.paginaPublica?.portadaUrl6 || "");
+
+        // CARGAR MULTIMEDIA HERO (HASTA 8 SLOTS)
+        if (Array.isArray(empresa.paginaPublica?.multimediaHero)) {
+          setMultimediaHero(empresa.paginaPublica!.multimediaHero!.slice(0, 8));
+        } else {
+          // Migración suave: Si tenía portadas antiguas, las convierte a la lista multimedial
+          const antiguasPortadas = [
+            empresa.paginaPublica?.portadaUrl,
+            empresa.paginaPublica?.portadaUrl2,
+            empresa.paginaPublica?.portadaUrl3,
+            empresa.paginaPublica?.portadaUrl4,
+            empresa.paginaPublica?.portadaUrl5,
+            empresa.paginaPublica?.portadaUrl6,
+          ].filter((url): url is string => Boolean(url && url.trim().length > 0));
+
+          setMultimediaHero(
+            antiguasPortadas.map((url) => ({ url, tipo: "imagen" }))
+          );
+        }
 
         setPaginaGaleria(
           Array.isArray(empresa.paginaPublica?.galeria)
@@ -395,20 +428,25 @@ export default function ConfigurarAgentePage() {
 
   const urlPublica = paginaSlug ? `/negocio/${paginaSlug}` : "";
 
-  const subirImagenPagina = async (
+  // FUNCIÓN DE SUBIDA ADAPTADA A FOTOS Y VIDEOS
+  const subirArchivoPagina = async (
     archivo: File,
-    destino: "logo" | "logoOscuro" | "portada" | "portada2" | "portada3" | "portada4" | "portada5" | "portada6" | "galeria",
+    destino: "logo" | "logoOscuro" | "heroSlot" | "galeria",
+    targetSlotIndex?: number
   ) => {
     if (!user || !empresaId) return;
 
-    if (!archivo.type.startsWith("image/")) {
-      setError("Seleccioná un archivo de imagen válido (JPG, PNG o WebP).");
+    const esVideo = archivo.type.startsWith("video/");
+    const esImagen = archivo.type.startsWith("image/");
+
+    if (!esImagen && !esVideo) {
+      setError("Seleccioná un archivo válido (JPG, PNG, WebP o video MP4/WebM).");
       return;
     }
 
-    const TAMANO_MAXIMO = 10 * 1024 * 1024;
+    const TAMANO_MAXIMO = esVideo ? 25 * 1024 * 1024 : 10 * 1024 * 1024;
     if (archivo.size > TAMANO_MAXIMO) {
-      setError("La imagen no puede superar los 10 MB.");
+      setError(esVideo ? "El video no puede superar los 25 MB." : "La imagen no puede superar los 10 MB.");
       return;
     }
 
@@ -420,6 +458,7 @@ export default function ConfigurarAgentePage() {
     setError("");
     setMensaje("");
     setSubiendoImagen(destino);
+    if (typeof targetSlotIndex === "number") setSlotIndexSubiendo(targetSlotIndex);
 
     try {
       const idToken = await user.getIdToken();
@@ -442,7 +481,7 @@ export default function ConfigurarAgentePage() {
       };
 
       if (!authResponse.ok) {
-        throw new Error(authData.error || "No se pudo autorizar la subida con ImageKit.");
+        throw new Error(authData.error || "No se pudo autorizar la subida.");
       }
 
       if (!authData.token || !authData.expire || !authData.signature || !authData.publicKey) {
@@ -450,7 +489,7 @@ export default function ConfigurarAgentePage() {
       }
 
       const extension =
-        archivo.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+        archivo.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || (esVideo ? "mp4" : "jpg");
       const baseNombre =
         archivo.name
           .replace(/\.[^.]+$/, "")
@@ -470,7 +509,7 @@ export default function ConfigurarAgentePage() {
       formData.append("expire", String(authData.expire));
       formData.append("signature", authData.signature);
       formData.append("useUniqueFileName", "true");
-      formData.append("folder", `/ndi-ai/companies/${empresaId}/public-page/portada`);
+      formData.append("folder", `/ndi-ai/companies/${empresaId}/public-page`);
 
       const uploadResponse = await fetch("https://upload.imagekit.io/api/v1/files/upload", {
         method: "POST",
@@ -479,8 +518,6 @@ export default function ConfigurarAgentePage() {
 
       const uploadData = (await uploadResponse.json()) as {
         url?: string;
-        fileId?: string;
-        name?: string;
         message?: string;
         error?: string;
       };
@@ -490,35 +527,34 @@ export default function ConfigurarAgentePage() {
       }
 
       const url = uploadData.url?.trim();
-      if (!url) throw new Error("ImageKit no devolvió la URL de la imagen.");
+      if (!url) throw new Error("ImageKit no devolvió la URL del archivo.");
 
       if (destino === "logo") {
         setPaginaLogoUrl(url);
       } else if (destino === "logoOscuro") {
         setPaginaLogoOscuroUrl(url);
-      } else if (destino === "portada") {
-        setPaginaPortadaUrl(url);
-      } else if (destino === "portada2") {
-        setPaginaPortadaUrl2(url);
-      } else if (destino === "portada3") {
-        setPaginaPortadaUrl3(url);
-      } else if (destino === "portada4") {
-        setPaginaPortadaUrl4(url);
-      } else if (destino === "portada5") {
-        setPaginaPortadaUrl5(url);
-      } else if (destino === "portada6") {
-        setPaginaPortadaUrl6(url);
-      } else {
+      } else if (destino === "heroSlot" && typeof targetSlotIndex === "number") {
+        const copia = [...multimediaHero];
+        copia[targetSlotIndex] = { url, tipo: esVideo ? "video" : "imagen" };
+        setMultimediaHero(copia.slice(0, 8));
+      } else if (destino === "galeria") {
         setPaginaGaleria((actual) => [...actual, url].slice(0, 10));
       }
 
-      setMensaje("Imagen cargada con éxito. Hacé clic en 'Guardar cambios' para aplicarla.");
+      setMensaje("Archivo cargado con éxito. Hacé clic en 'Guardar cambios' para aplicarlo.");
     } catch (uploadError) {
-      console.error("Error al subir imagen:", uploadError);
-      setError(uploadError instanceof Error ? uploadError.message : "Error al procesar la imagen.");
+      console.error("Error al subir archivo:", uploadError);
+      setError(uploadError instanceof Error ? uploadError.message : "Error al procesar el archivo.");
     } finally {
       setSubiendoImagen(null);
+      setSlotIndexSubiendo(null);
     }
+  };
+
+  const quitarSlotHero = (index: number) => {
+    const copia = [...multimediaHero];
+    copia.splice(index, 1);
+    setMultimediaHero(copia);
   };
 
   const quitarImagenGaleria = (indice: number) => {
@@ -563,7 +599,7 @@ export default function ConfigurarAgentePage() {
     const respuestaLimpia = preguntaFrecuenteRespuesta.trim();
 
     if (!preguntaLimpia || !respuestaLimpia) {
-      setError("Completá el pregunta y la respuesta.");
+      setError("Completá la pregunta y la respuesta.");
       return;
     }
 
@@ -661,6 +697,9 @@ export default function ConfigurarAgentePage() {
       const slugConfirmado = slugData.slug || slugLimpio;
       const empresaReferencia = doc(db, "companies", empresaId);
 
+      // Mapear compatibilidad con versiones anteriores si existe la primera portada
+      const primeraPortada = multimediaHero.find((m) => m.tipo === "imagen")?.url || "";
+
       const datosActualizar = {
         nombre: nombre.trim(),
         rubro: rubro.trim(),
@@ -683,12 +722,11 @@ export default function ConfigurarAgentePage() {
         "paginaPublica.tipografia": paginaTipografia,
         "paginaPublica.logoUrl": paginaLogoUrl,
         "paginaPublica.logoOscuroUrl": paginaLogoOscuroUrl,
-        "paginaPublica.portadaUrl": paginaPortadaUrl,
-        "paginaPublica.portadaUrl2": paginaPortadaUrl2,
-        "paginaPublica.portadaUrl3": paginaPortadaUrl3,
-        "paginaPublica.portadaUrl4": paginaPortadaUrl4,
-        "paginaPublica.portadaUrl5": paginaPortadaUrl5,
-        "paginaPublica.portadaUrl6": paginaPortadaUrl6,
+
+        // GUARDADO DE LAS 8 RANURAS MULTIMEDIALES (FOTOS Y VIDEOS)
+        "paginaPublica.multimediaHero": multimediaHero.slice(0, 8),
+        "paginaPublica.portadaUrl": primeraPortada,
+
         "paginaPublica.galeria": paginaGaleria,
         "paginaPublica.mostrarWhatsApp": paginaMostrarWhatsApp,
         "paginaPublica.mostrarEmail": paginaMostrarEmail,
@@ -848,7 +886,7 @@ export default function ConfigurarAgentePage() {
                 </Badge>
               </div>
               <p className="mt-1 max-w-xl text-xs leading-5 text-slate-600 dark:text-zinc-400">
-                Vinculá este dispositivo para que el teléfono te suene y vibre automáticamente con cada reserva, pedido o turno entrante, incluso con la pantalla bloqueada.
+                Vinculá este dispositivo para que el teléfono te suene y vibre automáticamente con cada reserva, pedido o turno entrante.
               </p>
             </div>
           </div>
@@ -1048,199 +1086,217 @@ export default function ConfigurarAgentePage() {
                 />
               </div>
 
-              {/* IDENTIDAD VISUAL: FILA 1 LOGOS (2), FILA 2 PORTADAS (3), FILA 3 PORTADAS (3) */}
-              <div className="md:col-span-2 space-y-5">
+              {/* LOGOS DE LA MARCA */}
+              <div className="md:col-span-2 space-y-3">
                 <div>
-                  <p className="text-xs font-medium text-slate-700 dark:text-zinc-200 sm:text-sm">
-                    Identidad visual
-                  </p>
-                  <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs">
-                    Cargá los logos y hasta 6 fotos de portada. Formatos permitidos: JPG, PNG o WebP (hasta 10 MB por imagen).
-                  </p>
-                </div>
-
-                {/* FILA 1: LOGOS DE LA MARCA (2 COLUMNAS) */}
-                <div className="space-y-1.5">
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
+                  <p className="text-xs font-semibold text-slate-900 dark:text-white sm:text-sm">
                     Logos de la marca
                   </p>
-                  <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-2 lg:max-w-2xl">
-                    <ImagenUploader
-                      titulo="Logo claro / principal"
-                      descripcion="PNG, JPG o WebP · máx. 10 MB · recomendado 512 × 512 px (cuadrado)."
-                      imagenUrl={paginaLogoUrl}
-                      cargando={subiendoImagen === "logo"}
-                      onSeleccionar={(archivo) => void subirImagenPagina(archivo, "logo")}
-                      onQuitar={() => setPaginaLogoUrl("")}
-                      aspectClass="aspect-square max-w-[180px]"
-                    />
-
-                    <ImagenUploader
-                      titulo="Logo secundario (Oscuro)"
-                      descripcion="PNG, JPG o WebP · máx. 10 MB · recomendado 512 × 512 px. Se usa en modo claro."
-                      imagenUrl={paginaLogoOscuroUrl}
-                      cargando={subiendoImagen === "logoOscuro"}
-                      onSeleccionar={(archivo) => void subirImagenPagina(archivo, "logoOscuro")}
-                      onQuitar={() => setPaginaLogoOscuroUrl("")}
-                      aspectClass="aspect-square max-w-[180px]"
-                    />
-                  </div>
-                </div>
-
-                {/* FILA 2: PORTADAS 1 A 3 (3 COLUMNAS) */}
-                <div className="space-y-1.5">
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
-                    Portadas superiores (1 a 3)
+                  <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:text-xs">
+                    Cargá el logo principal y la variante para fondos claros.
                   </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4">
-                    <ImagenUploader
-                      titulo="Portada 1 (Principal)"
-                      descripcion="JPG, PNG o WebP · máx. 10 MB · recomendado 1920 × 1080 px (16:9 horizontal)."
-                      imagenUrl={paginaPortadaUrl}
-                      cargando={subiendoImagen === "portada"}
-                      onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada")}
-                      onQuitar={() => setPaginaPortadaUrl("")}
-                      aspectClass="aspect-[16/9]"
-                    />
-
-                    <ImagenUploader
-                      titulo="Portada 2 (Opcional)"
-                      descripcion="JPG, PNG o WebP · máx. 10 MB · recomendado 1920 × 1080 px (16:9 horizontal)."
-                      imagenUrl={paginaPortadaUrl2}
-                      cargando={subiendoImagen === "portada2"}
-                      onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada2")}
-                      onQuitar={() => setPaginaPortadaUrl2("")}
-                      aspectClass="aspect-[16/9]"
-                    />
-
-                    <ImagenUploader
-                      titulo="Portada 3 (Opcional)"
-                      descripcion="JPG, PNG o WebP · máx. 10 MB · recomendado 1920 × 1080 px (16:9 horizontal)."
-                      imagenUrl={paginaPortadaUrl3}
-                      cargando={subiendoImagen === "portada3"}
-                      onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada3")}
-                      onQuitar={() => setPaginaPortadaUrl3("")}
-                      aspectClass="aspect-[16/9]"
-                    />
-                  </div>
                 </div>
 
-                {/* FILA 3: PORTADAS 4 A 6 (3 COLUMNAS) */}
-                <div className="space-y-1.5">
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
-                    Portadas inferiores (4 a 6)
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4">
-                    <ImagenUploader
-                      titulo="Portada 4 (Opcional)"
-                      descripcion="JPG, PNG o WebP · máx. 10 MB · recomendado 1920 × 1080 px (16:9 horizontal)."
-                      imagenUrl={paginaPortadaUrl4}
-                      cargando={subiendoImagen === "portada4"}
-                      onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada4")}
-                      onQuitar={() => setPaginaPortadaUrl4("")}
-                      aspectClass="aspect-[16/9]"
-                    />
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-2 lg:max-w-2xl">
+                  <ImagenUploader
+                    titulo="Logo claro / principal"
+                    descripcion="PNG, JPG o WebP (cuadrado)."
+                    imagenUrl={paginaLogoUrl}
+                    cargando={subiendoImagen === "logo"}
+                    onSeleccionar={(archivo) => void subirArchivoPagina(archivo, "logo")}
+                    onQuitar={() => setPaginaLogoUrl("")}
+                    aspectClass="aspect-square max-w-[180px]"
+                  />
 
-                    <ImagenUploader
-                      titulo="Portada 5 (Opcional)"
-                      descripcion="JPG, PNG o WebP · máx. 10 MB · recomendado 1920 × 1080 px (16:9 horizontal)."
-                      imagenUrl={paginaPortadaUrl5}
-                      cargando={subiendoImagen === "portada5"}
-                      onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada5")}
-                      onQuitar={() => setPaginaPortadaUrl5("")}
-                      aspectClass="aspect-[16/9]"
-                    />
-
-                    <ImagenUploader
-                      titulo="Portada 6 (Opcional)"
-                      descripcion="JPG, PNG o WebP · máx. 10 MB · recomendado 1920 × 1080 px (16:9 horizontal)."
-                      imagenUrl={paginaPortadaUrl6}
-                      cargando={subiendoImagen === "portada6"}
-                      onSeleccionar={(archivo) => void subirImagenPagina(archivo, "portada6")}
-                      onQuitar={() => setPaginaPortadaUrl6("")}
-                      aspectClass="aspect-[16/9]"
-                    />
-                  </div>
-                </div>
-
-                {/* SECCIÓN GALERÍA INDEPENDIENTE (HASTA 10 FOTOS) */}
-                <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/50 sm:mt-5 sm:rounded-2xl sm:p-4">
-                  <div className="flex items-center justify-between gap-2 sm:flex-wrap sm:gap-3">
-                    <div>
-                      <p className="text-xs font-medium text-slate-950 dark:text-white sm:text-sm">
-                        Galería de fotos del local
-                      </p>
-                      <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs">
-                        {paginaGaleria.length}/10 fotos cargadas · JPG, PNG o WebP · máx. 10 MB c/u · recomendado 1200 × 900 px (4:3)
-                      </p>
-                    </div>
-
-                    <div>
-                      <input
-                        id="galeria-upload-input"
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        disabled={paginaGaleria.length >= 10 || subiendoImagen === "galeria"}
-                        onChange={(event) => {
-                          const archivo = event.target.files?.[0];
-                          if (archivo) {
-                            void subirImagenPagina(archivo, "galeria");
-                          }
-                          event.target.value = "";
-                        }}
-                      />
-                      <label
-                        htmlFor="galeria-upload-input"
-                        className={`inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-[10px] font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm ${
-                          paginaGaleria.length >= 10 || subiendoImagen === "galeria"
-                            ? "pointer-events-none opacity-50"
-                            : ""
-                        }`}
-                      >
-                        <Upload className="h-4 w-4" />
-                        {subiendoImagen === "galeria" ? "Subiendo..." : "Agregar imagen"}
-                      </label>
-                    </div>
-                  </div>
-
-                  {paginaGaleria.length > 0 ? (
-                    <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:mt-4 sm:gap-3">
-                      {paginaGaleria.map((url, indice) => (
-                        <div
-                          key={`${url}-${indice}`}
-                          className="group relative aspect-[4/3] overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-zinc-800 dark:bg-zinc-900"
-                        >
-                          <img
-                            src={url}
-                            alt={`Galería ${indice + 1}`}
-                            className="h-full w-full object-cover"
-                          />
-
-                          <button
-                            type="button"
-                            onClick={() => quitarImagenGaleria(indice)}
-                            className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-md bg-black/70 text-white opacity-100 transition hover:bg-red-600 sm:right-2 sm:top-2 sm:h-8 sm:w-8 sm:rounded-lg sm:opacity-0 sm:group-hover:opacity-100"
-                            aria-label="Quitar imagen"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="mt-3 flex min-h-20 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white/50 px-3 text-center dark:border-zinc-700 dark:bg-zinc-900/40 sm:mt-4 sm:min-h-28 sm:rounded-xl sm:px-4">
-                      <div>
-                        <ImageIcon className="mx-auto h-6 w-6 text-slate-400 dark:text-zinc-600" />
-                        <p className="mt-2 text-xs text-slate-500 dark:text-zinc-500">
-                          Todavía no cargaste imágenes para la galería.
-                        </p>
-                      </div>
-                    </div>
-                  )}
+                  <ImagenUploader
+                    titulo="Logo secundario (Oscuro)"
+                    descripcion="PNG, JPG o WebP (cuadrado)."
+                    imagenUrl={paginaLogoOscuroUrl}
+                    cargando={subiendoImagen === "logoOscuro"}
+                    onSeleccionar={(archivo) => void subirArchivoPagina(archivo, "logoOscuro")}
+                    onQuitar={() => setPaginaLogoOscuroUrl("")}
+                    aspectClass="aspect-square max-w-[180px]"
+                  />
                 </div>
               </div>
 
+              {/* NUEVA SECCIÓN: 8 SLOTS MULTIMEDIALES (FOTOS Y VIDEOS) */}
+              <div className="md:col-span-2 rounded-xl border border-slate-200 bg-slate-50 p-3.5 dark:border-zinc-800 dark:bg-zinc-950/60 sm:p-5">
+                <div className="mb-3 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 sm:text-sm">
+                      Efecto paralaje: 8 Ranuras Multimediales (Fotos o Videos)
+                    </h3>
+                    <p className="mt-1 text-[11px] leading-4 text-slate-600 dark:text-zinc-400 sm:text-xs sm:leading-5">
+                      Subí fotos o videos cortos en MP4. Flotarán dinámicamente alrededor de tu logo con efecto 3D en el Hero principal.
+                    </p>
+                  </div>
+
+                  <Badge variant="info">
+                    {multimediaHero.length}/8 slots
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
+                  {Array.from({ length: 8 }).map((_, i) => {
+                    const item = multimediaHero[i];
+                    const estaCargando = subiendoImagen === "heroSlot" && slotIndexSubiendo === i;
+                    const slotInputId = `hero-slot-input-${i}`;
+
+                    return (
+                      <div
+                        key={i}
+                        className="group relative flex aspect-square flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed border-slate-300 bg-white transition hover:border-blue-500 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-blue-500"
+                      >
+                        {item ? (
+                          <>
+                            {item.tipo === "video" ? (
+                              <video
+                                src={item.url}
+                                autoPlay
+                                loop
+                                muted
+                                playsInline
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <img
+                                src={item.url}
+                                alt={`Slot Hero ${i + 1}`}
+                                className="h-full w-full object-cover"
+                              />
+                            )}
+
+                            <div className="absolute top-1.5 left-1.5 flex items-center gap-1 rounded bg-black/70 px-1.5 py-0.5 text-[9px] font-bold text-white uppercase backdrop-blur">
+                              {item.tipo === "video" ? <Video className="h-3 w-3 text-blue-400" /> : <ImageIcon className="h-3 w-3 text-emerald-400" />}
+                              <span>{item.tipo}</span>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => quitarSlotHero(i)}
+                              className="absolute top-1.5 right-1.5 flex h-7 w-7 items-center justify-center rounded-lg bg-black/70 text-white transition hover:bg-red-600"
+                              aria-label={`Eliminar slot ${i + 1}`}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </>
+                        ) : (
+                          <div className="p-2 text-center">
+                            <input
+                              id={slotInputId}
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp,video/mp4,video/webm"
+                              className="hidden"
+                              disabled={estaCargando}
+                              onChange={(e) => {
+                                const f = e.target.files?.[0];
+                                if (f) void subirArchivoPagina(f, "heroSlot", i);
+                                e.target.value = "";
+                              }}
+                            />
+                            <label
+                              htmlFor={slotInputId}
+                              className={`flex cursor-pointer flex-col items-center gap-1 ${
+                                estaCargando ? "pointer-events-none opacity-50" : ""
+                              }`}
+                            >
+                              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 dark:bg-zinc-800">
+                                <Upload className="h-4 w-4 text-slate-500 dark:text-zinc-400" />
+                              </div>
+                              <span className="text-[11px] font-semibold text-slate-700 dark:text-zinc-300">
+                                {estaCargando ? "Subiendo..." : `Slot ${i + 1}`}
+                              </span>
+                              <span className="text-[9px] text-slate-400 dark:text-zinc-500">
+                                + Foto / Video MP4
+                              </span>
+                            </label>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* SECCIÓN GALERÍA DEL LOCAL */}
+              <div className="mt-2 md:col-span-2 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/50 sm:rounded-2xl sm:p-4">
+                <div className="flex items-center justify-between gap-2 sm:flex-wrap sm:gap-3">
+                  <div>
+                    <p className="text-xs font-medium text-slate-950 dark:text-white sm:text-sm">
+                      Galería de fotos del local
+                    </p>
+                    <p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:mt-1 sm:text-xs">
+                      {paginaGaleria.length}/10 fotos cargadas · JPG, PNG o WebP · máx. 10 MB c/u
+                    </p>
+                  </div>
+
+                  <div>
+                    <input
+                      id="galeria-upload-input"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={paginaGaleria.length >= 10 || subiendoImagen === "galeria"}
+                      onChange={(event) => {
+                        const archivo = event.target.files?.[0];
+                        if (archivo) {
+                          void subirArchivoPagina(archivo, "galeria");
+                        }
+                        event.target.value = "";
+                      }}
+                    />
+                    <label
+                      htmlFor="galeria-upload-input"
+                      className={`inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-[10px] font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm ${
+                        paginaGaleria.length >= 10 || subiendoImagen === "galeria"
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }`}
+                    >
+                      <Upload className="h-4 w-4" />
+                      {subiendoImagen === "galeria" ? "Subiendo..." : "Agregar imagen"}
+                    </label>
+                  </div>
+                </div>
+
+                {paginaGaleria.length > 0 ? (
+                  <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:mt-4 sm:gap-3">
+                    {paginaGaleria.map((url, indice) => (
+                      <div
+                        key={`${url}-${indice}`}
+                        className="group relative aspect-[4/3] overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-zinc-800 dark:bg-zinc-900"
+                      >
+                        <img
+                          src={url}
+                          alt={`Galería ${indice + 1}`}
+                          className="h-full w-full object-cover"
+                        />
+
+                        <button
+                          type="button"
+                          onClick={() => quitarImagenGaleria(indice)}
+                          className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-md bg-black/70 text-white opacity-100 transition hover:bg-red-600 sm:right-2 sm:top-2 sm:h-8 sm:w-8 sm:rounded-lg sm:opacity-0 sm:group-hover:opacity-100"
+                          aria-label="Quitar imagen"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mt-3 flex min-h-20 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white/50 px-3 text-center dark:border-zinc-700 dark:bg-zinc-900/40 sm:mt-4 sm:min-h-28 sm:rounded-xl sm:px-4">
+                    <div>
+                      <ImageIcon className="mx-auto h-6 w-6 text-slate-400 dark:text-zinc-600" />
+                      <p className="mt-2 text-xs text-slate-500 dark:text-zinc-500">
+                        Todavía no cargaste imágenes para la galería.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* TEMA Y TIPOGRAFÍA */}
               <div className="space-y-2 sm:space-y-3">
                 <div>
                   <p className="text-xs font-medium text-slate-700 dark:text-zinc-200 sm:text-sm">
@@ -1505,6 +1561,7 @@ export default function ConfigurarAgentePage() {
                 </div>
               </div>
 
+              {/* TESTIMONIOS */}
               <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/50 sm:space-y-4 sm:rounded-2xl sm:p-5 md:col-span-2">
                 <div>
                   <div className="flex items-center justify-between gap-2 sm:flex-wrap sm:gap-3">
@@ -1600,6 +1657,7 @@ export default function ConfigurarAgentePage() {
                 )}
               </div>
 
+              {/* PREGUNTAS FRECUENTES */}
               <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/50 sm:space-y-4 sm:rounded-2xl sm:p-5 md:col-span-2">
                 <div className="flex items-center justify-between gap-2 sm:flex-wrap sm:gap-3">
                   <div>
@@ -1698,8 +1756,8 @@ export default function ConfigurarAgentePage() {
                 <div
                   className="relative h-28 overflow-hidden p-3 text-white sm:h-40 sm:p-5"
                   style={{
-                    background: paginaPortadaUrl
-                      ? `linear-gradient(rgba(0,0,0,.48), rgba(0,0,0,.72)), url("${paginaPortadaUrl}") center/cover`
+                    background: multimediaHero.length > 0 && multimediaHero[0].tipo === "imagen"
+                      ? `linear-gradient(rgba(0,0,0,.48), rgba(0,0,0,.72)), url("${multimediaHero[0].url}") center/cover`
                       : `linear-gradient(135deg, ${paginaColorPrincipal}, #09090b)`,
                   }}
                 >
@@ -1806,6 +1864,170 @@ export default function ConfigurarAgentePage() {
             </div>
           </div>
         </Card>
+
+        {/* ASISTENTE IA Y WIDGET */}
+        {puedeUsarIA && (
+          <Card className="overflow-hidden">
+            <SectionHeader
+              title="Asistente IA y widget web"
+              description="Configurá cómo responde el asistente y cómo se ve el widget en tu página."
+              right={<Badge variant="info">IA activa</Badge>}
+            />
+
+            <div className="grid gap-3 p-4 sm:gap-5 sm:p-6 md:grid-cols-2">
+              <Input
+                id="nombreBot"
+                label="Nombre del asistente"
+                value={nombreBot}
+                onChange={(e) => setNombreBot(e.target.value)}
+                required
+              />
+
+              <Input
+                id="idioma"
+                label="Idioma"
+                value={idioma}
+                onChange={(e) => setIdioma(e.target.value)}
+              />
+
+              <Input
+                id="personalidad"
+                label="Personalidad"
+                value={personalidad}
+                onChange={(e) => setPersonalidad(e.target.value)}
+              />
+
+              <Input
+                id="objetivo"
+                label="Objetivo principal"
+                value={objetivo}
+                onChange={(e) => setObjetivo(e.target.value)}
+                placeholder="Ejemplo: Resolver consultas y guiar reservas."
+              />
+
+              <div className="md:col-span-2">
+                <TextArea
+                  id="instrucciones"
+                  label="Instrucciones del asistente"
+                  value={instrucciones}
+                  onChange={(e) => setInstrucciones(e.target.value)}
+                  placeholder="Indicaciones específicas para atender a tus clientes."
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <TextArea
+                  id="restricciones"
+                  label="Restricciones"
+                  value={restricciones}
+                  onChange={(e) => setRestricciones(e.target.value)}
+                />
+              </div>
+
+              <Input
+                id="mensajeBienvenida"
+                label="Mensaje de bienvenida"
+                value={mensajeBienvenida}
+                onChange={(e) => setMensajeBienvenida(e.target.value)}
+              />
+
+              <Input
+                id="textoPlaceholder"
+                label="Texto del input de chat"
+                value={textoPlaceholder}
+                onChange={(e) => setTextoPlaceholder(e.target.value)}
+              />
+
+              <div className="space-y-1.5 sm:space-y-2">
+                <label
+                  htmlFor="colorPrincipalWidget"
+                  className="block text-xs font-medium text-slate-700 dark:text-zinc-200 sm:text-sm"
+                >
+                  Color del widget
+                </label>
+                <div className="flex gap-2 sm:gap-3">
+                  <input
+                    id="colorPrincipalWidget"
+                    type="color"
+                    value={colorPrincipal}
+                    onChange={(e) => setColorPrincipal(e.target.value)}
+                    className="h-9 w-12 cursor-pointer rounded-lg border border-slate-300 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-900 sm:h-11 sm:w-14 sm:rounded-xl"
+                  />
+                  <input
+                    value={colorPrincipal}
+                    onChange={(e) => setColorPrincipal(e.target.value)}
+                    className="h-9 min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 text-xs text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white sm:h-11 sm:rounded-xl sm:px-4 sm:text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="widgetTema"
+                    className="block text-xs font-medium text-slate-700 dark:text-zinc-200"
+                  >
+                    Tema
+                  </label>
+                  <select
+                    id="widgetTema"
+                    value={tema}
+                    onChange={(e) => setTema(e.target.value as TemaWidget)}
+                    className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2.5 text-xs text-slate-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+                  >
+                    <option value="oscuro">Oscuro</option>
+                    <option value="claro">Claro</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="widgetPosicion"
+                    className="block text-xs font-medium text-slate-700 dark:text-zinc-200"
+                  >
+                    Posición
+                  </label>
+                  <select
+                    id="widgetPosicion"
+                    value={posicion}
+                    onChange={(e) => setPosicion(e.target.value as PosicionWidget)}
+                    className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2.5 text-xs text-slate-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+                  >
+                    <option value="derecha">Derecha</option>
+                    <option value="izquierda">Izquierda</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="widgetForma"
+                    className="block text-xs font-medium text-slate-700 dark:text-zinc-200"
+                  >
+                    Botón
+                  </label>
+                  <select
+                    id="widgetForma"
+                    value={formaBoton}
+                    onChange={(e) => setFormaBoton(e.target.value as FormaWidget)}
+                    className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2.5 text-xs text-slate-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+                  >
+                    <option value="redondo">Redondo</option>
+                    <option value="cuadrado">Cuadrado</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="md:col-span-2">
+                <ToggleOpcion
+                  titulo="Mostrar marca"
+                  descripcion="Mostrar el sello de la plataforma en el widget."
+                  checked={mostrarMarca}
+                  onChange={setMostrarMarca}
+                />
+              </div>
+            </div>
+          </Card>
+        )}
 
         {error && (
           <Card className="border-red-200 bg-red-50 p-3 dark:border-red-500/20 dark:bg-red-500/10 sm:p-4">

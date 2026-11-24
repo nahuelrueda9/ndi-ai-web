@@ -6,6 +6,20 @@ import { getMessaging, getToken, isSupported } from "firebase/messaging";
 // Pegá acá tu clave pública VAPID copiada de Firebase si no la tenés en .env
 const VAPID_KEY_FALLBACK = "BOg7GGV_t2HmcCMJA7CCBdl4BQOfwHgkhJdhd9HKbGiSwkTqqSPnIcHryd0_Qlgt2iQ8eifj31U1ffqlAhj4PFw";
 
+function esDispositivoIOS() {
+  if (typeof window === "undefined") return false;
+  return /iPhone|iPad|iPod/i.test(window.navigator.userAgent);
+}
+
+function estaInstaladaComoPWA() {
+  if (typeof window === "undefined") return false;
+  const nav = window.navigator as Navigator & { standalone?: boolean };
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    nav.standalone === true
+  );
+}
+
 export function usePushNotifications(empresaId?: string) {
   const [permission, setPermission] = useState<NotificationPermission>("default");
   const [loading, setLoading] = useState(false);
@@ -25,9 +39,23 @@ export function usePushNotifications(empresaId?: string) {
     try {
       setLoading(true);
 
+      const enIOS = esDispositivoIOS();
+      const enPWA = estaInstaladaComoPWA();
+
+      if (enIOS && !enPWA) {
+        alert(
+          "En iPhone, para recibir notificaciones en el celular tenés que abrir la página en Safari, tocar Compartir -> 'Agregar a inicio' y abrirla desde el ícono de tu pantalla principal."
+        );
+        return;
+      }
+
       const supported = await isSupported();
       if (!supported) {
-        alert("Tu navegador no soporta notificaciones push.");
+        alert(
+          enIOS
+            ? "En iPhone (iOS 16.4+), asegurate de tener la app abierta desde la pantalla de inicio para activar las notificaciones."
+            : "Tu navegador no soporta notificaciones push."
+        );
         return;
       }
 
@@ -39,7 +67,7 @@ export function usePushNotifications(empresaId?: string) {
         return;
       }
 
-      const swRegistration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+      await navigator.serviceWorker.register("/firebase-messaging-sw.js");
       const registration = await navigator.serviceWorker.ready;
 
       const messaging = getMessaging();

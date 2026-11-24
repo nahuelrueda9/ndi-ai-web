@@ -15,6 +15,15 @@
   /* Tokens de Marca */
   --brand: #5d72f6;
   --brand-contrast: #3b4ec9;
+
+  /* Tipografías unificadas */
+  --font-display: var(--font-barlow-condensed), sans-serif;
+  --font-body: var(--font-barlow), sans-serif;
+  
+  /* Tamaños unificados para títulos */
+  --title-section: clamp(1.25rem, 2vw + 1rem, 1.75rem);
+  --title-card: 1.125rem;
+  --eyebrow: 0.75rem;
 }
 
 html.dark {
@@ -44,9 +53,9 @@ html.dark {
   --color-brand: var(--brand);
   --color-brand-contrast: var(--brand-contrast);
 
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-barlow), Arial, Helvetica, sans-serif;
   --font-mono: var(--font-geist-mono);
-  --font-display: var(--font-space-grotesk);
+  --font-display: var(--font-barlow-condensed), sans-serif;
 }
 
 html {
@@ -66,17 +75,40 @@ body {
   min-height: 100vh;
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
 
   transition:
     background-color 0.2s ease,
     color 0.2s ease;
 }
 
-/* Clases de utilidad para la tipografía de títulos */
+/* Clases de utilidad para la tipografía de títulos y componentes */
 h1, h2, h3, .font-display {
-  font-family: var(--font-space-grotesk), sans-serif;
+  font-family: var(--font-display);
   letter-spacing: -0.025em;
+}
+
+.titulo-seccion {
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: var(--title-section);
+  letter-spacing: -0.02em;
+}
+
+.titulo-card {
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: var(--title-card);
+}
+
+.eyebrow-badge {
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: var(--eyebrow);
+  letter-spacing: 0.05em;
 }
 
 /* Efecto 3D CSS liviano para la portada */
@@ -96,6 +128,7 @@ h1, h2, h3, .font-display {
     transform: none !important;
   }
 }
+
 /* Animaciones de entrada al hacer scroll (Reveal) */
 .reveal-hidden {
   opacity: 0;

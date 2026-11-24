@@ -1,14 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 import {
   addDoc,
   collection,
+  getDocs,
+  query,
+  where,
   serverTimestamp,
 } from "firebase/firestore";
-import { Sparkles, Wrench, MessageCircle, Check } from "lucide-react";
+import { Sparkles, Wrench, MessageCircle, Check, Loader2 } from "lucide-react";
 
 import Card from "@/components/Ui/Card";
 import Button from "@/components/Ui/Button";
@@ -20,11 +24,60 @@ export default function OnboardingPage() {
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [verificandoInvitacion, setVerificandoInvitacion] = useState(true);
 
   const [companyName, setCompanyName] = useState("");
   const [industry, setIndustry] = useState("");
   const [website, setWebsite] = useState("");
   const [modalidad, setModalidad] = useState<"autogestion" | "asistida">("autogestion");
+
+  // VALIDACIÓN AUTOMÁTICA AL ENTRAR AL ONBOARDING
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        setVerificandoInvitacion(false);
+        return;
+      }
+
+      if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        const invitationToken = params.get("invitation");
+        const nextUrl = params.get("next");
+
+        // Si hay una invitación pendiente en los parámetros, mandarlo directo a aceptar
+        if (invitationToken) {
+          router.replace(`/invitaciones/aceptar?invitation=${encodeURIComponent(invitationToken)}`);
+          return;
+        }
+
+        if (nextUrl) {
+          router.replace(nextUrl);
+          return;
+        }
+
+        // Si no hay parámetros, verificar en Firestore si el usuario ya es miembro de alguna empresa
+        try {
+          const membersQuery = query(
+            collection(db, "companies"),
+            where("userId", "==", user.uid)
+          );
+          const snapshot = await getDocs(membersQuery);
+
+          if (!snapshot.empty) {
+            // Ya tiene empresas, no necesita onboarding
+            router.replace("/empresas");
+            return;
+          }
+        } catch (err) {
+          console.error("Error comprobando empresas existentes:", err);
+        }
+      }
+
+      setVerificandoInvitacion(false);
+    });
+
+    return () => unsubscribe();
+  }, [router]);
 
   async function finalizar() {
     if (!auth.currentUser) return;
@@ -75,6 +128,17 @@ export default function OnboardingPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (verificandoInvitacion) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-zinc-950 px-5 py-8 text-white">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+          <p className="text-sm text-zinc-400">Cargando datos del panel...</p>
+        </div>
+      </main>
+    );
   }
 
   return (

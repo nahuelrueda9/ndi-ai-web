@@ -21,6 +21,7 @@ const WHATSAPP_NUMERO = "5493886575664";
 
 type EmpresaFacturacion = {
   userId?: string;
+  slug?: string;
   nombre?: string;
   name?: string;
   plan?: PlanId;
@@ -180,6 +181,22 @@ export default function FacturacionPage() {
         }
 
         const datosEmpresa = empresaSnapshot.data() as EmpresaFacturacion;
+        
+        // BLOQUEO / REDIRECCIÓN PARA EDDU BARBER
+        const idLimpio = (empresaId || "").toLowerCase();
+        const slugLimpio = (datosEmpresa.slug || "").toLowerCase();
+        const nombreLimpio = (datosEmpresa.nombre || datosEmpresa.name || "").toLowerCase();
+        
+        const esEdduBarber =
+          idLimpio.includes("eddu") ||
+          slugLimpio.includes("eddu") ||
+          nombreLimpio.includes("eddu");
+
+        if (esEdduBarber) {
+          router.replace(`/empresas/${empresaId}/dashboard`);
+          return;
+        }
+
         if (datosEmpresa.userId !== currentUser.uid) {
           router.replace(`/empresas/${empresaId}/dashboard`);
           return;

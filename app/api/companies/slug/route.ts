@@ -209,11 +209,6 @@ export async function POST(
         .collection("members")
         .doc(usuario.uid);
 
-    /*
-     * Registro determinístico del slug.
-     * Dos empresas que intenten reservar el mismo slug
-     * compiten por exactamente el mismo documento.
-     */
     const slugRef =
       adminDb
         .collection("publicSlugs")
@@ -222,10 +217,6 @@ export async function POST(
     try {
       await adminDb.runTransaction(
         async (transaction) => {
-          /*
-           * Todas las lecturas se realizan antes
-           * de cualquier escritura.
-           */
           const empresaSnapshot =
             await transaction.get(
               empresaRef,
@@ -322,12 +313,6 @@ export async function POST(
               );
           }
 
-          /*
-           * Compatibilidad con empresas creadas antes de
-           * existir publicSlugs. La colección registry evita
-           * carreras futuras, y esta consulta evita duplicar
-           * un slug legado ya guardado en companies.
-           */
           const coincidenciasQuery =
             adminDb
               .collection("companies")
@@ -343,6 +328,7 @@ export async function POST(
               coincidenciasQuery,
             );
 
+          // Verificar si otra empresa distinta está usando este slug en companies
           const usadaPorOtraEmpresa =
             coincidencias.docs.some(
               (documento) =>
@@ -356,16 +342,18 @@ export async function POST(
             throw new SlugNoDisponibleError();
           }
 
+          // Si el slug ya existe en publicSlugs, nos aseguramos de que sea de esta misma empresa o de su dueño
           if (
             slugSnapshot.exists
           ) {
             const reserva =
               slugSnapshot.data();
 
-            if (
-              reserva?.empresaId !==
-              empresaId
-            ) {
+            const perteneceAEstaEmpresa =
+              reserva?.empresaId === empresaId ||
+              reserva?.propietarioUid === usuario.uid;
+
+            if (!perteneceAEstaEmpresa) {
               throw new SlugNoDisponibleError();
             }
           }
@@ -376,7 +364,7 @@ export async function POST(
               slug,
               empresaId,
               propietarioUid:
-                empresa.userId || "",
+                empresa.userId || usuario.uid,
               updatedAt:
                 FieldValue.serverTimestamp(),
             },
@@ -388,18 +376,14 @@ export async function POST(
           if (
             slugActualRef &&
             slugActualSnapshot?.exists &&
-            slugActualSnapshot.data()
-              ?.empresaId === empresaId
+            (slugActualSnapshot.data()?.empresaId === empresaId ||
+             slugActualSnapshot.data()?.propietarioUid === usuario.uid)
           ) {
             transaction.delete(
               slugActualRef,
             );
           }
 
-          /*
-           * El slug queda guardado por backend.
-           * El navegador ya no necesita escribirlo.
-           */
           transaction.update(
             empresaRef,
             {
@@ -438,8 +422,8 @@ export async function POST(
           "La empresa no existe."
             ? 404
             : error.message.includes(
-                  "suscripción activa",
-                )
+                "suscripción activa",
+              )
               ? 403
               : 403;
 

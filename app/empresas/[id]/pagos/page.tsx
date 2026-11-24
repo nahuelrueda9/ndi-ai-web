@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
-import { CreditCard, Lock, MessageSquare, Save, Sparkles, Wallet } from "lucide-react";
+import { Banknote, CreditCard, Lock, MessageSquare, Save, Sparkles, Wallet } from "lucide-react";
 
 import { db } from "@/lib/firebase";
 import { empresaTieneFuncion, type PlanId } from "@/lib/plans/planAccess";
@@ -21,11 +21,17 @@ type MetodosPagoConfig = {
   soloWhatsapp: boolean;
 };
 
+type SenaConfig = {
+  habilitada: boolean;
+  monto: number;
+};
+
 type EmpresaData = {
   plan?: PlanId;
   subscriptionStatus?: string;
   subscriptionEndsAt?: unknown;
   pagosConfig?: Partial<MetodosPagoConfig>;
+  senaConfig?: Partial<SenaConfig>;
 };
 
 export default function PagosConfigPage() {
@@ -47,6 +53,11 @@ export default function PagosConfigPage() {
     aliasCbu: "",
     titularCuenta: "",
     soloWhatsapp: true,
+  });
+
+  const [senaConfig, setSenaConfig] = useState<SenaConfig>({
+    habilitada: false,
+    monto: 0,
   });
 
   useEffect(() => {
@@ -76,6 +87,13 @@ export default function PagosConfigPage() {
               soloWhatsapp: tieneAccesoCobros ? (data.pagosConfig.soloWhatsapp ?? true) : true,
             });
           }
+
+          if (data.senaConfig) {
+            setSenaConfig({
+              habilitada: tieneAccesoCobros ? Boolean(data.senaConfig.habilitada) : false,
+              monto: Number(data.senaConfig.monto || 0),
+            });
+          }
         }
       } catch (err) {
         console.error("Error al cargar configuración de pagos:", err);
@@ -92,11 +110,18 @@ export default function PagosConfigPage() {
     if (!empresaId || guardando) return;
     setError("");
     setMensaje("");
+
+    const montoNumerico = Number(senaConfig.monto || 0);
+    if (puedeCobrarOnline && senaConfig.habilitada && (!Number.isFinite(montoNumerico) || montoNumerico <= 0)) {
+      setError("Ingresá un monto de seña mayor a $0 para activar el anticipo.");
+      return;
+    }
+
     setGuardando(true);
 
     try {
       const docRef = doc(db, "companies", empresaId as string);
-      
+
       const configAGuardar = puedeCobrarOnline
         ? config
         : {
@@ -106,11 +131,22 @@ export default function PagosConfigPage() {
             activoTransferencia: false,
           };
 
+      const senaAGuardar: SenaConfig = puedeCobrarOnline
+        ? {
+            habilitada: Boolean(senaConfig.habilitada),
+            monto: Number.isFinite(montoNumerico) && montoNumerico > 0 ? montoNumerico : 0,
+          }
+        : {
+            habilitada: false,
+            monto: 0,
+          };
+
       await updateDoc(docRef, {
         pagosConfig: configAGuardar,
+        senaConfig: senaAGuardar,
         updatedAt: serverTimestamp(),
       });
-      setMensaje("Métodos de pago guardados correctamente.");
+      setMensaje("Métodos de pago y configuración de seña guardados correctamente.");
     } catch (err) {
       console.error("Error al guardar pagos:", err);
       setError("No se pudieron guardar los cambios.");
@@ -246,7 +282,9 @@ export default function PagosConfigPage() {
                   label="Link de pago o Botón de Mercado Pago"
                   type="text"
                   value={config.linkMercadoPago}
-                  onChange={(e) => setConfig({ ...config, linkMercadoPago: e.target.value })}
+                  onChange={(e) =>
+                    setConfig({ ...config, linkMercadoPago: e.target.value })
+                  }
                   placeholder="Ej: https://link.mercadopago.com.ar/tuempresa"
                 />
                 <p className="mt-1 text-[11px] text-slate-500 dark:text-zinc-500">
@@ -257,7 +295,75 @@ export default function PagosConfigPage() {
           )}
         </Card>
 
-        {/* OPCIÓN 3: TRANSFERENCIA BANCARIA */}
+        {/* OPCIÓN 3: SEÑA / ANTICIPO PARA TURNOS */}
+        <Card className={`p-5 sm:p-6 relative ${!puedeCobrarOnline ? "opacity-75" : ""}`}>
+          <div className="flex items-center justify-between gap-4 border-b border-slate-200 pb-4 dark:border-zinc-800">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
+                <Banknote className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-semibold text-slate-950 dark:text-white">
+                    Seña / Anticipo de turno por Mercado Pago
+                  </h2>
+                  {!puedeCobrarOnline && (
+                    <Badge variant="info">
+                      <Lock className="mr-1 h-3 w-3 inline" />
+                      Plan Pro
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500 dark:text-zinc-400">
+                  Ofrecé pagar un anticipo online para congelar el turno o permitir que el cliente elija pagar en el local.
+                </p>
+              </div>
+            </div>
+            <input
+              type="checkbox"
+              disabled={!puedeCobrarOnline}
+              checked={senaConfig.habilitada}
+              onChange={(e) => setSenaConfig({ ...senaConfig, habilitada: e.target.checked })}
+              className="h-5 w-5 accent-blue-600 disabled:cursor-not-allowed"
+            />
+          </div>
+
+          {!puedeCobrarOnline ? (
+            <div className="mt-4 flex flex-col items-start justify-between gap-3 rounded-xl bg-blue-50/70 p-3.5 dark:bg-blue-500/5 sm:flex-row sm:items-center">
+              <p className="text-xs text-blue-700 dark:text-blue-300">
+                Activá cobros anticipados para reducir ausencias en tus turnos mejorando tu plan.
+              </p>
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => router.push(`/empresas/${empresaId}/planes`)}
+              >
+                <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+                Mejorar plan
+              </Button>
+            </div>
+          ) : (
+            senaConfig.habilitada && (
+              <div className="mt-4 max-w-xs">
+                <Input
+                  id="montoSena"
+                  label="Monto de la seña (ARS)"
+                  type="number"
+                  value={senaConfig.monto ? String(senaConfig.monto) : ""}
+                  onChange={(e) =>
+                    setSenaConfig({
+                      ...senaConfig,
+                      monto: Number(e.target.value.replace(/[^\d.]/g, "")) || 0,
+                    })
+                  }
+                  placeholder="Ej: 5000"
+                />
+              </div>
+            )
+          )}
+        </Card>
+
+        {/* OPCIÓN 4: TRANSFERENCIA BANCARIA */}
         <Card className={`p-5 sm:p-6 relative ${!puedeCobrarOnline ? "opacity-75" : ""}`}>
           <div className="flex items-center justify-between gap-4 border-b border-slate-200 pb-4 dark:border-zinc-800">
             <div className="flex items-center gap-3">

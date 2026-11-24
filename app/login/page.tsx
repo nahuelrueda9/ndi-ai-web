@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -16,6 +16,29 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [nextParam, setNextParam] = useState("");
+  const [invitationParam, setInvitationParam] = useState("");
+
+  // Leer parámetros de la URL al cargar
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const emailUrl = params.get("email");
+      const nextUrl = params.get("next");
+      const invitationUrl = params.get("invitation");
+
+      if (emailUrl) {
+        setEmail(emailUrl.trim());
+      }
+      if (nextUrl) {
+        setNextParam(nextUrl);
+      }
+      if (invitationUrl) {
+        setInvitationParam(invitationUrl);
+      }
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -23,7 +46,15 @@ export default function LoginPage() {
 
     try {
       await signInWithEmailAndPassword(auth, email.trim(), password);
-      router.push("/empresas");
+
+      // REDIRECCIÓN INTELIGENTE
+      if (nextParam) {
+        router.push(nextParam);
+      } else if (invitationParam) {
+        router.push(`/invitaciones/aceptar?invitation=${encodeURIComponent(invitationParam)}`);
+      } else {
+        router.push("/empresas");
+      }
     } catch (err: unknown) {
       console.error("Error al iniciar sesión:", err);
       const codigo =
@@ -46,6 +77,16 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
+  // Construir link dinámico para el botón de registro manteniendo parámetros
+  const registerUrl = (() => {
+    const params = new URLSearchParams();
+    if (nextParam) params.set("next", nextParam);
+    if (invitationParam) params.set("invitation", invitationParam);
+    if (email) params.set("email", email);
+    const queryString = params.toString();
+    return `/register${queryString ? `?${queryString}` : ""}`;
+  })();
 
   return (
     <main className="min-h-screen flex items-center justify-center p-4 bg-[#080b11] text-zinc-100 selection:bg-blue-600 selection:text-white">
@@ -89,7 +130,9 @@ export default function LoginPage() {
             </Link>
 
             <p className="mt-1 text-xs text-zinc-400">
-              Ingresá a tu panel de control
+              {invitationParam
+                ? "Ingresá con tu cuenta para aceptar la invitación"
+                : "Ingresá a tu panel de control"}
             </p>
           </div>
 
@@ -172,7 +215,7 @@ export default function LoginPage() {
               ¿Todavía no tenés una cuenta?
             </p>
             <Link
-              href="/registro"
+              href={registerUrl}
               className="inline-block w-full rounded-xl border border-zinc-800 bg-zinc-900/60 py-2 text-xs font-medium text-zinc-200 hover:bg-zinc-800 transition"
             >
               Crear mi cuenta

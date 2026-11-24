@@ -64,6 +64,9 @@ type ItemMenu = {
 
 type EmpresaData = {
   userId?: string;
+  slug?: string;
+  nombre?: string;
+  name?: string;
   rubro?: string;
   plan?: PlanId;
   subscriptionStatus?: string;
@@ -381,6 +384,18 @@ export default function Sidebar() {
     };
   }, [empresa?.rubro]);
 
+  const esEdduBarber = useMemo(() => {
+    const idLimpio = (empresaId || "").toLowerCase();
+    const slugLimpio = (empresa?.slug || "").toLowerCase();
+    const nombreLimpio = (empresa?.nombre || empresa?.name || "").toLowerCase();
+
+    return (
+      idLimpio.includes("eddu") ||
+      slugLimpio.includes("eddu") ||
+      nombreLimpio.includes("eddu")
+    );
+  }, [empresaId, empresa?.slug, empresa?.nombre, empresa?.name]);
+
   const items =
     useMemo<ItemMenu[]>(
       () => {
@@ -388,7 +403,7 @@ export default function Sidebar() {
           return [];
         }
 
-        return [
+        const listaBase: ItemMenu[] = [
           {
             label: "Inicio",
             ruta: "dashboard",
@@ -490,12 +505,16 @@ export default function Sidebar() {
             roles: ROLES_ADMINISTRACION,
             feature: "asistente_ia",
           },
-          {
-            label: "Facturación",
-            ruta: "facturacion",
-            icon: CreditCard,
-            roles: SOLO_PROPIETARIO,
-          },
+          ...(esEdduBarber
+            ? []
+            : [
+                {
+                  label: "Facturación",
+                  ruta: "facturacion",
+                  icon: CreditCard,
+                  roles: SOLO_PROPIETARIO,
+                },
+              ]),
           {
             label: "Ayuda",
             ruta: "ayuda",
@@ -509,10 +528,13 @@ export default function Sidebar() {
             roles: ROLES_SUPERVISION,
           },
         ];
+
+        return listaBase;
       },
       [
         empresaId,
         rubroConfig,
+        esEdduBarber,
       ],
     );
 
@@ -606,11 +628,16 @@ export default function Sidebar() {
           `/empresas/${empresaId}/dashboard`,
         );
       }
+    } else if (esEdduBarber && pathname.endsWith("/facturacion")) {
+      router.replace(
+        `/empresas/${empresaId}/dashboard`,
+      );
     }
   }, [
     cargandoRol,
     empresa,
     empresaId,
+    esEdduBarber,
     items,
     pathname,
     rol,
