@@ -155,6 +155,7 @@ export default function ReservaFormEddu({
 
         if (!respuesta.ok) {
           setHorarios([]);
+          setHora("");
           setMensajeDisponibilidad(
             resultado.error || "No se pudo consultar la disponibilidad."
           );
@@ -165,9 +166,14 @@ export default function ReservaFormEddu({
         setHorarios(nuevosHorarios);
 
         const horaPreseleccionada = horaPreseleccionadaRef.current;
-        if (horaPreseleccionada) {
+        if (horaPreseleccionada && nuevosHorarios.includes(horaPreseleccionada)) {
           setHora(horaPreseleccionada);
+        } else {
+          setHora((horaActual) =>
+            horaActual && nuevosHorarios.includes(horaActual) ? horaActual : ""
+          );
         }
+        horaPreseleccionadaRef.current = "";
 
         setConfiguracionPendiente(resultado.configuracionPendiente === true);
 
@@ -180,6 +186,7 @@ export default function ReservaFormEddu({
         console.error("Error consultando horarios:", errorDisponibilidad);
         if (!cancelado) {
           setHorarios([]);
+          setHora("");
           setMensajeDisponibilidad("No se pudieron cargar los horarios.");
         }
       } finally {
@@ -266,8 +273,6 @@ export default function ReservaFormEddu({
         : 0;
 
     try {
-      // Si el cliente paga por Mercado Pago, NO creamos el turno en Firestore todavía:
-      // generamos la preferencia y redirigimos a Mercado Pago. El turno se crea en el webhook al aprobarse el pago.
       if (metodoPago === "mp") {
         const resPref = await fetch("/api/mercadopago/preference", {
           method: "POST",
@@ -388,7 +393,6 @@ export default function ReservaFormEddu({
       </div>
 
       <form onSubmit={manejarClickSolicitarTurno} className="mt-5 grid gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-5">
-        {/* SERVICIO */}
         <div className="sm:col-span-2">
           <label className="mb-1.5 block text-xs font-medium text-slate-700 sm:mb-2 sm:text-sm">
             Servicio
@@ -415,7 +419,6 @@ export default function ReservaFormEddu({
           </select>
         </div>
 
-        {/* DATOS */}
         <Campo
           label="Nombre"
           value={nombreCliente}
@@ -432,7 +435,6 @@ export default function ReservaFormEddu({
           required
         />
 
-        {/* FECHA */}
         <div className="sm:col-span-2">
           <label className="mb-1.5 block text-xs font-medium text-slate-700 sm:mb-2 sm:text-sm">
             Fecha
@@ -453,7 +455,6 @@ export default function ReservaFormEddu({
           />
         </div>
 
-        {/* HORARIOS */}
         <div className="sm:col-span-2">
           <div className="mb-2 flex items-center gap-2 sm:mb-3">
             <Clock3 className="h-4 w-4 text-slate-400" />
@@ -522,7 +523,6 @@ export default function ReservaFormEddu({
           )}
         </div>
 
-        {/* TURNO ELEGIDO */}
         {hora && !esCerrado && (
           <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 sm:col-span-2 sm:p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
@@ -534,7 +534,6 @@ export default function ReservaFormEddu({
           </div>
         )}
 
-        {/* NOTAS */}
         <div className="sm:col-span-2">
           <label className="mb-1.5 block text-xs font-medium text-slate-700 sm:mb-2 sm:text-sm">
             Nota opcional
@@ -549,14 +548,12 @@ export default function ReservaFormEddu({
           />
         </div>
 
-        {/* ERROR */}
         {error && (
           <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs font-medium text-red-700 sm:col-span-2 sm:p-4 sm:text-sm">
             {error}
           </div>
         )}
 
-        {/* ÉXITO */}
         {exito && (
           <div className="flex items-start gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-800 sm:col-span-2 sm:gap-3 sm:p-4 sm:text-sm">
             <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
@@ -567,7 +564,6 @@ export default function ReservaFormEddu({
           </div>
         )}
 
-        {/* BOTÓN PRINCIPAL O DOS BOTONES DESPLEGADOS AL SOLICITAR */}
         {!mostrarOpcionesPago ? (
           <button
             type="submit"

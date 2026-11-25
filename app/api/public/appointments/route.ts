@@ -2,12 +2,9 @@ import {
   NextRequest,
   NextResponse,
 } from "next/server";
-import { FieldValue } from "firebase-admin/firestore";
-import { getMessaging } from "firebase-admin/messaging";
 
 import { adminDb } from "@/lib/firebaseAdmin";
 import { empresaTieneFuncion } from "@/lib/plans/planAccess";
-import { crearNotificacion } from "@/lib/notifications/notificationService";
 
 export const runtime = "nodejs";
 
@@ -45,6 +42,8 @@ type AgendaConfig = {
     string,
     ConfigDiaAgenda | undefined
   >;
+  diasExcepcionales?: unknown[];
+  diasBloqueados?: unknown[];
 };
 
 type EmpresaPublica = {
@@ -57,6 +56,11 @@ type EmpresaPublica = {
     slug?: string;
   };
   agendaConfig?: AgendaConfig;
+  diasExcepcionales?: unknown[];
+  diasBloqueados?: unknown[];
+  configuracion?: {
+    diasExcepcionales?: unknown[];
+  };
   fcmTokens?: string[];
 };
 
@@ -272,6 +276,41 @@ function obtenerDiaSemana(
   ).getUTCDay();
 }
 
+function obtenerConfigDiaAgenda(
+  agenda: AgendaConfig | undefined,
+  fecha: string,
+): ConfigDiaAgenda | undefined {
+  if (!agenda?.dias) return undefined;
+
+  // getUTCDay(): 0 = Dom, 1 = Lun, 2 = Mar, 3 = Mié, 4 = Jue, 5 = Vie, 6 = Sáb
+  const diaJs = obtenerDiaSemana(fecha);
+  const claveExacta = String(diaJs);
+
+  if (
+    Object.prototype.hasOwnProperty.call(
+      agenda.dias,
+      claveExacta,
+    ) &&
+    agenda.dias[claveExacta] !== undefined
+  ) {
+    return agenda.dias[claveExacta];
+  }
+
+  // Fallback si algún panel guardó los días indexados de Lunes (0) a Domingo (6)
+  const claveLun0 = String((diaJs + 6) % 7);
+  if (
+    Object.prototype.hasOwnProperty.call(
+      agenda.dias,
+      claveLun0,
+    ) &&
+    agenda.dias[claveLun0] !== undefined
+  ) {
+    return agenda.dias[claveLun0];
+  }
+
+  return undefined;
+}
+
 function obtenerDuracionServicio(
   servicio: CatalogoServicio,
 ) {
@@ -308,7 +347,6 @@ function obtenerRangoDescansoValido(
   const inicioStr = (dia.descansoInicio || "").trim();
   const finStr = (dia.descansoFin || "").trim();
 
-  // Si no hay descanso o está puesto en "00:00" sin rango real, se ignora como sin descanso
   if (
     !inicioStr ||
     !finStr ||
@@ -667,27 +705,29 @@ async function obtenerServicio(
   };
 }
 
-async function diaEstaCerradoExcepcionalmente(
-  empresaId: string,
+function diaEstaCerradoExcepcionalmente(
+  datos: EmpresaPublica | undefined,
   fechaConsulta: string,
 ) {
-  const empresaDoc = await adminDb.collection("companies").doc(empresaId).get();
-  if (!empresaDoc.exists) return false;
-
-  const datos = empresaDoc.data();
+  if (!datos) return false;
 
   const posiblesArrays = [
-    datos?.diasExcepcionales,
-    datos?.agendaConfig?.diasExcepcionales,
-    datos?.configuracion?.diasExcepcionales,
-    datos?.diasBloqueados,
-    datos?.agendaConfig?.diasBloqueados
+    datos.diasExcepcionales,
+    datos.agendaConfig?.diasExcepcionales,
+    datos.configuracion?.diasExcepcionales,
+    datos.diasBloqueados,
+    datos.agendaConfig?.diasBloqueados,
   ];
 
   for (const arr of posiblesArrays) {
     if (Array.isArray(arr)) {
       const encontrado = arr.some((item) => {
-        const fechaItem = typeof item === "string" ? item : item?.fecha;
+        const fechaItem =
+          typeof item === "string"
+            ? item
+            : item && typeof item === "object" && "fecha" in item
+              ? String((item as { fecha?: unknown }).fecha || "")
+              : "";
         return fechaItem === fechaConsulta;
       });
       if (encontrado) return true;
@@ -803,7 +843,10 @@ export async function GET(
       empresa,
     } = empresaResultado;
 
-    const estaCerradoExcepcional = await diaEstaCerradoExcepcionalmente(empresaDoc.id, fecha);
+    const estaCerradoExcepcional = diaEstaCerradoExcepcionalmente(
+      empresa,
+      fecha,
+    );
     if (estaCerradoExcepcional) {
       return NextResponse.json(
         {
@@ -841,42 +884,35 @@ export async function GET(
       );
 
     const agenda = empresa.agendaConfig;
-    const diaSemanaIndex = obtenerDiaSemana(fecha);
-    const clavesPosibles = [String(diaSemanaIndex), String((diaSemanaIndex + 6) % 7)];
+    const diaConfig = obtenerConfigDiaAgenda(agenda, fecha);
+    const diaActivo =
+      agenda?.activa === true &&
+      diaConfig?.activo === true &&
+      horarioAgendaValido(diaConfig);
 
-    let diaConfig: ConfigDiaAgenda | undefined;
-    if (agenda?.dias) {
-      for (const clave of clavesPosibles) {
-        if (agenda.dias[clave]) {
-          diaConfig = agenda.dias[clave];
-          break;
-        }
-      }
-    }
-
-    const diaActivo = diaConfig?.activo === true;
-
-    const horarios = diaActivo && diaConfig
-      ? generarHorarios({
-          dia: diaConfig,
-          intervaloMinutos: obtenerIntervaloAgenda(agenda),
-          duracionMinutos,
-          turnos: (
-            await adminDb
-              .collection("companies")
-              .doc(empresaDoc.id)
-              .collection("appointments")
-              .where("fecha", "==", fecha)
-              .get()
-          ).docs.map((d) => d.data() as TurnoExistente),
-        }).filter((horario) => !fechaHoraYaPaso(fecha, horario))
-      : [];
+    const horarios =
+      diaActivo && diaConfig
+        ? generarHorarios({
+            dia: diaConfig,
+            intervaloMinutos: obtenerIntervaloAgenda(agenda),
+            duracionMinutos,
+            turnos: (
+              await adminDb
+                .collection("companies")
+                .doc(empresaDoc.id)
+                .collection("appointments")
+                .where("fecha", "==", fecha)
+                .get()
+            ).docs.map((d) => d.data() as TurnoExistente),
+          }).filter((horario) => !fechaHoraYaPaso(fecha, horario))
+        : [];
 
     let mensajeDisponibilidad = "";
     if (!diaActivo) {
       mensajeDisponibilidad = "HOY CERRADO";
     } else if (horarios.length === 0) {
-      mensajeDisponibilidad = "No quedan horarios disponibles para lo que resta del día.";
+      mensajeDisponibilidad =
+        "No quedan horarios disponibles para lo que resta del día.";
     }
 
     return NextResponse.json(
@@ -1092,7 +1128,10 @@ export async function POST(
       empresa,
     } = empresaResultado;
 
-    const estaCerradoExcepcional = await diaEstaCerradoExcepcionalmente(empresaDoc.id, fecha);
+    const estaCerradoExcepcional = diaEstaCerradoExcepcionalmente(
+      empresa,
+      fecha,
+    );
     if (estaCerradoExcepcional) {
       return NextResponse.json(
         {
@@ -1139,18 +1178,7 @@ export async function POST(
       );
     }
 
-    const diaSemanaIndex = obtenerDiaSemana(fecha);
-    const clavesPosibles = [String(diaSemanaIndex), String((diaSemanaIndex + 6) % 7)];
-
-    let dia: ConfigDiaAgenda | undefined;
-    if (agenda?.dias) {
-      for (const clave of clavesPosibles) {
-        if (agenda.dias[clave]) {
-          dia = agenda.dias[clave];
-          break;
-        }
-      }
-    }
+    const dia = obtenerConfigDiaAgenda(agenda, fecha);
 
     if (
       !dia ||
@@ -1202,19 +1230,12 @@ export async function POST(
         .collection("companies")
         .doc(empresaDoc.id);
 
-    const turnoRef =
-      empresaRef
-        .collection(
-          "appointments",
-        )
-        .doc();
-
-    const analyticsRef =
-      empresaRef
-        .collection(
-          "analyticsEvents",
-        )
-        .doc();
+    let duracionFinal = duracionMinutos;
+    let precioFinal =
+      typeof servicio.precio === "number" && Number.isFinite(servicio.precio)
+        ? Math.max(0, servicio.precio)
+        : 0;
+    let nombreServicioFinal = servicio.nombre!.trim();
 
     try {
       await adminDb.runTransaction(
@@ -1246,6 +1267,17 @@ export async function POST(
           ) {
             throw new TurnoNoDisponibleError(
               "Las reservas online ya no están disponibles.",
+            );
+          }
+
+          if (
+            diaEstaCerradoExcepcionalmente(
+              empresaActual,
+              fecha,
+            )
+          ) {
+            throw new TurnoNoDisponibleError(
+              "Ese día no está disponible para reservas.",
             );
           }
 
@@ -1295,22 +1327,14 @@ export async function POST(
             true
           ) {
             throw new TurnoNoDisponibleError(
-              "Las reservas online ya no están habilitadas.",
+              "Las reservas online no están habilitadas.",
             );
           }
 
-          const diaSemanaActualIndex = obtenerDiaSemana(fecha);
-          const clavesPosiblesActuales = [String(diaSemanaActualIndex), String((diaSemanaActualIndex + 6) % 7)];
-
-          let diaActual: ConfigDiaAgenda | undefined;
-          if (agendaActual?.dias) {
-            for (const clave of clavesPosiblesActuales) {
-              if (agendaActual.dias[clave]) {
-                diaActual = agendaActual.dias[clave];
-                break;
-              }
-            }
-          }
+          const diaActual = obtenerConfigDiaAgenda(
+            agendaActual,
+            fecha,
+          );
 
           if (
             !diaActual ||
@@ -1389,60 +1413,13 @@ export async function POST(
             );
           }
 
-          transaction.set(
-            turnoRef,
-            {
-              nombreCliente,
-              email,
-              telefono,
-              servicio:
-                servicioActual.nombre.trim(),
-              servicioId:
-                servicioSnapshot.id,
-              precioServicio:
-                typeof servicioActual.precio ===
-                  "number" &&
-                Number.isFinite(
-                  servicioActual.precio,
-                )
-                  ? Math.max(
-                      0,
-                      servicioActual.precio,
-                    )
-                  : 0,
-              fecha,
-              hora,
-              duracionMinutos:
-                duracionActual,
-              estado:
-                "pendiente",
-              notas,
-              origen: "web",
-              createdAt:
-                FieldValue.serverTimestamp(),
-              updatedAt:
-                FieldValue.serverTimestamp(),
-            },
-          );
-
-          transaction.set(
-            analyticsRef,
-            {
-              tipo:
-                "appointment_created",
-              visitanteId:
-                `reserva-${turnoRef.id}`,
-              slug,
-              origen:
-                "pagina_publica",
-              turnoId:
-                turnoRef.id,
-              servicioId:
-                servicioSnapshot.id,
-              createdAt:
-                FieldValue.serverTimestamp(),
-            },
-          );
+          duracionFinal = duracionActual;
+          nombreServicioFinal = servicioActual.nombre.trim();
+          precioFinal =
+            typeof servicioActual.precio === "number" &&
+            Number.isFinite(servicioActual.precio)
+              ? Math.max(0, servicioActual.precio)
+              : 0;
         },
       );
     } catch (transactionError) {
@@ -1481,85 +1458,46 @@ export async function POST(
       throw transactionError;
     }
 
-    try {
-      await crearNotificacion({
-        empresaId:
-          empresaDoc.id,
-        tipo: "sistema",
-        titulo:
-          "Nuevo turno reservado",
-        descripcion:
-          `${nombreCliente} reservó ${servicio.nombre} para el ${fecha} a las ${hora}.`,
-        url:
-          `/empresas/${empresaDoc.id}/agenda`,
-        metadata: {
-          origen:
-            "pagina_publica",
-          turnoId:
-            turnoRef.id,
-          servicioId:
-            servicioDoc.id,
-          fecha,
-          hora,
-          email,
-          telefono,
-        },
-      });
-    } catch (notificationError) {
-      console.error(
-        "No se pudo crear la notificación del turno público:",
-        notificationError,
-      );
-    }
-
-    try {
-      const fcmTokens: string[] = empresa?.fcmTokens || [];
-
-      if (fcmTokens.length > 0) {
-        const messaging = getMessaging();
-        await messaging.sendEachForMulticast({
-          tokens: fcmTokens,
-          notification: {
-            title: "📅 ¡Nuevo turno reservado!",
-            body: `${nombreCliente} reservó ${servicio.nombre} para el ${fecha} a las ${hora}.`,
-          },
-          data: {
-            url: `/empresas/${empresaDoc.id}/agenda`,
-          },
-        });
-      }
-    } catch (pushError) {
-      console.error("Error enviando push de turno:", pushError);
-    }
-
     return NextResponse.json(
       {
         ok: true,
-        turnoId:
-          turnoRef.id,
+        requierePago: true,
         negocio:
           empresa.nombre ||
           "Negocio",
+        empresaId:
+          empresaDoc.id,
+        servicioId:
+          servicioDoc.id,
         servicio:
-          servicio.nombre,
+          nombreServicioFinal,
+        precioServicio:
+          precioFinal,
         fecha,
         hora,
-        duracionMinutos,
+        duracionMinutos:
+          duracionFinal,
+        cliente: {
+          nombreCliente,
+          email,
+          telefono,
+          notas,
+        },
       },
       {
-        status: 201,
+        status: 200,
       },
     );
   } catch (error) {
     console.error(
-      "Error creando turno público:",
+      "Error validando reserva pública:",
       error,
     );
 
     return NextResponse.json(
       {
         error:
-          "No se pudo crear el turno.",
+          "No se pudo validar el turno.",
       },
       {
         status: 500,

@@ -171,38 +171,59 @@ function formatearDireccionEddu(direccion?: string) {
 
 function formatearHorariosEddu(empresa: Empresa) {
   const dias = empresa.agendaConfig?.dias;
+  const ordenDias = ["1", "2", "3", "4", "5", "6", "0"];
   const clavesActivas = dias
-    ? ["1", "2", "3", "4", "5", "6", "0"].filter((k) => Boolean(dias[k]?.activo))
+    ? ordenDias.filter((k) => Boolean(dias[k]?.activo))
     : [];
 
   if (clavesActivas.length > 0 && dias) {
-    const primerDia = dias[clavesActivas[0]];
-    const apertura = formatearHoraHs(primerDia?.apertura || "09:00");
-    const cierre = formatearHoraHs(primerDia?.cierre || "22:00");
+    const nombresCortos: Record<string, string> = {
+      "1": "Lun",
+      "2": "Mar",
+      "3": "Mié",
+      "4": "Jue",
+      "5": "Vie",
+      "6": "Sáb",
+      "0": "Dom",
+    };
 
-    const rangoTexto =
-      clavesActivas.join(",") === "1,2,3,4,5,6"
-        ? "Lunes a Sabados"
-        : clavesActivas.join(",") === "1,2,3,4,5"
-        ? "Lunes a Viernes"
-        : clavesActivas
-            .map((k) => {
-              const nombres: Record<string, string> = {
-                "1": "Lun",
-                "2": "Mar",
-                "3": "Mié",
-                "4": "Jue",
-                "5": "Vie",
-                "6": "Sáb",
-                "0": "Dom",
-              };
-              return nombres[k] || k;
-            })
-            .join(", ");
+    const rangosPorDia = clavesActivas.map((k) => {
+      const apertura = formatearHoraHs(dias[k]?.apertura || "09:00");
+      const cierre = formatearHoraHs(dias[k]?.cierre || "22:00");
+      return {
+        clave: k,
+        rango: `${apertura} a ${cierre}`,
+      };
+    });
+
+    const todosIgualHorario = rangosPorDia.every(
+      (item) => item.rango === rangosPorDia[0].rango
+    );
+
+    if (todosIgualHorario) {
+      const esCorrido = ordenDias.slice(
+        ordenDias.indexOf(clavesActivas[0]),
+        ordenDias.indexOf(clavesActivas[clavesActivas.length - 1]) + 1
+      ).join(",") === clavesActivas.join(",");
+
+      const linea1 =
+        esCorrido && clavesActivas.length >= 2
+          ? `${nombresCortos[clavesActivas[0]]} a ${nombresCortos[clavesActivas[clavesActivas.length - 1]]}`
+          : clavesActivas.map((k) => nombresCortos[k] || k).join(", ");
+
+      return {
+        linea1,
+        linea2: `De ${rangosPorDia[0].rango}`,
+      };
+    }
+
+    const resumenDias = rangosPorDia
+      .map((item) => `${nombresCortos[item.clave] || item.clave}: ${item.rango}`)
+      .join(" · ");
 
     return {
-      linea1: rangoTexto,
-      linea2: `De ${apertura} a ${cierre}`,
+      linea1: resumenDias,
+      linea2: "",
     };
   }
 
@@ -213,7 +234,7 @@ function formatearHorariosEddu(empresa: Empresa) {
     /^(.*?)\s+de\s+(\d{1,2}:\d{2})(?:hs)?\s+a\s+(\d{1,2}:\d{2})(?:hs)?$/i
   );
   if (matchRango) {
-    const diasParte = matchRango[1].trim().replace(/Lunes a Sábados/i, "Lunes a Sabados");
+    const diasParte = matchRango[1].trim();
     const hInicio = formatearHoraHs(matchRango[2]);
     const hFin = formatearHoraHs(matchRango[3]);
     return {

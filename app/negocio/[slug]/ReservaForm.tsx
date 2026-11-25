@@ -46,7 +46,12 @@ type ValidacionReservaResponse = {
   };
 };
 
-export default function ReservaForm({ slug, servicios, colorPrincipal, esEdduBarber = false }: Props) {
+export default function ReservaForm({
+  slug,
+  servicios,
+  colorPrincipal,
+  esEdduBarber = false,
+}: Props) {
   const [servicioId, setServicioId] = useState(servicios[0]?.id || "");
   const [nombreCliente, setNombreCliente] = useState("");
   const [telefono, setTelefono] = useState("");
@@ -66,7 +71,9 @@ export default function ReservaForm({ slug, servicios, colorPrincipal, esEdduBar
 
   useEffect(() => {
     function seleccionarTurnoRapido(event: Event) {
-      const detalle = (event as CustomEvent<{ servicioId?: string; fecha?: string; hora?: string; }>).detail;
+      const detalle = (
+        event as CustomEvent<{ servicioId?: string; fecha?: string; hora?: string }>
+      ).detail;
       const servicioDesdeCard = detalle?.servicioId || "";
       const existe = servicios.some((servicio) => servicio.id === servicioDesdeCard);
 
@@ -110,7 +117,9 @@ export default function ReservaForm({ slug, servicios, colorPrincipal, esEdduBar
       setError("");
 
       requestAnimationFrame(() => {
-        document.getElementById("reservar")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        document
+          .getElementById("reservar")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     }
 
@@ -144,6 +153,7 @@ export default function ReservaForm({ slug, servicios, colorPrincipal, esEdduBar
 
         if (!respuesta.ok) {
           setHorarios([]);
+          setHora("");
           setMensajeDisponibilidad(resultado.error || "No se pudo consultar la disponibilidad.");
           return;
         }
@@ -152,9 +162,14 @@ export default function ReservaForm({ slug, servicios, colorPrincipal, esEdduBar
         setHorarios(nuevosHorarios);
 
         const horaPreseleccionada = horaPreseleccionadaRef.current;
-        if (horaPreseleccionada) {
+        if (horaPreseleccionada && nuevosHorarios.includes(horaPreseleccionada)) {
           setHora(horaPreseleccionada);
+        } else {
+          setHora((horaActual) =>
+            horaActual && nuevosHorarios.includes(horaActual) ? horaActual : ""
+          );
         }
+        horaPreseleccionadaRef.current = "";
 
         setConfiguracionPendiente(resultado.configuracionPendiente === true);
 
@@ -167,6 +182,7 @@ export default function ReservaForm({ slug, servicios, colorPrincipal, esEdduBar
         console.error("Error consultando horarios:", errorDisponibilidad);
         if (!cancelado) {
           setHorarios([]);
+          setHora("");
           setMensajeDisponibilidad("No se pudieron cargar los horarios.");
         }
       } finally {
@@ -175,7 +191,9 @@ export default function ReservaForm({ slug, servicios, colorPrincipal, esEdduBar
     }
 
     void cargarDisponibilidad();
-    return () => { cancelado = true; };
+    return () => {
+      cancelado = true;
+    };
   }, [slug, servicioId, fecha, refrescarDisponibilidad]);
 
   useEffect(() => {
@@ -199,17 +217,35 @@ export default function ReservaForm({ slug, servicios, colorPrincipal, esEdduBar
 
     setError("");
 
-    if (!servicioId) { setError("Seleccioná un servicio."); return; }
-    if (!nombreCliente.trim()) { setError("Ingresá tu nombre."); return; }
-    
-    if (esEdduBarber) {
-      if (!telefono.trim()) { setError("Ingresá tu teléfono de contacto."); return; }
-    } else {
-      if (!telefono.trim() && !email.trim()) { setError("Ingresá un teléfono o correo de contacto."); return; }
+    if (!servicioId) {
+      setError("Seleccioná un servicio.");
+      return;
+    }
+    if (!nombreCliente.trim()) {
+      setError("Ingresá tu nombre.");
+      return;
     }
 
-    if (!fecha) { setError("Seleccioná una fecha."); return; }
-    if (!hora) { setError("Seleccioná uno de los horarios disponibles."); return; }
+    if (esEdduBarber) {
+      if (!telefono.trim()) {
+        setError("Ingresá tu teléfono de contacto.");
+        return;
+      }
+    } else {
+      if (!telefono.trim() && !email.trim()) {
+        setError("Ingresá un teléfono o correo de contacto.");
+        return;
+      }
+    }
+
+    if (!fecha) {
+      setError("Seleccioná una fecha.");
+      return;
+    }
+    if (!hora) {
+      setError("Seleccioná uno de los horarios disponibles.");
+      return;
+    }
 
     setEnviando(true);
 
@@ -217,7 +253,16 @@ export default function ReservaForm({ slug, servicios, colorPrincipal, esEdduBar
       const respuesta = await fetch("/api/public/appointments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug, servicioId, nombreCliente, telefono, email, fecha, hora, notas }),
+        body: JSON.stringify({
+          slug,
+          servicioId,
+          nombreCliente,
+          telefono,
+          email,
+          fecha,
+          hora,
+          notas,
+        }),
       });
 
       const resultado = (await respuesta.json()) as ValidacionReservaResponse;
@@ -250,7 +295,10 @@ export default function ReservaForm({ slug, servicios, colorPrincipal, esEdduBar
         }),
       });
 
-      const prefData = (await prefRespuesta.json()) as { init_point?: string; error?: string; };
+      const prefData = (await prefRespuesta.json()) as {
+        init_point?: string;
+        error?: string;
+      };
 
       if (!prefRespuesta.ok || !prefData.init_point) {
         setError(prefData.error || "No se pudo generar la pantalla de pago de Mercado Pago.");
@@ -275,15 +323,15 @@ export default function ReservaForm({ slug, servicios, colorPrincipal, esEdduBar
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-3xl sm:p-8">
       <div>
         <p
-          className="text-xs font-bold uppercase tracking-[0.2em] mb-1 text-[#ED192D]"
+          className="mb-1 text-xs font-bold uppercase tracking-[0.2em] text-[#ED192D]"
           style={{ color: colorBotonYEncabezado }}
         >
           — RESERVA ONLINE
         </p>
-        <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white font-serif leading-snug">
+        <h2 className="font-serif text-xl font-bold leading-snug tracking-tight text-slate-900 dark:text-white sm:text-2xl">
           Pedí tu turno
         </h2>
-        <p className="mt-1 text-xs sm:text-sm text-slate-600 dark:text-zinc-400">
+        <p className="mt-1 text-xs text-slate-600 dark:text-zinc-400 sm:text-sm">
           Elegí un servicio, una fecha y uno de los horarios disponibles.
         </p>
       </div>
@@ -313,11 +361,30 @@ export default function ReservaForm({ slug, servicios, colorPrincipal, esEdduBar
           </select>
         </div>
 
-        <Campo label="Nombre" value={nombreCliente} onChange={setNombreCliente} placeholder="Tu nombre" required />
-        <Campo label="Teléfono" value={telefono} onChange={setTelefono} placeholder="+54 9..." type="tel" required={esEdduBarber} />
+        <Campo
+          label="Nombre"
+          value={nombreCliente}
+          onChange={setNombreCliente}
+          placeholder="Tu nombre"
+          required
+        />
+        <Campo
+          label="Teléfono"
+          value={telefono}
+          onChange={setTelefono}
+          placeholder="+54 9..."
+          type="tel"
+          required={esEdduBarber}
+        />
 
         {!esEdduBarber && (
-          <Campo label="Correo" value={email} onChange={setEmail} placeholder="correo@ejemplo.com" type="email" />
+          <Campo
+            label="Correo"
+            value={email}
+            onChange={setEmail}
+            placeholder="correo@ejemplo.com"
+            type="email"
+          />
         )}
 
         <div>
@@ -356,8 +423,10 @@ export default function ReservaForm({ slug, servicios, colorPrincipal, esEdduBar
             </div>
           ) : esCerrado ? (
             <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-6 text-center text-red-500 dark:text-red-400">
-              <p className="text-lg font-bold tracking-wider uppercase">HOY CERRADO</p>
-              <p className="text-xs mt-1 text-red-400/80">No hay atención disponible para la fecha seleccionada.</p>
+              <p className="text-lg font-bold uppercase tracking-wider">HOY CERRADO</p>
+              <p className="mt-1 text-xs text-red-400/80">
+                No hay atención disponible para la fecha seleccionada.
+              </p>
             </div>
           ) : horarios.length > 0 ? (
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
@@ -371,11 +440,15 @@ export default function ReservaForm({ slug, servicios, colorPrincipal, esEdduBar
                       setHora(horario);
                       setError("");
                     }}
-                    style={seleccionado ? { backgroundColor: colorBotonYEncabezado, borderColor: colorBotonYEncabezado } : undefined}
+                    style={
+                      seleccionado
+                        ? { backgroundColor: colorBotonYEncabezado, borderColor: colorBotonYEncabezado }
+                        : undefined
+                    }
                     className={[
                       "rounded-xl border px-2 py-2 text-xs font-semibold transition sm:px-3 sm:py-3 sm:text-sm",
                       seleccionado
-                        ? "text-white shadow-md scale-105"
+                        ? "scale-105 text-white shadow-md"
                         : "border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:bg-zinc-800",
                     ].join(" ")}
                   >
@@ -433,7 +506,7 @@ export default function ReservaForm({ slug, servicios, colorPrincipal, esEdduBar
           type="submit"
           disabled={enviando || cargandoHorarios || !hora || esCerrado}
           style={{ backgroundColor: colorBotonYEncabezado }}
-          className="rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:col-span-2 sm:px-6 sm:py-3.5 sm:text-base flex items-center justify-center gap-2"
+          className="flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:col-span-2 sm:px-6 sm:py-3.5 sm:text-base"
         >
           {enviando ? (
             <>
@@ -449,7 +522,9 @@ export default function ReservaForm({ slug, servicios, colorPrincipal, esEdduBar
         </button>
 
         <p className="text-center text-[11px] text-slate-500 dark:text-zinc-600 sm:col-span-2 sm:text-xs">
-          {esEdduBarber ? "Ingresá tu teléfono para el contacto. El turno se confirmará una vez completado el pago." : "Ingresá al menos un teléfono o correo. El turno se confirmará una vez completado el pago."}
+          {esEdduBarber
+            ? "Ingresá tu teléfono para el contacto. El turno se confirmará una vez completado el pago."
+            : "Ingresá al menos un teléfono o correo. El turno se confirmará una vez completado el pago."}
         </p>
       </form>
     </div>
@@ -498,10 +573,10 @@ function obtenerFechaLocalString(date: Date) {
 function obtenerFechaInicial() {
   const ahora = new Date();
   const horaActualStr = `${String(ahora.getHours()).padStart(2, "0")}:${String(ahora.getMinutes()).padStart(2, "0")}`;
-  
+
   if (horaActualStr > "21:30") {
     ahora.setDate(ahora.getDate() + 1);
   }
-  
+
   return obtenerFechaLocalString(ahora);
 }
