@@ -236,7 +236,14 @@ export async function generateMetadata(): Promise<Metadata> {
     .get();
 
   if (empresasSnapshot.empty) {
-    return { title: "Eddu Barber" };
+    return {
+      title: { absolute: "Eddu Barber" },
+      icons: {
+        icon: "/eddubarber/icon.png",
+        shortcut: "/eddubarber/icon.png",
+        apple: "/eddubarber/icon.png",
+      },
+    };
   }
 
   const empresa = empresasSnapshot.docs[0].data() as Empresa;
@@ -248,12 +255,19 @@ export async function generateMetadata(): Promise<Metadata> {
     empresa.descripcion?.trim() ||
     "Reserva tu turno online en Eddu Barber.";
   const imagenSocial = pagina?.portadaUrl?.trim() || pagina?.logoUrl?.trim() || "";
+  const iconoPestana =
+    pagina?.logoUrl?.trim() || pagina?.logoOscuroUrl?.trim() || "/eddubarber/icon.png";
 
   return {
     title: {
       absolute: nombre,
     },
     description: descripcion.slice(0, 160),
+    icons: {
+      icon: iconoPestana,
+      shortcut: iconoPestana,
+      apple: iconoPestana,
+    },
     openGraph: {
       title: nombre,
       description: descripcion.slice(0, 160),
