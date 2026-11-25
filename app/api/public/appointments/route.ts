@@ -2,6 +2,7 @@ import {
   NextRequest,
   NextResponse,
 } from "next/server";
+import { FieldValue } from "firebase-admin/firestore";
 
 import { adminDb } from "@/lib/firebaseAdmin";
 import { empresaTieneFuncion } from "@/lib/plans/planAccess";
@@ -17,6 +18,8 @@ type ReservaBody = {
   fecha?: string;
   hora?: string;
   notas?: string;
+  metodoPago?: "mp" | "local";
+  montoSena?: number;
 };
 
 type CatalogoServicio = {
@@ -282,7 +285,6 @@ function obtenerConfigDiaAgenda(
 ): ConfigDiaAgenda | undefined {
   if (!agenda?.dias) return undefined;
 
-  // getUTCDay(): 0 = Dom, 1 = Lun, 2 = Mar, 3 = Mié, 4 = Jue, 5 = Vie, 6 = Sáb
   const diaJs = obtenerDiaSemana(fecha);
   const claveExacta = String(diaJs);
 
@@ -296,7 +298,6 @@ function obtenerConfigDiaAgenda(
     return agenda.dias[claveExacta];
   }
 
-  // Fallback si algún panel guardó los días indexados de Lunes (0) a Domingo (6)
   const claveLun0 = String((diaJs + 6) % 7);
   if (
     Object.prototype.hasOwnProperty.call(
@@ -1015,6 +1016,9 @@ export async function POST(
         MAX_NOTAS,
       );
 
+    const metodoPago: "mp" | "local" =
+      body.metodoPago === "mp" ? "mp" : "local";
+
     if (!slug) {
       return NextResponse.json(
         {
@@ -1236,6 +1240,7 @@ export async function POST(
         ? Math.max(0, servicio.precio)
         : 0;
     let nombreServicioFinal = servicio.nombre!.trim();
+    let turnoCreadoId = "";
 
     try {
       await adminDb.runTransaction(
@@ -1420,6 +1425,33 @@ export async function POST(
             Number.isFinite(servicioActual.precio)
               ? Math.max(0, servicioActual.precio)
               : 0;
+
+          if (metodoPago === "local") {
+            const nuevoTurnoRef = empresaRef
+              .collection("appointments")
+              .doc();
+
+            turnoCreadoId = nuevoTurnoRef.id;
+
+            transaction.set(nuevoTurnoRef, {
+              nombreCliente,
+              telefono,
+              email,
+              servicioId: servicioSnapshot.id,
+              servicio: nombreServicioFinal,
+              precio: precioFinal,
+              fecha,
+              hora,
+              duracionMinutos: duracionFinal,
+              notas,
+              estado: "confirmado",
+              metodoPago: "local",
+              pagado: false,
+              origen: "web_publica",
+              createdAt: FieldValue.serverTimestamp(),
+              updatedAt: FieldValue.serverTimestamp(),
+            });
+          }
         },
       );
     } catch (transactionError) {
@@ -1461,7 +1493,9 @@ export async function POST(
     return NextResponse.json(
       {
         ok: true,
-        requierePago: true,
+        id: turnoCreadoId || undefined,
+        requierePago: metodoPago === "mp",
+        metodoPago,
         negocio:
           empresa.nombre ||
           "Negocio",
