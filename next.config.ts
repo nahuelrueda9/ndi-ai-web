@@ -44,15 +44,28 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // --- REGLA PARA LA BARBERÍA ---
   async rewrites() {
     return [
+      // Si entran por eddubarber.com (o www.eddubarber.com) a la raíz "/", muestra la barbería
       {
         source: "/",
+        has: [
+          {
+            type: "host",
+            value: "(?<subdomain>.*)eddubarber\\.com",
+          },
+        ],
         destination: "/eddubarber",
       },
+      // Para cualquier subruta de eddubarber.com que no sea la raíz
       {
-        source: "/:path*",
+        source: "/:path((?!eddubarber|_next|api|favicon.ico).*)",
+        has: [
+          {
+            type: "host",
+            value: "(?<subdomain>.*)eddubarber\\.com",
+          },
+        ],
         destination: "/eddubarber/:path*",
       },
     ];
