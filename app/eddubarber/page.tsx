@@ -97,6 +97,7 @@ interface Empresa {
     mostrarDireccion?: boolean;
     mostrarHorarios?: boolean;
     mostrarServicios?: boolean;
+    mostrarProductos?: boolean;
     mostrarGaleria?: boolean;
     mostrarContacto?: boolean;
     testimonios?: TestimonioPagina[];
@@ -110,6 +111,7 @@ interface CatalogoItem {
   nombre: string;
   descripcion?: string;
   precio?: number;
+  stock?: number;
   duracionMinutos?: number;
   imagenUrl?: string;
   imagenes?: string[];
@@ -283,7 +285,7 @@ export default async function EdduBarberPage() {
   const empresa = documento.data() as Empresa;
   const pagina = empresa.paginaPublica;
 
-  // Cargar catálogo exclusivo de servicios
+  // Cargar catálogo de servicios y productos
   const catalogoSnapshot = await adminDb
     .collection("companies")
     .doc(documento.id)
@@ -296,7 +298,16 @@ export default async function EdduBarberPage() {
     }))
     .filter((item) => item.activo !== false);
 
-  const servicios = catalogo.filter((item) => item.tipo === "servicio");
+  const mostrarServicios = pagina?.mostrarServicios !== false;
+  const mostrarProductos = pagina?.mostrarProductos !== false;
+
+  const servicios = mostrarServicios
+    ? catalogo.filter((item) => item.tipo === "servicio")
+    : [];
+  const productos = mostrarProductos
+    ? catalogo.filter((item) => item.tipo === "producto")
+    : [];
+
   const nombre = pagina?.titulo || empresa.nombre || "Eddu Barber";
   const colorPrincipal = "#ED192D";
 
@@ -538,70 +549,164 @@ export default async function EdduBarberPage() {
         </div>
       </section>
 
-      {/* 3. SERVICIOS CON FONDO NEGRO */}
-      {servicios.length > 0 && (
+      {/* 3. SERVICIOS Y PRODUCTOS CON FONDO NEGRO */}
+      {(servicios.length > 0 || productos.length > 0) && (
         <section id="servicios" className="bg-black border-y border-zinc-900 py-12 sm:py-16">
-          <div className="mx-auto max-w-[1440px] px-4 sm:px-10">
-            <div className="mb-10 sm:mb-14">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] mb-1 text-[#ED192D]">
-                — LO QUE OFRECEMOS
-              </p>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight font-serif text-white leading-snug">
-                Servicios
-              </h2>
-              <p className="mt-1 text-xs sm:text-sm text-zinc-400">
-                Conocé los servicios disponibles y reservá tu turno.
-              </p>
-            </div>
+          <div className="mx-auto max-w-[1440px] px-4 sm:px-10 space-y-16">
+            {servicios.length > 0 && (
+              <div>
+                <div className="mb-10 sm:mb-14">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] mb-1 text-[#ED192D]">
+                    — LO QUE OFRECEMOS
+                  </p>
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight font-serif text-white leading-snug">
+                    Servicios
+                  </h2>
+                  <p className="mt-1 text-xs sm:text-sm text-zinc-400">
+                    Conocé los servicios disponibles y reservá tu turno.
+                  </p>
+                </div>
 
-            <div className="flex flex-wrap justify-center gap-6">
-              {servicios.map((servicio) => (
-                <div key={servicio.id} className="w-full max-w-sm sm:max-w-md">
-                  <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/90 shadow-md transition duration-300 hover:-translate-y-1 hover:border-zinc-700 hover:shadow-xl">
-                    {servicio.imagenUrl && (
-                      <div className="relative aspect-[4/3] w-full overflow-hidden border-b border-zinc-800 bg-zinc-950">
-                        <img
-                          src={servicio.imagenUrl}
-                          alt={servicio.nombre}
-                          loading="lazy"
-                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-                      </div>
-                    )}
-                    <div className="flex flex-1 flex-col p-4 sm:p-5">
-                      <h3 className="line-clamp-2 text-base font-bold text-white sm:text-lg">
-                        {servicio.nombre}
-                      </h3>
-                      <div className="mt-3 flex items-center justify-between gap-2 border-t border-zinc-800/80 pt-3">
-                        <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                            Precio
-                          </p>
-                          <p className="mt-0.5 text-lg font-extrabold sm:text-xl text-[#ED192D]">
-                            ${Number(servicio.precio).toLocaleString("es-AR")}
-                          </p>
-                        </div>
-                        {servicio.duracionMinutos && (
-                          <div className="text-right">
-                            <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                              Duración
-                            </p>
-                            <p className="mt-0.5 text-xs font-medium text-zinc-300">
-                              {servicio.duracionMinutos} min
-                            </p>
+                <div className="flex flex-wrap justify-center gap-6">
+                  {servicios.map((servicio) => (
+                    <div key={servicio.id} className="w-full max-w-sm sm:max-w-md">
+                      <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/90 shadow-md transition duration-300 hover:-translate-y-1 hover:border-zinc-700 hover:shadow-xl">
+                        {servicio.imagenUrl && (
+                          <div className="relative aspect-[4/3] w-full overflow-hidden border-b border-zinc-800 bg-zinc-950">
+                            <img
+                              src={servicio.imagenUrl}
+                              alt={servicio.nombre}
+                              loading="lazy"
+                              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            />
                           </div>
                         )}
-                      </div>
-                      <HorariosTarjetaServicio
-                        slug={SLUG_EDDU}
-                        servicioId={servicio.id}
-                        colorPrincipal={colorPrincipal}
-                      />
+                        <div className="flex flex-1 flex-col p-4 sm:p-5">
+                          <h3 className="line-clamp-2 text-base font-bold text-white sm:text-lg">
+                            {servicio.nombre}
+                          </h3>
+                          <div className="mt-3 flex items-center justify-between gap-2 border-t border-zinc-800/80 pt-3">
+                            <div>
+                              <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                                Precio
+                              </p>
+                              <p className="mt-0.5 text-lg font-extrabold sm:text-xl text-[#ED192D]">
+                                ${Number(servicio.precio || 0).toLocaleString("es-AR")}
+                              </p>
+                            </div>
+                            {servicio.duracionMinutos && (
+                              <div className="text-right">
+                                <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                                  Duración
+                                </p>
+                                <p className="mt-0.5 text-xs font-medium text-zinc-300">
+                                  {servicio.duracionMinutos} min
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                          <HorariosTarjetaServicio
+                            slug={SLUG_EDDU}
+                            servicioId={servicio.id}
+                            colorPrincipal={colorPrincipal}
+                          />
+                        </div>
+                      </article>
                     </div>
-                  </article>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
+
+            {productos.length > 0 && (
+              <div id="productos" className="scroll-mt-24 pt-4 border-t border-zinc-900">
+                <div className="mb-10 sm:mb-14">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] mb-1 text-[#ED192D]">
+                    — TIENDA DE BARBERÍA
+                  </p>
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight font-serif text-white leading-snug">
+                    Productos
+                  </h2>
+                  <p className="mt-1 text-xs sm:text-sm text-zinc-400">
+                    Productos disponibles para el cuidado de tu cabello y barba.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap justify-center gap-6">
+                  {productos.map((producto) => {
+                    const imagenProducto =
+                      producto.imagenUrl ||
+                      (Array.isArray(producto.imagenes) ? producto.imagenes[0] : "") ||
+                      "";
+                    const hrefConsultaProducto = whatsappUrl
+                      ? `${whatsappUrl}?text=${encodeURIComponent(
+                          `Hola! Quería consultar por el producto "${producto.nombre}".`
+                        )}`
+                      : "#contacto";
+
+                    return (
+                      <div key={producto.id} className="w-full max-w-sm sm:max-w-md">
+                        <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/90 shadow-md transition duration-300 hover:-translate-y-1 hover:border-zinc-700 hover:shadow-xl">
+                          {imagenProducto && (
+                            <div className="relative aspect-[4/3] w-full overflow-hidden border-b border-zinc-800 bg-zinc-950">
+                              <img
+                                src={imagenProducto}
+                                alt={producto.nombre}
+                                loading="lazy"
+                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                              />
+                            </div>
+                          )}
+                          <div className="flex flex-1 flex-col p-4 sm:p-5">
+                            <h3 className="line-clamp-2 text-base font-bold text-white sm:text-lg">
+                              {producto.nombre}
+                            </h3>
+                            {producto.descripcion && (
+                              <p className="mt-1.5 line-clamp-2 text-xs text-zinc-400 leading-relaxed">
+                                {producto.descripcion}
+                              </p>
+                            )}
+                            <div className="mt-auto pt-4">
+                              <div className="flex items-center justify-between gap-2 border-t border-zinc-800/80 pt-3">
+                                <div>
+                                  <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                                    Precio
+                                  </p>
+                                  <p className="mt-0.5 text-lg font-extrabold sm:text-xl text-[#ED192D]">
+                                    ${Number(producto.precio || 0).toLocaleString("es-AR")}
+                                  </p>
+                                </div>
+                                {typeof producto.stock === "number" && (
+                                  <div className="text-right">
+                                    <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                                      Stock
+                                    </p>
+                                    <p className="mt-0.5 text-xs font-medium text-zinc-300">
+                                      {producto.stock > 0 ? `${producto.stock} un.` : "Consultar"}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+
+                              <a
+                                href={hrefConsultaProducto}
+                                {...(whatsappUrl
+                                  ? { target: "_blank", rel: "noopener noreferrer" }
+                                  : {})}
+                                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-xs font-bold text-white transition hover:border-[#ED192D] hover:bg-[#ED192D]"
+                              >
+                                {whatsappUrl ? "Consultar por WhatsApp" : "Consultar disponibilidad"}
+                                <ArrowRight className="h-3.5 w-3.5" />
+                              </a>
+                            </div>
+                          </div>
+                        </article>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </section>
       )}
@@ -905,6 +1010,13 @@ export default async function EdduBarberPage() {
                     Servicios
                   </a>
                 </li>
+                {productos.length > 0 && (
+                  <li>
+                    <a href="#productos" className="transition hover:text-white">
+                      Productos
+                    </a>
+                  </li>
+                )}
                 <li>
                   <a href="#galeria" className="transition hover:text-white">
                     Galería
