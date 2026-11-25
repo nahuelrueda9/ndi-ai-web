@@ -35,6 +35,8 @@ import MetricCard from "../components/MetricCard";
 import QuickAccessCard from "../components/QuickAccessCard";
 import ModalInvitarColaborador from "@/components/ModalInvitarColaborador";
 
+const URL_EDDU_BARBER = "https://www.eddubarber.com";
+
 type EmpresaData = {
   nombre?: string;
   rubro?: string;
@@ -302,6 +304,11 @@ export default function DashboardEmpresaPage() {
   const paginaPublicada = empresa?.paginaPublica?.publicada === true;
   const paginaDisponible = suscripcionActiva && paginaPublicada;
   const slug = empresa?.paginaPublica?.slug?.trim() || "";
+  const urlPaginaPublica = esEdduBarber
+    ? URL_EDDU_BARBER
+    : slug
+    ? `/negocio/${encodeURIComponent(slug)}`
+    : "";
 
   const nombrePagina =
     empresa?.paginaPublica?.titulo?.trim() ||
@@ -357,13 +364,9 @@ export default function DashboardEmpresaPage() {
   }, [turnos]);
 
   function abrirPaginaPublica() {
-    if (!slug || !paginaDisponible) return;
+    if (!urlPaginaPublica || !paginaDisponible) return;
 
-    window.open(
-      `/negocio/${encodeURIComponent(slug)}`,
-      "_blank",
-      "noopener,noreferrer"
-    );
+    window.open(urlPaginaPublica, "_blank", "noopener,noreferrer");
   }
 
   if (!empresaId) {
@@ -406,7 +409,7 @@ export default function DashboardEmpresaPage() {
 
           <button
             type="button"
-            disabled={!paginaDisponible || !slug}
+            disabled={!paginaDisponible || !urlPaginaPublica}
             onClick={abrirPaginaPublica}
             className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-3 py-2 text-[11px] font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
           >
@@ -487,7 +490,9 @@ export default function DashboardEmpresaPage() {
                     </div>
 
                     <p className="mt-0.5 max-w-[180px] truncate text-[10px] text-slate-500 dark:text-zinc-500 sm:mt-1 sm:max-w-none sm:text-sm">
-                      {slug
+                      {esEdduBarber
+                        ? "www.eddubarber.com"
+                        : slug
                         ? `/negocio/${slug}`
                         : "Todavía no definiste la dirección de tu página."}
                     </p>
