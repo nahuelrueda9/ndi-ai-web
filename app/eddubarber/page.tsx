@@ -236,7 +236,7 @@ export async function generateMetadata(): Promise<Metadata> {
     .get();
 
   if (empresasSnapshot.empty) {
-    return { title: "Eddu Barber | NDI AI" };
+    return { title: "Eddu Barber" };
   }
 
   const empresa = empresasSnapshot.docs[0].data() as Empresa;
@@ -250,7 +250,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const imagenSocial = pagina?.portadaUrl?.trim() || pagina?.logoUrl?.trim() || "";
 
   return {
-    title: `${nombre} | NDI AI`,
+    title: {
+      absolute: nombre,
+    },
     description: descripcion.slice(0, 160),
     openGraph: {
       title: nombre,
