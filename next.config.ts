@@ -44,11 +44,16 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // --- REGLA PARA LA BARBERÍA ---
   async rewrites() {
     return [
       {
         source: "/",
         destination: "/eddubarber",
+      },
+      {
+        source: "/:path*",
+        destination: "/eddubarber/:path*",
       },
     ];
   },
