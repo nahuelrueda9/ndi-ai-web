@@ -302,7 +302,7 @@ export default function DashboardEmpresaPage() {
 
   const fechaVencimiento = convertirFecha(empresa?.subscriptionEndsAt);
   const paginaPublicada = empresa?.paginaPublica?.publicada === true;
-  const paginaDisponible = suscripcionActiva && paginaPublicada;
+  const paginaDisponible = esEdduBarber || (suscripcionActiva && paginaPublicada);
   const slug = empresa?.paginaPublica?.slug?.trim() || "";
   const urlPaginaPublica = esEdduBarber
     ? URL_EDDU_BARBER

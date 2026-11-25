@@ -170,6 +170,31 @@ function formatearDireccionEddu(direccion?: string) {
 }
 
 function formatearHorariosEddu(empresa: Empresa): string[] {
+  const textoCrudo = empresa.horarios?.trim() || "";
+
+  if (textoCrudo) {
+    const lineasManuales = textoCrudo
+      .split(/\r?\n/)
+      .map((linea) => linea.trim())
+      .filter(Boolean);
+
+    if (lineasManuales.length > 1) {
+      return lineasManuales;
+    }
+
+    const matchRango = textoCrudo.match(
+      /^(.*?)\s+de\s+(\d{1,2}:\d{2})(?:hs)?\s+a\s+(\d{1,2}:\d{2})(?:hs)?$/i
+    );
+    if (matchRango) {
+      const diasParte = matchRango[1].trim();
+      const hInicio = matchRango[2].padStart(5, "0");
+      const hFin = matchRango[3].padStart(5, "0");
+      return [`${diasParte}: ${hInicio} a ${hFin} hs`];
+    }
+
+    return [textoCrudo];
+  }
+
   const dias = empresa.agendaConfig?.dias;
   const ordenDias = ["1", "2", "3", "4", "5", "6", "0"];
   const nombresCortos: Record<string, string> = {
@@ -182,7 +207,7 @@ function formatearHorariosEddu(empresa: Empresa): string[] {
     "0": "Dom",
   };
 
-  const lineasDesdeAgenda = ordenDias
+  return ordenDias
     .filter((clave) => {
       const cfg = dias?.[clave];
       return Boolean(cfg?.activo && cfg?.apertura && cfg?.cierre);
@@ -193,34 +218,6 @@ function formatearHorariosEddu(empresa: Empresa): string[] {
       const cierre = formatearHoraHs(cfg?.cierre).replace(/hs$/, "");
       return `${nombresCortos[clave]}: ${apertura} a ${cierre} hs`;
     });
-
-  if (lineasDesdeAgenda.length > 0) {
-    return lineasDesdeAgenda;
-  }
-
-  const textoCrudo = empresa.horarios?.trim() || "";
-  if (!textoCrudo) return [];
-
-  const lineasManuales = textoCrudo
-    .split(/\r?\n/)
-    .map((linea) => linea.trim())
-    .filter(Boolean);
-
-  if (lineasManuales.length > 1) {
-    return lineasManuales;
-  }
-
-  const matchRango = textoCrudo.match(
-    /^(.*?)\s+de\s+(\d{1,2}:\d{2})(?:hs)?\s+a\s+(\d{1,2}:\d{2})(?:hs)?$/i
-  );
-  if (matchRango) {
-    const diasParte = matchRango[1].trim();
-    const hInicio = matchRango[2].padStart(5, "0");
-    const hFin = matchRango[3].padStart(5, "0");
-    return [`${diasParte}: ${hInicio} a ${hFin} hs`];
-  }
-
-  return [textoCrudo];
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -614,6 +611,7 @@ export default async function EdduBarberPage() {
         <div className="mx-auto max-w-4xl px-4 sm:px-8">
           <ReservaFormEddu
             slug={SLUG_EDDU}
+            empresaId={documento.id}
             servicios={servicios.map((servicio) => ({
               id: servicio.id,
               nombre: servicio.nombre,

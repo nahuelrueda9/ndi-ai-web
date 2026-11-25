@@ -7,6 +7,7 @@ import type {
 import {
   useEffect,
   useId,
+  useMemo,
   useState,
 } from "react";
 import {
@@ -49,6 +50,8 @@ import Button from "@/components/Ui/Button";
 import Card from "@/components/Ui/Card";
 import Input from "@/components/Ui/Input";
 import OnboardingCard from "@/components/dashboard/OnboardingCard";
+
+const URL_EDDU_BARBER = "https://www.eddubarber.com";
 
 export type ElementoHero = {
   url: string;
@@ -426,7 +429,27 @@ export default function ConfigurarAgentePage() {
     return () => unsubscribe();
   }, [empresaId, router]);
 
-  const urlPublica = paginaSlug ? `/negocio/${paginaSlug}` : "";
+  const esEdduBarber = useMemo(() => {
+    const idLimpio = (empresaId || "").toLowerCase();
+    const slugLimpio = paginaSlug.trim().toLowerCase();
+    const nombreLimpio = nombre.trim().toLowerCase();
+    const tituloLimpio = paginaTitulo.trim().toLowerCase();
+
+    return (
+      idLimpio.includes("eddu") ||
+      slugLimpio === "eddu-barber" ||
+      slugLimpio === "eddubarber" ||
+      slugLimpio.includes("eddu") ||
+      nombreLimpio.includes("eddu") ||
+      tituloLimpio.includes("eddu")
+    );
+  }, [empresaId, paginaSlug, nombre, paginaTitulo]);
+
+  const urlPublica = esEdduBarber
+    ? URL_EDDU_BARBER
+    : paginaSlug
+    ? `/negocio/${paginaSlug}`
+    : "";
 
   // FUNCIÓN DE SUBIDA ADAPTADA A FOTOS Y VIDEOS
   const subirArchivoPagina = async (
@@ -1048,13 +1071,18 @@ export default function ConfigurarAgentePage() {
                 <div className="overflow-hidden rounded-lg border border-slate-300 bg-white focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-900 sm:rounded-xl">
                   <div className="flex items-center">
                     <span className="shrink-0 border-r border-slate-200 bg-slate-50 px-2.5 py-2.5 text-[10px] text-slate-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-500 sm:px-3 sm:py-3 sm:text-xs">
-                      /negocio/
+                      {esEdduBarber ? "https://" : "/negocio/"}
                     </span>
 
                     <input
                       id="paginaSlug"
-                      value={paginaSlug}
-                      onChange={(e) => setPaginaSlug(crearSlug(e.target.value))}
+                      value={esEdduBarber ? "www.eddubarber.com" : paginaSlug}
+                      readOnly={esEdduBarber}
+                      onChange={(e) => {
+                        if (!esEdduBarber) {
+                          setPaginaSlug(crearSlug(e.target.value));
+                        }
+                      }}
                       className="min-w-0 flex-1 bg-transparent px-2.5 py-2.5 text-xs text-slate-900 outline-none dark:text-white sm:px-3 sm:py-3 sm:text-sm"
                       placeholder="mi-negocio"
                     />
@@ -1062,7 +1090,9 @@ export default function ConfigurarAgentePage() {
                 </div>
 
                 <p className="text-[10px] leading-4 text-slate-500 dark:text-zinc-500 sm:text-xs">
-                  Esta será la URL pública de tu negocio.
+                  {esEdduBarber
+                    ? "Dominio oficial configurado para Eddu Barber."
+                    : "Esta será la URL pública de tu negocio."}
                 </p>
               </div>
 
@@ -1847,10 +1877,10 @@ export default function ConfigurarAgentePage() {
 
               <button
                 type="button"
-                disabled={!paginaSlug}
+                disabled={!urlPublica}
                 onClick={() => {
-                  if (!paginaSlug) return;
-                  window.open(urlPublica, "_blank");
+                  if (!urlPublica) return;
+                  window.open(urlPublica, "_blank", "noopener,noreferrer");
                 }}
                 className="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 sm:mt-3 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-3 sm:text-sm"
               >
@@ -2068,10 +2098,10 @@ export default function ConfigurarAgentePage() {
               type="button"
               variant="secondary"
               className="min-w-0 px-2 py-2 text-[10px] sm:px-4 sm:py-2.5 sm:text-sm"
-              disabled={!paginaSlug}
+              disabled={!urlPublica}
               onClick={() => {
-                if (!paginaSlug) return;
-                window.open(urlPublica, "_blank");
+                if (!urlPublica) return;
+                window.open(urlPublica, "_blank", "noopener,noreferrer");
               }}
             >
               <span className="sm:hidden">Ver página</span>
