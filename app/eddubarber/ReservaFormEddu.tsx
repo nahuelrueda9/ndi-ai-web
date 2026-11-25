@@ -61,10 +61,8 @@ export default function ReservaFormEddu({
 
   const horaPreseleccionadaRef = useRef("");
 
-  const senaActiva = Boolean(
-    configSena?.habilitada !== false && Number(configSena?.monto || 0) > 0
-  );
   const montoSena = Number(configSena?.monto || 0);
+  const senaActiva = Boolean(configSena?.habilitada !== false && montoSena > 0);
   const linkMp = (configSena?.linkMercadoPago || "").trim();
 
   useEffect(() => {
@@ -392,7 +390,10 @@ export default function ReservaFormEddu({
         </p>
       </div>
 
-      <form onSubmit={manejarClickSolicitarTurno} className="mt-5 grid gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-5">
+      <form
+        onSubmit={manejarClickSolicitarTurno}
+        className="mt-5 grid gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-5"
+      >
         <div className="sm:col-span-2">
           <label className="mb-1.5 block text-xs font-medium text-slate-700 sm:mb-2 sm:text-sm">
             Servicio

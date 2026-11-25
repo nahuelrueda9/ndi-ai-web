@@ -169,84 +169,58 @@ function formatearDireccionEddu(direccion?: string) {
   return { linea1: limpia, linea2: "" };
 }
 
-function formatearHorariosEddu(empresa: Empresa) {
+function formatearHorariosEddu(empresa: Empresa): string[] {
   const dias = empresa.agendaConfig?.dias;
   const ordenDias = ["1", "2", "3", "4", "5", "6", "0"];
-  const clavesActivas = dias
-    ? ordenDias.filter((k) => Boolean(dias[k]?.activo))
-    : [];
+  const nombresCortos: Record<string, string> = {
+    "1": "Lun",
+    "2": "Mar",
+    "3": "Mié",
+    "4": "Jue",
+    "5": "Vie",
+    "6": "Sáb",
+    "0": "Dom",
+  };
 
-  if (clavesActivas.length > 0 && dias) {
-    const nombresCortos: Record<string, string> = {
-      "1": "Lun",
-      "2": "Mar",
-      "3": "Mié",
-      "4": "Jue",
-      "5": "Vie",
-      "6": "Sáb",
-      "0": "Dom",
-    };
-
-    const rangosPorDia = clavesActivas.map((k) => {
-      const apertura = formatearHoraHs(dias[k]?.apertura || "09:00");
-      const cierre = formatearHoraHs(dias[k]?.cierre || "22:00");
-      return {
-        clave: k,
-        rango: `${apertura} a ${cierre}`,
-      };
+  const lineasDesdeAgenda = ordenDias
+    .filter((clave) => {
+      const cfg = dias?.[clave];
+      return Boolean(cfg?.activo && cfg?.apertura && cfg?.cierre);
+    })
+    .map((clave) => {
+      const cfg = dias![clave];
+      const apertura = formatearHoraHs(cfg?.apertura).replace(/hs$/, "");
+      const cierre = formatearHoraHs(cfg?.cierre).replace(/hs$/, "");
+      return `${nombresCortos[clave]}: ${apertura} a ${cierre} hs`;
     });
 
-    const todosIgualHorario = rangosPorDia.every(
-      (item) => item.rango === rangosPorDia[0].rango
-    );
-
-    if (todosIgualHorario) {
-      const esCorrido = ordenDias.slice(
-        ordenDias.indexOf(clavesActivas[0]),
-        ordenDias.indexOf(clavesActivas[clavesActivas.length - 1]) + 1
-      ).join(",") === clavesActivas.join(",");
-
-      const linea1 =
-        esCorrido && clavesActivas.length >= 2
-          ? `${nombresCortos[clavesActivas[0]]} a ${nombresCortos[clavesActivas[clavesActivas.length - 1]]}`
-          : clavesActivas.map((k) => nombresCortos[k] || k).join(", ");
-
-      return {
-        linea1,
-        linea2: `De ${rangosPorDia[0].rango}`,
-      };
-    }
-
-    const resumenDias = rangosPorDia
-      .map((item) => `${nombresCortos[item.clave] || item.clave}: ${item.rango}`)
-      .join(" · ");
-
-    return {
-      linea1: resumenDias,
-      linea2: "",
-    };
+  if (lineasDesdeAgenda.length > 0) {
+    return lineasDesdeAgenda;
   }
 
   const textoCrudo = empresa.horarios?.trim() || "";
-  if (!textoCrudo) return { linea1: "", linea2: "" };
+  if (!textoCrudo) return [];
+
+  const lineasManuales = textoCrudo
+    .split(/\r?\n/)
+    .map((linea) => linea.trim())
+    .filter(Boolean);
+
+  if (lineasManuales.length > 1) {
+    return lineasManuales;
+  }
 
   const matchRango = textoCrudo.match(
     /^(.*?)\s+de\s+(\d{1,2}:\d{2})(?:hs)?\s+a\s+(\d{1,2}:\d{2})(?:hs)?$/i
   );
   if (matchRango) {
     const diasParte = matchRango[1].trim();
-    const hInicio = formatearHoraHs(matchRango[2]);
-    const hFin = formatearHoraHs(matchRango[3]);
-    return {
-      linea1: diasParte,
-      linea2: `De ${hInicio} a ${hFin}`,
-    };
+    const hInicio = matchRango[2].padStart(5, "0");
+    const hFin = matchRango[3].padStart(5, "0");
+    return [`${diasParte}: ${hInicio} a ${hFin} hs`];
   }
 
-  return {
-    linea1: textoCrudo,
-    linea2: "",
-  };
+  return [textoCrudo];
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -357,7 +331,7 @@ export default async function EdduBarberPage() {
   const whatsappUrl = telefonoLimpio ? `https://wa.me/${telefonoLimpio}` : "";
 
   const direccionFormateada = formatearDireccionEddu(empresa.direccion);
-  const horarioFormateado = formatearHorariosEddu(empresa);
+  const lineasHorario = formatearHorariosEddu(empresa);
 
   const direccionMapa = empresa.direccion?.trim() || "";
   const mapaEmbedUrl = direccionMapa
@@ -516,16 +490,17 @@ export default async function EdduBarberPage() {
                 </div>
               )}
 
-              {(horarioFormateado.linea1 || empresa.horarios) && (
-                <div className="grid grid-cols-[105px_1fr] sm:grid-cols-3 items-start sm:items-center gap-2 pt-4">
-                  <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-400">
+              {lineasHorario.length > 0 && (
+                <div className="grid grid-cols-[105px_1fr] sm:grid-cols-3 items-start gap-2 pt-4">
+                  <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-400 pt-0.5">
                     HORARIOS
                   </span>
-                  <div className="sm:col-span-2 text-[13px] sm:text-sm font-medium text-slate-800 leading-snug">
-                    <span className="block">{horarioFormateado.linea1}</span>
-                    {horarioFormateado.linea2 && (
-                      <span className="block text-slate-700">{horarioFormateado.linea2}</span>
-                    )}
+                  <div className="sm:col-span-2 flex flex-col gap-1 text-[13px] sm:text-sm font-medium text-slate-800 leading-snug">
+                    {lineasHorario.map((linea, idx) => (
+                      <span key={`horario-eddu-${idx}`} className="block">
+                        {linea}
+                      </span>
+                    ))}
                   </div>
                 </div>
               )}
